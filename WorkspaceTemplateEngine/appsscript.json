@@ -1,0 +1,15 @@
+{
+  "timeZone": "America/New_York",
+  "dependencies": {
+    "libraries": [
+      {
+        "userSymbol": "GoogleApiWrapper",
+        "version": "1",
+        "libraryId": "REPLACE_WITH_GOOGLE_API_WRAPPER_SCRIPT_ID",
+        "developmentMode": false
+      }
+    ]
+  },
+  "exceptionLogging": "STACKDRIVER",
+  "runtimeVersion": "V8"
+}

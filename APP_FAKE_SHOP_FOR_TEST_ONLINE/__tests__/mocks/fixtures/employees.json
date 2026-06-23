@@ -1,0 +1,147 @@
+{
+  "employees": [
+    {
+      "employee_id": "emp-001-alice",
+      "email": "alice.manager@fakeshop.example",
+      "first_name": "Alice",
+      "last_name": "Manager",
+      "role": "MANAGER",
+      "department": "SALES",
+      "hire_date": "2020-03-15",
+      "status": "ON_LEAVE",
+      "manager_id": null,
+      "delegate_to": "emp-002-bob",
+      "delegation_start": "2026-01-15",
+      "delegation_end": "2026-03-15"
+    },
+    {
+      "employee_id": "emp-002-bob",
+      "email": "bob.senior@fakeshop.example",
+      "first_name": "Bob",
+      "last_name": "Senior",
+      "role": "SALES",
+      "department": "SALES",
+      "hire_date": "2021-06-01",
+      "status": "ON_LEAVE",
+      "manager_id": "emp-001-alice",
+      "delegate_to": "emp-003-carol",
+      "delegation_start": "2026-02-01",
+      "delegation_end": "2026-02-15"
+    },
+    {
+      "employee_id": "emp-003-carol",
+      "email": "carol.sales@fakeshop.example",
+      "first_name": "Carol",
+      "last_name": "Sales",
+      "role": "SALES",
+      "department": "SALES",
+      "hire_date": "2022-01-10",
+      "status": "ACTIVE",
+      "manager_id": "emp-001-alice",
+      "delegate_to": null,
+      "delegation_start": null,
+      "delegation_end": null
+    },
+    {
+      "employee_id": "emp-004-david",
+      "email": "david.warehouse@fakeshop.example",
+      "first_name": "David",
+      "last_name": "Warehouse",
+      "role": "WAREHOUSE",
+      "department": "OPERATIONS",
+      "hire_date": "2021-09-20",
+      "status": "ACTIVE",
+      "manager_id": null,
+      "delegate_to": null,
+      "delegation_start": null,
+      "delegation_end": null
+    },
+    {
+      "employee_id": "emp-005-eve",
+      "email": "eve.support@fakeshop.example",
+      "first_name": "Eve",
+      "last_name": "Support",
+      "role": "SUPPORT",
+      "department": "CUSTOMER_SERVICE",
+      "hire_date": "2023-04-01",
+      "status": "ACTIVE",
+      "manager_id": null,
+      "delegate_to": null,
+      "delegation_start": null,
+      "delegation_end": null
+    },
+    {
+      "employee_id": "emp-006-frank",
+      "email": "frank.admin@fakeshop.example",
+      "first_name": "Frank",
+      "last_name": "Admin",
+      "role": "ADMIN",
+      "department": "OPERATIONS",
+      "hire_date": "2019-01-01",
+      "status": "ACTIVE",
+      "manager_id": null,
+      "delegate_to": null,
+      "delegation_start": null,
+      "delegation_end": null
+    }
+  ],
+  "delegations": [
+    {
+      "delegation_id": "del-001",
+      "delegator_id": "emp-001-alice",
+      "delegate_id": "emp-002-bob",
+      "role_id": "role-manager-sales",
+      "reason": "ILLNESS",
+      "start_date": "2026-01-15",
+      "end_date": "2026-03-15",
+      "status": "ACTIVE"
+    },
+    {
+      "delegation_id": "del-002",
+      "delegator_id": "emp-002-bob",
+      "delegate_id": "emp-003-carol",
+      "role_id": "role-sales",
+      "reason": "VACATION",
+      "start_date": "2026-02-01",
+      "end_date": "2026-02-15",
+      "status": "ACTIVE"
+    }
+  ],
+  "roles": [
+    {
+      "role_id": "role-admin",
+      "role_name": "ADMIN",
+      "scope_type": "GLOBAL",
+      "scope_value": null,
+      "permissions": ["*"]
+    },
+    {
+      "role_id": "role-manager-sales",
+      "role_name": "MANAGER",
+      "scope_type": "DEPARTMENT",
+      "scope_value": "SALES",
+      "permissions": ["orders:*", "employees:read", "employees:write", "reports:*", "inventory:read"]
+    },
+    {
+      "role_id": "role-sales",
+      "role_name": "SALES",
+      "scope_type": "DEPARTMENT",
+      "scope_value": "SALES",
+      "permissions": ["orders:read", "orders:write", "customers:*", "products:read"]
+    },
+    {
+      "role_id": "role-warehouse",
+      "role_name": "WAREHOUSE",
+      "scope_type": "DEPARTMENT",
+      "scope_value": "OPERATIONS",
+      "permissions": ["inventory:*", "orders:read", "orders:fulfill", "products:read"]
+    },
+    {
+      "role_id": "role-support",
+      "role_name": "SUPPORT",
+      "scope_type": "DEPARTMENT",
+      "scope_value": "CUSTOMER_SERVICE",
+      "permissions": ["orders:read", "customers:read", "customers:write", "products:read"]
+    }
+  ]
+}

@@ -1,0 +1,31 @@
+# Dependencies
+node_modules/
+
+# Build output
+dist/
+coverage/
+
+# Logs
+*.log
+npm-debug.log*
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# IDE
+.vscode/
+.idea/
+
+# CLASP
+.clasp.json
+
+# Lock files
+package-lock.json
+yarn.lock
+
+# Minified files
+*.min.js
+
+# Generated files
+appsscript.json

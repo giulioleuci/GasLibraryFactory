@@ -1,0 +1,17 @@
+{
+  "timeZone": "Europe/Rome",
+  "exceptionLogging": "STACKDRIVER",
+  "runtimeVersion": "V8",
+  "dependencies": {
+    "libraries": [
+      {
+        "userSymbol": "GoogleApiWrapper",
+        "version": "1",
+        "libraryId": "PLACEHOLDER_GOOGLEAPIWRAPPER_ID"
+      }
+    ]
+  },
+  "oauthScopes": [
+    "https://www.googleapis.com/auth/script.scriptapp"
+  ]
+}

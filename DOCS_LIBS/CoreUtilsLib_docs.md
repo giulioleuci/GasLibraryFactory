@@ -1,0 +1,23 @@
+# CoreUtilsLib_docs.md - Approfondimento Tecnico
+
+**Livello:** L0 (Foundation)
+**Scopo:** Fornire un set di utility stateless, sicure e performanti che fungano da fondamenta per l'intero ecosistema.
+
+## 🎯 Scopi Dettagliati
+La libreria nasce per risolvere l'inconsistenza di alcune API native in GAS e per centralizzare logiche ripetitive come:
+- **Sanitizzazione PII (Personally Identifiable Information)**: Fondamentale per la conformità GDPR/Privacy, permette di loggare dati senza esporre email o token.
+- **Sicurezza Regex**: Previene attacchi ReDoS (Regular Expression Denial of Service) tramite validazione preventiva dei pattern.
+- **Hashing Deterministico**: Necessario per strategie di caching dove l'ordine delle chiavi negli oggetti non deve influenzare l'hash generato.
+
+## 🏗️ Pattern Architetturali
+- **Facade Pattern**: `UtilsService` raggruppa decine di funzioni (date, ID, stringhe) in un unico punto di accesso, nascondendo la complessità delle implementazioni native (es. `Utilities.sleep` vs `setTimeout`).
+- **Flyweight Pattern**: Le istanze di configurazione pesanti sono condivise tra i vari servizi per minimizzare l'impatto sulla memoria (RAM limitata in GAS).
+- **Dependency Injection**: Fondamentale per il testing. Il servizio di `sleep` viene iniettato per permettere ai test unitari di eseguire istantaneamente senza attendere i tempi reali.
+
+## 🛠️ Casi d'Uso comuni
+- Generazione di UUID v4 sicuri per chiavi primarie in Sheets.
+- Parsing di date da formati eterogenei (ISO, Excel Serial Numbers, Google Apps Script Date).
+- Creazione di logger "child" che aggiungono prefissi (es. `[AuthService]`) automaticamente a ogni riga di log.
+
+---
+*Parte dello stack GasLibraryFactory*

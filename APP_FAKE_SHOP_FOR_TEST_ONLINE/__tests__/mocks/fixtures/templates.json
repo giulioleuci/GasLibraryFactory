@@ -1,0 +1,154 @@
+{
+  "templates": {
+    "invoice": {
+      "id": "tpl-invoice",
+      "name": "Invoice_Template",
+      "type": "gdoc",
+      "placeholders": [
+        "order.orderNumber",
+        "order.orderDate",
+        "order.dueDate",
+        "customer.firstName",
+        "customer.lastName",
+        "customer.address.line1",
+        "customer.address.city",
+        "customer.address.postalCode",
+        "shipping.line1",
+        "shipping.city",
+        "shipping.postalCode",
+        "items",
+        "taxRate",
+        "order.subtotal",
+        "order.tax",
+        "order.shipping",
+        "order.total",
+        "employee.firstName",
+        "employee.lastName",
+        "employee.isDelegated",
+        "employee.delegator.firstName",
+        "employee.delegator.lastName"
+      ],
+      "filters": ["formatDate", "currency"]
+    },
+    "orderConfirmation": {
+      "id": "tpl-order-confirmation",
+      "name": "Order_Confirmation_Email",
+      "type": "gdoc",
+      "placeholders": [
+        "customer.firstName",
+        "order.orderNumber",
+        "order.orderDate",
+        "order.total",
+        "items",
+        "order.estimatedDelivery",
+        "employee.firstName",
+        "employee.lastName",
+        "employee.email",
+        "dryRun"
+      ],
+      "filters": ["formatDate", "currency"]
+    },
+    "lowStockAlert": {
+      "id": "tpl-low-stock-alert",
+      "name": "Low_Stock_Alert_Email",
+      "type": "gdoc",
+      "placeholders": [
+        "product.name",
+        "product.sku",
+        "product.category",
+        "product.stockQuantity",
+        "product.reorderLevel",
+        "supplier.name",
+        "supplier.contactEmail",
+        "supplier.paymentTerms",
+        "belowCritical",
+        "timestamp",
+        "recipients"
+      ],
+      "filters": ["formatDateTime"]
+    },
+    "employeeWelcome": {
+      "id": "tpl-employee-welcome",
+      "name": "Employee_Welcome_Letter",
+      "type": "gdoc",
+      "placeholders": [
+        "employee.firstName",
+        "employee.lastName",
+        "employee.email",
+        "employee.role",
+        "employee.department",
+        "employee.hireDate",
+        "manager.firstName",
+        "manager.lastName",
+        "manager.email",
+        "company.name",
+        "company.address"
+      ],
+      "filters": ["formatDate"]
+    },
+    "delegationNotice": {
+      "id": "tpl-delegation-notice",
+      "name": "Delegation_Notice",
+      "type": "gdoc",
+      "placeholders": [
+        "delegation.startDate",
+        "delegation.endDate",
+        "delegator.firstName",
+        "delegator.lastName",
+        "delegator.role",
+        "delegator.department",
+        "delegate.firstName",
+        "delegate.lastName",
+        "delegate.role",
+        "delegate.department",
+        "delegation.reason",
+        "roles",
+        "permissions",
+        "delegation.delegationId",
+        "timestamp"
+      ],
+      "filters": ["formatDate", "formatDateTime"]
+    },
+    "monthlyReport": {
+      "id": "tpl-monthly-report",
+      "name": "Monthly_Report_Template",
+      "type": "gsheet",
+      "placeholders": [
+        "period.start",
+        "period.end",
+        "metrics.totalSales",
+        "metrics.salesChange",
+        "metrics.orderCount",
+        "metrics.orderCountChange",
+        "metrics.avgOrderValue",
+        "metrics.avgOrderChange",
+        "chartData",
+        "products",
+        "years"
+      ],
+      "filters": ["currency", "percentage"]
+    }
+  },
+  "filters": {
+    "formatDate": {
+      "description": "Formats date to YYYY-MM-DD",
+      "example": "{{order.orderDate | formatDate}}"
+    },
+    "formatDateTime": {
+      "description": "Formats timestamp to YYYY-MM-DD HH:mm:ss",
+      "example": "{{timestamp | formatDateTime}}"
+    },
+    "currency": {
+      "description": "Formats number as currency with $ and 2 decimal places",
+      "example": "{{order.total | currency}}"
+    },
+    "percentage": {
+      "description": "Formats number as percentage with % symbol",
+      "example": "{{metrics.salesChange | percentage}}"
+    },
+    "uppercase": {
+      "description": "Converts text to uppercase",
+      "example": "{{customer.lastName | uppercase}}"
+    }
+  }
+}

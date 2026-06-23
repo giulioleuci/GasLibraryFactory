@@ -1,0 +1,58 @@
+# ========================================
+# .claspignore for GasLibraryFactory Root
+# ========================================
+# Note: This file is for reference only.
+# CLASP deployment uses rootDir: "./dist" (see package.json)
+# The actual .claspignore is auto-generated in dist/ during build by build-and-prepare.js
+#
+# Build Modes:
+# - Production: Creates .claspignore that excludes all TEST_*.gs files
+# - Testing: Creates .claspignore that includes TEST_*.gs files
+# ========================================
+
+# Exclude local test folders (unit tests)
+**/__tests__/**
+test/**
+
+# Exclude development/build files
+node_modules/**
+src/**
+scripts/**
+.git/**
+.github/**
+
+# Exclude configuration files
+.gitignore
+.eslintrc.js
+.prettierrc
+webpack.config.js
+package.json
+package-lock.json
+tsconfig.json
+jest.config.js
+babel.config.js
+
+# Exclude all library source folders
+**/src/**
+
+# Exclude documentation
+docs/**
+*.md
+
+# Exclude specific files
+.DS_Store
+*.log
+*.tmp
+.clasp.json
+
+# ===========================================
+# WHAT GETS PUSHED TO GAS:
+# ===========================================
+# Only files in dist/ are pushed because:
+# - package.json sets: "clasp": { "rootDir": "./dist" }
+# - Build process copies only necessary files to dist/:
+#   ✓ Code.js (bundled app code)
+#   ✓ appsscript.json (GAS configuration)
+#   ✓ __testOnline__/ folders (online GAS tests)
+#   ✗ __tests__/ folders (local unit tests - excluded)
+# ===========================================

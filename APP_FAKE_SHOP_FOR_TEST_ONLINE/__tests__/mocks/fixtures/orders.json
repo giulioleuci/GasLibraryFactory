@@ -1,0 +1,420 @@
+{
+  "orders": {
+    "2024": [
+      {
+        "order_id": "ord-2024-001",
+        "order_number": "ORD-2024-00001",
+        "customer_id": "cust-002-jane",
+        "employee_id": "emp-003-carol",
+        "order_date": "2024-03-15T10:30:00Z",
+        "status": "DELIVERED",
+        "subtotal": 999.99,
+        "tax": 80.00,
+        "shipping": 0.00,
+        "total": 1079.99,
+        "shipping_address": {
+          "line1": "456 Oak Avenue",
+          "city": "Portland",
+          "postal_code": "97201",
+          "country": "USA"
+        },
+        "notes": "VIP customer - expedited shipping",
+        "items": [
+          {
+            "item_id": "itm-2024-001-1",
+            "product_id": "prod-001-laptop",
+            "quantity": 1,
+            "unit_price": 999.99,
+            "discount": 0,
+            "line_total": 999.99
+          }
+        ]
+      },
+      {
+        "order_id": "ord-2024-002",
+        "order_number": "ORD-2024-00002",
+        "customer_id": "cust-003-acme",
+        "employee_id": "emp-001-alice",
+        "order_date": "2024-06-22T14:00:00Z",
+        "status": "DELIVERED",
+        "subtotal": 2999.97,
+        "tax": 239.99,
+        "shipping": 0.00,
+        "total": 3239.96,
+        "shipping_address": {
+          "line1": "789 Industrial Blvd",
+          "line2": "Building C",
+          "city": "Chicago",
+          "postal_code": "60601",
+          "country": "USA"
+        },
+        "notes": "Wholesale order - bulk pricing applied",
+        "items": [
+          {
+            "item_id": "itm-2024-002-1",
+            "product_id": "prod-001-laptop",
+            "quantity": 3,
+            "unit_price": 999.99,
+            "discount": 0,
+            "line_total": 2999.97
+          }
+        ]
+      },
+      {
+        "order_id": "ord-2024-003",
+        "order_number": "ORD-2024-00003",
+        "customer_id": "cust-001-john",
+        "employee_id": "emp-003-carol",
+        "order_date": "2024-11-28T09:15:00Z",
+        "status": "DELIVERED",
+        "subtotal": 254.97,
+        "tax": 20.40,
+        "shipping": 9.99,
+        "total": 285.36,
+        "shipping_address": {
+          "line1": "123 Main Street",
+          "line2": "Apt 4B",
+          "city": "Springfield",
+          "postal_code": "12345",
+          "country": "USA"
+        },
+        "notes": "Black Friday order",
+        "items": [
+          {
+            "item_id": "itm-2024-003-1",
+            "product_id": "prod-002-headphones",
+            "quantity": 1,
+            "unit_price": 199.99,
+            "discount": 0,
+            "line_total": 199.99
+          },
+          {
+            "item_id": "itm-2024-003-2",
+            "product_id": "prod-003-tshirt",
+            "quantity": 1,
+            "unit_price": 29.99,
+            "discount": 0,
+            "line_total": 29.99
+          },
+          {
+            "item_id": "itm-2024-003-3",
+            "product_id": "prod-005-coffee",
+            "quantity": 1,
+            "unit_price": 24.99,
+            "discount": 0,
+            "line_total": 24.99
+          }
+        ]
+      }
+    ],
+    "2025": [
+      {
+        "order_id": "ord-2025-001",
+        "order_number": "ORD-2025-00001",
+        "customer_id": "cust-002-jane",
+        "employee_id": "emp-002-bob",
+        "order_date": "2025-02-14T11:00:00Z",
+        "status": "DELIVERED",
+        "subtotal": 229.97,
+        "tax": 13.80,
+        "shipping": 0.00,
+        "total": 243.77,
+        "shipping_address": {
+          "line1": "456 Oak Avenue",
+          "city": "Portland",
+          "postal_code": "97201",
+          "country": "USA"
+        },
+        "notes": "Valentine's Day gift order - VIP 10% discount applied",
+        "items": [
+          {
+            "item_id": "itm-2025-001-1",
+            "product_id": "prod-002-headphones",
+            "quantity": 1,
+            "unit_price": 179.99,
+            "discount": 20.00,
+            "line_total": 179.99
+          },
+          {
+            "item_id": "itm-2025-001-2",
+            "product_id": "prod-004-lamp",
+            "quantity": 1,
+            "unit_price": 44.99,
+            "discount": 5.00,
+            "line_total": 44.99
+          }
+        ]
+      },
+      {
+        "order_id": "ord-2025-002",
+        "order_number": "ORD-2025-00002",
+        "customer_id": "cust-003-acme",
+        "employee_id": "emp-001-alice",
+        "order_date": "2025-05-10T08:30:00Z",
+        "status": "DELIVERED",
+        "subtotal": 5999.94,
+        "tax": 479.99,
+        "shipping": 0.00,
+        "total": 6479.93,
+        "shipping_address": {
+          "line1": "789 Industrial Blvd",
+          "line2": "Building C",
+          "city": "Chicago",
+          "postal_code": "60601",
+          "country": "USA"
+        },
+        "notes": "Q2 bulk order - wholesale 15% discount",
+        "items": [
+          {
+            "item_id": "itm-2025-002-1",
+            "product_id": "prod-001-laptop",
+            "quantity": 5,
+            "unit_price": 849.99,
+            "discount": 750.00,
+            "line_total": 4249.95
+          },
+          {
+            "item_id": "itm-2025-002-2",
+            "product_id": "prod-002-headphones",
+            "quantity": 10,
+            "unit_price": 169.99,
+            "discount": 300.00,
+            "line_total": 1699.90
+          }
+        ]
+      },
+      {
+        "order_id": "ord-2025-003",
+        "order_number": "ORD-2025-00003",
+        "customer_id": "cust-005-maria",
+        "employee_id": "emp-003-carol",
+        "order_date": "2025-08-20T15:45:00Z",
+        "status": "DELIVERED",
+        "subtotal": 129.96,
+        "tax": 7.80,
+        "shipping": 9.99,
+        "total": 147.75,
+        "shipping_address": {
+          "line1": "555 Sunset Blvd",
+          "line2": "Suite 200",
+          "city": "Los Angeles",
+          "postal_code": "90028",
+          "country": "USA"
+        },
+        "notes": null,
+        "items": [
+          {
+            "item_id": "itm-2025-003-1",
+            "product_id": "prod-003-tshirt",
+            "quantity": 2,
+            "unit_price": 29.99,
+            "discount": 0,
+            "line_total": 59.98
+          },
+          {
+            "item_id": "itm-2025-003-2",
+            "product_id": "prod-005-coffee",
+            "quantity": 2,
+            "unit_price": 24.99,
+            "discount": 0,
+            "line_total": 49.98
+          },
+          {
+            "item_id": "itm-2025-003-3",
+            "product_id": "prod-004-lamp",
+            "quantity": 1,
+            "unit_price": 49.99,
+            "discount": 30.00,
+            "line_total": 19.99
+          }
+        ]
+      },
+      {
+        "order_id": "ord-2025-004",
+        "order_number": "ORD-2025-00004",
+        "customer_id": "cust-001-john",
+        "employee_id": "emp-002-bob",
+        "order_date": "2025-12-01T10:00:00Z",
+        "status": "DELIVERED",
+        "subtotal": 79.98,
+        "tax": 6.40,
+        "shipping": 5.99,
+        "total": 92.37,
+        "shipping_address": {
+          "line1": "123 Main Street",
+          "line2": "Apt 4B",
+          "city": "Springfield",
+          "postal_code": "12345",
+          "country": "USA"
+        },
+        "notes": "Holiday gift wrapping requested",
+        "items": [
+          {
+            "item_id": "itm-2025-004-1",
+            "product_id": "prod-004-lamp",
+            "quantity": 1,
+            "unit_price": 49.99,
+            "discount": 0,
+            "line_total": 49.99
+          },
+          {
+            "item_id": "itm-2025-004-2",
+            "product_id": "prod-003-tshirt",
+            "quantity": 1,
+            "unit_price": 29.99,
+            "discount": 0,
+            "line_total": 29.99
+          }
+        ]
+      }
+    ],
+    "2026": [
+      {
+        "order_id": "ord-2026-001",
+        "order_number": "ORD-2026-00001",
+        "customer_id": "cust-002-jane",
+        "employee_id": "emp-003-carol",
+        "order_date": "2026-01-10T09:30:00Z",
+        "status": "DELIVERED",
+        "subtotal": 1049.98,
+        "tax": 84.00,
+        "shipping": 0.00,
+        "total": 1133.98,
+        "shipping_address": {
+          "line1": "456 Oak Avenue",
+          "city": "Portland",
+          "postal_code": "97201",
+          "country": "USA"
+        },
+        "notes": "New Year purchase - VIP discount applied",
+        "items": [
+          {
+            "item_id": "itm-2026-001-1",
+            "product_id": "prod-001-laptop",
+            "quantity": 1,
+            "unit_price": 899.99,
+            "discount": 100.00,
+            "line_total": 899.99
+          },
+          {
+            "item_id": "itm-2026-001-2",
+            "product_id": "prod-004-lamp",
+            "quantity": 3,
+            "unit_price": 44.99,
+            "discount": 15.00,
+            "line_total": 134.97
+          }
+        ]
+      },
+      {
+        "order_id": "ord-2026-002",
+        "order_number": "ORD-2026-00002",
+        "customer_id": "cust-004-new",
+        "employee_id": "emp-003-carol",
+        "order_date": "2026-02-01T14:00:00Z",
+        "status": "PENDING",
+        "subtotal": 54.98,
+        "tax": 3.30,
+        "shipping": 9.99,
+        "total": 68.27,
+        "shipping_address": {
+          "line1": "321 Fresh Lane",
+          "city": "Seattle",
+          "postal_code": "98101",
+          "country": "USA"
+        },
+        "notes": "First-time customer - 15% welcome discount",
+        "items": [
+          {
+            "item_id": "itm-2026-002-1",
+            "product_id": "prod-003-tshirt",
+            "quantity": 1,
+            "unit_price": 25.49,
+            "discount": 4.50,
+            "line_total": 25.49
+          },
+          {
+            "item_id": "itm-2026-002-2",
+            "product_id": "prod-005-coffee",
+            "quantity": 1,
+            "unit_price": 21.24,
+            "discount": 3.75,
+            "line_total": 21.24
+          }
+        ]
+      },
+      {
+        "order_id": "ord-2026-003",
+        "order_number": "ORD-2026-00003",
+        "customer_id": "cust-003-acme",
+        "employee_id": "emp-003-carol",
+        "order_date": "2026-02-03T08:00:00Z",
+        "status": "PROCESSING",
+        "subtotal": 8499.85,
+        "tax": 679.99,
+        "shipping": 0.00,
+        "total": 9179.84,
+        "shipping_address": {
+          "line1": "789 Industrial Blvd",
+          "line2": "Building C",
+          "city": "Chicago",
+          "postal_code": "60601",
+          "country": "USA"
+        },
+        "notes": "Q1 2026 bulk order - wholesale pricing",
+        "items": [
+          {
+            "item_id": "itm-2026-003-1",
+            "product_id": "prod-001-laptop",
+            "quantity": 8,
+            "unit_price": 849.99,
+            "discount": 1200.00,
+            "line_total": 6799.92
+          },
+          {
+            "item_id": "itm-2026-003-2",
+            "product_id": "prod-002-headphones",
+            "quantity": 10,
+            "unit_price": 169.99,
+            "discount": 300.00,
+            "line_total": 1699.90
+          }
+        ]
+      }
+    ]
+  },
+  "orderStatuses": [
+    "PENDING",
+    "CONFIRMED",
+    "PROCESSING",
+    "SHIPPED",
+    "DELIVERED",
+    "CANCELLED"
+  ],
+  "analytics": {
+    "yearlyTotals": {
+      "2024": {
+        "totalOrders": 3,
+        "totalRevenue": 4605.31,
+        "averageOrderValue": 1535.10
+      },
+      "2025": {
+        "totalOrders": 4,
+        "totalRevenue": 6963.82,
+        "averageOrderValue": 1740.96
+      },
+      "2026": {
+        "totalOrders": 3,
+        "totalRevenue": 10382.09,
+        "averageOrderValue": 3460.70
+      }
+    },
+    "customerLifetimeValues": {
+      "cust-002-jane": 2457.74,
+      "cust-003-acme": 18899.73,
+      "cust-001-john": 377.73,
+      "cust-004-new": 68.27,
+      "cust-005-maria": 147.75
+    }
+  }
+}

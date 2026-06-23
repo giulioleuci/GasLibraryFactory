@@ -1,0 +1,186 @@
+{
+  "products": [
+    {
+      "product_id": "prod-001-laptop",
+      "sku": "ELEC-LAP-001",
+      "name": "ProBook Laptop 15\"",
+      "description": "High-performance laptop with 16GB RAM and 512GB SSD",
+      "category": "ELECTRONICS",
+      "price": 999.99,
+      "cost": 650.00,
+      "stock_quantity": 25,
+      "reorder_level": 10,
+      "supplier_id": "sup-001-techworld",
+      "status": "ACTIVE",
+      "attr_brand": "ProBook",
+      "attr_warranty_months": 24,
+      "attr_voltage": "110-240V",
+      "created_at": "2024-01-15T09:00:00Z",
+      "updated_at": "2026-01-28T14:30:00Z"
+    },
+    {
+      "product_id": "prod-002-headphones",
+      "sku": "ELEC-AUD-001",
+      "name": "SoundMax Wireless Headphones",
+      "description": "Noise-cancelling wireless headphones with 30-hour battery",
+      "category": "ELECTRONICS",
+      "price": 199.99,
+      "cost": 85.00,
+      "stock_quantity": 50,
+      "reorder_level": 20,
+      "supplier_id": "sup-001-techworld",
+      "status": "ACTIVE",
+      "attr_brand": "SoundMax",
+      "attr_warranty_months": 12,
+      "attr_voltage": "5V USB",
+      "created_at": "2024-03-20T11:00:00Z",
+      "updated_at": "2026-02-01T09:00:00Z"
+    },
+    {
+      "product_id": "prod-003-tshirt",
+      "sku": "CLTH-TSH-001",
+      "name": "Classic Cotton T-Shirt",
+      "description": "100% organic cotton t-shirt, comfortable fit",
+      "category": "CLOTHING",
+      "price": 29.99,
+      "cost": 8.00,
+      "stock_quantity": 200,
+      "reorder_level": 50,
+      "supplier_id": "sup-002-fashionplus",
+      "status": "ACTIVE",
+      "attr_size": "M",
+      "attr_color": "Navy Blue",
+      "attr_material": "100% Organic Cotton",
+      "created_at": "2023-09-01T10:00:00Z",
+      "updated_at": "2026-01-15T16:00:00Z"
+    },
+    {
+      "product_id": "prod-004-lamp",
+      "sku": "HOME-LMP-001",
+      "name": "Modern LED Desk Lamp",
+      "description": "Adjustable LED desk lamp with touch control and USB port",
+      "category": "HOME",
+      "price": 49.99,
+      "cost": 18.00,
+      "stock_quantity": 75,
+      "reorder_level": 25,
+      "supplier_id": "sup-003-homeessentials",
+      "status": "ACTIVE",
+      "attr_dimensions": "15x15x45 cm",
+      "attr_weight": "1.2 kg",
+      "attr_assembly_required": false,
+      "created_at": "2024-05-10T13:00:00Z",
+      "updated_at": "2026-01-20T10:30:00Z"
+    },
+    {
+      "product_id": "prod-005-coffee",
+      "sku": "FOOD-BEV-001",
+      "name": "Premium Organic Coffee Beans",
+      "description": "Single-origin Arabica coffee beans, medium roast",
+      "category": "FOOD",
+      "price": 24.99,
+      "cost": 12.00,
+      "stock_quantity": 8,
+      "reorder_level": 15,
+      "supplier_id": "sup-004-gourmetfoods",
+      "status": "ACTIVE",
+      "attr_expiry_date": "2026-08-01",
+      "attr_allergens": "None",
+      "attr_organic": true,
+      "created_at": "2025-11-01T08:00:00Z",
+      "updated_at": "2026-02-01T07:00:00Z"
+    },
+    {
+      "product_id": "prod-006-discontinued",
+      "sku": "ELEC-OLD-001",
+      "name": "Legacy MP3 Player",
+      "description": "Classic MP3 player - DISCONTINUED",
+      "category": "ELECTRONICS",
+      "price": 39.99,
+      "cost": 15.00,
+      "stock_quantity": 3,
+      "reorder_level": 0,
+      "supplier_id": "sup-001-techworld",
+      "status": "DISCONTINUED",
+      "attr_brand": "RetroTech",
+      "attr_warranty_months": 0,
+      "attr_voltage": "5V USB",
+      "created_at": "2020-06-01T10:00:00Z",
+      "updated_at": "2025-01-01T00:00:00Z"
+    },
+    {
+      "product_id": "prod-007-outofstock",
+      "sku": "CLTH-JKT-001",
+      "name": "Winter Parka Jacket",
+      "description": "Warm winter jacket with waterproof shell",
+      "category": "CLOTHING",
+      "price": 149.99,
+      "cost": 55.00,
+      "stock_quantity": 0,
+      "reorder_level": 10,
+      "supplier_id": "sup-002-fashionplus",
+      "status": "OUT_OF_STOCK",
+      "attr_size": "L",
+      "attr_color": "Black",
+      "attr_material": "Polyester/Down Fill",
+      "created_at": "2024-10-01T09:00:00Z",
+      "updated_at": "2026-01-30T12:00:00Z"
+    }
+  ],
+  "categories": {
+    "ELECTRONICS": {
+      "dynamicAttributes": ["attr_brand", "attr_warranty_months", "attr_voltage"],
+      "taxRate": 0.08
+    },
+    "CLOTHING": {
+      "dynamicAttributes": ["attr_size", "attr_color", "attr_material"],
+      "taxRate": 0.06
+    },
+    "HOME": {
+      "dynamicAttributes": ["attr_dimensions", "attr_weight", "attr_assembly_required"],
+      "taxRate": 0.07
+    },
+    "FOOD": {
+      "dynamicAttributes": ["attr_expiry_date", "attr_allergens", "attr_organic"],
+      "taxRate": 0.00
+    }
+  },
+  "suppliers": [
+    {
+      "supplier_id": "sup-001-techworld",
+      "name": "TechWorld Distributors",
+      "contact_email": "orders@techworld.example",
+      "contact_phone": "+1-800-TECH-001",
+      "address": "100 Technology Park, San Jose, CA 95110",
+      "payment_terms": "NET30",
+      "status": "ACTIVE"
+    },
+    {
+      "supplier_id": "sup-002-fashionplus",
+      "name": "Fashion Plus Wholesale",
+      "contact_email": "wholesale@fashionplus.example",
+      "contact_phone": "+1-800-FASH-002",
+      "address": "200 Garment District, New York, NY 10018",
+      "payment_terms": "NET60",
+      "status": "ACTIVE"
+    },
+    {
+      "supplier_id": "sup-003-homeessentials",
+      "name": "Home Essentials Inc.",
+      "contact_email": "supply@homeessentials.example",
+      "contact_phone": "+1-800-HOME-003",
+      "address": "300 Warehouse Way, Dallas, TX 75201",
+      "payment_terms": "NET30",
+      "status": "ACTIVE"
+    },
+    {
+      "supplier_id": "sup-004-gourmetfoods",
+      "name": "Gourmet Foods International",
+      "contact_email": "sourcing@gourmetfoods.example",
+      "contact_phone": "+1-800-GOUR-004",
+      "address": "400 Food Court, Miami, FL 33101",
+      "payment_terms": "PREPAID",
+      "status": "ACTIVE"
+    }
+  ]
+}
