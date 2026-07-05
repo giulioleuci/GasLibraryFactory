@@ -129,7 +129,7 @@ const utils = new UtilsService((ms) => Utilities.sleep(ms));
 
 - **Date & Time:**
   - `parseDate(input)`: Robust parsing for ISO strings, timestamps, and Google Sheets serial numbers.
-  - `formatDate(date, format)`: Formats dates (e.g., 'YYYY-MM-DD').
+  - `formatDate(date, format, { utc })`: Formats dates (e.g., 'YYYY-MM-DD'); `utc: true` derives tokens from the UTC components (deterministic, host-timezone independent).
   - `addDays(date, amount)`, `addHours(...)`, etc.: Date arithmetic.
   - `daysBetween(date1, date2)`: Calculates duration between dates.
 

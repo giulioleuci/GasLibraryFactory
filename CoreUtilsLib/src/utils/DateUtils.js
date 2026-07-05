@@ -172,27 +172,33 @@ export class DateUtils {
    * Formats a Date object using custom tokens (YYYY, MM, DD, HH, mm, ss, SSS).
    * @param {Date} date Date to format.
    * @param {string} [format='YYYY-MM-DD'] Token-based format pattern.
+   * @param {Object} [options={}] Formatting options.
+   * @param {boolean} [options.utc=false] If true, tokens are derived from the UTC
+   *   components of the date (deterministic, host-timezone independent) instead
+   *   of the local ones.
    * @returns {string|null} Formatted string or null if date is invalid.
    */
-  formatDate(date, format = 'YYYY-MM-DD') {
+  formatDate(date, format = 'YYYY-MM-DD', options = {}) {
     if (!(date instanceof Date) || isNaN(date.getTime())) {
       return null;
     }
 
+    const utc = options !== null && typeof options === 'object' && options.utc === true;
     const pad = (num) => String(num).padStart(2, '0');
 
+    const year = utc ? date.getUTCFullYear() : date.getFullYear();
     const replacements = {
-      YYYY: date.getFullYear(),
-      yyyy: date.getFullYear(), // Support lowercase (GAS compatibility)
-      YY: String(date.getFullYear()).slice(-2),
-      yy: String(date.getFullYear()).slice(-2), // Support lowercase
-      MM: pad(date.getMonth() + 1),
-      DD: pad(date.getDate()),
-      dd: pad(date.getDate()), // Support lowercase (GAS compatibility)
-      HH: pad(date.getHours()),
-      mm: pad(date.getMinutes()),
-      ss: pad(date.getSeconds()),
-      SSS: String(date.getMilliseconds()).padStart(3, '0')
+      YYYY: year,
+      yyyy: year, // Support lowercase (GAS compatibility)
+      YY: String(year).slice(-2),
+      yy: String(year).slice(-2), // Support lowercase
+      MM: pad((utc ? date.getUTCMonth() : date.getMonth()) + 1),
+      DD: pad(utc ? date.getUTCDate() : date.getDate()),
+      dd: pad(utc ? date.getUTCDate() : date.getDate()), // Support lowercase (GAS compatibility)
+      HH: pad(utc ? date.getUTCHours() : date.getHours()),
+      mm: pad(utc ? date.getUTCMinutes() : date.getMinutes()),
+      ss: pad(utc ? date.getUTCSeconds() : date.getSeconds()),
+      SSS: String(utc ? date.getUTCMilliseconds() : date.getMilliseconds()).padStart(3, '0')
     };
 
     let result = format;
@@ -232,8 +238,12 @@ export class DateUtils {
    * @private Calculates millisecond difference (d2 - d1). @param {Date} date1 Start date. @param {Date} date2 End date. @returns {number|null} Diff or null if invalid.
    */
   _diffMs(date1, date2) {
-    if (!(date1 instanceof Date) || !(date2 instanceof Date)) return null;
-    if (isNaN(date1.getTime()) || isNaN(date2.getTime())) return null;
+    if (!(date1 instanceof Date) || !(date2 instanceof Date)) {
+      return null;
+    }
+    if (isNaN(date1.getTime()) || isNaN(date2.getTime())) {
+      return null;
+    }
     return date2.getTime() - date1.getTime();
   }
 
@@ -381,9 +391,11 @@ export class DateUtils {
       return null;
     }
 
-    return date1.getFullYear() === date2.getFullYear() &&
-           date1.getMonth() === date2.getMonth() &&
-           date1.getDate() === date2.getDate();
+    return (
+      date1.getFullYear() === date2.getFullYear() &&
+      date1.getMonth() === date2.getMonth() &&
+      date1.getDate() === date2.getDate()
+    );
   }
 
   /**
@@ -483,5 +495,4 @@ export class DateUtils {
 
     return parts.join(' ');
   }
-
 }

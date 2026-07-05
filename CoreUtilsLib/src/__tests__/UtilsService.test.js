@@ -343,6 +343,43 @@ describe('UtilsService', () => {
       expect(utils.formatDate(new Date('invalid'), 'YYYY-MM-DD')).toBeNull();
     });
 
+    describe('options.utc', () => {
+      // 23:45 UTC on Dec 31 — local tokens differ from UTC tokens in any
+      // non-UTC timezone, so this pins down the UTC derivation.
+      const utcEdge = new Date(Date.UTC(2025, 11, 31, 23, 45, 10, 7));
+
+      it('should derive all tokens from UTC components when utc:true', () => {
+        expect(utils.formatDate(utcEdge, 'YYYY-MM-DD HH:mm:ss.SSS', { utc: true })).toBe(
+          '2025-12-31 23:45:10.007'
+        );
+      });
+
+      it('should derive tokens from local components by default (backward compatible)', () => {
+        const local = utils.formatDate(utcEdge, 'YYYY-MM-DD HH:mm:ss.SSS');
+        const expected = `${utcEdge.getFullYear()}-${String(utcEdge.getMonth() + 1).padStart(2, '0')}-${String(
+          utcEdge.getDate()
+        ).padStart(2, '0')} ${String(utcEdge.getHours()).padStart(2, '0')}:${String(
+          utcEdge.getMinutes()
+        ).padStart(
+          2,
+          '0'
+        )}:${String(utcEdge.getSeconds()).padStart(2, '0')}.${String(utcEdge.getMilliseconds()).padStart(3, '0')}`;
+        expect(local).toBe(expected);
+      });
+
+      it('should treat a non-object or falsy options argument as local time', () => {
+        expect(utils.formatDate(utcEdge, 'YYYY', null)).toBe(String(utcEdge.getFullYear()));
+        expect(utils.formatDate(utcEdge, 'YYYY', { utc: false })).toBe(
+          String(utcEdge.getFullYear())
+        );
+      });
+
+      it('should format UTC date-only tokens (ISO day) across the day boundary', () => {
+        expect(utils.formatDate(utcEdge, 'YYYY-MM-DD', { utc: true })).toBe('2025-12-31');
+        expect(utils.formatDate(utcEdge, 'DD/MM/YY', { utc: true })).toBe('31/12/25');
+      });
+    });
+
     it('should return null for non-Date input', () => {
       expect(utils.formatDate(null, 'YYYY-MM-DD')).toBeNull();
     });

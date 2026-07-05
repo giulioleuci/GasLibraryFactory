@@ -127,6 +127,37 @@ function initIntegrationTests_Utils() {
     SmartAssert.equals(ourProtections.length, 2, 'Should have 2 dynamic column protected ranges');
   });
 
+  // --- UtilsService.formatDate: UTC option (deterministic, host-timezone independent) ---
+  runner.register(`${NS}/UtilsService_FormatDate_Utc`, () => {
+    const utils = new UtilsService(() => {});
+    // 23:45 UTC on Dec 31 — local and UTC tokens differ in any non-UTC timezone.
+    const utcEdge = new Date(Date.UTC(2025, 11, 31, 23, 45, 10, 7));
+
+    SmartAssert.equals(
+      utils.formatDate(utcEdge, 'YYYY-MM-DD HH:mm:ss.SSS', { utc: true }),
+      '2025-12-31 23:45:10.007',
+      'utc:true should derive every token from the UTC components'
+    );
+    SmartAssert.equals(
+      utils.formatDate(utcEdge, 'DD/MM/YY', { utc: true }),
+      '31/12/25',
+      'utc:true should format date-only tokens across the day boundary'
+    );
+
+    // Backward compatibility: default remains local time.
+    const localExpected =
+      utcEdge.getFullYear() +
+      '-' +
+      String(utcEdge.getMonth() + 1).padStart(2, '0') +
+      '-' +
+      String(utcEdge.getDate()).padStart(2, '0');
+    SmartAssert.equals(
+      utils.formatDate(utcEdge, 'YYYY-MM-DD'),
+      localExpected,
+      'default (no options) should keep deriving tokens from local components'
+    );
+  });
+
   // --- Sheet Placeholder with matrice_dati ---
   runner.register(`${NS}/TemplateEngine_Matrice_Dati`, () => {
     const ss = testContext.getSpreadsheet();
