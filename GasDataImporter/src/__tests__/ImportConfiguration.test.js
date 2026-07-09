@@ -153,6 +153,56 @@ describe('ImportConfiguration - Comprehensive Test Suite', () => {
     });
   });
 
+  describe('registerSourceType (custom source extensibility)', () => {
+    afterEach(() => {
+      // Keep VALID_SOURCE_TYPES pristine for other test files sharing the class.
+      const idx = ImportConfiguration.VALID_SOURCE_TYPES.indexOf('CustomTestSource');
+      if (idx !== -1) {
+        ImportConfiguration.VALID_SOURCE_TYPES.splice(idx, 1);
+      }
+    });
+
+    it('rejects an unregistered custom source type', () => {
+      const recipe = {
+        name: 'Test',
+        source: { type: 'CustomTestSource', config: { anything: true } },
+        load: { targetTable: 'Users', conflictResolution: 'INSERT_ONLY' }
+      };
+
+      expect(() => new ImportConfiguration(recipe, mockLogger)).toThrow(/Invalid source type/);
+    });
+
+    it('accepts a recipe using a type registered via registerSourceType', () => {
+      ImportConfiguration.registerSourceType('CustomTestSource');
+      const recipe = {
+        name: 'Test',
+        source: { type: 'CustomTestSource', config: { anything: true } },
+        load: { targetTable: 'Users', conflictResolution: 'INSERT_ONLY' }
+      };
+
+      const config = new ImportConfiguration(recipe, mockLogger);
+
+      expect(config.source.type).toBe('CustomTestSource');
+    });
+
+    it('registering the same type twice does not duplicate it', () => {
+      ImportConfiguration.registerSourceType('CustomTestSource');
+      ImportConfiguration.registerSourceType('CustomTestSource');
+      const occurrences = ImportConfiguration.VALID_SOURCE_TYPES.filter(
+        (t) => t === 'CustomTestSource'
+      );
+
+      expect(occurrences).toHaveLength(1);
+    });
+
+    it('registering a built-in type is a no-op', () => {
+      const before = [...ImportConfiguration.VALID_SOURCE_TYPES];
+      ImportConfiguration.registerSourceType('SheetById');
+
+      expect(ImportConfiguration.VALID_SOURCE_TYPES).toEqual(before);
+    });
+  });
+
   // ===================================================================
   // TRANSFORM CONFIGURATION
   // ===================================================================

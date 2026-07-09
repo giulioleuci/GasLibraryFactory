@@ -1,3 +1,5 @@
+import { ImportConfiguration } from './ImportConfiguration.js';
+
 export class ImportStrategyRegistry {
   constructor(facade) {
     this.facade = facade;
@@ -6,6 +8,10 @@ export class ImportStrategyRegistry {
   registerCustomSource(name, strategyClass) {
     this.facade.logger.info(`[ImportEngine] Registering custom source strategy: ${name}`);
     this.facade._sourceFactory.registerStrategy(name, strategyClass);
+    // Also whitelist the type for recipe validation — otherwise a recipe using
+    // this custom source is rejected by ImportConfiguration before extraction
+    // ever runs, defeating the point of registering a custom strategy.
+    ImportConfiguration.registerSourceType(name);
   }
 
   getAvailableSourceTypes() {

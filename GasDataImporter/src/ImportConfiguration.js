@@ -19,6 +19,24 @@ class ImportConfiguration {
   static VALID_SOURCE_TYPES = ['SheetById', 'Folder'];
 
   /**
+   * Registers an additional source type as valid for recipe validation. Consumers
+   * that add a custom `SourceStrategy` via `ImportEngine.registerCustomSource()`
+   * must also call this (or use `registerCustomSource`, which does it for them)
+   * so recipes using the new type pass `_validateSource` instead of being
+   * rejected as unknown before the custom strategy is ever reached. No-op if the
+   * type is already valid.
+   *
+   * @static
+   * @param {string} type Source strategy type name (matches the key passed to
+   *   `SourceStrategyFactory.registerStrategy`).
+   */
+  static registerSourceType(type) {
+    if (!ImportConfiguration.VALID_SOURCE_TYPES.includes(type)) {
+      ImportConfiguration.VALID_SOURCE_TYPES.push(type);
+    }
+  }
+
+  /**
    * Valid conflict resolution strategies
    *
    * @static

@@ -465,6 +465,17 @@ describe('ImportEngine - Comprehensive Test Suite', () => {
         '[ImportEngine] Registering custom source strategy: ApiSource'
       );
     });
+
+    it('should also whitelist the type in ImportConfiguration so recipes using it validate', () => {
+      // ImportConfiguration is jest.mock()'d in this file (see top-of-file mocks),
+      // so registerSourceType is a jest.fn() here — this asserts the call, not
+      // the real static array mutation (covered directly in ImportConfiguration.test.js).
+      const customStrategy = class CustomStrategy {};
+
+      engine.registerCustomSource('WhitelistedSource', customStrategy);
+
+      expect(ImportConfiguration.registerSourceType).toHaveBeenCalledWith('WhitelistedSource');
+    });
   });
 
   // ===================================================================
