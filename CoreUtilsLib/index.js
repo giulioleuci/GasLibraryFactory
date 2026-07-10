@@ -108,7 +108,15 @@ export { RegexUtils } from './src/internal/RegexUtils.js';
 
 // Validation and Error Utilities (Code Reuse Initiative)
 export { ValidationUtils } from './src/ValidationUtils.js';
-export { BaseError, ValidationError, ConfigurationError, OperationError } from './src/errors/BaseError.js';
+
+// HTML-context escaping utilities (XSS prevention, ported from ALDO's boxes.ts)
+export { HtmlSanitizer } from './src/utils/HtmlSanitizer.js';
+export {
+  BaseError,
+  ValidationError,
+  ConfigurationError,
+  OperationError
+} from './src/errors/BaseError.js';
 
 // Shared outcome wrapper base (Code Reuse Initiative)
 export { Result } from './src/Result.js';
