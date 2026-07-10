@@ -34,6 +34,16 @@ import { ContextDependencyAnalyzer } from './internal/ContextDependencyAnalyzer'
  *   ]
  * };
  * const context = assembler.assemble(recipe, { userId: 123 });
+ * @example
+ * // Mutation mode: every provider mutates the SAME shared target object in
+ * // place instead of producing a value merged into a flat, provider-keyed
+ * // map. Useful for consumers whose "context" is one deeply nested object
+ * // multiple providers read from and write into at the same paths (e.g. a
+ * // recipe where a later provider must overwrite a field an earlier
+ * // provider already set). Provider return values are ignored in this mode.
+ * const sharedTarget = { meta: {}, focus: {} };
+ * assembler.assembleInto(sharedTarget, recipe, { userId: 123 });
+ * // sharedTarget now holds everything every provider wrote, in recipe order.
  */
 export class ContextAssembler {
   /**
@@ -184,8 +194,10 @@ export class ContextAssembler {
     const executionMethods = [
       '_evaluateCondition',
       '_executeProvider',
+      '_executeMutatingProvider',
       'assemble',
-      'assembleAsync'
+      'assembleAsync',
+      'assembleInto'
     ];
     executionMethods.forEach(m => {
       this[m] = this._stepExecutor[m].bind(this._stepExecutor);

@@ -74,10 +74,10 @@ describe('ContextStepExecutor', () => {
       const result = executor._evaluateCondition(condition, initialParams, providerResults);
 
       expect(result).toBe(true);
-      expect(facade._expressionEngine.evaluate).toHaveBeenCalledWith(
-        condition,
-        { ...initialParams, ...providerResults }
-      );
+      expect(facade._expressionEngine.evaluate).toHaveBeenCalledWith(condition, {
+        ...initialParams,
+        ...providerResults
+      });
       expect(facade._logger.debug).toHaveBeenCalledWith(
         `Condition '${condition}' evaluated to: true`
       );
@@ -152,8 +152,12 @@ describe('ContextStepExecutor', () => {
         providerResults,
         'testProvider'
       );
-      expect(mockProvider.provide).toHaveBeenCalledWith('testProvider', { resolvedParam1: 'resolvedValue1' });
-      expect(facade._logger.info).toHaveBeenCalledWith('[testProvider] Provider execution completed');
+      expect(mockProvider.provide).toHaveBeenCalledWith('testProvider', {
+        resolvedParam1: 'resolvedValue1'
+      });
+      expect(facade._logger.info).toHaveBeenCalledWith(
+        '[testProvider] Provider execution completed'
+      );
     });
 
     it('should execute provider with retry if exceptionService is configured', () => {
@@ -271,7 +275,8 @@ describe('ContextStepExecutor', () => {
 
       // Spy on internal methods
       jest.spyOn(executor, '_evaluateCondition').mockReturnValue(true);
-      jest.spyOn(executor, '_executeProvider')
+      jest
+        .spyOn(executor, '_executeProvider')
         .mockReturnValueOnce('result1')
         .mockReturnValueOnce('result2');
 
@@ -314,12 +319,14 @@ describe('ContextStepExecutor', () => {
 
       facade._recipeParser.parse.mockReturnValue(recipe);
 
-      jest.spyOn(executor, '_evaluateCondition')
+      jest
+        .spyOn(executor, '_evaluateCondition')
         .mockReturnValueOnce(true)
         .mockReturnValueOnce(false)
         .mockReturnValueOnce(true);
 
-      jest.spyOn(executor, '_executeProvider')
+      jest
+        .spyOn(executor, '_executeProvider')
         .mockReturnValueOnce('result1')
         .mockReturnValueOnce('result3');
 
@@ -327,16 +334,12 @@ describe('ContextStepExecutor', () => {
 
       expect(result).toEqual({ p1: 'result1', p3: 'result3' });
       expect(executor._executeProvider).toHaveBeenCalledTimes(2);
-      expect(facade._logger.info).toHaveBeenCalledWith(
-        '[p2] Skipped (condition not met)'
-      );
+      expect(facade._logger.info).toHaveBeenCalledWith('[p2] Skipped (condition not met)');
     });
 
     it('should handle errors during execution and map to ContextEngineError', () => {
       const recipe = {
-        providers: [
-          { name: 'p1', type: 't1' }
-        ]
+        providers: [{ name: 'p1', type: 't1' }]
       };
 
       facade._recipeParser.parse.mockReturnValue(recipe);
@@ -389,6 +392,187 @@ describe('ContextStepExecutor', () => {
 
       expect(result).toEqual({ result: true });
       expect(executor.assemble).toHaveBeenCalledWith(recipe, params, options);
+    });
+  });
+
+  describe('_executeMutatingProvider', () => {
+    let providerConfig;
+    let mockProvider;
+
+    beforeEach(() => {
+      providerConfig = { name: 'testProvider', type: 'TestType' };
+      mockProvider = { provide: jest.fn().mockReturnValue('ignored return value') };
+      facade._providerRegistry.get.mockReturnValue(mockProvider);
+    });
+
+    it('should call provider.provide(sharedTarget, initialParams, options) and not use dependencyResolver/postProcessor', () => {
+      const sharedTarget = { focus: {} };
+      const initialParams = { a: 1 };
+      const options = { opt: true };
+
+      executor._executeMutatingProvider(providerConfig, sharedTarget, initialParams, options);
+
+      expect(mockProvider.provide).toHaveBeenCalledWith(sharedTarget, initialParams, options);
+      expect(facade._dependencyResolver.resolveAll).not.toHaveBeenCalled();
+      expect(facade._logger.info).toHaveBeenCalledWith(
+        '[testProvider] Provider execution completed (mutate mode)'
+      );
+    });
+
+    it('should use exceptionService for retry when configured', () => {
+      facade._exceptionService = {
+        executeWithRetry: jest.fn().mockImplementation((fn) => fn())
+      };
+
+      executor._executeMutatingProvider(providerConfig, {}, {}, {});
+
+      expect(facade._exceptionService.executeWithRetry).toHaveBeenCalledWith(
+        expect.any(Function),
+        {},
+        facade._maxRetries
+      );
+    });
+
+    it('should invoke registered interceptors with (name, sharedTarget, sharedTarget, options) and ignore their return value', () => {
+      const sharedTarget = { focus: {} };
+      const mockInterceptor = {
+        intercept: jest.fn().mockReturnValue('some unrelated return value')
+      };
+      facade._interceptorRegistry = { getAll: jest.fn().mockReturnValue([mockInterceptor]) };
+
+      const options = { someOption: true };
+
+      executor._executeMutatingProvider(providerConfig, sharedTarget, {}, options);
+
+      expect(mockInterceptor.intercept).toHaveBeenCalledWith(
+        'testProvider',
+        sharedTarget,
+        sharedTarget,
+        options
+      );
+    });
+  });
+
+  describe('assembleInto', () => {
+    it('should throw Error on missing or invalid sharedTarget', () => {
+      expect(() => executor.assembleInto(null, {})).toThrow(
+        'ContextAssembler.assembleInto: sharedTarget is required and must be an object'
+      );
+      expect(() => executor.assembleInto('invalid', {})).toThrow(
+        'ContextAssembler.assembleInto: sharedTarget is required and must be an object'
+      );
+    });
+
+    it('should throw Error on missing or invalid recipe', () => {
+      expect(() => executor.assembleInto({}, null)).toThrow(
+        'ContextAssembler.assembleInto: recipe is required and must be an object'
+      );
+    });
+
+    it('should throw Error on invalid initialParams', () => {
+      expect(() => executor.assembleInto({}, {}, 'invalid')).toThrow(
+        'ContextAssembler.assembleInto: initialParams must be an object or null'
+      );
+    });
+
+    it('should throw Error on invalid options', () => {
+      expect(() => executor.assembleInto({}, {}, {}, 'invalid')).toThrow(
+        'ContextAssembler.assembleInto: options must be an object or null'
+      );
+    });
+
+    it('runs providers in declared recipe order, later provider overwriting a nested path an earlier provider already wrote (mirrors student -> piani / isBes)', () => {
+      const recipe = {
+        providers: [
+          { name: 'student', type: 'StudentType' },
+          { name: 'piani', type: 'PianiType' }
+        ]
+      };
+      facade._recipeParser.parse.mockReturnValue(recipe);
+      jest.spyOn(executor, '_evaluateCondition').mockReturnValue(true);
+
+      const studentProvider = {
+        provide: jest.fn((sharedTarget) => {
+          sharedTarget.focus = sharedTarget.focus || {};
+          sharedTarget.focus.alunno = { status: { isBes: false } };
+          return 'IGNORED';
+        })
+      };
+      const pianiProvider = {
+        provide: jest.fn((sharedTarget) => {
+          // Reads what student already wrote, then conditionally overwrites it.
+          if (sharedTarget.focus.alunno.status.isBes === false) {
+            sharedTarget.focus.alunno.status.isBes = true;
+          }
+          return 'IGNORED_TOO';
+        })
+      };
+
+      facade._providerRegistry.get.mockImplementation((type) => {
+        if (type === 'StudentType') {
+          return studentProvider;
+        }
+        if (type === 'PianiType') {
+          return pianiProvider;
+        }
+        throw new Error('unexpected type ' + type);
+      });
+
+      const sharedTarget = {};
+      const result = executor.assembleInto(sharedTarget, recipe, {}, {});
+
+      expect(result).toBe(sharedTarget);
+      expect(sharedTarget.focus.alunno.status.isBes).toBe(true);
+      expect(studentProvider.provide).toHaveBeenCalled();
+      expect(pianiProvider.provide).toHaveBeenCalled();
+    });
+
+    it('ignores provider return values entirely', () => {
+      const recipe = { providers: [{ name: 'p1', type: 't1' }] };
+      facade._recipeParser.parse.mockReturnValue(recipe);
+      jest.spyOn(executor, '_evaluateCondition').mockReturnValue(true);
+
+      const provider = { provide: jest.fn().mockReturnValue({ some: 'value' }) };
+      facade._providerRegistry.get.mockReturnValue(provider);
+
+      const sharedTarget = { untouched: true };
+      const result = executor.assembleInto(sharedTarget, recipe, {}, {});
+
+      expect(result).toEqual({ untouched: true });
+      expect(result.p1).toBeUndefined();
+    });
+
+    it('should skip a provider whose condition evaluates false without mutating the shared target', () => {
+      const recipe = {
+        providers: [{ name: 'p1', type: 't1', condition: 'false' }]
+      };
+      facade._recipeParser.parse.mockReturnValue(recipe);
+      jest.spyOn(executor, '_evaluateCondition').mockReturnValue(false);
+
+      const provider = { provide: jest.fn() };
+      facade._providerRegistry.get.mockReturnValue(provider);
+
+      const sharedTarget = { untouched: true };
+      const result = executor.assembleInto(sharedTarget, recipe, {}, {});
+
+      expect(provider.provide).not.toHaveBeenCalled();
+      expect(result).toEqual({ untouched: true });
+      expect(facade._logger.info).toHaveBeenCalledWith('[p1] Skipped (condition not met)');
+    });
+
+    it('should wrap provider errors in ContextEngineError', () => {
+      const recipe = { providers: [{ name: 'p1', type: 't1' }] };
+      facade._recipeParser.parse.mockReturnValue(recipe);
+      jest.spyOn(executor, '_evaluateCondition').mockReturnValue(true);
+
+      const provider = {
+        provide: jest.fn(() => {
+          throw new Error('boom');
+        })
+      };
+      facade._providerRegistry.get.mockReturnValue(provider);
+
+      expect(() => executor.assembleInto({}, recipe, {}, {})).toThrow(ContextEngineError);
     });
   });
 });
