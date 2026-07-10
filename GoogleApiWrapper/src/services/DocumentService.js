@@ -16,7 +16,7 @@ import { DocumentBatchUpdateHandler } from '../internal/services-managers/Docume
  * @class DocumentService
  * @extends GoogleService
  * @description Stateless facade for Google Docs manipulation. Utilizes Advanced Docs API v1 for batch operations and DocumentApp for standard API access. Delegates specialized logic to Table, Content, and Batch managers.
- * 
+ *
  * @property {DocumentTableManager} _tableManager Logic for table structure and data.
  * @property {DocumentContentExtractor} _contentExtractor Logic for document parsing.
  * @property {DocumentBatchUpdateHandler} _batchUpdateHandler Logic for atomic mutations.
@@ -42,32 +42,59 @@ export class DocumentService extends GoogleService {
       {
         manager: this._tableManager,
         methods: [
-          'getDocumentTables', 'getTableStructure', 'getTableData',
-          'getTableRow', 'getTableColumn', 'insertTableRow',
-          'appendTableRow', 'deleteTableRow', 'updateTableCell',
-          'updateTableRow', 'updateTableColumn', 'copyTableRow',
-          'deleteTableColumn', 'insertTableColumn', 'appendTableColumn',
-          'setColumnWidth', 'getColumnWidth', 'setRowBackgroundColor',
-          'setRowMinimumHeight', 'getRowMinimumHeight', 'clearTableRow',
-          'setCellBackgroundColor', 'getCellBackgroundColor', 'setCellPadding',
-          'getCellPadding', 'setCellVerticalAlignment', 'getCellVerticalAlignment',
-          'getCellDetails', 'getTableMetadata', 'setRowTextAlignment', 'setRowBold',
-          '_createTableWithStandardAPI'
+          'getDocumentTables',
+          'getTableStructure',
+          'getTableData',
+          'getTableRow',
+          'getTableColumn',
+          'insertTableRow',
+          'appendTableRow',
+          'deleteTableRow',
+          'updateTableCell',
+          'updateTableRow',
+          'updateTableColumn',
+          'copyTableRow',
+          'deleteTableColumn',
+          'insertTableColumn',
+          'appendTableColumn',
+          'setColumnWidth',
+          'getColumnWidth',
+          'setRowBackgroundColor',
+          'setRowMinimumHeight',
+          'getRowMinimumHeight',
+          'clearTableRow',
+          'setCellBackgroundColor',
+          'getCellBackgroundColor',
+          'setCellPadding',
+          'getCellPadding',
+          'setCellVerticalAlignment',
+          'getCellVerticalAlignment',
+          'getCellDetails',
+          'getTableMetadata',
+          'setRowTextAlignment',
+          'setRowBold',
+          '_createTableWithStandardAPI',
+          'insertTableAtMarker'
         ]
       },
       {
         manager: this._contentExtractor,
-        methods: [
-          'getRawDocumentStructure', 'getDocumentBody', 'scanDocumentStructure'
-        ]
+        methods: ['getRawDocumentStructure', 'getDocumentBody', 'scanDocumentStructure']
       },
       {
         manager: this._batchUpdateHandler,
         methods: [
-          'createDocument', 'getDocument', '_executeBatchUpdate',
-          '_executeExportPDF', 'batchReplaceText', 'deleteDocuments',
-          '_addHeaderWithStandardAPI', '_addFooterWithStandardAPI',
-          'getOrCreateHeader', 'getOrCreateFooter', 'setHeaderText'
+          'createDocument',
+          'getDocument',
+          '_executeBatchUpdate',
+          '_executeExportPDF',
+          'batchReplaceText',
+          'deleteDocuments',
+          '_addHeaderWithStandardAPI',
+          '_addFooterWithStandardAPI',
+          'getOrCreateHeader',
+          'getOrCreateFooter',
+          'setHeaderText'
         ]
       }
     ]);

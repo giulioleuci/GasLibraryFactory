@@ -24,7 +24,11 @@ export class DocumentTableManager {
    */
   getDocumentTables(documentId) {
     try {
-      const doc = this.facade._executeWithRetry(() => Docs.Documents.get(documentId), { documentId }, 3);
+      const doc = this.facade._executeWithRetry(
+        () => Docs.Documents.get(documentId),
+        { documentId },
+        3
+      );
 
       const tables = [];
       let tableIndex = 0;
@@ -67,7 +71,11 @@ export class DocumentTableManager {
         throw new Error(`Table index ${tableIndex} out of bounds (found ${tables.length} tables)`);
       }
 
-      const doc = this.facade._executeWithRetry(() => Docs.Documents.get(documentId), { documentId }, 3);
+      const doc = this.facade._executeWithRetry(
+        () => Docs.Documents.get(documentId),
+        { documentId },
+        3
+      );
 
       // Find the table element in the document structure
       let currentTableIndex = 0;
@@ -217,7 +225,8 @@ export class DocumentTableManager {
       const table = tables[tableIndex];
       const newRow = table.insertTableRow(rowIndex);
 
-      const numCells = cellValues.length || (table.getNumRows() > 0 ? table.getRow(0).getNumCells() : 1);
+      const numCells =
+        cellValues.length || (table.getNumRows() > 0 ? table.getRow(0).getNumCells() : 1);
       for (let i = 0; i < numCells; i++) {
         newRow.appendTableCell(cellValues[i] || '');
       }
@@ -441,7 +450,9 @@ export class DocumentTableManager {
         insertedRowIndex = targetRowIndex;
       }
 
-      this._logger.debug(`Copied row ${sourceRowIndex} to position ${insertedRowIndex} in table ${tableIndex}`);
+      this._logger.debug(
+        `Copied row ${sourceRowIndex} to position ${insertedRowIndex} in table ${tableIndex}`
+      );
 
       return {
         success: true,
@@ -468,7 +479,9 @@ export class DocumentTableManager {
 
       const table = tables[tableIndex];
       const numRows = table.getNumRows();
-      if (numRows === 0) throw new Error('Table has no rows');
+      if (numRows === 0) {
+        throw new Error('Table has no rows');
+      }
 
       const firstRow = table.getRow(0);
       if (columnIndex >= firstRow.getNumCells()) {
@@ -508,11 +521,15 @@ export class DocumentTableManager {
 
       const table = tables[tableIndex];
       const numRows = table.getNumRows();
-      if (numRows === 0) throw new Error('Table has no rows');
+      if (numRows === 0) {
+        throw new Error('Table has no rows');
+      }
 
       const firstRow = table.getRow(0);
       if (columnIndex > firstRow.getNumCells()) {
-        throw new Error(`Column index ${columnIndex} out of bounds (max: ${firstRow.getNumCells()})`);
+        throw new Error(
+          `Column index ${columnIndex} out of bounds (max: ${firstRow.getNumCells()})`
+        );
       }
 
       for (let rowIndex = 0; rowIndex < numRows; rowIndex++) {
@@ -547,7 +564,9 @@ export class DocumentTableManager {
 
       const table = tables[tableIndex];
       const numRows = table.getNumRows();
-      if (numRows === 0) throw new Error('Table has no rows');
+      if (numRows === 0) {
+        throw new Error('Table has no rows');
+      }
 
       let newColumnIndex = 0;
       for (let rowIndex = 0; rowIndex < numRows; rowIndex++) {
@@ -584,7 +603,9 @@ export class DocumentTableManager {
       }
 
       const table = tables[tableIndex];
-      if (table.getNumRows() === 0) throw new Error('Table has no rows');
+      if (table.getNumRows() === 0) {
+        throw new Error('Table has no rows');
+      }
 
       const firstRow = table.getRow(0);
       if (columnIndex >= firstRow.getNumCells()) {
@@ -592,7 +613,9 @@ export class DocumentTableManager {
       }
 
       firstRow.getCell(columnIndex).setWidth(widthPoints);
-      this._logger.debug(`Set column ${columnIndex} width to ${widthPoints} points in table ${tableIndex}`);
+      this._logger.debug(
+        `Set column ${columnIndex} width to ${widthPoints} points in table ${tableIndex}`
+      );
 
       return {
         success: true,
@@ -617,7 +640,9 @@ export class DocumentTableManager {
       }
 
       const table = tables[tableIndex];
-      if (table.getNumRows() === 0) throw new Error('Table has no rows');
+      if (table.getNumRows() === 0) {
+        throw new Error('Table has no rows');
+      }
 
       const firstRow = table.getRow(0);
       if (columnIndex >= firstRow.getNumCells()) {
@@ -684,7 +709,9 @@ export class DocumentTableManager {
       }
 
       table.getRow(rowIndex).setMinimumHeight(heightPoints);
-      this._logger.debug(`Set row ${rowIndex} minimum height to ${heightPoints} points in table ${tableIndex}`);
+      this._logger.debug(
+        `Set row ${rowIndex} minimum height to ${heightPoints} points in table ${tableIndex}`
+      );
 
       return {
         success: true,
@@ -777,7 +804,9 @@ export class DocumentTableManager {
       }
 
       row.getCell(columnIndex).setBackgroundColor(color);
-      this._logger.debug(`Set cell [${rowIndex}, ${columnIndex}] background to ${color} in table ${tableIndex}`);
+      this._logger.debug(
+        `Set cell [${rowIndex}, ${columnIndex}] background to ${color} in table ${tableIndex}`
+      );
 
       return {
         success: true,
@@ -841,10 +870,18 @@ export class DocumentTableManager {
       }
 
       const cell = row.getCell(columnIndex);
-      if (padding.top !== undefined) cell.setPaddingTop(padding.top);
-      if (padding.bottom !== undefined) cell.setPaddingBottom(padding.bottom);
-      if (padding.left !== undefined) cell.setPaddingLeft(padding.left);
-      if (padding.right !== undefined) cell.setPaddingRight(padding.right);
+      if (padding.top !== undefined) {
+        cell.setPaddingTop(padding.top);
+      }
+      if (padding.bottom !== undefined) {
+        cell.setPaddingBottom(padding.bottom);
+      }
+      if (padding.left !== undefined) {
+        cell.setPaddingLeft(padding.left);
+      }
+      if (padding.right !== undefined) {
+        cell.setPaddingRight(padding.right);
+      }
 
       this._logger.debug(`Set cell [${rowIndex}, ${columnIndex}] padding in table ${tableIndex}`);
 
@@ -931,7 +968,9 @@ export class DocumentTableManager {
       }
 
       row.getCell(columnIndex).setVerticalAlignment(verticalAlignment);
-      this._logger.debug(`Set cell [${rowIndex}, ${columnIndex}] vertical alignment to ${alignment} in table ${tableIndex}`);
+      this._logger.debug(
+        `Set cell [${rowIndex}, ${columnIndex}] vertical alignment to ${alignment} in table ${tableIndex}`
+      );
 
       return {
         success: true,
@@ -1091,7 +1130,9 @@ export class DocumentTableManager {
 
       const horizontalAlignment = alignmentMap[alignment.toUpperCase()];
       if (!horizontalAlignment) {
-        throw new Error(`Invalid alignment: ${alignment}. Valid values: LEFT, CENTER, RIGHT, JUSTIFY`);
+        throw new Error(
+          `Invalid alignment: ${alignment}. Valid values: LEFT, CENTER, RIGHT, JUSTIFY`
+        );
       }
 
       const row = table.getRow(rowIndex);
@@ -1107,7 +1148,9 @@ export class DocumentTableManager {
         }
       }
 
-      this._logger.debug(`Set row ${rowIndex} text alignment to ${alignment} in table ${tableIndex}`);
+      this._logger.debug(
+        `Set row ${rowIndex} text alignment to ${alignment} in table ${tableIndex}`
+      );
 
       return {
         success: true,
@@ -1160,6 +1203,48 @@ export class DocumentTableManager {
 
   /**
    * @private
+   * @description Applies header-row bold, alternating-row background and column-width
+   * styling to a freshly created/inserted `Table`. Shared by `_createTableWithStandardAPI`
+   * (append-at-end) and `insertTableAtMarker` (positional insertion) so the styling logic
+   * lives in exactly one place regardless of how the table was placed.
+   * @param {GoogleAppsScript.Document.Table} table Native table to style.
+   * @param {Array<Array<string>>} data The data the table was created from (used for row/column counts).
+   * @param {Object} options {headerRow, alternatingRows, columnWidths}.
+   */
+  _applyTableStyling(table, data, options = {}) {
+    if (options.headerRow && data.length > 0) {
+      const headerRow = table.getRow(0);
+      const numCells = headerRow.getNumCells();
+      for (let i = 0; i < numCells; i++) {
+        headerRow.getCell(i).editAsText().setBold(true);
+      }
+    }
+
+    if (options.alternatingRows && data.length > 1) {
+      const lightGray = '#f3f3f3';
+      for (let rowIndex = 1; rowIndex < table.getNumRows(); rowIndex++) {
+        if (rowIndex % 2 === 1) {
+          const row = table.getRow(rowIndex);
+          const numCells = row.getNumCells();
+          for (let cellIndex = 0; cellIndex < numCells; cellIndex++) {
+            row.getCell(cellIndex).setBackgroundColor(lightGray);
+          }
+        }
+      }
+    }
+
+    if (options.columnWidths && Array.isArray(options.columnWidths)) {
+      for (let colIndex = 0; colIndex < options.columnWidths.length; colIndex++) {
+        const width = options.columnWidths[colIndex];
+        if (width && table.getNumRows() > 0) {
+          table.getRow(0).getCell(colIndex).setWidth(width);
+        }
+      }
+    }
+  }
+
+  /**
+   * @private
    * @description Bridges DocumentBuilder to native DocumentApp for table creation. Supports header styling and alternating row backgrounds.
    * @param {string} documentId Target document identifier.
    * @param {Object} op Table parameters {data, options: {headerRow, alternatingRows, columnWidths}}.
@@ -1174,35 +1259,7 @@ export class DocumentTableManager {
       const body = doc.getBody();
       const table = body.appendTable(data);
 
-      if (options.headerRow && data.length > 0) {
-        const headerRow = table.getRow(0);
-        const numCells = headerRow.getNumCells();
-        for (let i = 0; i < numCells; i++) {
-          headerRow.getCell(i).editAsText().setBold(true);
-        }
-      }
-
-      if (options.alternatingRows && data.length > 1) {
-        const lightGray = '#f3f3f3';
-        for (let rowIndex = 1; rowIndex < table.getNumRows(); rowIndex++) {
-          if (rowIndex % 2 === 1) {
-            const row = table.getRow(rowIndex);
-            const numCells = row.getNumCells();
-            for (let cellIndex = 0; cellIndex < numCells; cellIndex++) {
-              row.getCell(cellIndex).setBackgroundColor(lightGray);
-            }
-          }
-        }
-      }
-
-      if (options.columnWidths && Array.isArray(options.columnWidths)) {
-        for (let colIndex = 0; colIndex < options.columnWidths.length; colIndex++) {
-          const width = options.columnWidths[colIndex];
-          if (width && table.getNumRows() > 0) {
-            table.getRow(0).getCell(colIndex).setWidth(width);
-          }
-        }
-      }
+      this._applyTableStyling(table, data, options);
 
       this._logger.debug(`Created table with ${data.length} rows using standard API`);
 
@@ -1213,6 +1270,64 @@ export class DocumentTableManager {
       };
     } catch (error) {
       this._logger.error(`Failed to create table with standard API: ${error.message}`);
+      throw error;
+    }
+  }
+
+  /**
+   * @description Inserts a table immediately after the paragraph/element containing
+   * `markerText`, instead of appending it at the document's end. Locates the marker via
+   * native `body.findText()`, walks up from the matched text run to the top-level child of
+   * `body` (a Paragraph/ListItem/etc.), and inserts the table right after that child's index.
+   *
+   * The marker text itself is NOT removed by this call — the caller (e.g. a facade doing a
+   * scan-then-remove flow) is expected to remove it separately using the returned
+   * `foundElementIndex`/its own marker-search logic. This mirrors the existing
+   * find-placeholder / remove-text split already used by callers of `appendTable`.
+   *
+   * @param {string} documentId Target document identifier.
+   * @param {string} markerText Literal text to search for (e.g. `{{TABELLA:sheetId}}`).
+   * @param {Array<Array<string>>} data Table cell data.
+   * @param {Object} [options={}] {headerRow, alternatingRows, columnWidths} - same as `_createTableWithStandardAPI`.
+   * @returns {Object} Result summary {success, rows, columns, foundElementIndex}.
+   * @throws {Error} If `markerText` is not found in the document (no silent fallback to append).
+   */
+  insertTableAtMarker(documentId, markerText, data, options = {}) {
+    try {
+      const doc = this.facade.openStandard(documentId);
+      const body = doc.getBody();
+
+      const rangeElement = body.findText(markerText);
+      if (!rangeElement) {
+        throw new Error(`Marker text "${markerText}" not found in document ${documentId}`);
+      }
+
+      // Walk up from the matched text run to the top-level child of `body`
+      // (native DocumentApp elements expose getParent(); a nested Text run's
+      // ancestor chain typically resolves to its containing Paragraph/ListItem,
+      // which IS the direct child of body).
+      let element = rangeElement.getElement();
+      while (typeof element.getParent === 'function' && element.getParent() !== body) {
+        element = element.getParent();
+      }
+
+      const childIndex = body.getChildIndex(element);
+      const table = body.insertTable(childIndex + 1, data);
+
+      this._applyTableStyling(table, data, options);
+
+      this._logger.debug(
+        `Inserted table with ${data.length} rows at marker "${markerText}" in document ${documentId}`
+      );
+
+      return {
+        success: true,
+        rows: data.length,
+        columns: data[0] ? data[0].length : 0,
+        foundElementIndex: childIndex
+      };
+    } catch (error) {
+      this._logger.error(`Failed to insert table at marker: ${error.message}`);
       throw error;
     }
   }
