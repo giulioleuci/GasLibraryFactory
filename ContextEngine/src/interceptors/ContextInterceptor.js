@@ -4,6 +4,8 @@
  * @version 1.0.0
  */
 
+import { get } from '@CoreUtilsLib';
+
 /**
  * Abstract base class for context middleware/interceptor patterns.
  * Enables transparent transformation, enrichment, or substitution of provider results before UDC integration.
@@ -127,5 +129,60 @@ export class ContextInterceptor {
       throw new Error(`Interceptor failed for '${name}': ${error.message}`);
     }
   }
-}
 
+  /**
+   * Walks an array nested inside `data` at `path` (a dot-path string resolved
+   * via CoreUtilsLib's `get`, lodash-compatible) and applies a per-item
+   * decision to each element. This generalizes the "one atomic swap" model
+   * (a single `_performIntercept` deciding for the whole `data` payload) to
+   * "independent per-item decisions inside a nested array" — needed by
+   * consumers whose `data` is one shared, deeply nested object (e.g. a CDU)
+   * containing arrays that must be walked and decided on item-by-item.
+   *
+   * `itemFn(item, index, array)` may either:
+   *  - mutate `item` in place and return `undefined`/`null` (no further
+   *    action taken by this helper — the mutation already happened); or
+   *  - return a 3-way outcome descriptor the helper applies itself:
+   *    - `{ action: 'replace', value }` → `array[index] = value`
+   *    - `{ action: 'annotate', meta }` → `Object.assign(array[index], meta)`
+   *    - `{ action: 'skip' }` → no-op (equivalent to returning `null`)
+   *
+   * No-op (with a debug log) if `path` does not resolve to an array on `data`.
+   *
+   * @param {Object} data The object to resolve `path` against.
+   * @param {string} path Dot-path string (e.g. `'focus.classe.consiglioDiClasse'`).
+   * @param {Function} itemFn `(item, index, array) => undefined|null|{action, value?, meta?}`.
+   * @protected
+   */
+  _forEachAt(data, path, itemFn) {
+    const array = get(data, path);
+
+    if (!Array.isArray(array)) {
+      this._logger.debug(
+        `ContextInterceptor._forEachAt: path '${path}' does not resolve to an array - no-op`
+      );
+      return;
+    }
+
+    array.forEach((item, index) => {
+      const outcome = itemFn(item, index, array);
+
+      if (outcome == null) {
+        // undefined: itemFn mutated item in place. null: explicit no-op.
+        return;
+      }
+
+      switch (outcome.action) {
+        case 'replace':
+          array[index] = outcome.value;
+          break;
+        case 'annotate':
+          Object.assign(array[index], outcome.meta);
+          break;
+        case 'skip':
+        default:
+          break;
+      }
+    });
+  }
+}

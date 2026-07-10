@@ -348,4 +348,114 @@ describe('SwapAndEnrichInterceptor', () => {
       expect(result.original).toEqual(originalData);
     });
   });
+
+  describe('targetPaths mode', () => {
+    it('should reject a non-array targetPaths config', () => {
+      expect(
+        () =>
+          new SwapAndEnrichInterceptor(mocks.logger, mockLookup, { targetPaths: 'not-an-array' })
+      ).toThrow(
+        'SwapAndEnrichInterceptor: config.targetPaths must be an array of strings if provided'
+      );
+      expect(
+        () => new SwapAndEnrichInterceptor(mocks.logger, mockLookup, { targetPaths: [123] })
+      ).toThrow(
+        'SwapAndEnrichInterceptor: config.targetPaths must be an array of strings if provided'
+      );
+    });
+
+    it('does not require the optionFlag to be set (unlike atomic mode)', () => {
+      const interceptor = new SwapAndEnrichInterceptor(mocks.logger, mockLookup, {
+        targetPaths: ['list']
+      });
+
+      const result = interceptor._shouldIntercept('test', {}, {}, {});
+
+      expect(result).toBe(true);
+    });
+
+    it('still honors targetProviders scoping in targetPaths mode', () => {
+      const interceptor = new SwapAndEnrichInterceptor(mocks.logger, mockLookup, {
+        targetPaths: ['list'],
+        targetProviders: ['consiglio']
+      });
+
+      expect(interceptor._shouldIntercept('consiglio', {}, {}, {})).toBe(true);
+      expect(interceptor._shouldIntercept('other', {}, {}, {})).toBe(false);
+    });
+
+    it('replaces, annotates, and skips items independently across multiple configured paths, per the injected substitutionLookup', () => {
+      const lookup = jest.fn((item) => {
+        if (item.id === 'replace-me') {
+          return { action: 'replace', value: { id: 'replaced', swapped: true } };
+        }
+        if (item.id === 'annotate-me') {
+          return { action: 'annotate', meta: { flagged: true } };
+        }
+        return null; // skip
+      });
+
+      const interceptor = new SwapAndEnrichInterceptor(mocks.logger, lookup, {
+        targetPaths: ['focus.classe.consiglioDiClasse', 'focus.alunno.consiglioDiClasseFiltrato']
+      });
+
+      const data = {
+        focus: {
+          classe: {
+            consiglioDiClasse: [{ id: 'replace-me' }, { id: 'leave-me' }]
+          },
+          alunno: {
+            consiglioDiClasseFiltrato: [{ id: 'annotate-me' }]
+          }
+        }
+      };
+
+      const result = interceptor.intercept('consiglio', data, data, {});
+
+      expect(result).toBe(data);
+      expect(data.focus.classe.consiglioDiClasse).toEqual([
+        { id: 'replaced', swapped: true },
+        { id: 'leave-me' }
+      ]);
+      expect(data.focus.alunno.consiglioDiClasseFiltrato).toEqual([
+        { id: 'annotate-me', flagged: true }
+      ]);
+    });
+
+    it('propagates substitutionLookup errors as a clear Error', () => {
+      const lookup = jest.fn(() => {
+        throw new Error('lookup exploded');
+      });
+      const interceptor = new SwapAndEnrichInterceptor(mocks.logger, lookup, {
+        targetPaths: ['list']
+      });
+      const data = { list: [{ id: 1 }] };
+
+      expect(() => interceptor.intercept('test', data, data, {})).toThrow(/lookup exploded/);
+    });
+
+    it('preserves the existing single-atomic-swap behavior unchanged when targetPaths is not configured', () => {
+      mockLookup.mockReturnValue({ id: 2, name: 'Substitute' });
+      const interceptor = new SwapAndEnrichInterceptor(mocks.logger, mockLookup);
+
+      // Without applyOverrides=true, atomic mode still gates on the optionFlag.
+      const gatedResult = interceptor.intercept('test', { id: 1, name: 'Original' }, {}, {});
+      expect(gatedResult).toEqual({ id: 1, name: 'Original' });
+      expect(mockLookup).not.toHaveBeenCalled();
+
+      const result = interceptor.intercept(
+        'test',
+        { id: 1, name: 'Original' },
+        {},
+        { applyOverrides: true }
+      );
+
+      expect(result).toEqual({
+        id: 2,
+        name: 'Substitute',
+        isSubstitute: true,
+        original: { id: 1, name: 'Original' }
+      });
+    });
+  });
 });

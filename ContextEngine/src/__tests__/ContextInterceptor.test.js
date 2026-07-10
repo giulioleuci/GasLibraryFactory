@@ -217,6 +217,107 @@ describe('ContextInterceptor', () => {
       expect(interceptor.logger).toBe(mocks.logger);
     });
   });
+
+  describe('_forEachAt', () => {
+    let interceptor;
+
+    beforeEach(() => {
+      interceptor = new TestInterceptor(mocks.logger);
+    });
+
+    it('is a no-op with a debug log when the path does not resolve to an array', () => {
+      const data = { focus: { classe: { consiglioDiClasse: 'not-an-array' } } };
+      const itemFn = jest.fn();
+
+      interceptor._forEachAt(data, 'focus.classe.consiglioDiClasse', itemFn);
+
+      expect(itemFn).not.toHaveBeenCalled();
+      expect(mocks.logger.debug).toHaveBeenCalledWith(
+        "ContextInterceptor._forEachAt: path 'focus.classe.consiglioDiClasse' does not resolve to an array - no-op"
+      );
+    });
+
+    it('is a no-op with a debug log when the path does not resolve at all', () => {
+      const data = {};
+      const itemFn = jest.fn();
+
+      interceptor._forEachAt(data, 'focus.classe.consiglioDiClasse', itemFn);
+
+      expect(itemFn).not.toHaveBeenCalled();
+      expect(mocks.logger.debug).toHaveBeenCalled();
+    });
+
+    it('calls itemFn(item, index, array) for each array element', () => {
+      const data = { list: [{ id: 1 }, { id: 2 }, { id: 3 }] };
+      const itemFn = jest.fn();
+
+      interceptor._forEachAt(data, 'list', itemFn);
+
+      expect(itemFn).toHaveBeenCalledTimes(3);
+      expect(itemFn).toHaveBeenNthCalledWith(1, { id: 1 }, 0, data.list);
+      expect(itemFn).toHaveBeenNthCalledWith(2, { id: 2 }, 1, data.list);
+      expect(itemFn).toHaveBeenNthCalledWith(3, { id: 3 }, 2, data.list);
+    });
+
+    it('leaves the item untouched when itemFn mutates in place and returns undefined', () => {
+      const data = { list: [{ id: 1 }] };
+
+      interceptor._forEachAt(data, 'list', (item) => {
+        item.id = 99;
+      });
+
+      expect(data.list).toEqual([{ id: 99 }]);
+    });
+
+    it('leaves the item untouched when itemFn returns null (explicit skip)', () => {
+      const data = { list: [{ id: 1 }] };
+
+      interceptor._forEachAt(data, 'list', () => null);
+
+      expect(data.list).toEqual([{ id: 1 }]);
+    });
+
+    it('applies the replace outcome', () => {
+      const data = { list: [{ id: 1 }, { id: 2 }] };
+
+      interceptor._forEachAt(data, 'list', (item) =>
+        item.id === 1
+          ? { action: 'replace', value: { id: 100, swapped: true } }
+          : { action: 'skip' }
+      );
+
+      expect(data.list).toEqual([{ id: 100, swapped: true }, { id: 2 }]);
+    });
+
+    it('applies the annotate outcome via Object.assign onto the existing item', () => {
+      const data = { list: [{ id: 1 }] };
+      const original = data.list[0];
+
+      interceptor._forEachAt(data, 'list', () => ({ action: 'annotate', meta: { flagged: true } }));
+
+      expect(data.list[0]).toBe(original); // same object reference, just mutated
+      expect(data.list[0]).toEqual({ id: 1, flagged: true });
+    });
+
+    it('applies the skip outcome as a no-op', () => {
+      const data = { list: [{ id: 1 }] };
+
+      interceptor._forEachAt(data, 'list', () => ({ action: 'skip' }));
+
+      expect(data.list).toEqual([{ id: 1 }]);
+    });
+
+    it('resolves nested dot-paths', () => {
+      const data = { focus: { classe: { consiglioDiClasse: [{ id: 1 }] } } };
+
+      interceptor._forEachAt(data, 'focus.classe.consiglioDiClasse', () => ({
+        action: 'replace',
+        value: { id: 2 }
+      }));
+
+      expect(data.focus.classe.consiglioDiClasse).toEqual([{ id: 2 }]);
+    });
+  });
 });
 
 // Test helper classes
