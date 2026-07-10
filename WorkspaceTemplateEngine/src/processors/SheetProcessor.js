@@ -43,6 +43,7 @@ class _SheetProcessor {
    * @param {string} sheetId Target spreadsheet identifier.
    * @param {Object} context Data context for substitution.
    * @param {string|null} sheetName Specific sheet name or null for all.
+   * @returns {{layouts: Array<{sheetName: string, headerRow: number, startColumn: number, columns: Array<{header: *, column: number, isLabel: boolean}>}>}} The resolved `dynamic_columns` layouts found while scanning, in encounter order.
    */
   process(sheetId, context, sheetName) {
     // Get sheet information using GoogleApiWrapper
@@ -53,11 +54,12 @@ class _SheetProcessor {
 
     if (sheetsToProcess.length === 0) {
       this.logger.warn(`No sheets found to process. Sheet name: ${sheetName || 'all'}`);
-      return;
+      return { layouts: [] };
     }
 
     const batchRequests = [];
     const allProtectionRequests = [];
+    const layouts = [];
 
     for (const sheet of sheetsToProcess) {
       this.logger.debug(`--- Analyzing sheet for batch update: ${sheet.name} ---`);
@@ -95,15 +97,13 @@ class _SheetProcessor {
             batchRequests.push(...matrixRequests);
           } else if (originalValue.includes('{{dynamic_columns')) {
             this.logger.debug(`Found dynamic columns in ${cellA1}: ${originalValue}`);
-            const { valueRequests, protectionRequests } = this._prepareDynamicColumnRequests(
-              sheet.name,
-              row,
-              column,
-              originalValue,
-              context
-            );
+            const { valueRequests, protectionRequests, layout } =
+              this._prepareDynamicColumnRequests(sheet.name, row, column, originalValue, context);
             batchRequests.push(...valueRequests);
             allProtectionRequests.push(...protectionRequests);
+            if (layout) {
+              layouts.push(layout);
+            }
           } else {
             const substitutedValue = this.mustache.render(originalValue, context);
             if (substitutedValue !== originalValue) {
@@ -129,17 +129,89 @@ class _SheetProcessor {
     } else {
       this.logger.debug('No substitutions to perform in the sheet.');
     }
+
+    return { layouts };
+  }
+
+  /**
+   * @description Parses the flat `key=value,key=value` param body of a
+   * `{{dynamic_columns[...]}}` placeholder into a plain object.
+   * @param {string} paramsStr Raw content between the placeholder's brackets.
+   * @returns {Object<string,string>} Parsed key/value map (values are trimmed strings).
+   * @private
+   */
+  _parseDynamicColumnParams(paramsStr) {
+    const params = {};
+    paramsStr.split(',').forEach((p) => {
+      const parts = p.split('=');
+      if (parts.length === 2) {
+        params[parts[0].trim()] = parts[1].trim();
+      }
+    });
+    return params;
+  }
+
+  /**
+   * @description Buckets a flat dynamic_columns param map into an ordered list of
+   * column groups. Group 1 (the original single-group syntax) uses unsuffixed keys
+   * (`source`, `value`, `acl`, `scope`). Each subsequent group N (N >= 2) uses the
+   * numbered-suffix keys `sourceN`, `valueN`, `aclN`, `scopeN`, and optionally `labelN`
+   * — a context-path resolved ONCE per group (not per item) and rendered as a single
+   * non-data, no-ACL separator column immediately before that group's items. This is
+   * additive/backward-compatible: when no numbered keys are present, the result is a
+   * single-element array equivalent to the pre-existing flat parse, so the rendering
+   * loop degenerates to exactly today's single-group behavior.
+   * @param {Object<string,string>} params Flat parsed params (see `_parseDynamicColumnParams`).
+   * @returns {Array<{source: string|undefined, value: string|undefined, acl: string|undefined, scope: string, label: string|undefined}>} Ordered groups; empty array if no `source` key exists at all.
+   * @private
+   */
+  _bucketDynamicColumnGroups(params) {
+    const suffixes = new Set();
+    if (params.source !== undefined) {
+      suffixes.add(1);
+    }
+    Object.keys(params).forEach((key) => {
+      const m = key.match(/^(?:source|value|acl|scope|label)(\d+)$/);
+      if (m) {
+        suffixes.add(Number(m[1]));
+      }
+    });
+
+    return [...suffixes]
+      .sort((a, b) => a - b)
+      .map((n) => {
+        const suffix = n === 1 ? '' : String(n);
+        return {
+          source: params[`source${suffix}`],
+          value: params[`value${suffix}`],
+          acl: params[`acl${suffix}`],
+          scope: params[`scope${suffix}`] || 'column',
+          label: params[`label${suffix}`]
+        };
+      })
+      .filter((g) => g.source !== undefined);
   }
 
   /**
    * @description Generates batch update and protection requests for dynamic column expansion.
    * Parses `{{dynamic_columns[...]}}` syntax to expand array data horizontally with ACL protections.
+   *
+   * Supports N sequential column groups from a single placeholder cell, placed as
+   * contiguous blocks in declared order starting at the placeholder's own position.
+   * Group 1 uses the original flat keys (`source=`, `value=`, `acl=`, `scope=`).
+   * Group 2+ use numbered-suffix keys (`source2=`, `value2=`, `acl2=`, `scope2=`,
+   * `label2=`, `source3=`, ... ). If a group (from the 2nd onward) declares a `labelN=`
+   * param, one non-data, non-ACL separator column is inserted immediately before that
+   * group's items, with its text resolved ONCE against the whole context (not per item).
+   * Single-group placeholders (no numbered keys) render byte-identically to the
+   * pre-multi-group implementation, plus the additive `layout` field below.
+   *
    * @param {string} sheetName Target sheet name.
    * @param {number} startRow Starting row index (1-based).
    * @param {number} startColumn Starting column index (1-based).
    * @param {string} placeholder Raw placeholder string.
    * @param {Object} context Data context.
-   * @returns {Object} Object containing `valueRequests` and `protectionRequests`.
+   * @returns {{valueRequests: Object[], protectionRequests: Object[], layout: ({sheetName: string, headerRow: number, startColumn: number, columns: Array<{header: *, column: number, isLabel: boolean}>}|null)}} Batch requests plus the resolved column layout (null when nothing was rendered).
    * @private
    */
   _prepareDynamicColumnRequests(sheetName, startRow, startColumn, placeholder, context) {
@@ -147,73 +219,100 @@ class _SheetProcessor {
       const match = placeholder.match(/{{dynamic_columns\[(.*?)\]}}/);
       if (!match) {
         this.logger.warn(`Invalid dynamic_columns placeholder: ${placeholder}`);
-        return { valueRequests: [], protectionRequests: [] };
+        return { valueRequests: [], protectionRequests: [], layout: null };
       }
 
-      const paramsStr = match[1];
-      const params = {};
-      paramsStr.split(',').forEach((p) => {
-        const parts = p.split('=');
-        if (parts.length === 2) {
-          params[parts[0].trim()] = parts[1].trim();
-        }
-      });
+      const params = this._parseDynamicColumnParams(match[1]);
+      const groups = this._bucketDynamicColumnGroups(params);
 
-      const { source, value: valueProp, acl: aclProp, scope = 'column' } = params;
-
-      if (!source) {
+      if (groups.length === 0) {
         this.logger.warn(`Missing 'source' parameter in dynamic_columns: ${placeholder}`);
-        return { valueRequests: [], protectionRequests: [] };
+        return { valueRequests: [], protectionRequests: [], layout: null };
       }
 
-      const sourceData = this.mustache.getValue(source, context);
-
-      if (!Array.isArray(sourceData)) {
-        this.logger.warn(`Data source '${source}' for dynamic_columns is not an array.`);
-        return { valueRequests: [], protectionRequests: [] };
+      // The first group's source must resolve to an array, or nothing is rendered at
+      // all (preserves the pre-multi-group early-return contract byte-for-byte: no
+      // clear-placeholder request either, only the warning is logged).
+      const firstSourceData = this.mustache.getValue(groups[0].source, context);
+      if (!Array.isArray(firstSourceData)) {
+        this.logger.warn(`Data source '${groups[0].source}' for dynamic_columns is not an array.`);
+        return { valueRequests: [], protectionRequests: [], layout: null };
       }
 
       const valueRequests = [];
       const protectionRequests = [];
+      const columns = [];
       const quotedSheetName = `'${sheetName}'`;
 
       // Clear placeholder cell
       const rangePlaceholder = this._rangeToA1(startRow, startColumn, startRow, startColumn);
       valueRequests.push({ range: `${quotedSheetName}!${rangePlaceholder}`, values: [['']] });
 
-      for (let i = 0; i < sourceData.length; i++) {
-        const item = sourceData[i];
-        const colNum = startColumn + i;
-        const colLetter = this._columnToLetter(colNum);
-        const cellA1 = colLetter + startRow;
+      let col = startColumn;
 
-        // 1. Value Update (Header)
-        const headerValue = valueProp ? this.mustache.getValue(valueProp, item) : '';
-        valueRequests.push({
-          range: `${quotedSheetName}!${cellA1}`,
-          values: [[headerValue ?? '']]
-        });
-
-        // 2. Protection Request
-        if (aclProp) {
-          const acl = this.mustache.getValue(aclProp, item);
-          if (acl) {
-            const protectionRange = scope === 'range' ? cellA1 : `${colLetter}:${colLetter}`;
-            protectionRequests.push({
-              range: `${quotedSheetName}!${protectionRange}`,
-              description: `[WTE] Dynamic Column: ${source}`,
-              editors: {
-                users: Array.isArray(acl) ? acl : [acl]
-              }
-            });
-          }
+      groups.forEach((group, groupIndex) => {
+        // Structural label column between groups (2nd group onward only, when configured).
+        // Evaluated ONCE per group against the whole context, not per source item; no ACL.
+        if (groupIndex > 0 && group.label) {
+          const labelValue = this.mustache.getValue(group.label, context);
+          const labelText =
+            labelValue !== undefined && labelValue !== null ? labelValue : group.label;
+          const colLetter = this._columnToLetter(col);
+          valueRequests.push({
+            range: `${quotedSheetName}!${colLetter}${startRow}`,
+            values: [[labelText]]
+          });
+          columns.push({ header: labelText, column: col, isLabel: true });
+          col += 1;
         }
-      }
+
+        const sourceData =
+          groupIndex === 0 ? firstSourceData : this.mustache.getValue(group.source, context);
+        if (!Array.isArray(sourceData)) {
+          this.logger.warn(`Data source '${group.source}' for dynamic_columns is not an array.`);
+          return;
+        }
+
+        sourceData.forEach((item) => {
+          const colLetter = this._columnToLetter(col);
+          const cellA1 = colLetter + startRow;
+
+          // 1. Value Update (Header)
+          const headerValue = group.value ? this.mustache.getValue(group.value, item) : '';
+          const resolvedHeader = headerValue ?? '';
+          valueRequests.push({
+            range: `${quotedSheetName}!${cellA1}`,
+            values: [[resolvedHeader]]
+          });
+          columns.push({ header: resolvedHeader, column: col, isLabel: false });
+
+          // 2. Protection Request
+          if (group.acl) {
+            const acl = this.mustache.getValue(group.acl, item);
+            if (acl) {
+              const protectionRange =
+                group.scope === 'range' ? cellA1 : `${colLetter}:${colLetter}`;
+              protectionRequests.push({
+                range: `${quotedSheetName}!${protectionRange}`,
+                description: `[WTE] Dynamic Column: ${group.source}`,
+                editors: {
+                  users: Array.isArray(acl) ? acl : [acl]
+                }
+              });
+            }
+          }
+          col += 1;
+        });
+      });
 
       this.logger.debug(
         `Prepared ${valueRequests.length} value updates and ${protectionRequests.length} protections for dynamic columns.`
       );
-      return { valueRequests, protectionRequests };
+      return {
+        valueRequests,
+        protectionRequests,
+        layout: { sheetName, headerRow: startRow, startColumn, columns }
+      };
     } catch (e) {
       this.logger.error(`Error preparing dynamic columns: ${e.message}`);
       const errorCellA1 = this._rangeToA1(startRow, startColumn, startRow, startColumn);
@@ -224,7 +323,8 @@ class _SheetProcessor {
             values: [[`ERROR: ${e.message}`]]
           }
         ],
-        protectionRequests: []
+        protectionRequests: [],
+        layout: null
       };
     }
   }
@@ -366,7 +466,9 @@ class _SheetProcessor {
     for (const req of batchRequests) {
       // Parse range like "'SheetName'!A1:B12" or "'SheetName'!A1"
       const rangeMatch = req.range.match(/^'([^']+)'!([A-Z]+)(\d+)(?::([A-Z]+)(\d+))?$/);
-      if (!rangeMatch) continue;
+      if (!rangeMatch) {
+        continue;
+      }
 
       const [, name, , startRowStr, endColStr, endRowStr] = rangeMatch;
       const endRow = endRowStr ? parseInt(endRowStr, 10) : parseInt(startRowStr, 10);
@@ -388,7 +490,9 @@ class _SheetProcessor {
     // Expand sheets that need more rows or columns
     for (const [name, needed] of Object.entries(maxNeeded)) {
       const info = sheetMap[name];
-      if (!info) continue;
+      if (!info) {
+        continue;
+      }
 
       const newRowCount = Math.max(needed.maxRow, info.rowCount);
       const newColCount = Math.max(needed.maxCol, info.columnCount);
@@ -397,7 +501,12 @@ class _SheetProcessor {
         this.logger.debug(
           `Expanding sheet '${name}' grid from ${info.rowCount}x${info.columnCount} to ${newRowCount}x${newColCount}`
         );
-        this.spreadsheetService.expandSheetGrid(spreadsheetId, info.sheetId, newRowCount, newColCount);
+        this.spreadsheetService.expandSheetGrid(
+          spreadsheetId,
+          info.sheetId,
+          newRowCount,
+          newColCount
+        );
       }
     }
   }

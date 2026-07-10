@@ -131,10 +131,18 @@ export class MyPlaceholderService {
 
   /**
    * @description Executes batch updates on a Google Spreadsheet with matrix expansion and placeholder substitution.
+   *
+   * Return shape changed (additively, in intent): callers that previously treated
+   * the return value as a plain boolean must now read `.success` — the resolved
+   * `dynamic_columns` column layouts (see `SheetProcessor._prepareDynamicColumnRequests`)
+   * are surfaced via `.layouts` so a caller can know which spreadsheet column each
+   * templated item landed in (e.g. to apply ACLs the directive's own static `acl=`
+   * expression can't express).
+   *
    * @param {string} sheetId Unique Google Spreadsheet identifier.
    * @param {Object} [context={}] Data context for substitutions and matrix generation.
    * @param {string|null} [sheetName=null] Target sheet name or null to process all sheets.
-   * @returns {boolean} True if the spreadsheet was successfully updated.
+   * @returns {{success: boolean, layouts: Array<{sheetName: string, headerRow: number, startColumn: number, columns: Array<{header: *, column: number, isLabel: boolean}>}>}} `success` is false (and `layouts` empty) on any processing error, matching the pre-existing swallow-and-log behavior.
    * @throws {TypeError} If parameters are invalid.
    */
   processSheet(sheetId, context = {}, sheetName = null) {
@@ -154,14 +162,14 @@ export class MyPlaceholderService {
 
     try {
       this.logger.debug(`Starting sheet processing (Facade): ${sheetId}`);
-      this.sheetProcessor.process(sheetId, context, sheetName);
+      const result = this.sheetProcessor.process(sheetId, context, sheetName);
       this.logger.debug(`Sheet ${sheetId} processed successfully.`);
-      return true;
+      return { success: true, layouts: (result && result.layouts) || [] };
     } catch (error) {
       this.logger.error(
         `Failed to process sheet ${sheetId}: ${error.message}\nStack: ${error.stack}`
       );
-      return false;
+      return { success: false, layouts: [] };
     }
   }
 }

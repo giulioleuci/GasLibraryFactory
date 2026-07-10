@@ -37,9 +37,9 @@ describe('PlaceholderService - Comprehensive Test Suite', () => {
       })
     };
 
-    service = new PlaceholderService({ 
-      logger: mockLogger, 
-      mustache: mockMustache 
+    service = new PlaceholderService({
+      logger: mockLogger,
+      mustache: mockMustache
     });
   });
 
@@ -336,7 +336,8 @@ describe('PlaceholderService - Comprehensive Test Suite', () => {
 
       const result = service.processSheet('sheet123', { data: [1, 2, 3] });
 
-      expect(result).toBe(true);
+      expect(result.success).toBe(true);
+      expect(result.layouts).toEqual([]);
       expect(mockSheetProcessor.process).toHaveBeenCalledWith(
         'sheet123',
         { data: [1, 2, 3] },
@@ -349,7 +350,7 @@ describe('PlaceholderService - Comprehensive Test Suite', () => {
 
       const result = service.processSheet('sheet123', { data: [1, 2, 3] }, 'Sheet1');
 
-      expect(result).toBe(true);
+      expect(result.success).toBe(true);
       expect(mockSheetProcessor.process).toHaveBeenCalledWith(
         'sheet123',
         { data: [1, 2, 3] },
@@ -371,7 +372,7 @@ describe('PlaceholderService - Comprehensive Test Suite', () => {
 
       const result = service.processSheet('sheet123', null);
 
-      expect(result).toBe(true);
+      expect(result.success).toBe(true);
       expect(mockSheetProcessor.process).toHaveBeenCalledWith('sheet123', null, null);
     });
 
@@ -380,8 +381,45 @@ describe('PlaceholderService - Comprehensive Test Suite', () => {
 
       const result = service.processSheet('sheet123', {}, null);
 
-      expect(result).toBe(true);
+      expect(result.success).toBe(true);
       expect(mockSheetProcessor.process).toHaveBeenCalledWith('sheet123', {}, null);
+    });
+  });
+
+  describe('processSheet() - layouts propagation', () => {
+    let mockSheetProcessor;
+
+    beforeEach(() => {
+      mockSheetProcessor = {
+        process: jest.fn()
+      };
+      service.sheetProcessor = mockSheetProcessor;
+    });
+
+    it('surfaces the resolved dynamic_columns layouts on success', () => {
+      const layouts = [
+        {
+          sheetName: 'Sheet1',
+          headerRow: 1,
+          startColumn: 3,
+          columns: [{ header: 'MAT', column: 3, isLabel: false }]
+        }
+      ];
+      mockSheetProcessor.process.mockReturnValue({ layouts });
+
+      const result = service.processSheet('sheet123', { condivise: [{ sigla: 'MAT' }] });
+
+      expect(result).toEqual({ success: true, layouts });
+    });
+
+    it('returns success:false and empty layouts (not a thrown error) on failure', () => {
+      mockSheetProcessor.process.mockImplementation(() => {
+        throw new Error('boom');
+      });
+
+      const result = service.processSheet('sheet123', {});
+
+      expect(result).toEqual({ success: false, layouts: [] });
     });
   });
 
@@ -440,7 +478,8 @@ describe('PlaceholderService - Comprehensive Test Suite', () => {
 
       const result = service.processSheet('sheet123', {});
 
-      expect(result).toBe(false);
+      expect(result.success).toBe(false);
+      expect(result.layouts).toEqual([]);
     });
 
     it('should log error on failure', () => {
@@ -494,7 +533,7 @@ describe('PlaceholderService - Comprehensive Test Suite', () => {
 
       expect(stringResult).toBe('Processed string');
       expect(docResult).toBe(true);
-      expect(sheetResult).toBe(true);
+      expect(sheetResult.success).toBe(true);
     });
 
     it('should maintain consistent error handling across methods', () => {
@@ -514,7 +553,7 @@ describe('PlaceholderService - Comprehensive Test Suite', () => {
 
       expect(stringResult).toBe('{{value}}'); // Returns original template
       expect(docResult).toBe(false);
-      expect(sheetResult).toBe(false);
+      expect(sheetResult.success).toBe(false);
       expect(mockLogger.error).toHaveBeenCalledTimes(3);
     });
   });
