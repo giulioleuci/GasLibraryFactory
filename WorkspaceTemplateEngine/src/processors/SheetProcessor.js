@@ -251,8 +251,24 @@ class _SheetProcessor {
       let col = startColumn;
 
       groups.forEach((group, groupIndex) => {
-        // Structural label column between groups (2nd group onward only, when configured).
-        // Evaluated ONCE per group against the whole context, not per source item; no ACL.
+        const sourceData =
+          groupIndex === 0 ? firstSourceData : this.mustache.getValue(group.source, context);
+        if (!Array.isArray(sourceData)) {
+          this.logger.warn(`Data source '${group.source}' for dynamic_columns is not an array.`);
+          return;
+        }
+        // A group (2nd onward) whose source resolves to an empty array renders
+        // nothing at all for that group — no label either. This lets one template
+        // placeholder serve classes/instances where a later group's size varies
+        // (including zero) per run, without leaving a stray separator column with
+        // no data behind it.
+        if (groupIndex > 0 && sourceData.length === 0) {
+          return;
+        }
+
+        // Structural label column between groups (2nd group onward only, when
+        // configured and the group has at least one item). Evaluated ONCE per
+        // group against the whole context, not per source item; no ACL.
         if (groupIndex > 0 && group.label) {
           const labelValue = this.mustache.getValue(group.label, context);
           const labelText =
@@ -264,13 +280,6 @@ class _SheetProcessor {
           });
           columns.push({ header: labelText, column: col, isLabel: true });
           col += 1;
-        }
-
-        const sourceData =
-          groupIndex === 0 ? firstSourceData : this.mustache.getValue(group.source, context);
-        if (!Array.isArray(sourceData)) {
-          this.logger.warn(`Data source '${group.source}' for dynamic_columns is not an array.`);
-          return;
         }
 
         sourceData.forEach((item) => {
