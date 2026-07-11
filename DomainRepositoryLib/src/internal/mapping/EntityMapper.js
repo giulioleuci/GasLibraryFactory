@@ -66,34 +66,9 @@ export class EntityMapper {
       return null;
     }
 
-    // If the entity has a toData method, use it
-    if (typeof entity.toData === 'function') {
-      const data = entity.toData();
-
-      // Apply custom transformers
-      for (const [fieldName, transformer] of this._customTransformers) {
-        if (fieldName in data) {
-          data[fieldName] = transformer.toData(data[fieldName]);
-        }
-      }
-
-      // Apply dynamic field dehydration (Map → multiple columns)
-      this._applyDynamicFieldDehydration(data, entity);
-
-      // Apply JSON expansion dehydration (properties → JSON column)
-      this._applyJsonExpansionDehydration(data);
-
-      return data;
-    }
-
-    // Otherwise, serialize manually
-    const data = {};
-    const keys = Object.keys(entity).filter((k) => !k.startsWith('_'));
-
-    for (const key of keys) {
-      const value = entity[key];
-      data[key] = this._serializeValue(value);
-    }
+    // If the entity has a toData method, use it; otherwise serialize manually
+    const data =
+      typeof entity.toData === 'function' ? entity.toData() : this._serializeEntityFields(entity);
 
     // Apply custom transformers
     for (const [fieldName, transformer] of this._customTransformers) {
@@ -108,7 +83,48 @@ export class EntityMapper {
     // Apply JSON expansion dehydration (properties → JSON column)
     this._applyJsonExpansionDehydration(data);
 
+    // Merge back schema-unknown-at-compile-time columns captured at hydration
+    // time (see Entity.captureDynamicColumns), for any key the entity's own
+    // dehydration steps above did not already produce.
+    this._applyDynamicColumnPassthrough(data, entity);
+
     return data;
+  }
+
+  /**
+   * Serializes an entity with no `toData()` method by copying its own
+   * non-underscore-prefixed properties.
+   * @private
+   * @param {Object} entity Domain entity to serialize.
+   * @returns {Object} Plain data record.
+   */
+  _serializeEntityFields(entity) {
+    const data = {};
+    const keys = Object.keys(entity).filter((k) => !k.startsWith('_'));
+    for (const key of keys) {
+      data[key] = this._serializeValue(entity[key]);
+    }
+    return data;
+  }
+
+  /**
+   * Fills in any column captured by `Entity.captureDynamicColumns` that is not
+   * already present in `data`, so wide/dynamic-column tables round-trip through
+   * `Repository.save()` without the caller hand-building the merged row.
+   * @private
+   * @param {Object} data target data record (mutated in place).
+   * @param {Object} entity source domain entity.
+   */
+  _applyDynamicColumnPassthrough(data, entity) {
+    if (typeof entity.getDynamicColumns !== 'function') {
+      return;
+    }
+    const dynamicColumns = entity.getDynamicColumns();
+    for (const [key, value] of Object.entries(dynamicColumns)) {
+      if (!(key in data)) {
+        data[key] = value;
+      }
+    }
   }
 
   /**
@@ -176,13 +192,19 @@ export class EntityMapper {
     // Apply dynamic field hydration (multiple columns → Map)
     this._applyDynamicFieldHydration(transformedData);
 
-    // If the class has a static fromData method, use it
-    if (typeof EntityClass.fromData === 'function') {
-      return EntityClass.fromData(transformedData);
+    // If the class has a static fromData method, use it; otherwise the constructor
+    const entity =
+      typeof EntityClass.fromData === 'function'
+        ? EntityClass.fromData(transformedData)
+        : new EntityClass(transformedData);
+
+    // Opt-in capture of schema-unknown-at-compile-time columns (see
+    // Entity.captureDynamicColumns) so save() can round-trip them later.
+    if (entity && typeof entity.captureDynamicColumns === 'function') {
+      entity.captureDynamicColumns(transformedData);
     }
 
-    // Otherwise, use the constructor
-    return new EntityClass(transformedData);
+    return entity;
   }
 
   /**

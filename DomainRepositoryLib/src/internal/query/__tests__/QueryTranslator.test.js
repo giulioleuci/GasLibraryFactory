@@ -134,6 +134,73 @@ describe('QueryTranslator - Comprehensive Test Suite', () => {
     });
   });
 
+  describe('toQueryObject() fast path (domain-pure specifications)', () => {
+    // Simulates a spec like ALDO's domain Specification<T>: no canBeTranslatedToQuery/toQuery,
+    // only isSatisfiedBy + toQueryObject, to keep the domain layer free of query-builder imports.
+    class PlainCriteriaSpecification {
+      constructor(criteria) {
+        this.criteria = criteria;
+      }
+      isSatisfiedBy(candidate) {
+        return Object.entries(this.criteria).every(([k, v]) => candidate[k] === v);
+      }
+      toQueryObject() {
+        return this.criteria;
+      }
+    }
+
+    it('validates a specification exposing only toQueryObject() as translatable', () => {
+      const spec = new PlainCriteriaSpecification({ status: 'active' });
+
+      const result = translator.validate(spec);
+
+      expect(result.valid).toBe(true);
+    });
+
+    it('does not validate a toQueryObject() specification whose criteria is null', () => {
+      const spec = new PlainCriteriaSpecification({});
+      spec.toQueryObject = () => null;
+
+      const result = translator.validate(spec);
+
+      expect(result.valid).toBe(false);
+    });
+
+    it('does not throw for a specification missing canBeTranslatedToQuery entirely', () => {
+      const spec = new PlainCriteriaSpecification({ status: 'active' });
+
+      expect(() => translator.validate(spec)).not.toThrow();
+    });
+
+    it('translates single-field criteria into an equality where() call', () => {
+      const spec = new PlainCriteriaSpecification({ studente: 'a@example.com' });
+
+      translator.translate(spec, mockQueryBuilder);
+
+      expect(mockQueryBuilder.where).toHaveBeenCalledWith('studente', '=', 'a@example.com');
+    });
+
+    it('translates multi-field criteria into one where() call per field', () => {
+      const spec = new PlainCriteriaSpecification({ classe: '3A', anno: 2026 });
+
+      translator.translate(spec, mockQueryBuilder);
+
+      expect(mockQueryBuilder.where).toHaveBeenCalledWith('classe', '=', '3A');
+      expect(mockQueryBuilder.where).toHaveBeenCalledWith('anno', '=', 2026);
+    });
+
+    it('prefers toQueryObject() over toQuery()/canBeTranslatedToQuery() when both exist', () => {
+      const spec = new PlainCriteriaSpecification({ status: 'active' });
+      spec.canBeTranslatedToQuery = jest.fn().mockReturnValue(true);
+      spec.toQuery = jest.fn();
+
+      translator.translate(spec, mockQueryBuilder);
+
+      expect(mockQueryBuilder.where).toHaveBeenCalledWith('status', '=', 'active');
+      expect(spec.toQuery).not.toHaveBeenCalled();
+    });
+  });
+
   describe('Edge Cases', () => {
     it('should handle nested composite specifications', () => {
       const spec1 = new FieldSpecification('age', 'greaterThan', 18);

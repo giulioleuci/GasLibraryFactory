@@ -567,4 +567,61 @@ describe('Entity - Comprehensive Test Suite', () => {
       expect(entity2.validate()).toBe(true);
     });
   });
+
+  describe('Dynamic column passthrough (opt-in via getKnownColumns)', () => {
+    // Mirrors ALDO's CLASSI cattedra matrix: fixed columns are typed properties,
+    // the rest of the row (per-subject columns generated at runtime) is unknown
+    // at compile time (REPORT_GLF.md B2).
+    class MatrixEntity extends Entity {
+      constructor(data = {}) {
+        super(data);
+        this.name = data.name;
+      }
+      toData() {
+        return { id: this.id, name: this.name };
+      }
+      static fromData(data) {
+        return new MatrixEntity(data);
+      }
+      static getKnownColumns() {
+        return ['id', 'name'];
+      }
+    }
+
+    it('does nothing when the entity class has no getKnownColumns', () => {
+      const entity = new TestEntity({ name: 'x', value: 1 });
+
+      entity.captureDynamicColumns({ id: '1', name: 'x', value: 1, EXTRA: 'z' });
+
+      expect(entity.getDynamicColumns()).toEqual({});
+    });
+
+    it('captures columns absent from getKnownColumns at hydration time', () => {
+      const entity = new MatrixEntity({ id: '5A', name: 'Quinta A' });
+
+      entity.captureDynamicColumns({ id: '5A', name: 'Quinta A', MATE: 'a@x.it', FISI: 'b@x.it' });
+
+      expect(entity.getDynamicColumns()).toEqual({ MATE: 'a@x.it', FISI: 'b@x.it' });
+    });
+
+    it('setDynamicColumn adds/overwrites a captured column and marks it dirty', () => {
+      const entity = new MatrixEntity({ id: '5A', name: 'Quinta A' });
+      entity.captureDynamicColumns({ id: '5A', name: 'Quinta A', MATE: 'a@x.it' });
+
+      entity.setDynamicColumn('MATE', 'c@x.it');
+
+      expect(entity.getDynamicColumns()).toEqual({ MATE: 'c@x.it' });
+      expect(entity.isDirty('MATE')).toBe(true);
+    });
+
+    it('getDynamicColumns returns a shallow copy, not a live reference', () => {
+      const entity = new MatrixEntity({ id: '5A', name: 'Quinta A' });
+      entity.captureDynamicColumns({ id: '5A', name: 'Quinta A', MATE: 'a@x.it' });
+
+      const snapshot = entity.getDynamicColumns();
+      snapshot.MATE = 'mutated';
+
+      expect(entity.getDynamicColumns().MATE).toBe('a@x.it');
+    });
+  });
 });

@@ -443,4 +443,80 @@ describe('EntityMapper - Comprehensive Test Suite', () => {
       });
     });
   });
+
+  describe('Dynamic column passthrough (REPORT_GLF.md B2)', () => {
+    // Mirrors ALDO's CLASSI: fixed columns (id, name) are typed properties;
+    // getKnownColumns() opts the entity into capturing/round-tripping the rest.
+    class ClasseLikeEntity extends Entity {
+      constructor(data = {}) {
+        super(data);
+        this.name = data.name;
+      }
+      toData() {
+        return { id: this.id, name: this.name };
+      }
+      static fromData(data) {
+        return new ClasseLikeEntity(data);
+      }
+      static getKnownColumns() {
+        return ['id', 'name'];
+      }
+    }
+
+    it('fromData() captures columns outside getKnownColumns on the hydrated entity', () => {
+      const entity = mapper.fromData(
+        { id: '5A', name: 'Quinta A', MATE: 'a@x.it', FISI: 'b@x.it' },
+        ClasseLikeEntity
+      );
+
+      expect(entity.getDynamicColumns()).toEqual({ MATE: 'a@x.it', FISI: 'b@x.it' });
+    });
+
+    it('toData() merges captured dynamic columns back into the persisted row', () => {
+      const entity = mapper.fromData(
+        { id: '5A', name: 'Quinta A', MATE: 'a@x.it', FISI: 'b@x.it' },
+        ClasseLikeEntity
+      );
+
+      const data = mapper.toData(entity);
+
+      expect(data).toEqual({ id: '5A', name: 'Quinta A', MATE: 'a@x.it', FISI: 'b@x.it' });
+    });
+
+    it('a single-column edit via setDynamicColumn round-trips without touching other dynamic columns', () => {
+      const entity = mapper.fromData(
+        { id: '5A', name: 'Quinta A', MATE: 'a@x.it', FISI: 'b@x.it' },
+        ClasseLikeEntity
+      );
+
+      entity.setDynamicColumn('MATE', 'c@x.it');
+      const data = mapper.toData(entity);
+
+      expect(data).toEqual({ id: '5A', name: 'Quinta A', MATE: 'c@x.it', FISI: 'b@x.it' });
+    });
+
+    it('entity toData() values for known columns take precedence over any captured value', () => {
+      const entity = mapper.fromData(
+        { id: '5A', name: 'Quinta A', MATE: 'a@x.it' },
+        ClasseLikeEntity
+      );
+      entity.name = 'Renamed';
+
+      const data = mapper.toData(entity);
+
+      expect(data.name).toBe('Renamed');
+      expect(data.MATE).toBe('a@x.it');
+    });
+
+    it('entities without getKnownColumns are unaffected (no dynamic columns captured)', () => {
+      const entity = mapper.fromData(
+        { id: 'ID1', name: 'Test', value: 100, EXTRA: 'z' },
+        TestEntity
+      );
+
+      const data = mapper.toData(entity);
+
+      expect(data).toEqual({ id: 'ID1', name: 'Test', value: 100 });
+    });
+  });
 });

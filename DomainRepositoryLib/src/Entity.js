@@ -27,6 +27,7 @@ export class Entity {
     this._originalData = {};
     this._domainEvents = [];
     this._validationErrors = [];
+    this._dynamicColumns = {};
   }
 
   /**
@@ -150,6 +151,55 @@ export class Entity {
    */
   getOriginalValue(fieldName) {
     return this._originalData[fieldName];
+  }
+
+  /**
+   * Captures persistence columns not covered by this entity's own `toData()`
+   * schema, so a later `save()` round-trip does not silently drop them. Opt-in:
+   * a subclass whose physical schema is only partially known at compile time
+   * (e.g. a wide, per-subject matrix table generated at runtime from another
+   * table) declares a static `getKnownColumns()` returning its fixed column
+   * names; every other raw column present at hydration time is captured
+   * verbatim and merged back unmodified by `EntityMapper.toData()` (see
+   * `getDynamicColumns`). Entities that don't declare `getKnownColumns()` are
+   * unaffected (no-op).
+   * @param {Object} data Raw persistence record this entity was hydrated from.
+   */
+  captureDynamicColumns(data) {
+    if (typeof this.constructor.getKnownColumns !== 'function' || !data) {
+      return;
+    }
+    const known = new Set(this.constructor.getKnownColumns());
+    this._dynamicColumns = {};
+    for (const [key, value] of Object.entries(data)) {
+      if (!known.has(key)) {
+        this._dynamicColumns[key] = value;
+      }
+    }
+  }
+
+  /**
+   * Dynamic (schema-unknown-at-compile-time) columns captured at hydration time
+   * (see `captureDynamicColumns`), merged back into the persisted row by
+   * `EntityMapper.toData()` for any key not already produced by the entity's
+   * own `toData()`.
+   * @returns {Object} Shallow copy of the captured dynamic columns.
+   */
+  getDynamicColumns() {
+    return { ...this._dynamicColumns };
+  }
+
+  /**
+   * Sets (or adds) a single dynamic column value and marks it dirty, without
+   * requiring the subclass to model every wide-table column as a typed
+   * property. The value participates in the next `save()` via
+   * `getDynamicColumns()`.
+   * @param {string} column Column name.
+   * @param {*} value New value.
+   */
+  setDynamicColumn(column, value) {
+    this._dynamicColumns[column] = value;
+    this.markDirty(column);
   }
 
   /**
