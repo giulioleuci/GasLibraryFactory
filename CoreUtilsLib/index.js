@@ -124,6 +124,9 @@ export { Result } from './src/Result.js';
 // Generic Map-backed registry primitive (Code Reuse Initiative)
 export { Registry } from './src/internal/Registry.js';
 
+// Generic lazy-singleton DI container (ref REPORT_GLF.md B8)
+export { LazyServiceContainer } from './src/internal/LazyServiceContainer.js';
+
 // Type Guards (Code Reuse Initiative)
 export {
   TypeGuards,
