@@ -218,10 +218,39 @@ describe('SheetProcessor - Dynamic Columns Tests', () => {
         headerRow: 1,
         startColumn: 3,
         columns: [
-          { header: 1, column: 3, isLabel: false },
-          { header: 2, column: 4, isLabel: false }
+          { header: 1, column: 3, isLabel: false, item: { id: 1 } },
+          { header: 2, column: 4, isLabel: false, item: { id: 2 } }
         ]
       });
+    });
+
+    // REPORT_GLF.md B5: `item` lets a caller correlate a rendered column back
+    // to its own business key without reconstructing item order positionally.
+    it('carries the raw source item on each data column, and null on label columns', () => {
+      const context = {
+        shared: [{ sigla: 'MAT' }],
+        groupB: [{ sigla: 'FIS' }],
+        partnerLabel: 'Gruppo B'
+      };
+      mockMustache.getValue.mockImplementation((path, ctx) => {
+        if (path === 'header') return ctx.sigla;
+        return ctx ? ctx[path] : undefined;
+      });
+
+      const placeholder =
+        '{{dynamic_columns[source=shared, value=header, source2=groupB, value2=header, label2=partnerLabel]}}';
+      const result = processor._prepareDynamicColumnRequests('Sheet1', 1, 3, placeholder, context);
+
+      expect(result.layout.columns).toEqual([
+        { header: 'MAT', column: 3, isLabel: false, item: { sigla: 'MAT' } },
+        { header: 'Gruppo B', column: 4, isLabel: true, item: null },
+        { header: 'FIS', column: 5, isLabel: false, item: { sigla: 'FIS' } }
+      ]);
+      // The business key is directly readable — no positional reconstruction needed.
+      expect(result.layout.columns.filter((c) => !c.isLabel).map((c) => c.item.sigla)).toEqual([
+        'MAT',
+        'FIS'
+      ]);
     });
   });
 

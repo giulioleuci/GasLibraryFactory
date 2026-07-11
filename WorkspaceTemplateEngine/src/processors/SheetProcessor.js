@@ -43,7 +43,7 @@ class _SheetProcessor {
    * @param {string} sheetId Target spreadsheet identifier.
    * @param {Object} context Data context for substitution.
    * @param {string|null} sheetName Specific sheet name or null for all.
-   * @returns {{layouts: Array<{sheetName: string, headerRow: number, startColumn: number, columns: Array<{header: *, column: number, isLabel: boolean}>}>}} The resolved `dynamic_columns` layouts found while scanning, in encounter order.
+   * @returns {{layouts: Array<{sheetName: string, headerRow: number, startColumn: number, columns: Array<{header: *, column: number, isLabel: boolean, item: *}>}>}} The resolved `dynamic_columns` layouts found while scanning, in encounter order.
    */
   process(sheetId, context, sheetName) {
     // Get sheet information using GoogleApiWrapper
@@ -211,7 +211,7 @@ class _SheetProcessor {
    * @param {number} startColumn Starting column index (1-based).
    * @param {string} placeholder Raw placeholder string.
    * @param {Object} context Data context.
-   * @returns {{valueRequests: Object[], protectionRequests: Object[], layout: ({sheetName: string, headerRow: number, startColumn: number, columns: Array<{header: *, column: number, isLabel: boolean}>}|null)}} Batch requests plus the resolved column layout (null when nothing was rendered).
+   * @returns {{valueRequests: Object[], protectionRequests: Object[], layout: ({sheetName: string, headerRow: number, startColumn: number, columns: Array<{header: *, column: number, isLabel: boolean, item: *}>}|null)}} Batch requests plus the resolved column layout (null when nothing was rendered).
    * @private
    */
   _prepareDynamicColumnRequests(sheetName, startRow, startColumn, placeholder, context) {
@@ -278,7 +278,7 @@ class _SheetProcessor {
             range: `${quotedSheetName}!${colLetter}${startRow}`,
             values: [[labelText]]
           });
-          columns.push({ header: labelText, column: col, isLabel: true });
+          columns.push({ header: labelText, column: col, isLabel: true, item: null });
           col += 1;
         }
 
@@ -293,7 +293,11 @@ class _SheetProcessor {
             range: `${quotedSheetName}!${cellA1}`,
             values: [[resolvedHeader]]
           });
-          columns.push({ header: resolvedHeader, column: col, isLabel: false });
+          // `item` is the raw source-array entry this column was resolved
+          // from (ref REPORT_GLF.md B5) — lets a caller correlate a rendered
+          // column back to its own business identifier (e.g. a subject
+          // sigla) without reconstructing item order positionally.
+          columns.push({ header: resolvedHeader, column: col, isLabel: false, item });
 
           // 2. Protection Request
           if (group.acl) {
