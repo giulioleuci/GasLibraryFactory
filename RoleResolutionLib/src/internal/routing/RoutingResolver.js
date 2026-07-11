@@ -112,6 +112,9 @@ export class RoutingResolver {
       case RoutingPolicy.CHAIN_ALL:
         return this._resolveChainAll(principalActor, delegationChain);
 
+      case RoutingPolicy.DELEGATE_OR_PRINCIPAL:
+        return this._resolveDelegateOrPrincipal(principalActor, effectiveActor);
+
       default:
         this._logger.warn(`Unknown routing policy: ${policy}, using DELEGATE_ONLY`);
         return this._resolveDelegateOnly(effectiveActor);
@@ -254,6 +257,27 @@ export class RoutingResolver {
         policy: RoutingPolicy.CHAIN_ALL,
         chainActorIds: delegationChain ? delegationChain.getAllActorIds() : []
       }
+    });
+  }
+
+  /**
+   * @function _resolveDelegateOrPrincipal
+   * @description Delegate if resolved, otherwise the principal — a single
+   * primary recipient, never both (ref REPORT_GLF.md B4: distinct from
+   * DELEGATE_ONLY, which yields no recipient at all when no delegate is
+   * resolved).
+   * @private
+   */
+  _resolveDelegateOrPrincipal(principalActor, effectiveActor) {
+    const chosen = effectiveActor || principalActor;
+    if (!chosen) {
+      return RoutingResult.empty();
+    }
+    return new RoutingResult({
+      primary: [chosen],
+      cc: [],
+      bcc: [],
+      metadata: { policy: RoutingPolicy.DELEGATE_OR_PRINCIPAL }
     });
   }
 

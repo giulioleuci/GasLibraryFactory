@@ -21,7 +21,9 @@ export const RoutingPolicy = Object.freeze({
   /** Principal as primary (TO), delegate as informational (CC). */
   PRINCIPAL_PRIMARY_DELEGATE_CC: 'PRINCIPAL_PRIMARY_DELEGATE_CC',
   /** Broadcast to all actors in transitive chain (A -> B -> C). */
-  CHAIN_ALL: 'CHAIN_ALL'
+  CHAIN_ALL: 'CHAIN_ALL',
+  /** Delegate if one is resolved, otherwise the principal (single recipient, no CC). */
+  DELEGATE_OR_PRINCIPAL: 'DELEGATE_OR_PRINCIPAL'
 });
 
 /**
@@ -56,7 +58,9 @@ export function getRoutingPolicyDescription(policy) {
     [RoutingPolicy.BOTH_EQUAL]: 'Notify both equally',
     [RoutingPolicy.DELEGATE_PRIMARY_PRINCIPAL_CC]: 'Delegate as primary, principal in CC',
     [RoutingPolicy.PRINCIPAL_PRIMARY_DELEGATE_CC]: 'Principal as primary, delegate in CC',
-    [RoutingPolicy.CHAIN_ALL]: 'Notify entire delegation chain'
+    [RoutingPolicy.CHAIN_ALL]: 'Notify entire delegation chain',
+    [RoutingPolicy.DELEGATE_OR_PRINCIPAL]:
+      'Notify the delegate if resolved, otherwise the principal'
   };
   return descriptions[policy] || 'Unknown routing policy';
 }

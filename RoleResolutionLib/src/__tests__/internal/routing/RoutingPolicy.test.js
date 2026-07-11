@@ -49,20 +49,31 @@ describe('RoutingPolicy', () => {
     it('should return all valid policies as an array', () => {
       const policies = getRoutingPolicies();
       expect(Array.isArray(policies)).toBe(true);
-      expect(policies).toHaveLength(6);
+      expect(policies).toHaveLength(7);
       expect(policies).toContain(RoutingPolicy.DELEGATE_ONLY);
       expect(policies).toContain(RoutingPolicy.CHAIN_ALL);
+      expect(policies).toContain(RoutingPolicy.DELEGATE_OR_PRINCIPAL);
     });
   });
 
   describe('getRoutingPolicyDescription', () => {
     it('should return correct description for valid policies', () => {
-      expect(getRoutingPolicyDescription(RoutingPolicy.DELEGATE_ONLY)).toBe('Notify only the delegate');
-      expect(getRoutingPolicyDescription(RoutingPolicy.PRINCIPAL_ONLY)).toBe('Notify only the principal (ignore delegation)');
+      expect(getRoutingPolicyDescription(RoutingPolicy.DELEGATE_ONLY)).toBe(
+        'Notify only the delegate'
+      );
+      expect(getRoutingPolicyDescription(RoutingPolicy.PRINCIPAL_ONLY)).toBe(
+        'Notify only the principal (ignore delegation)'
+      );
       expect(getRoutingPolicyDescription(RoutingPolicy.BOTH_EQUAL)).toBe('Notify both equally');
-      expect(getRoutingPolicyDescription(RoutingPolicy.DELEGATE_PRIMARY_PRINCIPAL_CC)).toBe('Delegate as primary, principal in CC');
-      expect(getRoutingPolicyDescription(RoutingPolicy.PRINCIPAL_PRIMARY_DELEGATE_CC)).toBe('Principal as primary, delegate in CC');
-      expect(getRoutingPolicyDescription(RoutingPolicy.CHAIN_ALL)).toBe('Notify entire delegation chain');
+      expect(getRoutingPolicyDescription(RoutingPolicy.DELEGATE_PRIMARY_PRINCIPAL_CC)).toBe(
+        'Delegate as primary, principal in CC'
+      );
+      expect(getRoutingPolicyDescription(RoutingPolicy.PRINCIPAL_PRIMARY_DELEGATE_CC)).toBe(
+        'Principal as primary, delegate in CC'
+      );
+      expect(getRoutingPolicyDescription(RoutingPolicy.CHAIN_ALL)).toBe(
+        'Notify entire delegation chain'
+      );
     });
 
     it('should return default description for unknown policies', () => {

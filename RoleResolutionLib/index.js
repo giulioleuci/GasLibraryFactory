@@ -161,6 +161,7 @@ export { DelegationSource, InMemoryDelegationSource } from './src/registry/Deleg
 
 // Resolution engine
 export { RoleResolver } from './src/internal/resolution/RoleResolver.js';
+export { PriorityChainResolver } from './src/internal/resolution/PriorityChainResolver.js';
 
 // Error classes
 export {
