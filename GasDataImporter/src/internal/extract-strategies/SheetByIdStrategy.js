@@ -34,10 +34,44 @@ class SheetByIdStrategy extends SourceStrategy {
    * @throws {SourceError} If document is inaccessible, has no sheets, or target tab is missing.
    */
   _extractData(config) {
+    const hasHeaders = config.hasHeaders !== false; // default true
+    const values = this._resolveValues(config);
+    const data = this._arrayToObjects(values, hasHeaders);
+    this.logger.info(`[SheetByIdStrategy] Extracted ${data.length} rows from sheet`);
+    return data;
+  }
+
+  /**
+   * Extracts the raw grid (no header-object mapping) for callers that need
+   * `string[][]`-shaped data rather than import-recipe row objects — e.g.
+   * inserting a data-driven table into a Google Doc (ref REPORT_GLF.md B6).
+   * Shares the same sheet/tab/range resolution as `extract()`, so both use
+   * cases stay in sync with a single implementation.
+   * @param {Object} config Extraction parameters (see `_extractData`).
+   * @returns {Array<Array<*>>} Raw grid values, header row included if present.
+   * @throws {SourceError} If document is inaccessible, has no sheets, or target tab is missing.
+   */
+  extractRaw(config) {
+    this.logger.info(
+      `[SheetByIdStrategy] Extracting raw grid with config:`,
+      JSON.stringify(config)
+    );
+    return this._resolveValues(config);
+  }
+
+  /**
+   * Resolves the target tab/range and fetches the raw grid via
+   * SpreadsheetService, shared by `_extractData` (import recipes) and
+   * `extractRaw` (raw grid consumers).
+   * @private
+   * @param {Object} config Extraction parameters (see `_extractData`).
+   * @returns {Array<Array<*>>} Raw grid values (possibly empty).
+   * @throws {SourceError} If document is inaccessible, has no sheets, or target tab is missing.
+   */
+  _resolveValues(config) {
     this._validateConfig(config, ['sheetId']);
 
     const sheetId = config.sheetId;
-    const hasHeaders = config.hasHeaders !== false; // default true
     const range = config.range || '';
     const tabName = config.tabName;
 
@@ -93,11 +127,7 @@ class SheetByIdStrategy extends SourceStrategy {
         return [];
       }
 
-      // Convert to array of objects
-      const data = this._arrayToObjects(values, hasHeaders);
-
-      this.logger.info(`[SheetByIdStrategy] Extracted ${data.length} rows from sheet`);
-      return data;
+      return values;
     } catch (error) {
       if (error instanceof SourceError) {
         throw error;

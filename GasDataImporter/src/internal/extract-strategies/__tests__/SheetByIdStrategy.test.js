@@ -499,4 +499,55 @@ describe('SheetByIdStrategy - Comprehensive Test Suite', () => {
       );
     });
   });
+
+  // ===================================================================
+  // extractRaw() Method Tests (ref REPORT_GLF.md B6)
+  // ===================================================================
+  describe('extractRaw() Method', () => {
+    it('returns the raw grid, header row included, without object mapping', () => {
+      const result = strategy.extractRaw({ sheetId: 'abc123' });
+
+      expect(result).toEqual([
+        ['Name', 'Age', 'Email'],
+        ['John', 30, 'john@example.com'],
+        ['Jane', 25, 'jane@example.com']
+      ]);
+      expect(mockSpreadsheetService.getSheetInfo).toHaveBeenCalledWith('abc123');
+      expect(mockSpreadsheetService.getRanges).toHaveBeenCalledWith('abc123', 'Sheet1!A1:C10');
+    });
+
+    it('resolves tab and range identically to extract()', () => {
+      mockSpreadsheetService.getSheetInfo.mockReturnValue([
+        { name: 'Sheet1', rowCount: 10, columnCount: 3 },
+        { name: 'Sheet2', rowCount: 5, columnCount: 2 }
+      ]);
+
+      strategy.extractRaw({ sheetId: 'abc123', tabName: 'Sheet2', range: 'A1:B5' });
+
+      expect(mockSpreadsheetService.getRanges).toHaveBeenCalledWith('abc123', 'Sheet2!A1:B5');
+    });
+
+    it('returns [] for an empty sheet without throwing', () => {
+      mockSpreadsheetService.getSheetInfo.mockReturnValue([{ name: 'Sheet1', rowCount: 0, columnCount: 0 }]);
+
+      expect(strategy.extractRaw({ sheetId: 'abc123' })).toEqual([]);
+    });
+
+    it('throws SourceError when sheetId is missing, same as extract()', () => {
+      expect(() => strategy.extractRaw({})).toThrow(SourceError);
+    });
+
+    it('throws SourceError when tab name not found, same as extract()', () => {
+      expect(() => strategy.extractRaw({ sheetId: 'abc123', tabName: 'Ghost' })).toThrow(SourceError);
+    });
+
+    it('does not hydrate rows into header-keyed objects (unlike extract())', () => {
+      const extracted = strategy.extract({ sheetId: 'abc123' });
+      const raw = strategy.extractRaw({ sheetId: 'abc123' });
+
+      expect(Array.isArray(extracted[0])).toBe(false);
+      expect(Array.isArray(raw[0])).toBe(true);
+      expect(raw).toHaveLength(3); // header row + 2 data rows, unlike extract()'s 2
+    });
+  });
 });
