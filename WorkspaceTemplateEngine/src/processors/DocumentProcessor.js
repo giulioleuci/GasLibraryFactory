@@ -18,7 +18,12 @@ class _DocumentProcessor {
     const utilitiesService = new UtilitiesService(this.logger);
     const simpleUtils = { sleep: (ms) => utilitiesService.sleep(ms) };
     const simpleExceptionService = { executeWithRetry: (fn) => fn() };
-    this.documentService = new DocumentService(this.logger, simpleCache, simpleUtils, simpleExceptionService);
+    this.documentService = new DocumentService(
+      this.logger,
+      simpleCache,
+      simpleUtils,
+      simpleExceptionService
+    );
 
     this.MAX_TEMPLATE_SIZE = 1000000;
     this.MAX_NESTING_DEPTH = 100;
@@ -37,8 +42,15 @@ class _DocumentProcessor {
       {
         manager: this._tagScanner,
         methods: [
-          '_analyzeColumnLoops', '_analyzeRowLoops', '_analyzeListLoops',
-          '_analyzeTextSubstitutions', '_parseExpression', '_parseFilterArgs', '_parseArgValue'
+          '_analyzeColumnLoops',
+          '_analyzeRowLoops',
+          '_analyzeListLoops',
+          '_analyzeTextSubstitutions',
+          '_analyzeTableInsertions',
+          '_parseTableParams',
+          '_parseExpression',
+          '_parseFilterArgs',
+          '_parseArgValue'
         ]
       },
       {
@@ -48,8 +60,13 @@ class _DocumentProcessor {
       {
         manager: this._injector,
         methods: [
-          '_executeRowLoopOperation', '_executeColumnLoopOperation', '_convertOperationToRequests',
-          '_createTextSubstitutionRequests', '_createDeleteRowRequests', '_createListLoopRequests',
+          '_executeRowLoopOperation',
+          '_executeColumnLoopOperation',
+          '_convertOperationToRequests',
+          '_createTextSubstitutionRequests',
+          '_createDeleteRowRequests',
+          '_createListLoopRequests',
+          '_executeTableInsertOperation',
           '_flushDocumentChanges'
         ]
       }
@@ -58,7 +75,7 @@ class _DocumentProcessor {
 
   _delegate(delegations) {
     delegations.forEach(({ manager, methods }) => {
-      methods.forEach(method => {
+      methods.forEach((method) => {
         if (typeof manager[method] === 'function') {
           this[method] = manager[method].bind(manager);
         }
@@ -78,29 +95,52 @@ class _DocumentProcessor {
       structuralOps.push(...this._analyzeRowLoops(table, context));
     }
 
-    const executedStandardOps = structuralOps.filter(op => op.type === 'rowLoop' || op.type === 'columnLoop');
+    const executedStandardOps = structuralOps.filter(
+      (op) => op.type === 'rowLoop' || op.type === 'columnLoop'
+    );
     if (executedStandardOps.length > 0) {
       executedStandardOps.sort((a, b) => b.index - a.index);
       for (const op of executedStandardOps) {
-        if (op.type === 'rowLoop') this._executeRowLoopOperation(documentId, op);
-        else if (op.type === 'columnLoop') this._executeColumnLoopOperation(documentId, op);
+        if (op.type === 'rowLoop') {
+          this._executeRowLoopOperation(documentId, op);
+        } else if (op.type === 'columnLoop') {
+          this._executeColumnLoopOperation(documentId, op);
+        }
       }
       if (this._flushDocumentChanges(documentId)) {
         structure = this.documentService.scanDocumentStructure(documentId, ['{{']);
       }
     }
 
+    // `{{table[source=...]}}` directives (ref REPORT_GLF.md B7): each
+    // insertion changes element indices, so these run before the remaining
+    // batch ops (which were index-computed against the structure above) and
+    // trigger a rescan for them.
+    const tableInsertOps = this._analyzeTableInsertions(structure.textMatches, context);
+    if (tableInsertOps.length > 0) {
+      for (const op of tableInsertOps) {
+        this._executeTableInsertOperation(documentId, op);
+      }
+      structure = this.documentService.scanDocumentStructure(documentId, ['{{']);
+    }
+
     const batchOps = [];
     for (const table of structure.tables) {
       const rowOps = this._analyzeRowLoops(table, context);
-      for (const op of rowOps) if (op.type === 'deleteRow') batchOps.push(op);
+      for (const op of rowOps) {
+        if (op.type === 'deleteRow') {
+          batchOps.push(op);
+        }
+      }
     }
     batchOps.push(...this._analyzeListLoops(structure.textMatches, context));
     batchOps.push(...this._analyzeTextSubstitutions(structure.textMatches, context));
     batchOps.sort((a, b) => b.index - a.index);
 
     const batchRequests = [];
-    for (const op of batchOps) batchRequests.push(...this._convertOperationToRequests(op));
+    for (const op of batchOps) {
+      batchRequests.push(...this._convertOperationToRequests(op));
+    }
 
     if (batchRequests.length > 0) {
       this.logger.info(`Executing batch update with ${batchRequests.length} requests`);
