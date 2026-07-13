@@ -7,11 +7,11 @@ export class TestContext {
     this.TEST_ROOT_NAME = 'GAS_TEST_ROOT_PERSISTENT';
     this.TEST_SS_NAME = 'GAS_TEST_SS_PERSISTENT';
     this.TEST_DOC_NAME = 'GAS_TEST_DOC_PERSISTENT';
-    
+
     this._rootFolder = null;
     this._spreadsheet = null;
     this._document = null;
-    
+
     this.apiCallCount = 0;
   }
 
@@ -28,17 +28,31 @@ export class TestContext {
    * @returns {GoogleAppsScript.Drive.Folder} Persistent test root.
    */
   getRootFolder() {
-    if (this._rootFolder) return this._rootFolder;
-    
-    this._trackApiCall();
-    const folders = DriveApp.getFoldersByName(this.TEST_ROOT_NAME);
-    if (folders.hasNext()) {
-      this._rootFolder = folders.next();
-    } else {
-      this._trackApiCall();
-      this._rootFolder = DriveApp.createFolder(this.TEST_ROOT_NAME);
+    if (this._rootFolder) {
+      return this._rootFolder;
     }
+    this._rootFolder = this.getOrCreateNamedFolder(this.TEST_ROOT_NAME);
     return this._rootFolder;
+  }
+
+  /**
+   * Resolves or creates a Drive folder by name, so repeated online-test runs reuse the same
+   * artifact instead of minting a new one every run (ref ALDO_GLF_AUDIT_RESULTS.md K-1).
+   * @param {string} name Folder name to look up or create.
+   * @param {GoogleAppsScript.Drive.Folder|null} [parentFolder=null] Scope the lookup/creation to
+   *   this folder; defaults to Drive root when omitted.
+   * @returns {GoogleAppsScript.Drive.Folder} The existing or newly-created folder.
+   */
+  getOrCreateNamedFolder(name, parentFolder = null) {
+    this._trackApiCall();
+    const folders = parentFolder
+      ? parentFolder.getFoldersByName(name)
+      : DriveApp.getFoldersByName(name);
+    if (folders.hasNext()) {
+      return folders.next();
+    }
+    this._trackApiCall();
+    return parentFolder ? parentFolder.createFolder(name) : DriveApp.createFolder(name);
   }
 
   /**
@@ -46,21 +60,37 @@ export class TestContext {
    * @returns {GoogleAppsScript.Spreadsheet.Spreadsheet} Persistent test spreadsheet.
    */
   getSpreadsheet() {
-    if (this._spreadsheet) return this._spreadsheet;
-    
-    this._trackApiCall();
-    const files = DriveApp.getFilesByName(this.TEST_SS_NAME);
-    if (files.hasNext()) {
-      const file = files.next();
-      this._spreadsheet = SpreadsheetApp.openById(file.getId());
-    } else {
-      this._trackApiCall();
-      this._spreadsheet = SpreadsheetApp.create(this.TEST_SS_NAME);
-      const file = DriveApp.getFileById(this._spreadsheet.getId());
-      this._trackApiCall();
-      file.moveTo(this.getRootFolder());
+    if (this._spreadsheet) {
+      return this._spreadsheet;
     }
+    this._spreadsheet = this.getOrCreateNamedSpreadsheet(this.TEST_SS_NAME, this.getRootFolder());
     return this._spreadsheet;
+  }
+
+  /**
+   * Resolves or creates a Spreadsheet by name, so repeated online-test runs reuse the same
+   * artifact instead of minting (and never cleaning up) a new one every run — the capability
+   * `SpreadsheetApp.create` alone doesn't provide (ref ALDO_GLF_AUDIT_RESULTS.md K-1).
+   * @param {string} name Spreadsheet file name to look up or create.
+   * @param {GoogleAppsScript.Drive.Folder|null} [parentFolder=null] Scope the lookup to this
+   *   folder, and move a newly-created spreadsheet into it; when omitted the lookup scans all of
+   *   Drive by name and a new spreadsheet is left wherever `SpreadsheetApp.create` places it.
+   * @returns {GoogleAppsScript.Spreadsheet.Spreadsheet} The existing or newly-created spreadsheet.
+   */
+  getOrCreateNamedSpreadsheet(name, parentFolder = null) {
+    this._trackApiCall();
+    const files = parentFolder ? parentFolder.getFilesByName(name) : DriveApp.getFilesByName(name);
+    if (files.hasNext()) {
+      return SpreadsheetApp.openById(files.next().getId());
+    }
+    this._trackApiCall();
+    const spreadsheet = SpreadsheetApp.create(name);
+    if (parentFolder) {
+      const file = DriveApp.getFileById(spreadsheet.getId());
+      this._trackApiCall();
+      file.moveTo(parentFolder);
+    }
+    return spreadsheet;
   }
 
   /**
@@ -72,7 +102,7 @@ export class TestContext {
       try {
         this._document.getBody();
         return this._document;
-      } catch (e) {
+      } catch (_e) {
         // Document might be closed
         this._trackApiCall();
         this._document = DocumentApp.openById(this._document.getId());
@@ -126,7 +156,7 @@ export class TestContext {
     });
 
     const sheets = targetSs.getSheets();
-    
+
     // Create a fresh sheet if none exist (shouldn't happen) or to ensure we can delete others
     if (sheets.length === 0) {
       targetSs.insertSheet('Sheet1');
@@ -135,7 +165,7 @@ export class TestContext {
       firstSheet.setName('TEMP_RESET_' + new Date().getTime());
       this._trackApiCall();
       firstSheet.clear().clearContents().clearFormats().clearNotes();
-      
+
       // Delete all other sheets
       for (let i = 1; i < sheets.length; i++) {
         this._trackApiCall();
@@ -154,7 +184,7 @@ export class TestContext {
     try {
       const body = doc.getBody();
       body.clear();
-    } catch (e) {
+    } catch (_e) {
       // If still fails (e.g. Document is closed), reopen and try again
       this._document = DocumentApp.openById(doc.getId());
       this._document.getBody().clear();

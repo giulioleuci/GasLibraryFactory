@@ -18,6 +18,11 @@ L'uso standard delle classi `App` (es. `DriveApp`) è lento perché ogni operazi
 - Eliminazione di 500 file in una singola chiamata (`DriveService.deleteFiles`).
 - Aggiornamento di range non contigui in uno Sheet con una sola operazione (`SpreadsheetService.updateRanges`).
 - Condivisione silenziosa di file (senza email di notifica) tramite `PermissionService`.
+- Inserimento di tabelle dati in un Google Doc tramite `DocumentService`:
+  - `document(documentId).createTable(data, options).execute()` — builder fluente, accoda la tabella in fondo al corpo del documento (via `DocumentApp` standard API); `options` supporta `headerRow`, `alternatingRows`, `columnWidths`.
+  - `insertTableAtMarker(documentId, markerText, data, options)` — inserisce la tabella subito dopo il paragrafo che contiene il testo letterale `markerText` (cercato con `body.findText`), invece che in fondo al documento; lancia un errore se il marker non viene trovato, e NON rimuove il testo del marker (va rimosso separatamente, es. con `replaceText`).
+  - `scanDocumentStructure(documentId, textPatterns = ['{{'])` — scansiona la struttura del documento (via Advanced Docs API) e restituisce `{ tables, textMatches }`, utile per localizzare placeholder tipo `{{TABELLA:...}}` prima di un `insertTableAtMarker`.
+  - Esempio d'uso reale (SGSA/ALDO, `DocumentTableFacade`): scan dei marker `{{TABELLA:<sheetFileId>}}` con `scanDocumentStructure`, poi `insertTableAtMarker` per posizionare la tabella e `document(fileId).replaceText(marker, '').execute()` per ripulire il marker.
 
 ---
 *Parte dello stack GasLibraryFactory*

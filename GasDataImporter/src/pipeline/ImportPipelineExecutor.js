@@ -11,6 +11,7 @@ export class ImportPipelineExecutor {
     const dryRun = options.dryRun === true;
     const maxRetries = options.maxRetries || 3;
     const jobId = options.jobId || null;
+    const postTransform = typeof options.postTransform === 'function' ? options.postTransform : null;
 
     this.facade.logger.info(`[ImportEngine] Starting import: ${recipe.name || 'Unnamed'}`);
     if (dryRun) {
@@ -28,11 +29,11 @@ export class ImportPipelineExecutor {
       const executeWithRetry = this.facade._exceptionService
         ? () =>
             this.facade._exceptionService.executeWithRetry(
-              () => this._executePipeline(config, dryRun, jobId),
+              () => this._executePipeline(config, dryRun, jobId, postTransform),
               {},
               maxRetries
             )
-        : () => this._executePipeline(config, dryRun, jobId);
+        : () => this._executePipeline(config, dryRun, jobId, postTransform);
 
       const result = executeWithRetry();
 
@@ -61,7 +62,7 @@ export class ImportPipelineExecutor {
     }
   }
 
-  _executePipeline(config, dryRun, jobId = null) {
+  _executePipeline(config, dryRun, jobId = null, postTransform = null) {
     // Register job with monitor if provided
     if (this.facade._monitor && jobId) {
       this.facade._monitor.registerJob(jobId);
@@ -79,7 +80,10 @@ export class ImportPipelineExecutor {
       // Phase 2: Transform (33-66%)
       this.facade._monitor?.logStepStart(jobId, 'Transform');
       this.facade._monitor?.updateProgress(jobId, 40, 'Transforming data...');
-      const transformedData = this._executeTransform(extractedData, config);
+      let transformedData = this._executeTransform(extractedData, config);
+      if (postTransform) {
+        transformedData = postTransform(transformedData, config);
+      }
       this.facade._monitor?.logStepComplete(jobId, 'Transform', true);
       this.facade._monitor?.updateProgress(jobId, 66, `Transformed ${transformedData.length} rows`);
 

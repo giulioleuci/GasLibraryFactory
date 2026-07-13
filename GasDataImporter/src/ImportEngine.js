@@ -88,6 +88,10 @@ class ImportEngine {
    * @param {Object} [options={}] Execution behavior overrides.
    * @param {boolean} [options.dryRun=false] If true, skips the persistent Load phase.
    * @param {number} [options.maxRetries=3] Maximum attempts for transient error recovery.
+   * @param {Function} [options.postTransform] Optional hook `(transformedData, config) => filteredData`
+   *   invoked after Transform and before Load, letting the caller filter/mutate the
+   *   transformed batch (e.g. dropping records) without reaching into private
+   *   `_execute*` pipeline-phase methods.
    * @returns {Object} Statistics from all pipeline phases.
    * @throws {ConfigurationError} If the recipe fails validation.
    * @throws {ImportError} If an unrecoverable failure occurs during any pipeline phase.

@@ -111,6 +111,10 @@ export { ValidationUtils } from './src/ValidationUtils.js';
 
 // HTML-context escaping utilities (XSS prevention, ported from ALDO's boxes.ts)
 export { HtmlSanitizer } from './src/utils/HtmlSanitizer.js';
+
+// Generic date-range VO: containment/duration/overlap + open-ended sentinel
+// (Code Reuse Initiative, ref ALDO_GLF_AUDIT_RESULTS.md B-2)
+export { DateRange } from './src/utils/DateRange.js';
 export {
   BaseError,
   ValidationError,

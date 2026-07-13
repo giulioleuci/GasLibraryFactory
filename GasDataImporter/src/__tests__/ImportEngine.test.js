@@ -282,6 +282,24 @@ describe('ImportEngine - Comprehensive Test Suite', () => {
         10
       );
     });
+
+    it('should invoke options.postTransform with the transformed batch and config before Load', () => {
+      const postTransform = jest.fn().mockReturnValue([{ NAME: 'Alice' }]);
+
+      engine.runImport(validRecipe, { postTransform });
+
+      expect(postTransform).toHaveBeenCalledWith([{ NAME: 'Alice' }, { NAME: 'Bob' }], mockConfig);
+      expect(mockLoader.load).toHaveBeenCalledWith([{ NAME: 'Alice' }], validRecipe.load);
+    });
+
+    it('should not invoke postTransform when not provided', () => {
+      engine.runImport(validRecipe);
+
+      expect(mockLoader.load).toHaveBeenCalledWith(
+        [{ NAME: 'Alice' }, { NAME: 'Bob' }],
+        validRecipe.load
+      );
+    });
   });
 
   // ===================================================================

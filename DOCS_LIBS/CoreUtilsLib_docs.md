@@ -18,6 +18,8 @@ La libreria nasce per risolvere l'inconsistenza di alcune API native in GAS e pe
 - Generazione di UUID v4 sicuri per chiavi primarie in Sheets.
 - Parsing di date da formati eterogenei (ISO, Excel Serial Numbers, Google Apps Script Date).
 - Creazione di logger "child" che aggiungono prefissi (es. `[AuthService]`) automaticamente a ogni riga di log.
+- Validazione del formato email tramite `UtilsService.isValidEmail(email)` — regex `user@domain.tld` di base (non verifica deliverability); pensata per essere il punto unico di validazione formato-email invece di farla riscrivere ad ogni chiamante (es. VO di dominio come `Email` nelle app che consumano la libreria).
+- Gestione di periodi/intervalli di date tramite `DateRange`: `new DateRange(start, end?)` — `end` omesso o `null` produce un range aperto (sentinella "infinito", niente magic number lato chiamante); `contains(date)`, `durationInDays()` (span troncato in giorni interi) e `overlaps(other)` per confronti tra due `DateRange`.
 
 ---
 *Parte dello stack GasLibraryFactory*

@@ -107,7 +107,10 @@ export class EnhancedTestRunner {
       const duration = new Date().getTime() - startTime;
       this._log(`[TEST:END] PASS | Duration: ${duration}ms`);
       this.results.passed++;
-    } catch (error) {
+    } catch (rawError) {
+      // Normalizes a non-Error `throw` (string, object, ...) into an Error-shaped record instead
+      // of losing its content to `undefined` .message/.stack (ref ALDO_GLF_AUDIT_RESULTS.md K-2).
+      const error = rawError instanceof Error ? rawError : new Error(String(rawError));
       const duration = new Date().getTime() - startTime;
       this._log(`[ERROR:STACK] ${error.stack}`);
       this._log(`[TEST:END] FAIL | Duration: ${duration}ms`);
