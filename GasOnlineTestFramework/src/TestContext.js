@@ -1,3 +1,5 @@
+import { SampleSpreadsheetBuilder } from './SampleSpreadsheetBuilder.js';
+
 /**
  * Resource manager for online test execution, maintaining persistent Google Drive artifacts to optimize quota usage and execution speed.
  * @class
@@ -173,6 +175,20 @@ export class TestContext {
       }
       firstSheet.setName('Sheet1');
     }
+  }
+
+  /**
+   * @description Gets-or-creates a named spreadsheet, resets it to a clean single-sheet
+   * baseline, and wraps it in a {@link SampleSpreadsheetBuilder} for add-sheet/append-row
+   * sample-data construction (ref ALDO_GLF_AUDIT_RESULTS.md K-1 reuse-by-name pattern).
+   * @param {string} name Spreadsheet file name to look up or create.
+   * @param {GoogleAppsScript.Drive.Folder|null} [parentFolder=null] Scope as in {@link getOrCreateNamedSpreadsheet}.
+   * @returns {SampleSpreadsheetBuilder}
+   */
+  buildSampleSpreadsheet(name, parentFolder = null) {
+    const spreadsheet = this.getOrCreateNamedSpreadsheet(name, parentFolder);
+    this.resetSpreadsheet(spreadsheet);
+    return new SampleSpreadsheetBuilder(spreadsheet);
   }
 
   /**

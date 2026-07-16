@@ -125,3 +125,23 @@ describe('TestContext.getOrCreateNamedSpreadsheet', () => {
     expect(global.SpreadsheetApp.create).not.toHaveBeenCalled();
   });
 });
+
+describe('TestContext.buildSampleSpreadsheet', () => {
+  test('returns a SampleSpreadsheetBuilder wrapping the reused-or-created spreadsheet', () => {
+    const ctx = new TestContext();
+    const fakeSheets = [{ getName: () => 'Sheet1' }];
+    const fakeSs = {
+      getId: () => 'ss-1',
+      getUrl: () => 'https://sheets/ss-1',
+      getSheets: () => fakeSheets,
+      getProtections: () => [],
+      getNamedRanges: () => []
+    };
+    jest.spyOn(ctx, 'getOrCreateNamedSpreadsheet').mockReturnValue(fakeSs);
+    jest.spyOn(ctx, 'resetSpreadsheet').mockImplementation(() => {});
+    const builder = ctx.buildSampleSpreadsheet('SAMPLE_DB');
+    expect(ctx.getOrCreateNamedSpreadsheet).toHaveBeenCalledWith('SAMPLE_DB', null);
+    expect(ctx.resetSpreadsheet).toHaveBeenCalledWith(fakeSs);
+    expect(builder.getUrl()).toBe('https://sheets/ss-1');
+  });
+});
