@@ -4,6 +4,7 @@
  */
 
 import { ServiceFactory } from '../ServiceFactory';
+import { UserService } from '../../../services/UserService';
 
 describe('ServiceFactory', () => {
   beforeEach(() => {
@@ -158,6 +159,11 @@ describe('ServiceFactory', () => {
       const service = ServiceFactory.getTriggerService();
       expect(service).toBeDefined();
       expect(service.constructor.name).toBe('TriggerService');
+    });
+
+    test('getUserService returns a UserService wired with the shared logger', () => {
+      const service = ServiceFactory.getUserService();
+      expect(service).toBeInstanceOf(UserService);
     });
   });
 

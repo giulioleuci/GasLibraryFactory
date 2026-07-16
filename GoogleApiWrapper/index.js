@@ -242,6 +242,7 @@ export { PropertiesService } from './src/services/PropertiesService';
 export { SpreadsheetService } from './src/services/SpreadsheetService';
 export { TriggerService } from './src/services/TriggerService';
 export { UiService } from './src/services/UiService';
+export { UserService } from './src/services/UserService';
 export { UtilitiesService } from './src/services/UtilitiesService';
 
 // Testing Mocks (Standardized Testing SDK)

@@ -17,6 +17,7 @@ import { PermissionService } from '../../services/PermissionService.js';
 import { PropertiesService } from '../../services/PropertiesService.js';
 import { TriggerService } from '../../services/TriggerService.js';
 import { UiService } from '../../services/UiService.js';
+import { UserService } from '../../services/UserService.js';
 
 /**
  * @class ServiceFactory
@@ -279,6 +280,15 @@ export class ServiceFactory {
       ServiceFactory.getUtils(),
       ServiceFactory.getExceptionService()
     );
+  }
+
+  /**
+   * @static
+   * @description Creates a new UserService instance with injected shared dependencies.
+   * @returns {UserService}
+   */
+  static getUserService() {
+    return new UserService(ServiceFactory.getLogger());
   }
 
   // ===================================================================
