@@ -207,7 +207,7 @@
 
 // Core template engine
 export { FilterStrategy } from './src/FilterStrategy';
-export { Mustache } from './src/facades/Mustache';
+export { Mustache, MustacheRenderError } from './src/facades/Mustache';
 export { PlaceholderService } from './src/PlaceholderService';
 
 // Processors

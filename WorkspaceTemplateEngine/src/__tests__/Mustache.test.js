@@ -751,4 +751,35 @@ describe('Mustache - Comprehensive Test Suite', () => {
       expect(result).toBe('test');
     });
   });
+
+  describe('Render-Depth and Partial-Cycle Guards', () => {
+    it('should throw MustacheRenderError instead of overflowing the call stack on a self-referencing partial', () => {
+      const instance = new Mustache({ logger, partials: { loop: 'A {{> loop}} B' } });
+      const result = instance.render('{{> loop}}');
+      expect(result).toMatch(/RENDER ERROR/);
+      expect(result).toMatch(/ciclico|cycl/i);
+    });
+
+    it('should throw MustacheRenderError instead of overflowing the call stack on pathologically deep section nesting', () => {
+      const depth = 500;
+      const template = '{{#a}}'.repeat(depth) + 'x' + '{{/a}}'.repeat(depth);
+      const instance = new Mustache({ logger });
+      const result = instance.render(template, { a: { a: {} } });
+      expect(result).toMatch(/RENDER ERROR/);
+    });
+
+    it('should render normal, shallow nested sections correctly (no regression)', () => {
+      const instance = new Mustache({ logger });
+      const result = instance.render('{{#a}}{{#b}}{{c}}{{/b}}{{/a}}', { a: { b: { c: 'ok' } } });
+      expect(result).toBe('ok');
+    });
+
+    it('should render non-cyclic nested partials correctly (no regression)', () => {
+      const instance = new Mustache({
+        logger,
+        partials: { header: 'H', footer: 'F {{> header}}' }
+      });
+      expect(instance.render('{{> footer}}')).toBe('F H');
+    });
+  });
 });
