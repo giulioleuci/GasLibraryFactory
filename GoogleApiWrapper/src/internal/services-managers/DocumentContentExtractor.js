@@ -163,7 +163,11 @@ export class DocumentContentExtractor {
    */
   getDocumentBody(documentId) {
     try {
-      const doc = this.facade._executeWithRetry(() => Docs.Documents.get(documentId), { documentId }, 3);
+      const doc = this.facade._executeWithRetry(
+        () => Docs.Documents.get(documentId),
+        { documentId },
+        3
+      );
 
       if (!doc.body) {
         throw new Error('Document body not found');
@@ -199,7 +203,15 @@ export class DocumentContentExtractor {
       const seenTextIndices = new Set();
 
       // PHASE 1: Extract tables from POJO structure
+      let phase1IterationCount = 0;
+      const PHASE1_MAX_ITERATIONS = 10000;
       for (const element of structure.body.content) {
+        if (++phase1IterationCount > PHASE1_MAX_ITERATIONS) {
+          this._logger.warn(
+            `Reached maximum iteration limit (${PHASE1_MAX_ITERATIONS}) while extracting tables`
+          );
+          break;
+        }
         if (element.type === 'TABLE') {
           const tableData = {
             index: result.tables.length,
@@ -234,7 +246,9 @@ export class DocumentContentExtractor {
 
         for (const element of structure.body.content) {
           if (++iterationCount > MAX_ITERATIONS) {
-            this._logger.warn(`Reached maximum iteration limit (${MAX_ITERATIONS}) for pattern: ${pattern}`);
+            this._logger.warn(
+              `Reached maximum iteration limit (${MAX_ITERATIONS}) for pattern: ${pattern}`
+            );
             break;
           }
 
@@ -256,9 +270,10 @@ export class DocumentContentExtractor {
               for (const cell of tableRow.cells) {
                 if (cell.text && cell.text.includes(pattern)) {
                   textContent = cell.text;
-                  elementIndex = (cell.content && cell.content.length > 0 && cell.content[0].startIndex != null)
-                    ? cell.content[0].startIndex
-                    : element.startIndex + tableRow.rowIndex * 1000 + cell.columnIndex;
+                  elementIndex =
+                    cell.content && cell.content.length > 0 && cell.content[0].startIndex != null
+                      ? cell.content[0].startIndex
+                      : element.startIndex + tableRow.rowIndex * 1000 + cell.columnIndex;
 
                   if (!seenTextIndices.has(elementIndex)) {
                     result.textMatches.push({
@@ -275,7 +290,9 @@ export class DocumentContentExtractor {
         }
       }
 
-      this._logger.debug(`Scanned document ${documentId}: ${result.tables.length} tables, ${result.textMatches.length} text matches`);
+      this._logger.debug(
+        `Scanned document ${documentId}: ${result.tables.length} tables, ${result.textMatches.length} text matches`
+      );
       return result;
     } catch (error) {
       this._logger.error(`Failed to scan document structure: ${error.message}`);
