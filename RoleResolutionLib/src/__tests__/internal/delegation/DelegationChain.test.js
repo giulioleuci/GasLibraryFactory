@@ -177,12 +177,16 @@ describe('DelegationChain', () => {
 
     it('extend should throw if linkage fails', () => {
       const badLink = createDelegation('badLink', 'X', 'Y');
-      expect(() => chain.extend(badLink)).toThrow('Cannot extend chain: last delegate is C, but new delegation is from X');
+      expect(() => chain.extend(badLink)).toThrow(
+        'Cannot extend chain: last delegate is C, but new delegation is from X'
+      );
     });
 
     it('extend should throw if cycle is detected', () => {
       const cycleLink = createDelegation('cycleLink', 'C', 'A');
-      expect(() => chain.extend(cycleLink)).toThrow('Cannot extend chain: would create a cycle with delegate A');
+      expect(() => chain.extend(cycleLink)).toThrow(
+        'Cannot extend chain: would create a cycle with delegate A'
+      );
     });
   });
 
@@ -207,7 +211,7 @@ describe('DelegationChain', () => {
     });
 
     it('map should return mapped array', () => {
-      const ids = chain.map(d => d.id);
+      const ids = chain.map((d) => d.id);
       expect(ids).toEqual(['del1', 'del2']);
     });
 
@@ -217,10 +221,18 @@ describe('DelegationChain', () => {
       const date = new Date('2025-01-01');
 
       const d1 = new Delegation({
-        id: 'd1', principalId: 'A', delegateId: 'B', validFrom: new Date('2024-01-01'), validTo: new Date('2026-01-01')
+        id: 'd1',
+        principalId: 'A',
+        delegateId: 'B',
+        validFrom: new Date('2024-01-01'),
+        validTo: new Date('2026-01-01')
       });
       const d2 = new Delegation({
-        id: 'd2', principalId: 'B', delegateId: 'C', validFrom: new Date('2024-01-01'), validTo: new Date('2026-01-01')
+        id: 'd2',
+        principalId: 'B',
+        delegateId: 'C',
+        validFrom: new Date('2024-01-01'),
+        validTo: new Date('2026-01-01')
       });
       const c = new DelegationChain([d1, d2]);
 
@@ -231,10 +243,18 @@ describe('DelegationChain', () => {
       const date = new Date('2025-01-01');
 
       const d1 = new Delegation({
-        id: 'd1', principalId: 'A', delegateId: 'B', validFrom: new Date('2024-01-01'), validTo: new Date('2026-01-01')
+        id: 'd1',
+        principalId: 'A',
+        delegateId: 'B',
+        validFrom: new Date('2024-01-01'),
+        validTo: new Date('2026-01-01')
       });
       const d2 = new Delegation({
-        id: 'd2', principalId: 'B', delegateId: 'C', validFrom: new Date('2024-01-01'), validTo: new Date('2024-12-31') // Expired
+        id: 'd2',
+        principalId: 'B',
+        delegateId: 'C',
+        validFrom: new Date('2024-01-01'),
+        validTo: new Date('2024-12-31') // Expired
       });
       const c = new DelegationChain([d1, d2]);
 

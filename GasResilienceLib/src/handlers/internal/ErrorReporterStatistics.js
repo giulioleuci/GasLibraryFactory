@@ -11,9 +11,7 @@ export class ErrorReporterStatistics {
   getSummary() {
     const counters = this.facade._counters;
     const recoveryRate =
-      counters.total > 0
-        ? Math.round((counters.recovered / counters.total) * 100)
-        : 100;
+      counters.total > 0 ? Math.round((counters.recovered / counters.total) * 100) : 100;
 
     return {
       counters: counters,

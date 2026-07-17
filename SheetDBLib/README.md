@@ -247,11 +247,11 @@ const scoresFamily = new ColumnFamily({
 });
 
 // Generate column names
-scoresFamily.generateColumnName('math');    // 'score_math'
+scoresFamily.generateColumnName('math'); // 'score_math'
 scoresFamily.generateColumnName('science'); // 'score_science'
 
 // Parse member key from column name
-scoresFamily.parseMemberKey('score_math');  // 'math'
+scoresFamily.parseMemberKey('score_math'); // 'math'
 ```
 
 #### SchemaTemplate
@@ -268,9 +268,7 @@ const template = new SchemaTemplate({
     { name: 'name', type: 'STRING' },
     { name: 'grade', type: 'NUMBER' }
   ],
-  dynamicColumns: [
-    { familyId: 'scores' }
-  ]
+  dynamicColumns: [{ familyId: 'scores' }]
 });
 ```
 
@@ -303,20 +301,20 @@ const accessor = new DynamicColumnAccessor(row, {
 });
 
 // Get single value
-accessor.get('scores', 'math');     // 95
-accessor.get('scores', 'english');  // 0 (default value)
+accessor.get('scores', 'math'); // 95
+accessor.get('scores', 'english'); // 0 (default value)
 
 // Get all values
-accessor.getAll('scores');          // { math: 95, science: 88, english: 0 }
+accessor.getAll('scores'); // { math: 95, science: 88, english: 0 }
 
 // Set value with type coercion
 accessor.set('scores', 'english', '75');
 row.score_english; // 75 (number)
 
 // Check existence
-accessor.has('scores', 'math');     // true
-accessor.hasAll('scores');          // false (english was missing initially)
-accessor.count('scores');           // 3
+accessor.has('scores', 'math'); // true
+accessor.hasAll('scores'); // false (english was missing initially)
+accessor.count('scores'); // 3
 ```
 
 #### FamilyAggregator
@@ -393,18 +391,18 @@ const queryFamily = new ColumnFamily({
 
 ### Aggregation Types
 
-| Type | Description |
-|------|-------------|
-| `SUM` | Sum of all values |
-| `AVG` | Average of all values |
-| `MIN` | Minimum value |
-| `MAX` | Maximum value |
-| `COUNT` | Count of non-null values |
-| `COUNT_DISTINCT` | Count of distinct values |
-| `FIRST` | First non-null value |
-| `LAST` | Last non-null value |
-| `CONCAT` | Concatenate string values |
-| `COLLECT` | Collect values into array |
+| Type             | Description               |
+| ---------------- | ------------------------- |
+| `SUM`            | Sum of all values         |
+| `AVG`            | Average of all values     |
+| `MIN`            | Minimum value             |
+| `MAX`            | Maximum value             |
+| `COUNT`          | Count of non-null values  |
+| `COUNT_DISTINCT` | Count of distinct values  |
+| `FIRST`          | First non-null value      |
+| `LAST`           | Last non-null value       |
+| `CONCAT`         | Concatenate string values |
+| `COLLECT`        | Collect values into array |
 
 ## 🧪 Testing
 

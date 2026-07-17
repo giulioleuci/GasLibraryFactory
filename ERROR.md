@@ -12,12 +12,12 @@
 
 These 4 suites require `npm run build` to generate the bundle before they can run. They will always fail in a clean checkout without building first.
 
-| Suite | Error |
-|---|---|
-| `test/offline/bundle-load.test.js` | `Bundle not found at dist/Code.js. Run 'npm run build' first.` |
-| `test/offline/exports-validation.test.js` | Same — bundle not found |
-| `test/offline/gas-compatibility.test.js` | Same — bundle not found |
-| `test/offline/smoke-tests.test.js` | Same — bundle not found |
+| Suite                                     | Error                                                          |
+| ----------------------------------------- | -------------------------------------------------------------- |
+| `test/offline/bundle-load.test.js`        | `Bundle not found at dist/Code.js. Run 'npm run build' first.` |
+| `test/offline/exports-validation.test.js` | Same — bundle not found                                        |
+| `test/offline/gas-compatibility.test.js`  | Same — bundle not found                                        |
+| `test/offline/smoke-tests.test.js`        | Same — bundle not found                                        |
 
 **Fix:** Run `npm run build` before executing the offline test suite.
 
@@ -68,6 +68,7 @@ Received constructor: TypeError
 ### 3c. Pipeline, ConsumerStep, ProducerStep, Integration
 
 **Suites:**
+
 - `PipelineFramework/src/__tests__/Pipeline.test.js`
 - `PipelineFramework/src/__tests__/ConsumerStep.test.js`
 - `PipelineFramework/src/__tests__/ProducerStep.test.js`
@@ -103,6 +104,7 @@ Received: undefined       // setLevel should return capturing logger for chainin
 ### 4c. JobRunnerService — 2 suites
 
 **Suites:**
+
 - `JobRunnerLib/src/__tests__/JobRunnerService.coverage-gaps.test.js`
 - `JobRunnerLib/src/__tests__/JobRunnerService.phase5.test.js`
 
@@ -153,6 +155,7 @@ TypeError: Cannot read properties of undefined (reading 'get')
 ## Category 7 — Cross-Library Integration: Pipeline-Dependent (6 suites)
 
 **Suites:**
+
 - `test/__tests__/integration/CrossCut_DryRunMode.test.js`
 - `test/__tests__/integration/CrossCut_ErrorPropagation.test.js`
 - `test/__tests__/integration/CrossCut_LoggerPropagation.test.js`
@@ -170,10 +173,10 @@ TypeError: Cannot read properties of undefined (reading 'addStep')
 
 ## Fix Priority
 
-| Priority | Issue | Fix |
-|---|---|---|
-| 🔴 High | `PipelineContext` broken — cascades to 12+ suites | Fix `PipelineContext` constructor/metadata initialization |
-| 🔴 High | `CapturingLogger.setLevel()` broken — cascades to JobRunnerLib suites | Fix `setLevel()` to return `this` and delegate to real logger |
-| 🟡 Medium | `TableDataModifier` missing `isEqual` import | Add `import { isEqual }` to `TableDataModifier.js` |
-| 🟡 Medium | `SidebarBuilder` / `UiService` / `RateLimiter` logic failures | Fix builder assertion mismatches |
-| 🟢 Low | Offline bundle tests always fail without build | Add `npm run build` step before running offline tests in CI |
+| Priority  | Issue                                                                 | Fix                                                           |
+| --------- | --------------------------------------------------------------------- | ------------------------------------------------------------- |
+| 🔴 High   | `PipelineContext` broken — cascades to 12+ suites                     | Fix `PipelineContext` constructor/metadata initialization     |
+| 🔴 High   | `CapturingLogger.setLevel()` broken — cascades to JobRunnerLib suites | Fix `setLevel()` to return `this` and delegate to real logger |
+| 🟡 Medium | `TableDataModifier` missing `isEqual` import                          | Add `import { isEqual }` to `TableDataModifier.js`            |
+| 🟡 Medium | `SidebarBuilder` / `UiService` / `RateLimiter` logic failures         | Fix builder assertion mismatches                              |
+| 🟢 Low    | Offline bundle tests always fail without build                        | Add `npm run build` step before running offline tests in CI   |

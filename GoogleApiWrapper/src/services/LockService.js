@@ -8,7 +8,7 @@
 /**
  * @class LockService
  * @description Facade for Google Apps Script native LockService. Manages concurrent access via Script, User, and Document scopes. Provides a testable abstraction with support for mock environments.
- * 
+ *
  * @property {LoggerService} _logger Diagnostic logger.
  * @property {Object} _nativeLockService Reference to the global GAS LockService object.
  */
@@ -87,7 +87,7 @@ export class LockService {
  * @private
  * @class Lock
  * @description Wrapper for native GAS Lock object. Provides consistent acquisition status and diagnostic logging.
- * 
+ *
  * @property {Object} _nativeLock Native GAS Lock instance.
  * @property {LoggerService} _logger Diagnostic logger.
  * @property {boolean} _acquired Current acquisition status.

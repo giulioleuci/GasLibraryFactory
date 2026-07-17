@@ -49,7 +49,9 @@ describe('TableService - Comprehensive Test Suite', () => {
       expect(table.spreadsheetId).toBe('SPREADSHEET_ID_123');
       expect(table._dataLoaded).toBe(false);
       expect(table._rowsCache).toBeNull();
-      expect(mocks.logger.debug).toHaveBeenCalledWith(expect.stringContaining('LAZY initialization'));
+      expect(mocks.logger.debug).toHaveBeenCalledWith(
+        expect.stringContaining('LAZY initialization')
+      );
     });
 
     it('should initialize with eager loading when preloadedData is provided', () => {
@@ -252,13 +254,7 @@ describe('TableService - Comprehensive Test Suite', () => {
       expect(mocks.utils.generateUuid).toHaveBeenCalled();
       expect(mocks.spreadsheetService.appendRows).toHaveBeenCalledWith('SPREADSHEET_ID_123', {
         range: "'Users'!A1",
-        values: [[
-          'GENERATED_UUID_123',
-          'David Lee',
-          'david@example.com',
-          28,
-          'active'
-        ]]
+        values: [['GENERATED_UUID_123', 'David Lee', 'david@example.com', 28, 'active']]
       });
     });
 
@@ -285,13 +281,7 @@ describe('TableService - Comprehensive Test Suite', () => {
 
       expect(mocks.spreadsheetService.appendRows).toHaveBeenCalledWith('SPREADSHEET_ID_123', {
         range: "'Users'!A1",
-        values: [[
-          'GENERATED_UUID_123',
-          'Frank Miller',
-          '',
-          '',
-          ''
-        ]]
+        values: [['GENERATED_UUID_123', 'Frank Miller', '', '', '']]
       });
     });
 
@@ -360,7 +350,7 @@ describe('TableService - Comprehensive Test Suite', () => {
       ];
 
       const results = table.insertRows(newRows);
-      
+
       expect(results).toHaveLength(2);
       expect(results[0].name).toBe('David Lee');
       expect(results[1].name).toBe('Diana Prince');
@@ -428,10 +418,12 @@ describe('TableService - Comprehensive Test Suite', () => {
       expect(result.status).toBe('inactive');
       expect(result.name).toBe('Alice Johnson'); // unchanged fields preserved
 
-      expect(mocks.spreadsheetService.updateRanges).toHaveBeenCalledWith(
-        'SPREADSHEET_ID_123',
-        [{ range: 'Users!A2:E2', values: [['USER_001', 'Alice Johnson', 'alice.new@example.com', 30, 'inactive']] }]
-      );
+      expect(mocks.spreadsheetService.updateRanges).toHaveBeenCalledWith('SPREADSHEET_ID_123', [
+        {
+          range: 'Users!A2:E2',
+          values: [['USER_001', 'Alice Johnson', 'alice.new@example.com', 30, 'inactive']]
+        }
+      ]);
     });
 
     it('should throw error if row not found', () => {
@@ -530,7 +522,7 @@ describe('TableService - Comprehensive Test Suite', () => {
 
     it('should throw error if service reports an error', () => {
       mocks.spreadsheetService.deleteRows.mockImplementation(() => {
-         throw new Error('Delete failed');
+        throw new Error('Delete failed');
       });
 
       table.deleteRowById('USER_001');
@@ -565,17 +557,17 @@ describe('TableService - Comprehensive Test Suite', () => {
 
     it('should update multiple rows efficiently', () => {
       const updates = {
-        'USER_001': { age: 31 },
-        'USER_002': { status: 'active' }
+        USER_001: { age: 31 },
+        USER_002: { status: 'active' }
       };
       const results = table.updateRowsByIds(updates);
-      
+
       expect(results).toHaveLength(2);
       expect(results[0].age).toBe(31);
       expect(results[1].status).toBe('active');
       expect(table._updateQueue.has('USER_001')).toBe(true);
       expect(table._updateQueue.has('USER_002')).toBe(true);
-      
+
       // Verify cache
       expect(table._rowsCache[0].age).toBe(31);
       expect(table._rowsCache[1].status).toBe('active');
@@ -588,15 +580,17 @@ describe('TableService - Comprehensive Test Suite', () => {
 
     it('should gracefully handle errors for individual IDs', () => {
       const updates = {
-        'USER_001': { age: 31 },
-        'NONEXISTENT_ID': { age: 99 }
+        USER_001: { age: 31 },
+        NONEXISTENT_ID: { age: 99 }
       };
-      
+
       const results = table.updateRowsByIds(updates);
-      
+
       expect(results).toHaveLength(1);
       expect(results[0].ID).toBe('USER_001');
-      expect(mocks.logger.warn).toHaveBeenCalledWith(expect.stringContaining('No row found with ID=NONEXISTENT_ID'));
+      expect(mocks.logger.warn).toHaveBeenCalledWith(
+        expect.stringContaining('No row found with ID=NONEXISTENT_ID')
+      );
     });
   });
 
@@ -615,13 +609,13 @@ describe('TableService - Comprehensive Test Suite', () => {
     it('should delete multiple rows efficiently', () => {
       const ids = ['USER_001', 'USER_002'];
       const results = table.deleteRowsByIds(ids);
-      
+
       expect(results).toHaveLength(2);
       expect(results[0].ID).toBe('USER_001');
       expect(results[1].ID).toBe('USER_002');
       expect(table._deleteQueue.has('USER_001')).toBe(true);
       expect(table._deleteQueue.has('USER_002')).toBe(true);
-      
+
       // Verify cache (2 rows deleted, 1 remaining)
       expect(table._rowsCache).toHaveLength(1);
       expect(table._rowsCache[0].ID).toBe('USER_003');
@@ -634,9 +628,9 @@ describe('TableService - Comprehensive Test Suite', () => {
 
     it('should gracefully handle errors for individual IDs', () => {
       const ids = ['USER_001', 'NONEXISTENT_ID'];
-      
+
       const results = table.deleteRowsByIds(ids);
-      
+
       expect(results).toHaveLength(1);
       expect(results[0].ID).toBe('USER_001');
       // No row found logs as warn in deleteRowById, throwing no error to catch in deleteRowsByIds
@@ -1323,10 +1317,12 @@ describe('TableService - Comprehensive Test Suite', () => {
         sampleRawData,
         schemaValidator
       );
-      table.setSchema(z.object({
-        name: z.string(),
-        age: z.number().min(0)
-      }));
+      table.setSchema(
+        z.object({
+          name: z.string(),
+          age: z.number().min(0)
+        })
+      );
 
       table.defineVirtualColumn('ageGroup', (row) => {
         if (row.age < 18) {

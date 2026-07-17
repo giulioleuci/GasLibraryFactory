@@ -86,9 +86,9 @@ describe('ServiceValidator - Comprehensive Test Suite', () => {
     });
 
     it('should throw for missing additional methods', () => {
-      expect(() => ServiceValidator.validateUtils(mocks.utils, 'Test', ['nonExistentMethod'])).toThrow(
-        'Test: utils.nonExistentMethod must be a function'
-      );
+      expect(() =>
+        ServiceValidator.validateUtils(mocks.utils, 'Test', ['nonExistentMethod'])
+      ).toThrow('Test: utils.nonExistentMethod must be a function');
     });
 
     it('should pass for null when not required', () => {

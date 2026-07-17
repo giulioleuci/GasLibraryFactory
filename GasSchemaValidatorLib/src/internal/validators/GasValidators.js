@@ -3,10 +3,12 @@ import { z } from 'zod';
 export class GasValidators {
   /** Validates "A1", "A1:B10", "Sheet1!A1:B10", "'Sheet Name'!A1:B" */
   static a1Notation() {
-    return z.string().regex(
-      /^('?[^']+?'?!)?(\$?[A-Z]{1,3}\$?\d*)(\:\$?[A-Z]{1,3}\$?\d*)?$/,
-      'Invalid A1 notation'
-    );
+    return z
+      .string()
+      .regex(
+        /^('?[^']+?'?!)?(\$?[A-Z]{1,3}\$?\d*)(\:\$?[A-Z]{1,3}\$?\d*)?$/,
+        'Invalid A1 notation'
+      );
   }
 
   /** Validates 30-60 char alphanumeric Google Spreadsheet IDs */
@@ -21,6 +23,9 @@ export class GasValidators {
 
   /** Parses JSON string, optionally validates against inner schema */
   static jsonString(innerSchema = z.any()) {
-    return z.string().transform((str) => JSON.parse(str)).pipe(innerSchema);
+    return z
+      .string()
+      .transform((str) => JSON.parse(str))
+      .pipe(innerSchema);
   }
 }

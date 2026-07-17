@@ -102,7 +102,9 @@ describe('RoleResolutionError classes', () => {
 
       expect(error).toBeInstanceOf(RoleResolutionError);
       expect(error.name).toBe('CircularDelegationError');
-      expect(error.message).toBe('Circular delegation detected for actor: actor-1 (chain: actor-1 -> actor-2 -> actor-1)');
+      expect(error.message).toBe(
+        'Circular delegation detected for actor: actor-1 (chain: actor-1 -> actor-2 -> actor-1)'
+      );
       expect(error.actorId).toBe('actor-1');
       expect(error.chain).toBe(chain);
       expect(error.context).toEqual({ extra: 'info', actorId: 'actor-1', chain });
@@ -129,7 +131,12 @@ describe('RoleResolutionError classes', () => {
       expect(error.roleId).toBe('role-3');
       expect(error.providedScopeType).toBe('LOCAL');
       expect(error.expectedScopeType).toBe('GLOBAL');
-      expect(error.context).toEqual({ extra: 'info', roleId: 'role-3', providedScopeType: 'LOCAL', expectedScopeType: 'GLOBAL' });
+      expect(error.context).toEqual({
+        extra: 'info',
+        roleId: 'role-3',
+        providedScopeType: 'LOCAL',
+        expectedScopeType: 'GLOBAL'
+      });
     });
   });
 
@@ -149,7 +156,9 @@ describe('RoleResolutionError classes', () => {
   describe('RoleValidationError', () => {
     it('should assign message and context correctly', () => {
       const validationErrors = ['Missing field X', 'Invalid type Y'];
-      const error = new RoleValidationError('Validation failed', validationErrors, { extra: 'info' });
+      const error = new RoleValidationError('Validation failed', validationErrors, {
+        extra: 'info'
+      });
 
       expect(error).toBeInstanceOf(RoleResolutionError);
       expect(error.name).toBe('RoleValidationError');

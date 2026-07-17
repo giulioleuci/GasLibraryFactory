@@ -199,5 +199,4 @@ export class StringUtils {
     }
     return humanisePath(path, separator);
   }
-
 }

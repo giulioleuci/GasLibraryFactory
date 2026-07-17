@@ -36,7 +36,10 @@ function _safeParseFloat(value, defaultValue = 0) {
  */
 function _compareValues(leftValue, operator, rightValue) {
   // Handle null/undefined values for equality operators specifically to maintain loose equality behavior (null == undefined)
-  if (leftValue == null && (operator === '=' || operator === '==' || operator === '!=' || operator === '<>')) {
+  if (
+    leftValue == null &&
+    (operator === '=' || operator === '==' || operator === '!=' || operator === '<>')
+  ) {
     if (operator === '=' || operator === '==') {
       return rightValue == null;
     }
@@ -67,9 +70,9 @@ function _compareValues(leftValue, operator, rightValue) {
       return regex.test(leftValue.toString());
     }
     case 'IN':
-      return Array.isArray(rightValue) && rightValue.some(v => v == leftValue);
+      return Array.isArray(rightValue) && rightValue.some((v) => v == leftValue);
     case 'NOT IN':
-      return Array.isArray(rightValue) && !rightValue.some(v => v == leftValue);
+      return Array.isArray(rightValue) && !rightValue.some((v) => v == leftValue);
     case 'CONTAINS':
       return (
         typeof leftValue === 'string' &&

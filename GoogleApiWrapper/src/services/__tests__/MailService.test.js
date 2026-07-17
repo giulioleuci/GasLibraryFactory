@@ -77,12 +77,7 @@ describe('MailService - Simplified Test Suite', () => {
     it('should send email via GmailApp', () => {
       const result = service.send(email);
       expect(result.success).toBe(true);
-      expect(GmailApp.sendEmail).toHaveBeenCalledWith(
-        'a@b.com',
-        'Hi',
-        'Hello',
-        expect.any(Object)
-      );
+      expect(GmailApp.sendEmail).toHaveBeenCalledWith('a@b.com', 'Hi', 'Hello', expect.any(Object));
     });
 
     it('should handle array of recipients', () => {
@@ -101,7 +96,9 @@ describe('MailService - Simplified Test Suite', () => {
     });
 
     it('should catch and log errors', () => {
-      GmailApp.sendEmail.mockImplementation(() => { throw new Error('Fail'); });
+      GmailApp.sendEmail.mockImplementation(() => {
+        throw new Error('Fail');
+      });
       const result = service.send(email);
       expect(result.success).toBe(false);
       expect(result.error).toBe('Fail');

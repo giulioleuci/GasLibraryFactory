@@ -252,6 +252,6 @@ function LAUNCH_INT_Sheet_Lifecycle() {
 function DEBUG_ListAllTests() {
   initializeAllTests();
   Logger.log('--- TEST REGISTRY ---');
-  runner.registry.forEach(t => Logger.log(t.path));
+  runner.registry.forEach((t) => Logger.log(t.path));
   Logger.log('---------------------');
 }

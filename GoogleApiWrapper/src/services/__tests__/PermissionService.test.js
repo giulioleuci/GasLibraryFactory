@@ -7,14 +7,12 @@
 
 import { PermissionService } from '../PermissionService';
 
-
 describe('PermissionService - Comprehensive Test Suite', () => {
   let service;
   let logger;
   let cache;
   let utils;
   let exceptionService;
-
 
   beforeEach(() => {
     global.resetGasMocks();
@@ -199,9 +197,9 @@ describe('PermissionService - Comprehensive Test Suite', () => {
     });
 
     it('should categorize results into successful and failed', () => {
-      global.Drive.Permissions.create
-        .mockReturnValueOnce({})
-        .mockImplementationOnce(() => { throw new Error('Not found'); });
+      global.Drive.Permissions.create.mockReturnValueOnce({}).mockImplementationOnce(() => {
+        throw new Error('Not found');
+      });
 
       const result = service.shareWithUsers(['fileId1', 'fileId2'], {
         email: 'user@example.com',
@@ -561,7 +559,9 @@ describe('PermissionService - Comprehensive Test Suite', () => {
     it('should handle mixed success and failure', () => {
       global.Drive.Permissions.create
         .mockReturnValueOnce({})
-        .mockImplementationOnce(() => { throw new Error('Forbidden'); })
+        .mockImplementationOnce(() => {
+          throw new Error('Forbidden');
+        })
         .mockReturnValueOnce({});
 
       const result = service.shareWithUsers('fileId', [
@@ -594,7 +594,9 @@ describe('PermissionService - Comprehensive Test Suite', () => {
     });
 
     it('should get sharing link for single file with view access', () => {
-      global.Drive.Files.get.mockReturnValueOnce({ webViewLink: 'https://drive.google.com/file/view' });
+      global.Drive.Files.get.mockReturnValueOnce({
+        webViewLink: 'https://drive.google.com/file/view'
+      });
 
       const link = service.getSharingLink('fileId1', 'view');
 
@@ -603,9 +605,13 @@ describe('PermissionService - Comprehensive Test Suite', () => {
     });
 
     it('should get sharing link for single file with edit access', () => {
-      service.getPermissions.mockReturnValueOnce([{ id: 'anyonePerm', type: 'anyone', role: 'reader' }]);
+      service.getPermissions.mockReturnValueOnce([
+        { id: 'anyonePerm', type: 'anyone', role: 'reader' }
+      ]);
       global.Drive.Permissions.update.mockReturnValueOnce({ id: 'anyonePerm' });
-      global.Drive.Files.get.mockReturnValueOnce({ webViewLink: 'https://drive.google.com/file/edit' });
+      global.Drive.Files.get.mockReturnValueOnce({
+        webViewLink: 'https://drive.google.com/file/edit'
+      });
 
       const link = service.getSharingLink('fileId1', 'edit');
 
@@ -613,7 +619,9 @@ describe('PermissionService - Comprehensive Test Suite', () => {
     });
 
     it('should handle comment access type', () => {
-      service.getPermissions.mockReturnValueOnce([{ id: 'anyonePerm', type: 'anyone', role: 'reader' }]);
+      service.getPermissions.mockReturnValueOnce([
+        { id: 'anyonePerm', type: 'anyone', role: 'reader' }
+      ]);
       global.Drive.Permissions.update.mockReturnValueOnce({ id: 'anyonePerm' });
       global.Drive.Files.get.mockReturnValueOnce({ webViewLink: 'https://drive.google.com/file' });
 
@@ -671,7 +679,9 @@ describe('PermissionService - Comprehensive Test Suite', () => {
     });
 
     it('should handle failed webViewLink retrieval', () => {
-      global.Drive.Files.get.mockImplementationOnce(() => { throw new Error('Not found'); });
+      global.Drive.Files.get.mockImplementationOnce(() => {
+        throw new Error('Not found');
+      });
 
       const link = service.getSharingLink('fileId1', 'view');
 
@@ -684,7 +694,9 @@ describe('PermissionService - Comprehensive Test Suite', () => {
     it('should handle mixed success and failure for multiple files', () => {
       global.Drive.Files.get
         .mockReturnValueOnce({ webViewLink: 'https://drive.google.com/file1' })
-        .mockImplementationOnce(() => { throw new Error('Forbidden') })
+        .mockImplementationOnce(() => {
+          throw new Error('Forbidden');
+        })
         .mockReturnValueOnce({ webViewLink: 'https://drive.google.com/file3' });
 
       service.getPermissions.mockReturnValue([]);
@@ -771,8 +783,8 @@ describe('PermissionService - Comprehensive Test Suite', () => {
       expect(link).toBe('https://drive.google.com/file');
     });
 
-  // Note: the original 'should execute batch operations with maxRetries option'
-  // test was removed because native API calls don't have maxRetries passed like that
-  // in PermissionService getSharingLink right now.
+    // Note: the original 'should execute batch operations with maxRetries option'
+    // test was removed because native API calls don't have maxRetries passed like that
+    // in PermissionService getSharingLink right now.
   });
 });

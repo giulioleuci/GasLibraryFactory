@@ -54,4 +54,3 @@ export { DomainException } from './src/internal/errors/DomainException.js';
 export { EntityNotFoundException } from './src/internal/errors/EntityNotFoundException.js';
 export { InvariantViolationException } from './src/internal/errors/InvariantViolationException.js';
 export { SpecificationException } from './src/internal/errors/SpecificationException.js';
-

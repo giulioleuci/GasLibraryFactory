@@ -91,7 +91,7 @@ describe('Cross-Cutting Concern: Dry Run Mode', () => {
         writeOperations.inserts.push(data);
         return data;
       });
-      
+
       const mockDatabase = MockFactory.createJestDatabase({
         logger: mockLogger,
         utils: mockUtils,
@@ -111,7 +111,7 @@ describe('Cross-Cutting Concern: Dry Run Mode', () => {
       expect(result.dryRun).toBe(true);
       expect(result.name).toBe('Dry Run Test');
       expect(mockDatabase.tables.DryRunEntities.insertRow).not.toHaveBeenCalled();
-      
+
       // Standardized Logger Assertion
       expect(mockLogger.hasLog('INFO', /\[DRY-RUN\]/i)).toBe(true);
       expect(mockLogger.hasLog('INFO', /Would insert DryRunEntity/i)).toBe(true);
@@ -174,7 +174,9 @@ describe('Cross-Cutting Concern: Dry Run Mode', () => {
       expect(writeOperations.inserts).toHaveLength(0);
 
       // Standardized Logger Assertion
-      expect(mockLogger.hasLog('INFO', /\[TestPipeline\] \[DRY-RUN\] Would execute 3 steps/i)).toBe(true);
+      expect(mockLogger.hasLog('INFO', /\[TestPipeline\] \[DRY-RUN\] Would execute 3 steps/i)).toBe(
+        true
+      );
     });
 
     test('Pipeline normal execution runs all steps', () => {
@@ -216,16 +218,27 @@ describe('Cross-Cutting Concern: Dry Run Mode', () => {
       mockSpreadsheetService = mocks.spreadsheetService;
 
       // Custom configuration for this test's spreadsheet mocks
-      mockSpreadsheetService.getSheetInfo.mockReturnValue([{ name: 'Sheet1', rowCount: sourceData.length + 1, columnCount: 3 }]);
-      mockSpreadsheetService.getSheetData.mockReturnValue([['name', 'price', 'quantity'], ...sourceData.map((r) => [r.name, r.price, r.quantity])]);
-      mockSpreadsheetService.getRanges.mockReturnValue([['name', 'price', 'quantity'], ...sourceData.map((r) => [r.name, r.price, r.quantity])]);
-      
+      mockSpreadsheetService.getSheetInfo.mockReturnValue([
+        { name: 'Sheet1', rowCount: sourceData.length + 1, columnCount: 3 }
+      ]);
+      mockSpreadsheetService.getSheetData.mockReturnValue([
+        ['name', 'price', 'quantity'],
+        ...sourceData.map((r) => [r.name, r.price, r.quantity])
+      ]);
+      mockSpreadsheetService.getRanges.mockReturnValue([
+        ['name', 'price', 'quantity'],
+        ...sourceData.map((r) => [r.name, r.price, r.quantity])
+      ]);
+
       mockSpreadsheetService.openById.mockReturnValue({
         getId: () => 'SPREADSHEET_ID',
         getSheetByName: jest.fn((name) => ({
           getName: () => name,
           getDataRange: () => ({
-            getValues: () => [['name', 'price', 'quantity'], ...sourceData.map((r) => [r.name, r.price, r.quantity])]
+            getValues: () => [
+              ['name', 'price', 'quantity'],
+              ...sourceData.map((r) => [r.name, r.price, r.quantity])
+            ]
           })
         }))
       });

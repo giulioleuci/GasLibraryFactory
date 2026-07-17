@@ -19,10 +19,7 @@ function initIntegrationTests_Lifecycle() {
     // 1. Context Preparation
     const context = {
       title: 'Project Alpha',
-      items: [
-        { name: 'Task 1' },
-        { name: 'Task 2' }
-      ],
+      items: [{ name: 'Task 1' }, { name: 'Task 2' }],
       rows: [
         { col1: 'A1', col2: 'B1' },
         { col1: 'A2', col2: 'B2' }
@@ -32,7 +29,7 @@ function initIntegrationTests_Lifecycle() {
     // 2. Setup folders and template
     const root = TestFolderManager.getOrCreateTestFolder();
     const outputFolder = TestFolderManager.createTimestampedFolder('Lifecycle_Output');
-    
+
     // Create Template Doc programmatically for the test
     const templateDoc = TestFolderManager.createTimestampedDocument('Template_Doc_Lifecycle');
     const body = templateDoc.getBody();
@@ -46,7 +43,7 @@ function initIntegrationTests_Lifecycle() {
     ]);
     templateDoc.saveAndClose();
     const templateDocFile = DriveApp.getFileById(templateDoc.getId());
-    
+
     // 3. Dynamic Renaming
     const newName = placeholderService.processString('Contract - {{title}}', context);
     SmartAssert.equals(newName, 'Contract - Project Alpha', 'Name should be correctly processed');
@@ -58,11 +55,11 @@ function initIntegrationTests_Lifecycle() {
 
     // 5. Content Processing
     placeholderService.processDocument(newDocId, context);
-    
+
     // 6. Permission Assignment
     const testEmail = Session.getActiveUser().getEmail(); // Use current user for testing
     permissionService.shareWithUsers(newDocId, { email: testEmail, role: 'reader' });
-    
+
     // 7. Database Persistence
     const ss = testContext.getSpreadsheet();
     testContext.resetSpreadsheet(ss);
@@ -93,7 +90,7 @@ function initIntegrationTests_Lifecycle() {
     SmartAssert.isTrue(text.includes('Header: Project Alpha'), 'Title should be replaced');
     SmartAssert.isTrue(text.includes('Task 1'), 'Bullet list item 1 should be present');
     SmartAssert.isTrue(text.includes('Task 2'), 'Bullet list item 2 should be present');
-    
+
     const docTable = updatedDoc.getBody().getTables()[0];
     SmartAssert.equals(docTable.getNumRows(), 3, 'Table should have 3 rows');
     SmartAssert.equals(docTable.getRow(1).getCell(0).getText(), 'A1');
@@ -126,12 +123,14 @@ function initIntegrationTests_Lifecycle() {
     // 2. Setup folders and template
     const root = TestFolderManager.getOrCreateTestFolder();
     const outputFolder = TestFolderManager.createTimestampedFolder('Lifecycle_Output_Sheet');
-    
+
     const templateSS = TestFolderManager.createTimestampedSpreadsheet('Template_Sheet_Lifecycle');
     const sheet = templateSS.getSheets()[0];
     sheet.setName('Template');
     sheet.getRange('A1').setValue('Budget for {{title}}');
-    sheet.getRange('A3').setValue('{{matrice_dati[sorgente=data, colonne=c1;c2, intestazioni=Item;Amount]}}');
+    sheet
+      .getRange('A3')
+      .setValue('{{matrice_dati[sorgente=data, colonne=c1;c2, intestazioni=Item;Amount]}}');
     sheet.getRange('E1').setValue('{{dynamic_columns[source=cols, value=name, acl=email]}}');
     SpreadsheetApp.flush();
     const templateFile = DriveApp.getFileById(templateSS.getId());
@@ -148,7 +147,10 @@ function initIntegrationTests_Lifecycle() {
     SpreadsheetApp.flush();
 
     // 6. File-Level Permissions
-    permissionService.shareWithUsers(newSSId, { email: Session.getActiveUser().getEmail(), role: 'writer' });
+    permissionService.shareWithUsers(newSSId, {
+      email: Session.getActiveUser().getEmail(),
+      role: 'writer'
+    });
 
     // 7. Database Persistence
     const ssDB = testContext.getSpreadsheet(); // Reuse same for simplicity
@@ -158,7 +160,7 @@ function initIntegrationTests_Lifecycle() {
     dbSheet.clear();
     dbSheet.appendRow(['id', 'name', 'type', 'folderId', 'createdAt']);
     SpreadsheetApp.flush();
-    
+
     const utils = new UtilsService((ms) => Utilities.sleep(ms));
     const cache = CacheService.getScriptCache();
     const exceptionService = new ExceptionService(logger, utils);
@@ -180,7 +182,7 @@ function initIntegrationTests_Lifecycle() {
     SmartAssert.equals(updatedSheet.getRange('A1').getValue(), 'Budget for Q1 Budget');
     SmartAssert.equals(updatedSheet.getRange('A3').getValue(), 'Item');
     SmartAssert.equals(updatedSheet.getRange('A4').getValue(), 'Rent');
-    
+
     SmartAssert.equals(updatedSheet.getRange('E1').getValue(), 'Owner');
     SmartAssert.equals(updatedSheet.getRange('F1').getValue(), 'Approver');
 

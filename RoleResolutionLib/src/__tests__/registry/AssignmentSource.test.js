@@ -246,7 +246,9 @@ describe('InMemoryAssignmentSource', () => {
           isActive: true
         });
         // GLOBAL scope matches everything
-        expect(source.getAssignmentsForRole('role-manual', Scope.project('proj-1'), now)).toHaveLength(1);
+        expect(
+          source.getAssignmentsForRole('role-manual', Scope.project('proj-1'), now)
+        ).toHaveLength(1);
 
         source.addAssignment({
           roleId: 'role-manual-2',
@@ -255,10 +257,14 @@ describe('InMemoryAssignmentSource', () => {
           isActive: true
         });
         // Same type and value match
-        expect(source.getAssignmentsForRole('role-manual-2', Scope.project('proj-1'), now)).toHaveLength(1);
+        expect(
+          source.getAssignmentsForRole('role-manual-2', Scope.project('proj-1'), now)
+        ).toHaveLength(1);
 
         // Different value
-        expect(source.getAssignmentsForRole('role-manual-2', Scope.project('proj-2'), now)).toHaveLength(0);
+        expect(
+          source.getAssignmentsForRole('role-manual-2', Scope.project('proj-2'), now)
+        ).toHaveLength(0);
       });
     });
   });

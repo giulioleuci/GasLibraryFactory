@@ -12,7 +12,7 @@ export class DriveShortcutHandler {
     // Bind helper methods
     this._isDryRun = facade._isDryRun.bind(facade);
     this._generateDryRunId = facade._generateDryRunId.bind(facade);
-    
+
     // Bind facade methods used by this manager
     this.getFiles = (...args) => this.facade.getFiles(...args);
   }

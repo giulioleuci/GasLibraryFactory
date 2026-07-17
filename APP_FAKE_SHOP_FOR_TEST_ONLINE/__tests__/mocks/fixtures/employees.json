@@ -120,7 +120,13 @@
       "role_name": "MANAGER",
       "scope_type": "DEPARTMENT",
       "scope_value": "SALES",
-      "permissions": ["orders:*", "employees:read", "employees:write", "reports:*", "inventory:read"]
+      "permissions": [
+        "orders:*",
+        "employees:read",
+        "employees:write",
+        "reports:*",
+        "inventory:read"
+      ]
     },
     {
       "role_id": "role-sales",

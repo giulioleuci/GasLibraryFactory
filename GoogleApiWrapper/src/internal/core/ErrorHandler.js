@@ -45,7 +45,7 @@ export class ServiceError extends BaseError {
 
   /**
    * Transforms error into structured POJO for logging.
-   * 
+   *
    * @returns {Object} Structured error data { name, message, serviceName, operation, timestamp, context, originalError: { message, stack } | null }.
    */
   toLogObject() {
@@ -69,7 +69,7 @@ export class ServiceError extends BaseError {
 /**
  * Error for Google API quota/rate limit violations (L1).
  * Automatically classified from "User rate limit exceeded", "Quota exceeded", or 429 responses.
- * 
+ *
  * @class
  * @extends ServiceError
  * @property {string} name - Always 'QuotaExceededError'.
@@ -79,7 +79,7 @@ export class ServiceError extends BaseError {
 export class QuotaExceededError extends ServiceError {
   /**
    * Initializes QuotaExceededError with retry metadata.
-   * 
+   *
    * @param {string} message - Violation description.
    * @param {string} serviceName - Originating service.
    * @param {string} operation - Failed operation.
@@ -97,7 +97,7 @@ export class QuotaExceededError extends ServiceError {
 /**
  * Error for authorization or permission failures (L1).
  * Classified from "Permission denied", "Unauthorized" (401), or "Forbidden" (403).
- * 
+ *
  * @class
  * @extends ServiceError
  * @property {string} name - Always 'PermissionDeniedError'.
@@ -106,7 +106,7 @@ export class QuotaExceededError extends ServiceError {
 export class PermissionDeniedError extends ServiceError {
   /**
    * Initializes PermissionDeniedError.
-   * 
+   *
    * @param {string} message - Precise failure description.
    * @param {string} serviceName - Originating service.
    * @param {string} operation - Failed operation.
@@ -123,7 +123,7 @@ export class PermissionDeniedError extends ServiceError {
 /**
  * Error for non-existent or deleted Google resources (L1).
  * Classified from "not found", "does not exist", or 404 responses.
- * 
+ *
  * @class
  * @extends ServiceError
  * @property {string} name - Always 'ResourceNotFoundError'.
@@ -132,7 +132,7 @@ export class PermissionDeniedError extends ServiceError {
 export class ResourceNotFoundError extends ServiceError {
   /**
    * Initializes ResourceNotFoundError.
-   * 
+   *
    * @param {string} message - Precise failure description.
    * @param {string} serviceName - Originating service.
    * @param {string} operation - Failed operation.
@@ -149,7 +149,7 @@ export class ResourceNotFoundError extends ServiceError {
 /**
  * Error for temporary Google service outages or timeouts (L1).
  * Classified from "service unavailable", 503, 502, or "timeout" responses.
- * 
+ *
  * @class
  * @extends ServiceError
  * @property {string} name - Always 'ServiceUnavailableError'.
@@ -159,7 +159,7 @@ export class ResourceNotFoundError extends ServiceError {
 export class ServiceUnavailableError extends ServiceError {
   /**
    * Initializes ServiceUnavailableError with retry metadata.
-   * 
+   *
    * @param {string} message - Service failure description.
    * @param {string} serviceName - Originating service.
    * @param {string} operation - Failed operation.
@@ -177,7 +177,7 @@ export class ServiceUnavailableError extends ServiceError {
 /**
  * Error for input validation or business rule failures (L1).
  * Used for pre-flight checks, schema validation, or malformed data detection.
- * 
+ *
  * @class
  * @extends ServiceError
  * @property {string} name - Always 'ValidationError'.
@@ -186,7 +186,7 @@ export class ServiceUnavailableError extends ServiceError {
 export class ValidationError extends ServiceError {
   /**
    * Initializes ValidationError.
-   * 
+   *
    * @param {string} message - Validation failure description.
    * @param {string} serviceName - Originating service.
    * @param {string} operation - Failed operation.
@@ -207,7 +207,7 @@ export class ValidationError extends ServiceError {
 /**
  * Standardized error handling, classification, and retry management for GoogleApiWrapper services (L1).
  * Implements exponential backoff and structured error mapping (GAW-H003).
- * 
+ *
  * @class
  * @property {string} serviceName - Target service identity for error tagging.
  * @property {Object} logger - Logger instance for diagnostic output.
@@ -215,7 +215,7 @@ export class ValidationError extends ServiceError {
 export class ErrorHandler {
   /**
    * Initializes ErrorHandler for a specific service.
-   * 
+   *
    * @param {string} serviceName - Name of the service (e.g., 'DriveService').
    * @param {Object} logger - Logger instance with error/warn methods.
    */
@@ -227,7 +227,7 @@ export class ErrorHandler {
   /**
    * Classifies error and wraps in ServiceError subclass.
    * Priority: Quota (1) > Permission (2) > Resource (3) > Availability (4) > Default (5).
-   * 
+   *
    * @param {Error|string} error - Root error.
    * @param {string} operation - Failed operation name.
    * @param {Object} [context={}] - Diagnostic metadata.
@@ -262,7 +262,7 @@ export class ErrorHandler {
 
   /**
    * Executes callback and wraps any thrown error.
-   * 
+   *
    * @param {Function} func - Operation to execute.
    * @param {string} operation - Operation name for tagging.
    * @param {Object} [context={}] - Diagnostic metadata.
@@ -291,7 +291,7 @@ export class ErrorHandler {
   /**
    * Executes callback with exponential backoff retry logic.
    * Uses bitshift optimization (GAW-M003). Retries only QuotaExceededError and ServiceUnavailableError.
-   * 
+   *
    * @param {Function} func - Operation to execute.
    * @param {string} operation - Operation name for tagging.
    * @param {Object} [options={}] - Retry configuration.

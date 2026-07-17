@@ -92,8 +92,8 @@ const recipe = {
   outputFormat: 'html',
   blocks: [
     { type: 'greeting', instanceId: 'hdr_1' },
-    { 
-      type: 'promo', 
+    {
+      type: 'promo',
       instanceId: 'p_1',
       visibility: { condition: '{{user.isNew}} == true' }
     }

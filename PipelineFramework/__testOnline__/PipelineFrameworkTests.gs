@@ -19,7 +19,9 @@ function initPipelineFrameworkTests() {
     const pipeline = new Pipeline(logger, exceptionService);
 
     class LogStep extends Step {
-      constructor(name) { super(name, logger); }
+      constructor(name) {
+        super(name, logger);
+      }
       _executeLogic(context) {
         sheet.appendRow([this.getName(), 'Completed']);
       }
@@ -38,17 +40,19 @@ function initPipelineFrameworkTests() {
     const exceptionService = new ExceptionService(logger, utils);
 
     const pipeline = new Pipeline(logger, exceptionService);
-    
+
     let docUrl = null;
 
     class ReportStep extends Step {
-      constructor() { super('Report', logger); }
+      constructor() {
+        super('Report', logger);
+      }
       _executeLogic(context) {
         const doc = DocumentApp.create('QualityReport_' + new Date().getTime());
         doc.getBody().appendParagraph('Data Quality: 100%');
         docUrl = doc.getUrl();
         doc.saveAndClose();
-        
+
         // Cleanup
         DriveApp.getFileById(doc.getId()).setTrashed(true);
       }

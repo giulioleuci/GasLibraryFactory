@@ -50,7 +50,10 @@ function initGasExpressionEngineLibTests() {
     const order = { quantity: 150, customerTier: 'gold' };
 
     const applyDiscount = engine.evaluate(rule, order);
-    SmartAssert.isTrue(applyDiscount, 'Should apply discount for gold customer with large quantity');
+    SmartAssert.isTrue(
+      applyDiscount,
+      'Should apply discount for gold customer with large quantity'
+    );
 
     const ss = testContext.getSpreadsheet();
     const sheet = ss.insertSheet('Pricing_' + new Date().getTime());
@@ -59,6 +62,9 @@ function initGasExpressionEngineLibTests() {
     SpreadsheetApp.flush();
 
     const val = sheet.getRange(2, 3).getValue();
-    SmartAssert.isTrue(val === true || val === 'TRUE', 'Spreadsheet should record discount decision');
+    SmartAssert.isTrue(
+      val === true || val === 'TRUE',
+      'Spreadsheet should record discount decision'
+    );
   });
 }

@@ -36,13 +36,8 @@ describe('Integration Test 13: Importer-Recipe Parsing', () => {
     driveService = MockFactory.createJestDriveService();
     spreadsheetService = MockFactory.createJestSpreadsheetService();
     databaseService = MockFactory.createJestDatabase({ logger });
-    
-    engine = new ImportEngine(
-      logger,
-      driveService,
-      spreadsheetService,
-      databaseService
-    );
+
+    engine = new ImportEngine(logger, driveService, spreadsheetService, databaseService);
     validator = new ImportRecipeValidator(engine);
   });
 
@@ -114,7 +109,7 @@ describe('Integration Test 13: Importer-Recipe Parsing', () => {
 
       const config = new ImportConfiguration(recipe, logger);
       const strategy = engine._sourceFactory.createStrategy(config.getSource().type);
-      
+
       expect(strategy.constructor.name).toBe('SheetByIdStrategy');
     });
 
@@ -133,7 +128,7 @@ describe('Integration Test 13: Importer-Recipe Parsing', () => {
 
       const config = new ImportConfiguration(recipe, logger);
       const strategy = engine._sourceFactory.createStrategy(config.getSource().type);
-      
+
       expect(strategy.constructor.name).toBe('FolderStrategy');
     });
 
@@ -152,7 +147,7 @@ describe('Integration Test 13: Importer-Recipe Parsing', () => {
 
       const config = new ImportConfiguration(recipe, logger);
       const sourceConfig = config.getSource().config;
-      
+
       expect(sourceConfig.sheetId).toBe('abc123');
       expect(sourceConfig.range).toBe('A1:B10');
       expect(sourceConfig.hasHeaders).toBe(true);
@@ -168,8 +163,8 @@ describe('Integration Test 13: Importer-Recipe Parsing', () => {
           config: { sheetId: 'abc123' }
         },
         transform: {
-          mapping: { 'OldCol': 'NewCol' },
-          calculated: { 'Full': '{{First}} {{Last}}' }
+          mapping: { OldCol: 'NewCol' },
+          calculated: { Full: '{{First}} {{Last}}' }
         },
         load: {
           targetTable: 'Users',
@@ -179,10 +174,13 @@ describe('Integration Test 13: Importer-Recipe Parsing', () => {
 
       const config = new ImportConfiguration(recipe, logger);
       const transformer = engine._transformer;
-      
+
       expect(transformer).toBeDefined();
       // Test that it can handle the config via transform call
-      const result = transformer.transform([{ 'OldCol': 'Val', 'First': 'A', 'Last': 'B' }], config.getTransform());
+      const result = transformer.transform(
+        [{ OldCol: 'Val', First: 'A', Last: 'B' }],
+        config.getTransform()
+      );
       expect(result[0].NewCol).toBe('Val');
       expect(result[0].Full).toBe('A B');
     });
@@ -205,7 +203,7 @@ describe('Integration Test 13: Importer-Recipe Parsing', () => {
 
       const config = new ImportConfiguration(recipe, logger);
       const loader = engine._loader;
-      
+
       expect(loader).toBeDefined();
       // We don't call load() here as it requires more complex DB mocking,
       // but we verified the component exists in the engine.
@@ -221,7 +219,7 @@ describe('Integration Test 13: Importer-Recipe Parsing', () => {
           config: { sheetId: 'abc123' }
         },
         transform: {
-          mapping: { 'source_id': 'id' }
+          mapping: { source_id: 'id' }
         },
         load: {
           targetTable: 'Entities',
@@ -230,7 +228,7 @@ describe('Integration Test 13: Importer-Recipe Parsing', () => {
       };
 
       const config = new ImportConfiguration(recipe, logger);
-      
+
       const strategy = engine._sourceFactory.createStrategy(config.getSource().type);
       const transformer = engine._transformer;
       const loader = engine._loader;
@@ -238,7 +236,7 @@ describe('Integration Test 13: Importer-Recipe Parsing', () => {
       expect(strategy).toBeDefined();
       expect(transformer).toBeDefined();
       expect(loader).toBeDefined();
-      
+
       expect(config.getName()).toBe('Full Pipeline Recipe');
     });
   });

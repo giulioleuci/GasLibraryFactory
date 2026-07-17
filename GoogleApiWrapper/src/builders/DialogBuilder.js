@@ -7,7 +7,7 @@
 /**
  * @class DialogBuilder
  * @description Fluent builder for GAS modal HTML dialogs. Wraps HtmlService to provision content, dimensions, and titles with chainable operations. Handles automatic conversion from strings or templates to HtmlOutput.
- * 
+ *
  * @property {GoogleAppsScript.Base.Ui} _ui Native GAS UI provider.
  * @property {LoggerService} _logger Diagnostic logger.
  * @property {GoogleAppsScript.HTML.HtmlOutput|null} _htmlOutput Pending output object.

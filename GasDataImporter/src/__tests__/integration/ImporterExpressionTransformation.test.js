@@ -46,7 +46,7 @@ describe('Integration Test 4: Importer-Expression Transformation', () => {
         }
       };
       const row = { firstName: 'John', lastName: 'Doe' };
-      
+
       // Program mock to handle this specific expression
       expressionEngine.evaluate.mockImplementation((expr, context) => {
         if (expr === '{{firstName}} {{lastName}}') {
@@ -54,7 +54,7 @@ describe('Integration Test 4: Importer-Expression Transformation', () => {
         }
         return null;
       });
-      
+
       const result = transformer.transform([row], transformConfig);
       expect(result[0].fullName).toBe('John Doe');
     });
@@ -66,7 +66,7 @@ describe('Integration Test 4: Importer-Expression Transformation', () => {
         }
       };
       const row = { age: 25 };
-      
+
       // MockFactory evaluate handles ">"
       expressionEngine.evaluate.mockImplementation((expr, context) => {
         if (expr === '{{age}} >= 18') return context.age >= 18;
@@ -84,7 +84,7 @@ describe('Integration Test 4: Importer-Expression Transformation', () => {
         }
       };
       const row = { price: 10, quantity: 5 };
-      
+
       expressionEngine.evaluate.mockImplementation((expr, context) => {
         if (expr === '{{price}} * {{quantity}}') return context.price * context.quantity;
         return null;
@@ -103,9 +103,9 @@ describe('Integration Test 4: Importer-Expression Transformation', () => {
         }
       };
       const row = { val: 'passed-data' };
-      
+
       transformer.transform([row], transformConfig);
-      
+
       expect(expressionEngine.evaluate).toHaveBeenCalledWith(
         '{{val}}',
         expect.objectContaining({ val: 'passed-data' })
@@ -119,18 +119,18 @@ describe('Integration Test 4: Importer-Expression Transformation', () => {
         }
       };
       const row = { val: 1 };
-      
+
       expressionEngine.evaluate.mockImplementation(() => {
         throw new Error('Engine error');
       });
 
-      // Simple substitution would return "" but the _applyCalculated wrapper 
+      // Simple substitution would return "" but the _applyCalculated wrapper
       // is where we expect the error to be handled if the engine fails and we want to enforce it.
-      // Wait, _evaluateExpression catches engine error and falls back. 
+      // Wait, _evaluateExpression catches engine error and falls back.
       // If fallback returns string, it won't throw.
       // If we want to test failing evaluation, we can mock _evaluateExpression on facade or similar,
       // but let's see if we can trigger a real failure in _applyCalculated.
-      
+
       // Let's force an error by making _evaluateExpression itself throw (not just the engine)
       jest.spyOn(transformer, '_evaluateExpression').mockImplementation(() => {
         throw new Error('Total failure');
@@ -152,7 +152,7 @@ describe('Integration Test 4: Importer-Expression Transformation', () => {
         }
       };
       const row = { price: 100, qty: 2 };
-      
+
       expressionEngine.evaluate.mockImplementation((expr, context) => {
         if (expr === '{{price}} * {{qty}}') return context.price * context.qty;
         if (expr === '{{subtotal}} * 0.1') return context.subtotal * 0.1;
@@ -161,7 +161,7 @@ describe('Integration Test 4: Importer-Expression Transformation', () => {
       });
 
       const result = transformer.transform([row], transformConfig);
-      
+
       expect(result[0].subtotal).toBe(200);
       expect(result[0].tax).toBe(20);
       expect(result[0].total).toBe(220);
@@ -173,12 +173,12 @@ describe('Integration Test 4: Importer-Expression Transformation', () => {
           city: '{{user.address.city}}'
         }
       };
-      const row = { 
-        user: { 
-          address: { city: 'Rome' } 
-        } 
+      const row = {
+        user: {
+          address: { city: 'Rome' }
+        }
       };
-      
+
       // Note: simpleTemplateSubstitution only handles flat keys: context[trimmedKey]
       // For nested, it would need the actual expression engine
       expressionEngine.evaluate.mockImplementation((expr, context) => {

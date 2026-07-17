@@ -229,7 +229,9 @@ describe('LockService - Comprehensive Test Suite', () => {
         mockNativeLock.tryLock.mockReturnValue(false);
         lock.tryLock(10000);
 
-        expect(mocks.logger.debug).toHaveBeenCalledWith(expect.stringContaining('Failed to acquire'));
+        expect(mocks.logger.debug).toHaveBeenCalledWith(
+          expect.stringContaining('Failed to acquire')
+        );
       });
 
       it('should throw and log error on failure', () => {

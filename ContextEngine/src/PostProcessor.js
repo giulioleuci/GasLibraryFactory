@@ -100,7 +100,9 @@ export class PostProcessor {
       }
 
       const map = (value) => {
-        return Object.prototype.hasOwnProperty.call(config.mapping, value) ? config.mapping[value] : value;
+        return Object.prototype.hasOwnProperty.call(config.mapping, value)
+          ? config.mapping[value]
+          : value;
       };
 
       if (isArray(data)) {
@@ -157,7 +159,11 @@ export class PostProcessor {
       const applyDefaults = (obj) => {
         const result = { ...obj };
         for (const key in config.defaults) {
-          if (!Object.prototype.hasOwnProperty.call(result, key) || result[key] === null || result[key] === undefined) {
+          if (
+            !Object.prototype.hasOwnProperty.call(result, key) ||
+            result[key] === null ||
+            result[key] === undefined
+          ) {
             result[key] = config.defaults[key];
           }
         }
@@ -280,4 +286,3 @@ export class PostProcessor {
     return Array.from(this._processors.keys());
   }
 }
-

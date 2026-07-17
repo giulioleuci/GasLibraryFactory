@@ -224,11 +224,7 @@ describe('Exports Validation', () => {
   // ─── JobRunnerLib (Layer 2) ─────────────────────────────────────────
 
   describe('JobRunnerLib exports', () => {
-    const jobExports = [
-      'JobRunnerService',
-      'JobDefinitionRegistry',
-      'JobQueue'
-    ];
+    const jobExports = ['JobRunnerService', 'JobDefinitionRegistry', 'JobQueue'];
 
     it.each(jobExports)('should export %s', (name) => {
       expect(global[name]).toBeDefined();
@@ -398,12 +394,7 @@ describe('Exports Validation', () => {
   // ─── GasProcessMonitorLib (Optional Add-on) ────────────────────────
 
   describe('GasProcessMonitorLib exports', () => {
-    const monitorExports = [
-      'ProcessMonitorService',
-      'ProcessState',
-      'StepState',
-      'DashboardUi'
-    ];
+    const monitorExports = ['ProcessMonitorService', 'ProcessState', 'StepState', 'DashboardUi'];
 
     it.each(monitorExports)('should export %s', (name) => {
       expect(global[name]).toBeDefined();

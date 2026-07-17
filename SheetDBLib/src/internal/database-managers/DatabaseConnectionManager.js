@@ -27,14 +27,21 @@ export class DatabaseConnectionManager {
           const deletedRows = table._deleteQueue ? table._deleteQueue.size : 0;
 
           if (dirtyRows > 0 || newRows > 0 || deletedRows > 0) {
-            pendingChanges.push({ table: tableName, updates: dirtyRows, inserts: newRows, deletes: deletedRows });
+            pendingChanges.push({
+              table: tableName,
+              updates: dirtyRows,
+              inserts: newRows,
+              deletes: deletedRows
+            });
           }
         });
 
         if (pendingChanges.length > 0) {
           this._logger.info(`[DRY-RUN] Would save changes to ${pendingChanges.length} table(s):`);
           pendingChanges.forEach((change) => {
-            this._logger.info(`[DRY-RUN]   - ${change.table}: ${change.inserts} inserts, ${change.updates} updates, ${change.deletes} deletes`);
+            this._logger.info(
+              `[DRY-RUN]   - ${change.table}: ${change.inserts} inserts, ${change.updates} updates, ${change.deletes} deletes`
+            );
           });
         } else {
           this._logger.info('[DRY-RUN] No pending changes to save');
@@ -48,8 +55,10 @@ export class DatabaseConnectionManager {
         const table = this.facade.tables[tableName];
         totalOperations += table.flush(options);
       });
-      
-      this._logger.debug(`Database saved successfully. Executed operations across ${totalOperations} tables.`);
+
+      this._logger.debug(
+        `Database saved successfully. Executed operations across ${totalOperations} tables.`
+      );
       return this.facade;
     } catch (e) {
       this._logger.error(`Error saving database: ${e.message}`);
@@ -59,7 +68,9 @@ export class DatabaseConnectionManager {
 
   beginTransaction() {
     if (this.facade._inTransaction) {
-      throw new Error('Transaction already in progress. Commit or rollback current transaction first.');
+      throw new Error(
+        'Transaction already in progress. Commit or rollback current transaction first.'
+      );
     }
 
     this.facade._transaction = {

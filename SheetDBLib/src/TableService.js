@@ -45,7 +45,15 @@ export class TableService {
    * @param {Array<Array<*>>} [preloadedData=null] - Raw 2D array for Eager Loading.
    * @param {TableSchemaValidator} [schemaValidator=null] - Pre-instantiated validator.
    */
-  constructor(sheetName, spreadsheetId, spreadsheetService, logger, utils, preloadedData = null, schemaValidator = null) {
+  constructor(
+    sheetName,
+    spreadsheetId,
+    spreadsheetService,
+    logger,
+    utils,
+    preloadedData = null,
+    schemaValidator = null
+  ) {
     this.sheetName = sheetName;
     this.spreadsheetId = spreadsheetId;
     this.spreadsheetService = spreadsheetService;
@@ -198,14 +206,6 @@ export class TableService {
     return this._processedRowsCache.map((row) => ({ ...row }));
   }
 
-
-
-
-
-
-
-
-
   /**
    * Deletes a row from the spreadsheet identified by its primary key.
    *
@@ -219,11 +219,6 @@ export class TableService {
    * }
    */
 
-
-
-
-
-
   /**
    * @function flush
    * @description Synchronizes queued changes (deletes, updates, inserts) to Google Sheets via batch API calls.
@@ -236,10 +231,15 @@ export class TableService {
     let writeHeader = false;
 
     // Ensure columns are loaded before attempting write operations
-    if (this.columns.length === 0 && (this._deleteQueue.size > 0 || this._updateQueue.size > 0 || this._insertQueue.length > 0)) {
+    if (
+      this.columns.length === 0 &&
+      (this._deleteQueue.size > 0 || this._updateQueue.size > 0 || this._insertQueue.length > 0)
+    ) {
       if (this._insertQueue.length > 0) {
         // Sheet has no header yet — derive columns from queued insert rows
-        this._logger.debug(`Deriving columns from queued inserts for empty table "${this.sheetName}"`);
+        this._logger.debug(
+          `Deriving columns from queued inserts for empty table "${this.sheetName}"`
+        );
         const columnSet = new Set();
         for (const row of this._insertQueue) {
           for (const key of Object.keys(row)) {
@@ -252,7 +252,9 @@ export class TableService {
         this._keyField = this._determinePrimaryKey();
         writeHeader = true;
       } else {
-        this._logger.debug(`Columns empty for table "${this.sheetName}", reloading header before flush`);
+        this._logger.debug(
+          `Columns empty for table "${this.sheetName}", reloading header before flush`
+        );
         this.columns = this._loadHeader();
         this._keyField = this._determinePrimaryKey();
       }
@@ -261,13 +263,13 @@ export class TableService {
     // 1. Process deletes (bottom-up to avoid index shifting)
     if (this._deleteQueue.size > 0 && !options.dryRun) {
       const deleteIds = Array.from(this._deleteQueue);
-      
+
       // Need real spreadsheet state rows to find exact indices for deletion since our local cache already removed them
       // Actually wait, if we removed them from cache, how do we know their spreadsheet row indices?
       // Spreadsheet row indices correspond to the ORIGINAL data before we modified our local cache!
       // This means if we do multiple inserts/deletes, the spreadsheet row numbers will drift from our cache.
       // But we just need to delete them. Since we deleted them from cache, _findRowIndexById will return -1.
-      // We must query the spreadsheet directly or keep track of mapping. 
+      // We must query the spreadsheet directly or keep track of mapping.
       // To simplify, if we just use a column search? No, deleteRows requires indices.
       // Instead of manual indices, we can fetch all IDs from the sheet right before flush.
       const pkColLetter = this._getPkColumnLetter();
@@ -275,18 +277,22 @@ export class TableService {
       const pkColumnArray = this.spreadsheetService.getRanges(this.spreadsheetId, pkRange) || [];
 
       const realRowIndicesToDelete = [];
-      const pkValues = pkColumnArray.map(r => r[0]); 
-      
+      const pkValues = pkColumnArray.map((r) => r[0]);
+
       for (const id of deleteIds) {
-         // find index in pkValues. It's 0-indexed, but sheets are 1-indexed. row 1 is header, so values start at index 1 -> row 2.
-         const idx = pkValues.findIndex(val => val == id); // == for string/num conversion
-         if (idx !== -1) {
-           realRowIndicesToDelete.push(idx + 1); // 1-based index
-         }
+        // find index in pkValues. It's 0-indexed, but sheets are 1-indexed. row 1 is header, so values start at index 1 -> row 2.
+        const idx = pkValues.findIndex((val) => val == id); // == for string/num conversion
+        if (idx !== -1) {
+          realRowIndicesToDelete.push(idx + 1); // 1-based index
+        }
       }
-      
+
       if (realRowIndicesToDelete.length > 0) {
-        this.spreadsheetService.deleteRows(this.spreadsheetId, this.sheetName, realRowIndicesToDelete);
+        this.spreadsheetService.deleteRows(
+          this.spreadsheetId,
+          this.sheetName,
+          realRowIndicesToDelete
+        );
         operationsPerformed++;
       }
       this._deleteQueue.clear();
@@ -296,40 +302,40 @@ export class TableService {
     if (this._updateQueue.size > 0 && !options.dryRun) {
       const updates = [];
       const physicalColumns = this.columns.filter((col) => !this._virtualColumns[col]);
-      
+
       // Need current row indices from remote to safely update
       const pkColLetter = this._getPkColumnLetter();
       const pkRange = `'${this.sheetName}'!${pkColLetter}:${pkColLetter}`;
       const pkColumnArray = this.spreadsheetService.getRanges(this.spreadsheetId, pkRange) || [];
-      const pkValues = pkColumnArray.map(r => r ? r[0] : null); 
-      
+      const pkValues = pkColumnArray.map((r) => (r ? r[0] : null));
+
       for (const [id, rowToUpdate] of this._updateQueue.entries()) {
-         const idx = pkValues.findIndex(val => val == id);
-         if (idx !== -1) {
-            const sheetRowIndex = idx + 1;
-            const newPhysicalData = {};
-            for (const col of physicalColumns) {
-              newPhysicalData[col] = rowToUpdate[col] ?? '';
-            }
-            
-            // Re-check dirty just before update
-            const originalData = this._originalRowData.get(id);
-            if (originalData && isEqual(originalData, newPhysicalData)) {
-              continue; // skip
-            }
-            
-            const rowValues = physicalColumns.map((col) => newPhysicalData[col] ?? '');
-            
-            const rangeA1 = `A${sheetRowIndex}:${this._convertIndexToColumn(physicalColumns.length)}${sheetRowIndex}`;
-            updates.push({
-               range: `${this.sheetName}!${rangeA1}`,
-               values: [rowValues]
-            });
-            
-            this._originalRowData.set(id, newPhysicalData);
-         }
+        const idx = pkValues.findIndex((val) => val == id);
+        if (idx !== -1) {
+          const sheetRowIndex = idx + 1;
+          const newPhysicalData = {};
+          for (const col of physicalColumns) {
+            newPhysicalData[col] = rowToUpdate[col] ?? '';
+          }
+
+          // Re-check dirty just before update
+          const originalData = this._originalRowData.get(id);
+          if (originalData && isEqual(originalData, newPhysicalData)) {
+            continue; // skip
+          }
+
+          const rowValues = physicalColumns.map((col) => newPhysicalData[col] ?? '');
+
+          const rangeA1 = `A${sheetRowIndex}:${this._convertIndexToColumn(physicalColumns.length)}${sheetRowIndex}`;
+          updates.push({
+            range: `${this.sheetName}!${rangeA1}`,
+            values: [rowValues]
+          });
+
+          this._originalRowData.set(id, newPhysicalData);
+        }
       }
-      
+
       if (updates.length > 0) {
         this.spreadsheetService.updateRanges(this.spreadsheetId, updates);
         operationsPerformed++;
@@ -356,10 +362,10 @@ export class TableService {
         values: dataMatrix
       });
       operationsPerformed++;
-      
+
       // Update original data cache
       for (const row of this._insertQueue) {
-         this._storeOriginalRowData(row);
+        this._storeOriginalRowData(row);
       }
       this._insertQueue = [];
     }
@@ -445,8 +451,6 @@ export class TableService {
   getAllRows() {
     return this.getRows();
   }
-
-
 
   // --- PRIVATE METHODS ---
 
@@ -611,7 +615,10 @@ export class TableService {
    */
   _loadHeader() {
     this._logger.debug(`Loading header on-demand for table: ${this.sheetName}`);
-    const headerData = this.spreadsheetService.getRanges(this.spreadsheetId, `'${this.sheetName}'!A1:ZZ1`);
+    const headerData = this.spreadsheetService.getRanges(
+      this.spreadsheetId,
+      `'${this.sheetName}'!A1:ZZ1`
+    );
     if (!headerData || headerData.length === 0) {
       throw new Error(`No header found in sheet ${this.sheetName}`);
     }

@@ -150,4 +150,3 @@ export class RendererRegistry {
     return `RendererRegistry[${this._renderers.size} formats: ${this.getFormats().join(', ')}]`;
   }
 }
-

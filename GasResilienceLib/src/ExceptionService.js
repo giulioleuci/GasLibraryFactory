@@ -118,7 +118,7 @@ export class ExceptionService {
       'executeWithBypass',
       '_generateCorrelationId'
     ];
-    executionMethods.forEach(m => {
+    executionMethods.forEach((m) => {
       this[m] = this._executionHandler[m].bind(this._executionHandler);
     });
 
@@ -132,7 +132,7 @@ export class ExceptionService {
       'resetCircuit',
       'classifyError'
     ];
-    statsMethods.forEach(m => {
+    statsMethods.forEach((m) => {
       this[m] = this._statsTracker[m].bind(this._statsTracker);
     });
   }
@@ -190,5 +190,4 @@ export class ExceptionService {
   get circuitBreaker() {
     return this._circuitBreaker;
   }
-
 }

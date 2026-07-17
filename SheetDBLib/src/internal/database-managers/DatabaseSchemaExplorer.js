@@ -16,9 +16,13 @@ export class DatabaseSchemaExplorer {
 
   _initialize() {
     try {
-      const sheets = this._spreadsheetService.getSheetInfo(this._spreadsheetId, { includeHidden: false });
+      const sheets = this._spreadsheetService.getSheetInfo(this._spreadsheetId, {
+        includeHidden: false
+      });
       if (sheets.length === 0) {
-        this._logger.warn(`No visible sheets (tables) found in database ID ${this._spreadsheetId}.`);
+        this._logger.warn(
+          `No visible sheets (tables) found in database ID ${this._spreadsheetId}.`
+        );
         this.facade._loaded = true;
         return;
       }
@@ -57,7 +61,9 @@ export class DatabaseSchemaExplorer {
       });
 
       this.facade._loaded = true;
-      this._logger.debug(`Database initialized with ${Object.keys(this.facade.tables).length} tables loaded in batch.`);
+      this._logger.debug(
+        `Database initialized with ${Object.keys(this.facade.tables).length} tables loaded in batch.`
+      );
     } catch (e) {
       this._logger.error(`Error initializing database: ${e.message}`);
       throw e;

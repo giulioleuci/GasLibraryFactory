@@ -13,7 +13,7 @@ export class MustacheMock {
   constructor(options = {}) {
     this._logger = options.logger || null;
     this._filters = new Map();
-    
+
     // Bind and mock the registerFilter method first!
     this.registerFilter = jest.fn((name, fn) => {
       this._filters.set(name, fn);
@@ -29,7 +29,7 @@ export class MustacheMock {
 
     this.render = jest.fn((template, data = {}, partials = {}) => {
       if (typeof template !== 'string') return '';
-      
+
       let result = template;
 
       // Simple variable substitution: {{variable}}

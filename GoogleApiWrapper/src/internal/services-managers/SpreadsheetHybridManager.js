@@ -38,7 +38,9 @@ export class SpreadsheetHybridManager {
 
   _verifyAdvancedSheets() {
     if (typeof Sheets === 'undefined') {
-      throw new Error('Advanced Sheets Service is not enabled. Please enable it in appsscript.json.');
+      throw new Error(
+        'Advanced Sheets Service is not enabled. Please enable it in appsscript.json.'
+      );
     }
   }
 }

@@ -39,7 +39,12 @@ describe('GoogleService - Comprehensive Test Suite', () => {
         }
       }
 
-      const service = new ConcreteService(mocks.logger, mocks.cache, mocks.utils, mocks.exceptionService);
+      const service = new ConcreteService(
+        mocks.logger,
+        mocks.cache,
+        mocks.utils,
+        mocks.exceptionService
+      );
 
       expect(service).toBeInstanceOf(GoogleService);
       expect(service).toBeInstanceOf(ConcreteService);
@@ -61,7 +66,12 @@ describe('GoogleService - Comprehensive Test Suite', () => {
         }
       }
 
-      const service = new ConcreteService(mocks.logger, mocks.cache, mocks.utils, mocks.exceptionService);
+      const service = new ConcreteService(
+        mocks.logger,
+        mocks.cache,
+        mocks.utils,
+        mocks.exceptionService
+      );
 
       expect(service.getLogger()).toBe(mocks.logger);
       expect(service.getCache()).toBe(mocks.cache);

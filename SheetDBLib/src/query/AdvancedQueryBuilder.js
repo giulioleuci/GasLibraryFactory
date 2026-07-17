@@ -4,9 +4,16 @@
  * @version 2.0 - Refactored using Facade/Delegation pattern.
  */
 
-import { QueryCondition, QueryAggregation, QueryGroup } from '../internal/query-builders/AdvancedQueryParser.js';
+import {
+  QueryCondition,
+  QueryAggregation,
+  QueryGroup
+} from '../internal/query-builders/AdvancedQueryParser.js';
 import { AdvancedQueryValidator } from '../internal/query-builders/AdvancedQueryValidator.js';
-import { AdvancedQueryCompiler, QueryCache } from '../internal/query-builders/AdvancedQueryCompiler.js';
+import {
+  AdvancedQueryCompiler,
+  QueryCache
+} from '../internal/query-builders/AdvancedQueryCompiler.js';
 import { AdvancedQueryPagination } from '../internal/query-builders/AdvancedQueryPagination.js';
 
 export { QueryCondition, QueryAggregation, QueryGroup, QueryCache };
@@ -37,16 +44,24 @@ export class AdvancedQueryBuilder {
       {
         manager: this._compiler,
         methods: [
-          '_extractFieldValue', '_performJoin', '_tryIndexOptimization',
-          '_getRemainingConditions', '_getFieldValue', '_applyConditionsFiltered',
-          '_applyConditions', '_applyGroupBy'
+          '_extractFieldValue',
+          '_performJoin',
+          '_tryIndexOptimization',
+          '_getRemainingConditions',
+          '_getFieldValue',
+          '_applyConditionsFiltered',
+          '_applyConditions',
+          '_applyGroupBy'
         ]
       },
       {
         manager: this._pagination,
         methods: [
-          '_partialSort', '_createComparator', '_quickSelect',
-          '_medianOfThree', '_partition'
+          '_partialSort',
+          '_createComparator',
+          '_quickSelect',
+          '_medianOfThree',
+          '_partition'
         ]
       }
     ]);
@@ -54,7 +69,7 @@ export class AdvancedQueryBuilder {
 
   _delegate(delegations) {
     delegations.forEach(({ manager, methods }) => {
-      methods.forEach(method => {
+      methods.forEach((method) => {
         if (typeof manager[method] === 'function') {
           this[method] = manager[method].bind(manager);
         }
@@ -159,9 +174,15 @@ export class AdvancedQueryBuilder {
     return this;
   }
 
-  or(field, operator, value) { return this.orWhere(field, operator, value); }
-  andWhere(field, operator, value) { return this.where(field, operator, value); }
-  and(field, operator, value) { return this.where(field, operator, value); }
+  or(field, operator, value) {
+    return this.orWhere(field, operator, value);
+  }
+  andWhere(field, operator, value) {
+    return this.where(field, operator, value);
+  }
+  and(field, operator, value) {
+    return this.where(field, operator, value);
+  }
 
   whereLike(field, pattern) {
     return this.where(field, 'LIKE', `%${pattern}%`);
@@ -218,7 +239,9 @@ export class AdvancedQueryBuilder {
     return this;
   }
 
-  orderByDesc(fields) { return this.orderBy(fields, 'DESC'); }
+  orderByDesc(fields) {
+    return this.orderBy(fields, 'DESC');
+  }
 
   limit(limitValue) {
     this._limit = parseInt(limitValue, 10);
@@ -263,7 +286,7 @@ export class AdvancedQueryBuilder {
       return newRow;
     };
 
-    resultRows = resultRows.map(row => prefixFn(row, this.tableName));
+    resultRows = resultRows.map((row) => prefixFn(row, this.tableName));
 
     if (this.joins.length > 0) {
       for (const joinConfig of this.joins) {
@@ -272,7 +295,9 @@ export class AdvancedQueryBuilder {
     }
 
     if (this.conditions.length > 0) {
-      const remainingConditions = indexOptimization ? this._getRemainingConditions() : this.conditions;
+      const remainingConditions = indexOptimization
+        ? this._getRemainingConditions()
+        : this.conditions;
       if (remainingConditions.length > 0) {
         resultRows = this._applyConditionsFiltered(resultRows, remainingConditions);
       }
@@ -283,7 +308,8 @@ export class AdvancedQueryBuilder {
     }
 
     if (this.orderByFields.length > 0) {
-      const shouldUsePartialSort = this._limit !== null && this._limit < 100 && resultRows.length > 1000;
+      const shouldUsePartialSort =
+        this._limit !== null && this._limit < 100 && resultRows.length > 1000;
       if (shouldUsePartialSort) {
         resultRows = this._partialSort(resultRows, this._limit + this._offset);
       } else {
@@ -297,10 +323,15 @@ export class AdvancedQueryBuilder {
       resultRows = resultRows.slice(start, end);
     }
 
-    const hasGroupByWithAggregations = this.groupByFields.length > 0 && this.aggregations.length > 0;
+    const hasGroupByWithAggregations =
+      this.groupByFields.length > 0 && this.aggregations.length > 0;
 
-    if (!hasGroupByWithAggregations && this.selectedColumns.length > 0 && !this.selectedColumns.includes('*')) {
-      resultRows = resultRows.map(row => {
+    if (
+      !hasGroupByWithAggregations &&
+      this.selectedColumns.length > 0 &&
+      !this.selectedColumns.includes('*')
+    ) {
+      resultRows = resultRows.map((row) => {
         const selected = {};
         for (const col of this.selectedColumns) {
           if (typeof col === 'string' && col.toLowerCase().includes(' as ')) {
@@ -314,8 +345,12 @@ export class AdvancedQueryBuilder {
         }
         return selected;
       });
-    } else if (!hasGroupByWithAggregations && this.joins.length === 0 && this.groupByFields.length === 0) {
-      resultRows = resultRows.map(row => {
+    } else if (
+      !hasGroupByWithAggregations &&
+      this.joins.length === 0 &&
+      this.groupByFields.length === 0
+    ) {
+      resultRows = resultRows.map((row) => {
         const unprefixed = {};
         for (const key in row) {
           const unprefixedKey = key.includes('.') ? key.split('.').pop() : key;

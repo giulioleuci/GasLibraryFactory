@@ -1,16 +1,20 @@
 # PLAN: Extend Online Tests for Google Workspace Lifecycle
 
 ## 1. Objective
+
 Add comprehensive online tests to verify the entire lifecycle of Google Docs and Google Sheets, including template copying, placeholder-based renaming, content processing (table loops, bullet lists, data matrices), permission management, and database persistence. Newly created files must not be deleted so that the user can verify their contents. Take inspiration from existing online tests. For these new tests, create a new file.
 
 ## 2. Involved Libraries & Services
+
 - **WorkspaceTemplateEngine**: `PlaceholderService`, `DocumentProcessor`, `SheetProcessor`.
 - **GoogleApiWrapper**: `DriveFileManager` (copying/moving), `PermissionService` (sharing).
 - **SheetDBLib**: `DatabaseService`, `TableService` (persistence).
 - **CoreUtilsLib**: `LoggerService`, `UtilsService`.
 
 ## 3. Test Environment Setup
+
 The tests will run in the `__testOnline__` environment and require:
+
 1. **Template Folder**: A dedicated folder for template files.
 2. **Output Folder**: A dedicated folder for generated files.
 3. **Database Spreadsheet**: A spreadsheet acting as a registry for generated files.
@@ -24,6 +28,7 @@ The tests will run in the `__testOnline__` environment and require:
    - Dynamic Columns: `{{dynamic_columns[source=cols, value=name, acl=email]}}`
 
 ## 4. Scenario 1: Google Doc Full Lifecycle
+
 - **Step 1: Context Preparation**
   - Define data context with title, bullet items, and table rows.
 - **Step 2: Dynamic Renaming**
@@ -43,6 +48,7 @@ The tests will run in the `__testOnline__` environment and require:
   - Assert the database contains the correct record.
 
 ## 5. Scenario 2: Google Sheet Full Lifecycle
+
 - **Step 1: Context Preparation**
   - Define data context with title, matrix data, and dynamic column configurations (including ACLs).
 - **Step 2: Dynamic Renaming**
@@ -63,12 +69,14 @@ The tests will run in the `__testOnline__` environment and require:
   - Assert DB record.
 
 ## 6. Implementation Strategy
+
 - Create a new file `__testOnline__/integration/IntegrationTests_Lifecycle.gs`.
 - Add a setup function `createLifecycleTemplates()` to programmatically create the templates if they don't exist in the test context.
 - Register the tests in `initIntegrationTests_Lifecycle()`.
 - Ensure `testContext` provides the necessary folder IDs and spreadsheet IDs.
 
 ## 7. Expected Results
+
 - Successfully automated generation of personalized documents.
 - Validated "Batch-First" operations across multiple services.
 - Confirmed integration between Templating, Security, and Persistence layers.

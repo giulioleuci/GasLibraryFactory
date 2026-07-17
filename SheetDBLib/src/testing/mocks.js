@@ -23,13 +23,13 @@ export class AdvancedQueryBuilderMock {
     this.groupBy = jest.fn().mockReturnThis();
     this.limit = jest.fn().mockReturnThis();
     this.offset = jest.fn().mockReturnThis();
-    
+
     // Joins
     this.innerJoin = jest.fn().mockReturnThis();
     this.leftJoin = jest.fn().mockReturnThis();
     this.rightJoin = jest.fn().mockReturnThis();
     this.fullOuterJoin = jest.fn().mockReturnThis();
-    
+
     // Execution
     this.execute = jest.fn(() => []);
     this.count = jest.fn(() => 0);
@@ -63,16 +63,16 @@ export class TableServiceMock {
   constructor(name = 'TestTable') {
     this.name = name;
     this._data = [];
-    
+
     this.insertRow = jest.fn((row) => {
       const newRow = { ...row, id: row.id || `mock-id-${Math.random().toString(36).substr(2, 9)}` };
       this._data.push(newRow);
       return newRow;
     });
     this.insertRows = jest.fn((rows) => rows.map((r) => this.insertRow(r)));
-    
+
     this.updateRow = jest.fn((id, row) => {
-      const index = this._data.findIndex(r => r.id === id);
+      const index = this._data.findIndex((r) => r.id === id);
       if (index !== -1) {
         this._data[index] = { ...this._data[index], ...row };
         return this._data[index];
@@ -80,29 +80,29 @@ export class TableServiceMock {
       return { ...row, id };
     });
     this.updateRowById = this.updateRow;
-    
+
     this.patchRow = jest.fn((id, partial) => {
-      const index = this._data.findIndex(r => r.id === id);
+      const index = this._data.findIndex((r) => r.id === id);
       if (index !== -1) {
         this._data[index] = { ...this._data[index], ...partial };
         return this._data[index];
       }
       return { ...partial, id };
     });
-    
+
     this.deleteRow = jest.fn((id) => {
-      const index = this._data.findIndex(r => r.id === id);
+      const index = this._data.findIndex((r) => r.id === id);
       const deleted = index !== -1 ? this._data.splice(index, 1)[0] : null;
       return deleted;
     });
     this.deleteRowById = this.deleteRow;
-    
-    this.findById = jest.fn((id) => this._data.find(r => r.id === id) || null);
+
+    this.findById = jest.fn((id) => this._data.find((r) => r.id === id) || null);
     this.getByPK = this.findById;
-    
+
     this.findAll = jest.fn(() => [...this._data]);
     this.getAllRows = this.findAll;
-    
+
     this.getRow = jest.fn((index) => this._data[index] || null);
     this.getRows = jest.fn((start, limit) => {
       if (start === undefined) return [...this._data];
@@ -118,11 +118,11 @@ export class TableServiceMock {
       this._data = [];
       return true;
     });
-    
+
     this.getName = jest.fn(() => this.name);
     this.getSchema = jest.fn(() => ({ fields: [] }));
     this.count = jest.fn(() => this._data.length);
-    
+
     // Internal state for optimization
     this._indices = {};
   }
@@ -155,7 +155,7 @@ export class DatabaseServiceMock {
     this._utils = utils;
     this._cache = cache;
     this._exceptionService = exceptionService;
-    
+
     this._builder = new AdvancedQueryBuilderMock();
     this.select = jest.fn(() => this._builder);
     this.getTable = jest.fn((name) => this.tables[name] || new TableServiceMock(name));
@@ -166,7 +166,7 @@ export class DatabaseServiceMock {
     this.flush = jest.fn().mockReturnThis();
     this.save = jest.fn().mockReturnThis();
     this.getSpreadsheetId = jest.fn(() => 'mock-ss-id');
-    
+
     /**
      * Map of table name to TableServiceMock instances.
      * @type {Object<string, TableServiceMock>}

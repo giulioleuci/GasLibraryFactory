@@ -100,13 +100,17 @@ function createMockFn(implementation) {
 
   // Attach mock metadata
   mockFn.mock = {
-    get calls() { return mockState.calls; },
-    get results() { return mockState.results; },
-    get instances() { return mockState.instances; },
+    get calls() {
+      return mockState.calls;
+    },
+    get results() {
+      return mockState.results;
+    },
+    get instances() {
+      return mockState.instances;
+    },
     get lastCall() {
-      return mockState.calls.length > 0
-        ? mockState.calls[mockState.calls.length - 1]
-        : undefined;
+      return mockState.calls.length > 0 ? mockState.calls[mockState.calls.length - 1] : undefined;
     }
   };
 
@@ -114,41 +118,45 @@ function createMockFn(implementation) {
   mockFn._mockState = mockState;
 
   // Fluent configuration API
-  mockFn.mockReturnValue = function(val) {
+  mockFn.mockReturnValue = function (val) {
     mockState._returnValue = val;
     return mockFn;
   };
 
-  mockFn.mockReturnValueOnce = function(val) {
-    mockState._onceImplementations.push(function() { return val; });
+  mockFn.mockReturnValueOnce = function (val) {
+    mockState._onceImplementations.push(function () {
+      return val;
+    });
     return mockFn;
   };
 
-  mockFn.mockResolvedValue = function(val) {
+  mockFn.mockResolvedValue = function (val) {
     mockState._returnValue = val;
     return mockFn;
   };
 
-  mockFn.mockImplementation = function(fn) {
+  mockFn.mockImplementation = function (fn) {
     mockState._implementation = fn;
     return mockFn;
   };
 
-  mockFn.mockImplementationOnce = function(fn) {
+  mockFn.mockImplementationOnce = function (fn) {
     mockState._onceImplementations.push(fn);
     return mockFn;
   };
 
-  mockFn.mockReturnThis = function() {
-    mockState._implementation = function() { return this; };
+  mockFn.mockReturnThis = function () {
+    mockState._implementation = function () {
+      return this;
+    };
     return mockFn;
   };
 
-  mockFn.mockRejectedValue = function() {
+  mockFn.mockRejectedValue = function () {
     return mockFn;
   };
 
-  mockFn.mockClear = function() {
+  mockFn.mockClear = function () {
     mockState.calls.length = 0;
     mockState.results.length = 0;
     mockState.instances.length = 0;
@@ -156,7 +164,7 @@ function createMockFn(implementation) {
     return mockFn;
   };
 
-  mockFn.mockReset = function() {
+  mockFn.mockReset = function () {
     mockFn.mockClear();
     mockState._implementation = null;
     mockState._returnValue = undefined;
@@ -166,7 +174,7 @@ function createMockFn(implementation) {
     return mockFn;
   };
 
-  mockFn.mockRestore = function() {
+  mockFn.mockRestore = function () {
     mockFn.mockReset();
     return mockFn;
   };
@@ -237,37 +245,43 @@ function createExpect(actual) {
       return matchers;
     },
 
-    toBe: function(expected) {
+    toBe: function (expected) {
       var pass = actual === expected;
       if (negated ? pass : !pass) {
         throw new Error(
           (negated ? 'Expected value NOT to be ' : 'Expected: ') +
-          safeStringify(expected) + '\nReceived: ' + safeStringify(actual)
+            safeStringify(expected) +
+            '\nReceived: ' +
+            safeStringify(actual)
         );
       }
     },
 
-    toEqual: function(expected) {
+    toEqual: function (expected) {
       var pass = deepEqual(actual, expected);
       if (negated ? pass : !pass) {
         throw new Error(
           (negated ? 'Expected value NOT to equal ' : 'Expected: ') +
-          safeStringify(expected) + '\nReceived: ' + safeStringify(actual)
+            safeStringify(expected) +
+            '\nReceived: ' +
+            safeStringify(actual)
         );
       }
     },
 
-    toStrictEqual: function(expected) {
+    toStrictEqual: function (expected) {
       var pass = deepEqual(actual, expected);
       if (negated ? pass : !pass) {
         throw new Error(
           (negated ? 'Expected value NOT to strict equal ' : 'Expected: ') +
-          safeStringify(expected) + '\nReceived: ' + safeStringify(actual)
+            safeStringify(expected) +
+            '\nReceived: ' +
+            safeStringify(actual)
         );
       }
     },
 
-    toBeDefined: function() {
+    toBeDefined: function () {
       var pass = actual !== undefined;
       if (negated ? pass : !pass) {
         throw new Error(
@@ -276,16 +290,18 @@ function createExpect(actual) {
       }
     },
 
-    toBeUndefined: function() {
+    toBeUndefined: function () {
       var pass = actual === undefined;
       if (negated ? pass : !pass) {
         throw new Error(
-          negated ? 'Expected value NOT to be undefined' : 'Expected undefined, got: ' + safeStringify(actual)
+          negated
+            ? 'Expected value NOT to be undefined'
+            : 'Expected undefined, got: ' + safeStringify(actual)
         );
       }
     },
 
-    toBeNull: function() {
+    toBeNull: function () {
       var pass = actual === null;
       if (negated ? pass : !pass) {
         throw new Error(
@@ -294,25 +310,29 @@ function createExpect(actual) {
       }
     },
 
-    toBeTruthy: function() {
+    toBeTruthy: function () {
       var pass = !!actual;
       if (negated ? pass : !pass) {
         throw new Error(
-          negated ? 'Expected value NOT to be truthy' : 'Expected truthy, got: ' + safeStringify(actual)
+          negated
+            ? 'Expected value NOT to be truthy'
+            : 'Expected truthy, got: ' + safeStringify(actual)
         );
       }
     },
 
-    toBeFalsy: function() {
+    toBeFalsy: function () {
       var pass = !actual;
       if (negated ? pass : !pass) {
         throw new Error(
-          negated ? 'Expected value NOT to be falsy' : 'Expected falsy, got: ' + safeStringify(actual)
+          negated
+            ? 'Expected value NOT to be falsy'
+            : 'Expected falsy, got: ' + safeStringify(actual)
         );
       }
     },
 
-    toBeNaN: function() {
+    toBeNaN: function () {
       var pass = Number.isNaN(actual);
       if (negated ? pass : !pass) {
         throw new Error(
@@ -321,43 +341,35 @@ function createExpect(actual) {
       }
     },
 
-    toBeGreaterThan: function(expected) {
+    toBeGreaterThan: function (expected) {
       var pass = actual > expected;
       if (negated ? pass : !pass) {
-        throw new Error(
-          'Expected ' + actual + (negated ? ' NOT' : '') + ' to be > ' + expected
-        );
+        throw new Error('Expected ' + actual + (negated ? ' NOT' : '') + ' to be > ' + expected);
       }
     },
 
-    toBeGreaterThanOrEqual: function(expected) {
+    toBeGreaterThanOrEqual: function (expected) {
       var pass = actual >= expected;
       if (negated ? pass : !pass) {
-        throw new Error(
-          'Expected ' + actual + (negated ? ' NOT' : '') + ' to be >= ' + expected
-        );
+        throw new Error('Expected ' + actual + (negated ? ' NOT' : '') + ' to be >= ' + expected);
       }
     },
 
-    toBeLessThan: function(expected) {
+    toBeLessThan: function (expected) {
       var pass = actual < expected;
       if (negated ? pass : !pass) {
-        throw new Error(
-          'Expected ' + actual + (negated ? ' NOT' : '') + ' to be < ' + expected
-        );
+        throw new Error('Expected ' + actual + (negated ? ' NOT' : '') + ' to be < ' + expected);
       }
     },
 
-    toBeLessThanOrEqual: function(expected) {
+    toBeLessThanOrEqual: function (expected) {
       var pass = actual <= expected;
       if (negated ? pass : !pass) {
-        throw new Error(
-          'Expected ' + actual + (negated ? ' NOT' : '') + ' to be <= ' + expected
-        );
+        throw new Error('Expected ' + actual + (negated ? ' NOT' : '') + ' to be <= ' + expected);
       }
     },
 
-    toBeCloseTo: function(expected, precision) {
+    toBeCloseTo: function (expected, precision) {
       if (precision === undefined) precision = 2;
       var diff = Math.abs(actual - expected);
       var pass = diff < Math.pow(10, -precision) / 2;
@@ -368,18 +380,19 @@ function createExpect(actual) {
       }
     },
 
-    toBeInstanceOf: function(expectedClass) {
+    toBeInstanceOf: function (expectedClass) {
       var pass = actual instanceof expectedClass;
       if (negated ? pass : !pass) {
         throw new Error(
           (negated ? 'Expected NOT to be instance of ' : 'Expected instance of ') +
-          (expectedClass.name || expectedClass) +
-          ', got: ' + (actual && actual.constructor ? actual.constructor.name : typeof actual)
+            (expectedClass.name || expectedClass) +
+            ', got: ' +
+            (actual && actual.constructor ? actual.constructor.name : typeof actual)
         );
       }
     },
 
-    toContain: function(expected) {
+    toContain: function (expected) {
       var pass;
       if (typeof actual === 'string') {
         pass = actual.indexOf(expected) !== -1;
@@ -390,41 +403,52 @@ function createExpect(actual) {
       }
       if (negated ? pass : !pass) {
         throw new Error(
-          'Expected ' + safeStringify(actual) + (negated ? ' NOT' : '') + ' to contain ' + safeStringify(expected)
+          'Expected ' +
+            safeStringify(actual) +
+            (negated ? ' NOT' : '') +
+            ' to contain ' +
+            safeStringify(expected)
         );
       }
     },
 
-    toContainEqual: function(expected) {
+    toContainEqual: function (expected) {
       var pass = false;
       if (Array.isArray(actual)) {
         for (var i = 0; i < actual.length; i++) {
-          if (deepEqual(actual[i], expected)) { pass = true; break; }
+          if (deepEqual(actual[i], expected)) {
+            pass = true;
+            break;
+          }
         }
       }
       if (negated ? pass : !pass) {
         throw new Error(
-          'Expected array' + (negated ? ' NOT' : '') + ' to contain equal ' + safeStringify(expected)
+          'Expected array' +
+            (negated ? ' NOT' : '') +
+            ' to contain equal ' +
+            safeStringify(expected)
         );
       }
     },
 
-    toHaveLength: function(expected) {
+    toHaveLength: function (expected) {
       var len = actual && actual.length !== undefined ? actual.length : -1;
       var pass = len === expected;
       if (negated ? pass : !pass) {
-        throw new Error(
-          'Expected length ' + (negated ? 'NOT ' : '') + expected + ', got: ' + len
-        );
+        throw new Error('Expected length ' + (negated ? 'NOT ' : '') + expected + ', got: ' + len);
       }
     },
 
-    toHaveProperty: function(keyPath, value) {
+    toHaveProperty: function (keyPath, value) {
       var keys = typeof keyPath === 'string' ? keyPath.split('.') : [keyPath];
       var current = actual;
       var pass = true;
       for (var i = 0; i < keys.length; i++) {
-        if (current == null || !(keys[i] in Object(current))) { pass = false; break; }
+        if (current == null || !(keys[i] in Object(current))) {
+          pass = false;
+          break;
+        }
         current = current[keys[i]];
       }
       if (pass && value !== undefined) {
@@ -432,14 +456,19 @@ function createExpect(actual) {
       }
       if (negated ? pass : !pass) {
         throw new Error(
-          'Expected object' + (negated ? ' NOT' : '') + ' to have property "' + keyPath + '"' +
-          (value !== undefined ? ' with value ' + safeStringify(value) : '') +
-          '\nReceived: ' + safeStringify(actual)
+          'Expected object' +
+            (negated ? ' NOT' : '') +
+            ' to have property "' +
+            keyPath +
+            '"' +
+            (value !== undefined ? ' with value ' + safeStringify(value) : '') +
+            '\nReceived: ' +
+            safeStringify(actual)
         );
       }
     },
 
-    toMatch: function(expected) {
+    toMatch: function (expected) {
       var pass;
       if (expected instanceof RegExp) {
         pass = expected.test(actual);
@@ -453,17 +482,21 @@ function createExpect(actual) {
       }
     },
 
-    toMatchObject: function(expected) {
+    toMatchObject: function (expected) {
       var pass = objectContaining(expected, actual);
       if (negated ? pass : !pass) {
         throw new Error(
-          'Expected object' + (negated ? ' NOT' : '') + ' to match ' + safeStringify(expected) +
-          '\nReceived: ' + safeStringify(actual)
+          'Expected object' +
+            (negated ? ' NOT' : '') +
+            ' to match ' +
+            safeStringify(expected) +
+            '\nReceived: ' +
+            safeStringify(actual)
         );
       }
     },
 
-    toThrow: function(expected) {
+    toThrow: function (expected) {
       if (typeof actual !== 'function') {
         throw new Error('expect(value).toThrow() requires a function, got: ' + typeof actual);
       }
@@ -478,7 +511,9 @@ function createExpect(actual) {
 
       if (negated) {
         if (thrown) {
-          throw new Error('Expected function NOT to throw, but it threw: ' + (thrownError && thrownError.message));
+          throw new Error(
+            'Expected function NOT to throw, but it threw: ' + (thrownError && thrownError.message)
+          );
         }
         return;
       }
@@ -499,13 +534,18 @@ function createExpect(actual) {
           }
         } else if (typeof expected === 'function') {
           if (!(thrownError instanceof expected)) {
-            throw new Error('Expected error instance of ' + (expected.name || expected) + ', got: ' + (thrownError && thrownError.constructor && thrownError.constructor.name));
+            throw new Error(
+              'Expected error instance of ' +
+                (expected.name || expected) +
+                ', got: ' +
+                (thrownError && thrownError.constructor && thrownError.constructor.name)
+            );
           }
         }
       }
     },
 
-    toHaveBeenCalled: function() {
+    toHaveBeenCalled: function () {
       if (!actual || !actual._isMockFunction) {
         throw new Error('toHaveBeenCalled() requires a mock function');
       }
@@ -517,7 +557,7 @@ function createExpect(actual) {
       }
     },
 
-    toHaveBeenCalledTimes: function(expected) {
+    toHaveBeenCalledTimes: function (expected) {
       if (!actual || !actual._isMockFunction) {
         throw new Error('toHaveBeenCalledTimes() requires a mock function');
       }
@@ -525,12 +565,18 @@ function createExpect(actual) {
       var pass = count === expected;
       if (negated ? pass : !pass) {
         throw new Error(
-          'Expected mock' + (negated ? ' NOT' : '') + ' to have been called ' + expected + ' time(s), was called ' + count + ' time(s)'
+          'Expected mock' +
+            (negated ? ' NOT' : '') +
+            ' to have been called ' +
+            expected +
+            ' time(s), was called ' +
+            count +
+            ' time(s)'
         );
       }
     },
 
-    toHaveBeenCalledWith: function() {
+    toHaveBeenCalledWith: function () {
       if (!actual || !actual._isMockFunction) {
         throw new Error('toHaveBeenCalledWith() requires a mock function');
       }
@@ -544,13 +590,17 @@ function createExpect(actual) {
       }
       if (negated ? pass : !pass) {
         throw new Error(
-          'Expected mock' + (negated ? ' NOT' : '') + ' to have been called with ' + safeStringify(expectedArgs) +
-          '\nCalls: ' + safeStringify(actual.mock.calls)
+          'Expected mock' +
+            (negated ? ' NOT' : '') +
+            ' to have been called with ' +
+            safeStringify(expectedArgs) +
+            '\nCalls: ' +
+            safeStringify(actual.mock.calls)
         );
       }
     },
 
-    toHaveBeenLastCalledWith: function() {
+    toHaveBeenLastCalledWith: function () {
       if (!actual || !actual._isMockFunction) {
         throw new Error('toHaveBeenLastCalledWith() requires a mock function');
       }
@@ -559,13 +609,17 @@ function createExpect(actual) {
       var pass = deepEqual(lastCall, expectedArgs);
       if (negated ? pass : !pass) {
         throw new Error(
-          'Expected last call' + (negated ? ' NOT' : '') + ' to be ' + safeStringify(expectedArgs) +
-          '\nLast call: ' + safeStringify(lastCall)
+          'Expected last call' +
+            (negated ? ' NOT' : '') +
+            ' to be ' +
+            safeStringify(expectedArgs) +
+            '\nLast call: ' +
+            safeStringify(lastCall)
         );
       }
     },
 
-    toHaveBeenNthCalledWith: function(n) {
+    toHaveBeenNthCalledWith: function (n) {
       if (!actual || !actual._isMockFunction) {
         throw new Error('toHaveBeenNthCalledWith() requires a mock function');
       }
@@ -574,26 +628,37 @@ function createExpect(actual) {
       var pass = deepEqual(nthCall, rest);
       if (negated ? pass : !pass) {
         throw new Error(
-          'Expected call #' + n + (negated ? ' NOT' : '') + ' to be ' + safeStringify(rest) +
-          '\nActual: ' + safeStringify(nthCall)
+          'Expected call #' +
+            n +
+            (negated ? ' NOT' : '') +
+            ' to be ' +
+            safeStringify(rest) +
+            '\nActual: ' +
+            safeStringify(nthCall)
         );
       }
     },
 
-    toHaveReturnedWith: function(expected) {
+    toHaveReturnedWith: function (expected) {
       if (!actual || !actual._isMockFunction) {
         throw new Error('toHaveReturnedWith() requires a mock function');
       }
       var pass = false;
       for (var i = 0; i < actual.mock.results.length; i++) {
-        if (actual.mock.results[i].type === 'return' && deepEqual(actual.mock.results[i].value, expected)) {
+        if (
+          actual.mock.results[i].type === 'return' &&
+          deepEqual(actual.mock.results[i].value, expected)
+        ) {
           pass = true;
           break;
         }
       }
       if (negated ? pass : !pass) {
         throw new Error(
-          'Expected mock' + (negated ? ' NOT' : '') + ' to have returned with ' + safeStringify(expected)
+          'Expected mock' +
+            (negated ? ' NOT' : '') +
+            ' to have returned with ' +
+            safeStringify(expected)
         );
       }
     }
@@ -603,27 +668,27 @@ function createExpect(actual) {
 }
 
 // Helper constructors for expect
-createExpect.anything = function() {
+createExpect.anything = function () {
   return { __expectAnything: true };
 };
 
-createExpect.any = function(constructor) {
+createExpect.any = function (constructor) {
   return { __expectAny: constructor };
 };
 
-createExpect.stringContaining = function(str) {
+createExpect.stringContaining = function (str) {
   return { __expectStringContaining: str };
 };
 
-createExpect.stringMatching = function(pattern) {
+createExpect.stringMatching = function (pattern) {
   return { __expectStringMatching: pattern };
 };
 
-createExpect.objectContaining = function(obj) {
+createExpect.objectContaining = function (obj) {
   return { __expectObjectContaining: obj };
 };
 
-createExpect.arrayContaining = function(arr) {
+createExpect.arrayContaining = function (arr) {
   return { __expectArrayContaining: arr };
 };
 
@@ -698,25 +763,25 @@ function _it(name, fn, options) {
 }
 
 function _itEach(cases) {
-  return function(nameTemplate, fn) {
+  return function (nameTemplate, fn) {
     for (var i = 0; i < cases.length; i++) {
       var testCase = cases[i];
       var name;
       if (Array.isArray(testCase)) {
-        name = nameTemplate.replace(/%s/g, function() {
+        name = nameTemplate.replace(/%s/g, function () {
           return String(testCase.shift());
         });
         // Re-create testCase since shift consumed it
         testCase = cases[i];
-        (function(tc) {
-          _it(name, function() {
+        (function (tc) {
+          _it(name, function () {
             fn.apply(null, Array.isArray(tc) ? tc : [tc]);
           });
         })(testCase);
       } else {
         name = nameTemplate.replace(/%s/g, String(testCase));
-        (function(tc) {
-          _it(name, function() {
+        (function (tc) {
+          _it(name, function () {
             fn(tc);
           });
         })(testCase);
@@ -744,15 +809,15 @@ function _afterAll(fn) {
 // ─── Jest Object ───────────────────────────────────────────────────────────────
 
 var jestObject = {
-  fn: function(implementation) {
+  fn: function (implementation) {
     var mock = createMockFn(implementation);
     __allMockFns.push(mock);
     return mock;
   },
 
-  spyOn: function(obj, method) {
+  spyOn: function (obj, method) {
     var original = obj[method];
-    var spy = createMockFn(function() {
+    var spy = createMockFn(function () {
       return original.apply(obj, arguments);
     });
     spy._original = original;
@@ -763,19 +828,19 @@ var jestObject = {
     return spy;
   },
 
-  clearAllMocks: function() {
+  clearAllMocks: function () {
     for (var i = 0; i < __allMockFns.length; i++) {
       __allMockFns[i].mockClear();
     }
   },
 
-  resetAllMocks: function() {
+  resetAllMocks: function () {
     for (var i = 0; i < __allMockFns.length; i++) {
       __allMockFns[i].mockReset();
     }
   },
 
-  restoreAllMocks: function() {
+  restoreAllMocks: function () {
     for (var i = 0; i < __allMockFns.length; i++) {
       var mock = __allMockFns[i];
       if (mock._original && mock._target && mock._method) {
@@ -787,15 +852,29 @@ var jestObject = {
   },
 
   // No-op for module mocking (not supported in GAS)
-  mock: function() { return jestObject; },
-  unmock: function() { return jestObject; },
-  requireActual: function(m) { return {}; },
+  mock: function () {
+    return jestObject;
+  },
+  unmock: function () {
+    return jestObject;
+  },
+  requireActual: function (m) {
+    return {};
+  },
 
   // Timer mocking stubs (no-op in GAS)
-  useFakeTimers: function() { return jestObject; },
-  useRealTimers: function() { return jestObject; },
-  advanceTimersByTime: function() { return jestObject; },
-  runAllTimers: function() { return jestObject; }
+  useFakeTimers: function () {
+    return jestObject;
+  },
+  useRealTimers: function () {
+    return jestObject;
+  },
+  advanceTimersByTime: function () {
+    return jestObject;
+  },
+  runAllTimers: function () {
+    return jestObject;
+  }
 };
 
 // ─── Test Runner ───────────────────────────────────────────────────────────────
@@ -814,27 +893,31 @@ function runCollectedTests(suiteName, TestFramework, Assert) {
   var tests = __testRegistry.suites;
 
   for (var i = 0; i < tests.length; i++) {
-    (function(testEntry) {
-      framework.test(testEntry.name, function() {
-        // Run beforeEach hooks
-        for (var j = 0; j < testEntry.beforeEachHooks.length; j++) {
-          testEntry.beforeEachHooks[j]();
-        }
+    (function (testEntry) {
+      framework.test(
+        testEntry.name,
+        function () {
+          // Run beforeEach hooks
+          for (var j = 0; j < testEntry.beforeEachHooks.length; j++) {
+            testEntry.beforeEachHooks[j]();
+          }
 
-        try {
-          testEntry.fn();
-        } finally {
-          // Run afterEach hooks (even on failure)
-          for (var k = 0; k < testEntry.afterEachHooks.length; k++) {
-            try {
-              testEntry.afterEachHooks[k]();
-            } catch (e) {
-              // Log but don't fail the test for afterEach errors
-              Logger.log('  afterEach error: ' + e.message);
+          try {
+            testEntry.fn();
+          } finally {
+            // Run afterEach hooks (even on failure)
+            for (var k = 0; k < testEntry.afterEachHooks.length; k++) {
+              try {
+                testEntry.afterEachHooks[k]();
+              } catch (e) {
+                // Log but don't fail the test for afterEach errors
+                Logger.log('  afterEach error: ' + e.message);
+              }
             }
           }
-        }
-      }, { skip: testEntry.skip });
+        },
+        { skip: testEntry.skip }
+      );
     })(tests[i]);
   }
 
@@ -859,7 +942,7 @@ function resetTestRegistry() {
 // ─── Exports ───────────────────────────────────────────────────────────────────
 
 // Attach to describe
-_describe.skip = function(name, fn) {
+_describe.skip = function (name, fn) {
   // Mark all tests inside as skipped
   __testRegistry.currentSuitePath.push(name + ' [SKIPPED]');
   fn();
@@ -869,8 +952,8 @@ _describe.skip = function(name, fn) {
 _describe.only = _describe; // In GAS, .only behaves same as normal
 
 // Attach to it
-_it.skip = function(name) {
-  _it(name, function() {}, { skip: true });
+_it.skip = function (name) {
+  _it(name, function () {}, { skip: true });
 };
 
 _it.only = _it; // In GAS, .only behaves same as normal

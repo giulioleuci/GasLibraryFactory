@@ -22,7 +22,7 @@ import { UserService } from '../../services/UserService.js';
 /**
  * @class ServiceFactory
  * @description Centralized Dependency Injection (DI) and Singleton container for GoogleApiWrapper services. Manages lazy initialization of shared infrastructure (logging, caching, resiliency) and provides consistent factory methods for all service wrappers.
- * 
+ *
  * @static
  * @property {LoggerService} _logger Shared diagnostic logger.
  * @property {UtilsService} _utils Shared foundational utilities.

@@ -5,6 +5,7 @@ A comprehensive Google Apps Script demonstration application showcasing all feat
 ## Overview
 
 FakeShop simulates an online store with:
+
 - **Employee Management** - Roles, departments, and delegation for long-term illness
 - **Customer Management** - Regular, VIP, and wholesale customers
 - **Product Catalog** - Inventory with dynamic category-specific attributes
@@ -14,23 +15,23 @@ FakeShop simulates an online store with:
 
 ## Libraries Demonstrated
 
-| Library | Features Used |
-|---------|---------------|
-| CoreUtilsLib | Logging, validation, type guards, PII redaction, hashing |
-| GasResilienceLib | Retry logic, circuit breaker, error classification |
-| GoogleApiWrapper | Drive, Docs, Sheets, Mail (dry-run), Permissions, UI builders |
-| WorkspaceTemplateEngine | Mustache templates, document/sheet processing |
-| GasExpressionEngineLib | Business rule evaluation |
-| SheetDBLib | Database operations, dynamic schemas, multi-partition queries |
-| RoleResolutionLib | Role resolution, delegation chains, routing policies |
-| ComposableContentLib | Report blocks, multiple renderers |
-| JobRunnerLib | Long-running background jobs |
-| PipelineFramework | Workflow orchestration, post-processors |
-| ContextEngine | Data assembly from recipes |
-| GasDataImporter | ETL pipeline for supplier catalogs |
-| DomainRepositoryLib | Entities, repositories, specifications, validation |
-| GasOnlineTestFramework | Integration testing in GAS environment |
-| GasProcessMonitorLib | Real-time progress visualization |
+| Library                 | Features Used                                                 |
+| ----------------------- | ------------------------------------------------------------- |
+| CoreUtilsLib            | Logging, validation, type guards, PII redaction, hashing      |
+| GasResilienceLib        | Retry logic, circuit breaker, error classification            |
+| GoogleApiWrapper        | Drive, Docs, Sheets, Mail (dry-run), Permissions, UI builders |
+| WorkspaceTemplateEngine | Mustache templates, document/sheet processing                 |
+| GasExpressionEngineLib  | Business rule evaluation                                      |
+| SheetDBLib              | Database operations, dynamic schemas, multi-partition queries |
+| RoleResolutionLib       | Role resolution, delegation chains, routing policies          |
+| ComposableContentLib    | Report blocks, multiple renderers                             |
+| JobRunnerLib            | Long-running background jobs                                  |
+| PipelineFramework       | Workflow orchestration, post-processors                       |
+| ContextEngine           | Data assembly from recipes                                    |
+| GasDataImporter         | ETL pipeline for supplier catalogs                            |
+| DomainRepositoryLib     | Entities, repositories, specifications, validation            |
+| GasOnlineTestFramework  | Integration testing in GAS environment                        |
+| GasProcessMonitorLib    | Real-time progress visualization                              |
 
 ## Project Structure
 
@@ -58,11 +59,13 @@ APP_FAKE_SHOP_FOR_TEST_ONLINE/
 ### Multi-Database Architecture
 
 Orders are partitioned by year across separate spreadsheets:
+
 - `FakeShop_Orders_2024.gsheet` (archive, read-only)
 - `FakeShop_Orders_2025.gsheet` (archive, read-only)
 - `FakeShop_Orders_2026.gsheet` (current, read-write)
 
 Cross-partition queries enable:
+
 - Year-over-year sales comparison
 - Customer lifetime value calculation
 - Historical trend analysis
@@ -70,6 +73,7 @@ Cross-partition queries enable:
 ### Employee Delegation System
 
 Handles long-term employee absence:
+
 1. Manager creates delegation record
 2. Permissions are transferred to delegate
 3. Role resolution follows delegation chain
@@ -79,6 +83,7 @@ Handles long-term employee absence:
 ### Order Processing Pipeline
 
 Six-step workflow with post-processors:
+
 1. **ValidateOrder** - Customer, product, inventory validation
 2. **CalculatePricing** - Discounts, tax, shipping
 3. **ReserveInventory** - Atomic stock reservation with locking
@@ -89,6 +94,7 @@ Six-step workflow with post-processors:
 ### Template System
 
 Document templates with Mustache placeholders:
+
 - Invoice generation
 - Order confirmation emails
 - Low stock alerts
@@ -110,6 +116,7 @@ npm run test:coverage -- APP_FAKE_SHOP_FOR_TEST_ONLINE
 ```
 
 Test categories:
+
 - Domain entities and value objects
 - Service layer methods
 - Pipeline step execution
@@ -133,14 +140,14 @@ runMultiDatabaseTests();
 
 ## Implementation Phases
 
-| Phase | Focus | Duration |
-|-------|-------|----------|
-| 1 | Foundation - Infrastructure, base domain | Week 1 |
-| 2 | Order Domain - Full order processing | Week 2 |
-| 3 | Employee & Delegation - Role resolution | Week 3 |
-| 4 | Multi-Database Analytics - Historical queries | Week 4 |
-| 5 | Import & Inventory - ETL, stock alerts | Week 5 |
-| 6 | UI & Polish - Menus, sidebars, online tests | Week 6 |
+| Phase | Focus                                         | Duration |
+| ----- | --------------------------------------------- | -------- |
+| 1     | Foundation - Infrastructure, base domain      | Week 1   |
+| 2     | Order Domain - Full order processing          | Week 2   |
+| 3     | Employee & Delegation - Role resolution       | Week 3   |
+| 4     | Multi-Database Analytics - Historical queries | Week 4   |
+| 5     | Import & Inventory - ETL, stock alerts        | Week 5   |
+| 6     | UI & Polish - Menus, sidebars, online tests   | Week 6   |
 
 ## Documentation
 

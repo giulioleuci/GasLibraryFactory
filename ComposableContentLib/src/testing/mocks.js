@@ -67,4 +67,3 @@ export class RendererRegistryMock {
     this.hasRenderer = jest.fn((format) => this._renderers.has(format));
   }
 }
-

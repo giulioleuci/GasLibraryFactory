@@ -1,7 +1,10 @@
 import { RoleRegistry } from '../../registry/RoleRegistry.js';
 import { Role } from '../../core/Role.js';
 import { ScopeType } from '../../core/ScopeType.js';
-import { RoleNotFoundError, RoleValidationError } from '../../internal/errors/RoleResolutionError.js';
+import {
+  RoleNotFoundError,
+  RoleValidationError
+} from '../../internal/errors/RoleResolutionError.js';
 
 describe('RoleRegistry', () => {
   let registry;
@@ -62,10 +65,7 @@ describe('RoleRegistry', () => {
 
   describe('registerAll', () => {
     it('registers multiple roles', () => {
-      const roles = [
-        new Role({ id: 'r1', name: 'Role 1' }),
-        { id: 'r2', name: 'Role 2' }
-      ];
+      const roles = [new Role({ id: 'r1', name: 'Role 1' }), { id: 'r2', name: 'Role 2' }];
       registry.registerAll(roles);
       expect(registry.size()).toBe(2);
       expect(registry.has('r1')).toBe(true);
@@ -167,7 +167,7 @@ describe('RoleRegistry', () => {
     it('returns roles matching the predicate', () => {
       const role1 = registry.register({ id: 'r1', name: 'Role 1', allowsDelegation: true });
       const role2 = registry.register({ id: 'r2', name: 'Role 2', allowsDelegation: false });
-      const found = registry.find(r => r.allowsDelegation);
+      const found = registry.find((r) => r.allowsDelegation);
       expect(found).toHaveLength(1);
       expect(found[0]).toBe(role1);
     });

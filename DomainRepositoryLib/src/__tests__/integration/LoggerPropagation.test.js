@@ -87,11 +87,14 @@ describe('Integration Test 15: Logger Propagation', () => {
     };
 
     repository = new UserRepository(mockDatabase, mockLogger);
-    
+
     // Bypass mapper/hydration for simplicity in logging tests
-    repository.hydrationService.dehydrate = jest.fn((entity) => ({ id: entity.id, username: entity.username }));
+    repository.hydrationService.dehydrate = jest.fn((entity) => ({
+      id: entity.id,
+      username: entity.username
+    }));
     repository.hydrationService.hydrate = jest.fn((data) => new User(data));
-    repository.hydrationService.hydrateMany = jest.fn((data) => data.map(d => new User(d)));
+    repository.hydrationService.hydrateMany = jest.fn((data) => data.map((d) => new User(d)));
   });
 
   describe('Repository Operation Logging', () => {
@@ -107,7 +110,9 @@ describe('Integration Test 15: Logger Propagation', () => {
     test('should log error message on save failure', () => {
       const user = new User({ username: 'jdoe' });
       const error = new Error('Database connection failed');
-      mockTable.insertRow.mockImplementation(() => { throw error; });
+      mockTable.insertRow.mockImplementation(() => {
+        throw error;
+      });
 
       try {
         repository.save(user);
@@ -116,7 +121,7 @@ describe('Integration Test 15: Logger Propagation', () => {
       }
 
       // Repository._executeWithRetry doesn't log the error itself if no exceptionService.
-      // But we can check if it propagates. 
+      // But we can check if it propagates.
       // Actually, Repository doesn't have a try-catch-log in save(), it just throws.
     });
 
@@ -126,7 +131,7 @@ describe('Integration Test 15: Logger Propagation', () => {
         toQuery: (qb) => qb,
         toString: () => 'MockSpec'
       };
-      
+
       repository.find(mockSpec);
 
       expect(mockLogger.debug).toHaveBeenCalledWith(
@@ -146,7 +151,7 @@ describe('Integration Test 15: Logger Propagation', () => {
       const user = new User({ username: 'jdoe' });
       repository.save(user);
       expect(mockLogger.info).toHaveBeenCalledWith(expect.stringContaining('Inserted'));
-      
+
       user.id = 'existing-id';
       repository.save(user);
       expect(mockLogger.info).toHaveBeenCalledWith(expect.stringContaining('Updated'));
@@ -181,7 +186,7 @@ describe('Integration Test 15: Logger Propagation', () => {
     test('should accept logger through constructor injection', () => {
       const customLogger = { info: jest.fn(), debug: jest.fn(), error: jest.fn(), warn: jest.fn() };
       const repo = new UserRepository(mockDatabase, customLogger);
-      
+
       repo.save(new User({ username: 'test' }));
       expect(customLogger.info).toHaveBeenCalled();
     });
@@ -198,7 +203,7 @@ describe('Integration Test 15: Logger Propagation', () => {
     test('should include contextual information in messages', () => {
       const user = new User({ id: '123', username: 'jdoe' });
       repository.deleteById('123');
-      
+
       expect(mockLogger.info).toHaveBeenCalledWith(
         expect.stringContaining('Deleted User with ID: 123')
       );

@@ -46,7 +46,7 @@ function initGasResilienceLibTests() {
 
     SmartAssert.notNull(file, 'Should create file successfully');
     SmartAssert.equals(file.getName(), fileName, 'File name should match');
-    
+
     // Cleanup
     file.setTrashed(true);
   });
@@ -63,9 +63,13 @@ function initGasResilienceLibTests() {
       { msg: 'File not found', category: 'NOT_FOUND' }
     ];
 
-    patterns.forEach(p => {
+    patterns.forEach((p) => {
       const classification = classifier.classify(new Error(p.msg));
-      SmartAssert.equals(classification.category, p.category, `Should classify "${p.msg}" correctly`);
+      SmartAssert.equals(
+        classification.category,
+        p.category,
+        `Should classify "${p.msg}" correctly`
+      );
     });
   });
 

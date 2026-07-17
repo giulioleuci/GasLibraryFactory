@@ -9,7 +9,7 @@
 /**
  * Run tests matching a specific path or regex.
  * This is the main entry point for granular test execution.
- * 
+ *
  * @param {string|RegExp} filter Optional filter for test paths (e.g. 'CoreUtilsLib', 'SheetDBLib/CRUD').
  */
 function runTests(filter = null) {
@@ -47,7 +47,9 @@ function initializeAllTests() {
   const initFunctions = [
     typeof initGasResilienceLibTests === 'function' ? initGasResilienceLibTests : null,
     typeof initGoogleApiWrapperTests === 'function' ? initGoogleApiWrapperTests : null,
-    typeof initWorkspaceTemplateEngineTests === 'function' ? initWorkspaceTemplateEngineTests : null,
+    typeof initWorkspaceTemplateEngineTests === 'function'
+      ? initWorkspaceTemplateEngineTests
+      : null,
     typeof initGasExpressionEngineLibTests === 'function' ? initGasExpressionEngineLibTests : null,
     typeof initSheetDBLibTests === 'function' ? initSheetDBLibTests : null,
     typeof initJobRunnerLibTests === 'function' ? initJobRunnerLibTests : null,
@@ -61,7 +63,7 @@ function initializeAllTests() {
     typeof initHumanInspectionTests === 'function' ? initHumanInspectionTests : null
   ];
 
-  initFunctions.forEach(fn => {
+  initFunctions.forEach((fn) => {
     if (fn) fn();
   });
 }

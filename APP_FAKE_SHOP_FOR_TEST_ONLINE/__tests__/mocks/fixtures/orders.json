@@ -9,8 +9,8 @@
         "order_date": "2024-03-15T10:30:00Z",
         "status": "DELIVERED",
         "subtotal": 999.99,
-        "tax": 80.00,
-        "shipping": 0.00,
+        "tax": 80.0,
+        "shipping": 0.0,
         "total": 1079.99,
         "shipping_address": {
           "line1": "456 Oak Avenue",
@@ -39,7 +39,7 @@
         "status": "DELIVERED",
         "subtotal": 2999.97,
         "tax": 239.99,
-        "shipping": 0.00,
+        "shipping": 0.0,
         "total": 3239.96,
         "shipping_address": {
           "line1": "789 Industrial Blvd",
@@ -68,7 +68,7 @@
         "order_date": "2024-11-28T09:15:00Z",
         "status": "DELIVERED",
         "subtotal": 254.97,
-        "tax": 20.40,
+        "tax": 20.4,
         "shipping": 9.99,
         "total": 285.36,
         "shipping_address": {
@@ -116,8 +116,8 @@
         "order_date": "2025-02-14T11:00:00Z",
         "status": "DELIVERED",
         "subtotal": 229.97,
-        "tax": 13.80,
-        "shipping": 0.00,
+        "tax": 13.8,
+        "shipping": 0.0,
         "total": 243.77,
         "shipping_address": {
           "line1": "456 Oak Avenue",
@@ -132,7 +132,7 @@
             "product_id": "prod-002-headphones",
             "quantity": 1,
             "unit_price": 179.99,
-            "discount": 20.00,
+            "discount": 20.0,
             "line_total": 179.99
           },
           {
@@ -140,7 +140,7 @@
             "product_id": "prod-004-lamp",
             "quantity": 1,
             "unit_price": 44.99,
-            "discount": 5.00,
+            "discount": 5.0,
             "line_total": 44.99
           }
         ]
@@ -154,7 +154,7 @@
         "status": "DELIVERED",
         "subtotal": 5999.94,
         "tax": 479.99,
-        "shipping": 0.00,
+        "shipping": 0.0,
         "total": 6479.93,
         "shipping_address": {
           "line1": "789 Industrial Blvd",
@@ -170,7 +170,7 @@
             "product_id": "prod-001-laptop",
             "quantity": 5,
             "unit_price": 849.99,
-            "discount": 750.00,
+            "discount": 750.0,
             "line_total": 4249.95
           },
           {
@@ -178,8 +178,8 @@
             "product_id": "prod-002-headphones",
             "quantity": 10,
             "unit_price": 169.99,
-            "discount": 300.00,
-            "line_total": 1699.90
+            "discount": 300.0,
+            "line_total": 1699.9
           }
         ]
       },
@@ -191,7 +191,7 @@
         "order_date": "2025-08-20T15:45:00Z",
         "status": "DELIVERED",
         "subtotal": 129.96,
-        "tax": 7.80,
+        "tax": 7.8,
         "shipping": 9.99,
         "total": 147.75,
         "shipping_address": {
@@ -224,7 +224,7 @@
             "product_id": "prod-004-lamp",
             "quantity": 1,
             "unit_price": 49.99,
-            "discount": 30.00,
+            "discount": 30.0,
             "line_total": 19.99
           }
         ]
@@ -237,7 +237,7 @@
         "order_date": "2025-12-01T10:00:00Z",
         "status": "DELIVERED",
         "subtotal": 79.98,
-        "tax": 6.40,
+        "tax": 6.4,
         "shipping": 5.99,
         "total": 92.37,
         "shipping_address": {
@@ -277,8 +277,8 @@
         "order_date": "2026-01-10T09:30:00Z",
         "status": "DELIVERED",
         "subtotal": 1049.98,
-        "tax": 84.00,
-        "shipping": 0.00,
+        "tax": 84.0,
+        "shipping": 0.0,
         "total": 1133.98,
         "shipping_address": {
           "line1": "456 Oak Avenue",
@@ -293,7 +293,7 @@
             "product_id": "prod-001-laptop",
             "quantity": 1,
             "unit_price": 899.99,
-            "discount": 100.00,
+            "discount": 100.0,
             "line_total": 899.99
           },
           {
@@ -301,7 +301,7 @@
             "product_id": "prod-004-lamp",
             "quantity": 3,
             "unit_price": 44.99,
-            "discount": 15.00,
+            "discount": 15.0,
             "line_total": 134.97
           }
         ]
@@ -314,7 +314,7 @@
         "order_date": "2026-02-01T14:00:00Z",
         "status": "PENDING",
         "subtotal": 54.98,
-        "tax": 3.30,
+        "tax": 3.3,
         "shipping": 9.99,
         "total": 68.27,
         "shipping_address": {
@@ -330,7 +330,7 @@
             "product_id": "prod-003-tshirt",
             "quantity": 1,
             "unit_price": 25.49,
-            "discount": 4.50,
+            "discount": 4.5,
             "line_total": 25.49
           },
           {
@@ -352,7 +352,7 @@
         "status": "PROCESSING",
         "subtotal": 8499.85,
         "tax": 679.99,
-        "shipping": 0.00,
+        "shipping": 0.0,
         "total": 9179.84,
         "shipping_address": {
           "line1": "789 Industrial Blvd",
@@ -368,7 +368,7 @@
             "product_id": "prod-001-laptop",
             "quantity": 8,
             "unit_price": 849.99,
-            "discount": 1200.00,
+            "discount": 1200.0,
             "line_total": 6799.92
           },
           {
@@ -376,27 +376,20 @@
             "product_id": "prod-002-headphones",
             "quantity": 10,
             "unit_price": 169.99,
-            "discount": 300.00,
-            "line_total": 1699.90
+            "discount": 300.0,
+            "line_total": 1699.9
           }
         ]
       }
     ]
   },
-  "orderStatuses": [
-    "PENDING",
-    "CONFIRMED",
-    "PROCESSING",
-    "SHIPPED",
-    "DELIVERED",
-    "CANCELLED"
-  ],
+  "orderStatuses": ["PENDING", "CONFIRMED", "PROCESSING", "SHIPPED", "DELIVERED", "CANCELLED"],
   "analytics": {
     "yearlyTotals": {
       "2024": {
         "totalOrders": 3,
         "totalRevenue": 4605.31,
-        "averageOrderValue": 1535.10
+        "averageOrderValue": 1535.1
       },
       "2025": {
         "totalOrders": 4,
@@ -406,7 +399,7 @@
       "2026": {
         "totalOrders": 3,
         "totalRevenue": 10382.09,
-        "averageOrderValue": 3460.70
+        "averageOrderValue": 3460.7
       }
     },
     "customerLifetimeValues": {

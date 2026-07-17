@@ -14,49 +14,50 @@ The script `scripts/build-and-prepare.cjs` orchestrates the first two stages.
 
 **Use for**: Deploying to production GAS projects or publishing libraries.
 
-| Aspect       | Detail                                   |
-| ------------ | ---------------------------------------- |
-| Code.js      | Minified via Terser, no comments         |
-| GAS patches  | Applied automatically                    |
-| Online tests | Excluded                                 |
-| Output       | `Code.js` + `appsscript.json` (~815 KB)  |
-| Command      | `npm run build:production`               |
+| Aspect       | Detail                                  |
+| ------------ | --------------------------------------- |
+| Code.js      | Minified via Terser, no comments        |
+| GAS patches  | Applied automatically                   |
+| Online tests | Excluded                                |
+| Output       | `Code.js` + `appsscript.json` (~815 KB) |
+| Command      | `npm run build:production`              |
 
 ### Testing (`--mode=testing`)
 
 **Use for**: Development, debugging, and running online tests in GAS.
 
-| Aspect       | Detail                                                         |
-| ------------ | -------------------------------------------------------------- |
-| Code.js      | Non-minified, readable, comments stripped                      |
-| GAS patches  | Applied automatically                                          |
-| Online tests | Included by default (disable with `--online-tests=false`)      |
+| Aspect       | Detail                                                        |
+| ------------ | ------------------------------------------------------------- |
+| Code.js      | Non-minified, readable, comments stripped                     |
+| GAS patches  | Applied automatically                                         |
+| Online tests | Included by default (disable with `--online-tests=false`)     |
 | Output       | `Code.js` + `appsscript.json` + `TEST_*.gs` (~2,500 KB total) |
-| Command      | `npm run build:testing`                                        |
+| Command      | `npm run build:testing`                                       |
 
 ### Testoffline (`--mode=testoffline`)
 
 **Use for**: Build validation — confirms the bundle is correct before deployment.
 
-| Aspect          | Detail                                                   |
-| --------------- | -------------------------------------------------------- |
-| Code.js         | Non-minified, readable, comments stripped                |
-| GAS patches     | Applied automatically                                    |
-| Online tests    | Excluded                                                 |
-| Offline tests   | Runs unit tests, integration tests, and bundle validation |
-| Output          | `Code.js` + `appsscript.json` (not for deployment)      |
-| Command         | `npm run build:testoffline`                              |
+| Aspect        | Detail                                                    |
+| ------------- | --------------------------------------------------------- |
+| Code.js       | Non-minified, readable, comments stripped                 |
+| GAS patches   | Applied automatically                                     |
+| Online tests  | Excluded                                                  |
+| Offline tests | Runs unit tests, integration tests, and bundle validation |
+| Output        | `Code.js` + `appsscript.json` (not for deployment)        |
+| Command       | `npm run build:testoffline`                               |
 
 ## Unified Webpack Configuration
 
 A single `webpack.config.cjs` supports both minified and readable builds:
 
-| Flag              | Effect                          |
-| ----------------- | ------------------------------- |
-| (default)         | Minified via Terser             |
-| `--env readable`  | Non-minified, comments stripped |
+| Flag             | Effect                          |
+| ---------------- | ------------------------------- |
+| (default)        | Minified via Terser             |
+| `--env readable` | Non-minified, comments stripped |
 
 The build orchestrator (`build-and-prepare.cjs`) automatically selects the correct flags:
+
 - **Production** → `npx webpack --mode production`
 - **Testing / Testoffline** → `npx webpack --mode production --env readable`
 
@@ -71,6 +72,7 @@ The build orchestrator (`build-and-prepare.cjs`) automatically selects the corre
 ### Babel Configuration
 
 Webpack uses `@babel/preset-env` targeting Chrome 80 (GAS V8 runtime). This target preserves:
+
 - ES6 classes (native `class` syntax)
 - Arrow functions, template literals, destructuring
 - `const`/`let`, spread/rest operators
@@ -108,29 +110,29 @@ The bundled `Code.js` may contain code from external npm dependencies (e.g. `es-
 
 #### Automatic Fixes
 
-| # | Pattern | Replacement | Source | Reason |
-|---|---------|-------------|--------|--------|
-| 1 | `Object.hasOwn(obj, key)` | `Object.prototype.hasOwnProperty.call(obj, key)` | es-toolkit | ES2022 (Chrome 93+), not in GAS V8 |
-| 2 | `.replaceAll("str", repl)` | `.split("str").join(repl)` | (any) | ES2021 (Chrome 85+), not in GAS V8 |
-| 3 | es-toolkit `CASE_SPLIT_PATTERN` | Try/catch IIFE with ASCII fallback | es-toolkit | Unicode emoji property escapes cause `SyntaxError` at parse time |
-| 4 | Zod emoji validation regex | Unicode code-point ranges | zod | `\p{Extended_Pictographic}` may not be supported in GAS V8's ICU build |
-| 5 | `new URL()` constructor | Minimal URL shim prepended to Code.js | CoreUtilsLib, zod | The `URL` Web API class does not exist in GAS V8 |
+| #   | Pattern                         | Replacement                                      | Source            | Reason                                                                 |
+| --- | ------------------------------- | ------------------------------------------------ | ----------------- | ---------------------------------------------------------------------- |
+| 1   | `Object.hasOwn(obj, key)`       | `Object.prototype.hasOwnProperty.call(obj, key)` | es-toolkit        | ES2022 (Chrome 93+), not in GAS V8                                     |
+| 2   | `.replaceAll("str", repl)`      | `.split("str").join(repl)`                       | (any)             | ES2021 (Chrome 85+), not in GAS V8                                     |
+| 3   | es-toolkit `CASE_SPLIT_PATTERN` | Try/catch IIFE with ASCII fallback               | es-toolkit        | Unicode emoji property escapes cause `SyntaxError` at parse time       |
+| 4   | Zod emoji validation regex      | Unicode code-point ranges                        | zod               | `\p{Extended_Pictographic}` may not be supported in GAS V8's ICU build |
+| 5   | `new URL()` constructor         | Minimal URL shim prepended to Code.js            | CoreUtilsLib, zod | The `URL` Web API class does not exist in GAS V8                       |
 
 #### Warning-Only Scans
 
-| Pattern | Reason |
-|---------|--------|
-| `crypto.getRandomValues()` | Not available in GAS (use `nanoid/non-secure`) |
-| `structuredClone()` | ES2022 (Chrome 98+) |
-| `.at(-1)` (Array/String `.at()`) | ES2022 (Chrome 92+) |
-| `.findLast()` / `.findLastIndex()` | ES2023 (Chrome 97+) |
-| `Promise.any()` | ES2021 (Chrome 85+) |
-| Logical assignment (`??=`, `\|\|=`, `&&=`) | ES2021 (Chrome 85+) |
+| Pattern                                    | Reason                                         |
+| ------------------------------------------ | ---------------------------------------------- |
+| `crypto.getRandomValues()`                 | Not available in GAS (use `nanoid/non-secure`) |
+| `structuredClone()`                        | ES2022 (Chrome 98+)                            |
+| `.at(-1)` (Array/String `.at()`)           | ES2022 (Chrome 92+)                            |
+| `.findLast()` / `.findLastIndex()`         | ES2023 (Chrome 97+)                            |
+| `Promise.any()`                            | ES2021 (Chrome 85+)                            |
+| Logical assignment (`??=`, `\|\|=`, `&&=`) | ES2021 (Chrome 85+)                            |
 
 #### File Size Validation
 
 | Threshold | Action  |
-|-----------|---------|
+| --------- | ------- |
 | < 4 MB    | OK      |
 | 4–6 MB    | Warning |
 | > 6 MB    | Error   |
@@ -139,22 +141,22 @@ The bundled `Code.js` may contain code from external npm dependencies (e.g. `es-
 
 ### Test Folder Types
 
-| Folder Pattern | Purpose | Bundled into Code.js? | Production? | Testing? |
-|---|---|---|---|---|
-| `**/__tests__/` | Local unit tests (Jest) | Never | No | No |
-| `**/test/` | Test utilities/fakes | Never | No | No |
-| `**/__testOnline__/` | Online GAS tests | No (separate .gs) | No | Yes |
+| Folder Pattern       | Purpose                 | Bundled into Code.js? | Production? | Testing? |
+| -------------------- | ----------------------- | --------------------- | ----------- | -------- |
+| `**/__tests__/`      | Local unit tests (Jest) | Never                 | No          | No       |
+| `**/test/`           | Test utilities/fakes    | Never                 | No          | No       |
+| `**/__testOnline__/` | Online GAS tests        | No (separate .gs)     | No          | Yes      |
 
 ### Test File Naming
 
 The Webpack `CopyOnlineTestsPlugin` copies online test files to `dist/` with these naming conventions:
 
-| Source Location | Output Name |
-|---|---|
+| Source Location                             | Output Name                       |
+| ------------------------------------------- | --------------------------------- |
 | `LibraryName/__testOnline__/OnlineTests.gs` | `TEST_LibraryName_OnlineTests.gs` |
-| `__testOnline__/shared/TestFramework.gs` | `TEST_SHARED_TestFramework.gs` |
-| `__testOnline__/integration/Test16_*.gs` | `TEST_INTEGRATION_Test16_*.gs` |
-| `__testOnline__/MasterTestRunner.gs` | `TEST_MASTER_Runner.gs` |
+| `__testOnline__/shared/TestFramework.gs`    | `TEST_SHARED_TestFramework.gs`    |
+| `__testOnline__/integration/Test16_*.gs`    | `TEST_INTEGRATION_Test16_*.gs`    |
+| `__testOnline__/MasterTestRunner.gs`        | `TEST_MASTER_Runner.gs`           |
 
 ## Available Build Commands
 
@@ -238,23 +240,23 @@ npm run build:testoffline
 
 ### Production Mode
 
-| File | Size | Purpose |
-|---|---|---|
-| `Code.js` | ~815 KB | Bundled + patched app code |
-| `appsscript.json` | ~1.2 KB | GAS project manifest |
+| File              | Size    | Purpose                    |
+| ----------------- | ------- | -------------------------- |
+| `Code.js`         | ~815 KB | Bundled + patched app code |
+| `appsscript.json` | ~1.2 KB | GAS project manifest       |
 
 **Total: 2 files**
 
 ### Testing Mode
 
-| File(s) | Count | Purpose |
-|---|---|---|
-| `Code.js` | 1 | Bundled + patched code |
-| `appsscript.json` | 1 | GAS project manifest |
-| `TEST_LibName_OnlineTests.gs` | ~18 | Library online tests |
-| `TEST_SHARED_*.gs` | 2 | Shared test utilities |
-| `TEST_INTEGRATION_*.gs` | ~11 | Integration tests |
-| `TEST_MASTER_Runner.gs` | 1 | Master test runner |
+| File(s)                       | Count | Purpose                |
+| ----------------------------- | ----- | ---------------------- |
+| `Code.js`                     | 1     | Bundled + patched code |
+| `appsscript.json`             | 1     | GAS project manifest   |
+| `TEST_LibName_OnlineTests.gs` | ~18   | Library online tests   |
+| `TEST_SHARED_*.gs`            | 2     | Shared test utilities  |
+| `TEST_INTEGRATION_*.gs`       | ~11   | Integration tests      |
+| `TEST_MASTER_Runner.gs`       | 1     | Master test runner     |
 
 **Total: ~35 files**
 
@@ -348,39 +350,39 @@ Only functions assigned to `global` this way get top-level function stubs. Class
 
 ### NOT Supported in GAS V8
 
-| Feature | Available Since | Alternative |
-|---|---|---|
-| `Object.hasOwn()` | Chrome 93 | `Object.prototype.hasOwnProperty.call()` |
-| `String.replaceAll()` | Chrome 85 | `.split().join()` or regex `.replace()` |
-| `Array.at()` | Chrome 92 | Bracket notation |
-| `Array.findLast()` | Chrome 97 | `.slice().reverse().find()` |
-| `structuredClone()` | Chrome 98 | `JSON.parse(JSON.stringify())` or `cloneDeep()` |
-| Logical assignment | Chrome 85 | Explicit assignment |
-| `new URL()` | N/A | Regex-based validation or build-injected shim |
-| `crypto.getRandomValues()` | N/A | `nanoid/non-secure` or `Utilities.getUuid()` |
-| `setTimeout` / `setInterval` | N/A | `Utilities.sleep()` for delays |
-| `fetch()` | N/A | `UrlFetchApp.fetch()` |
-| `TextEncoder` / `TextDecoder` | N/A | `Utilities.newBlob().getDataAsString()` |
-| `\p{Emoji_*}` in regex | Varies | Unicode code-point ranges or ASCII fallback |
+| Feature                       | Available Since | Alternative                                     |
+| ----------------------------- | --------------- | ----------------------------------------------- |
+| `Object.hasOwn()`             | Chrome 93       | `Object.prototype.hasOwnProperty.call()`        |
+| `String.replaceAll()`         | Chrome 85       | `.split().join()` or regex `.replace()`         |
+| `Array.at()`                  | Chrome 92       | Bracket notation                                |
+| `Array.findLast()`            | Chrome 97       | `.slice().reverse().find()`                     |
+| `structuredClone()`           | Chrome 98       | `JSON.parse(JSON.stringify())` or `cloneDeep()` |
+| Logical assignment            | Chrome 85       | Explicit assignment                             |
+| `new URL()`                   | N/A             | Regex-based validation or build-injected shim   |
+| `crypto.getRandomValues()`    | N/A             | `nanoid/non-secure` or `Utilities.getUuid()`    |
+| `setTimeout` / `setInterval`  | N/A             | `Utilities.sleep()` for delays                  |
+| `fetch()`                     | N/A             | `UrlFetchApp.fetch()`                           |
+| `TextEncoder` / `TextDecoder` | N/A             | `Utilities.newBlob().getDataAsString()`         |
+| `\p{Emoji_*}` in regex        | Varies          | Unicode code-point ranges or ASCII fallback     |
 
 ## Related Files
 
-| File | Purpose |
-|---|---|
-| `webpack.config.cjs` | Unified Webpack config (minified + readable via `--env readable`) |
-| `webpack-plugins/StripCommentsPlugin.cjs` | Comment stripping for readable builds |
-| `scripts/build-and-prepare.cjs` | Build orchestration + GAS compatibility |
-| `babel.config.cjs` | Babel config for Jest (Node.js targeting) |
-| `appsscript.json` | GAS project manifest (V8 runtime) |
-| `package.json` | npm scripts and CLASP rootDir config |
+| File                                      | Purpose                                                           |
+| ----------------------------------------- | ----------------------------------------------------------------- |
+| `webpack.config.cjs`                      | Unified Webpack config (minified + readable via `--env readable`) |
+| `webpack-plugins/StripCommentsPlugin.cjs` | Comment stripping for readable builds                             |
+| `scripts/build-and-prepare.cjs`           | Build orchestration + GAS compatibility                           |
+| `babel.config.cjs`                        | Babel config for Jest (Node.js targeting)                         |
+| `appsscript.json`                         | GAS project manifest (V8 runtime)                                 |
+| `package.json`                            | npm scripts and CLASP rootDir config                              |
 
 ## Quick Reference
 
-| Use Case | Command | Output |
-|---|---|---|
-| Production deployment | `npm run push:production` | Code.js + appsscript.json (2 files, ~815 KB) |
-| Development with tests | `npm run push:testing` | Code.js + appsscript.json + TEST\_\*.gs (~35 files) |
-| Pre-deployment validation | `npm run build:testoffline` | Build + unit/integration/bundle tests |
-| Build only (production) | `npm run build:production` | dist/ ready for `clasp push` |
-| Build only (testing) | `npm run build:testing` | dist/ ready for `clasp push` |
-| Clean build | `npm run clean && npm run build:production` | Fresh dist/ |
+| Use Case                  | Command                                     | Output                                              |
+| ------------------------- | ------------------------------------------- | --------------------------------------------------- |
+| Production deployment     | `npm run push:production`                   | Code.js + appsscript.json (2 files, ~815 KB)        |
+| Development with tests    | `npm run push:testing`                      | Code.js + appsscript.json + TEST\_\*.gs (~35 files) |
+| Pre-deployment validation | `npm run build:testoffline`                 | Build + unit/integration/bundle tests               |
+| Build only (production)   | `npm run build:production`                  | dist/ ready for `clasp push`                        |
+| Build only (testing)      | `npm run build:testing`                     | dist/ ready for `clasp push`                        |
+| Clean build               | `npm run clean && npm run build:production` | Fresh dist/                                         |

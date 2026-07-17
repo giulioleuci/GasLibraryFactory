@@ -34,7 +34,7 @@ export class ErrorReporter {
     }
 
     this._logger = logger;
-    
+
     // Initialize state
     this._sessionErrors = [];
     this._counters = {
@@ -68,7 +68,7 @@ export class ErrorReporter {
 
   _delegate(delegations) {
     delegations.forEach(({ manager, methods }) => {
-      methods.forEach(method => {
+      methods.forEach((method) => {
         if (typeof manager[method] === 'function') {
           this[method] = manager[method].bind(manager);
         }

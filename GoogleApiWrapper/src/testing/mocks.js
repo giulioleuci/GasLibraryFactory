@@ -56,7 +56,7 @@ export class SpreadsheetServiceMock {
       getSheets: () => [],
       getSheetByName: jest.fn(() => null)
     }));
-    
+
     this.createSpreadsheet = jest.fn((name) => ({
       getId: () => 'new-sheet-id',
       getName: () => name,
@@ -67,7 +67,7 @@ export class SpreadsheetServiceMock {
     this.setSheetData = jest.fn().mockReturnThis();
     this.appendRow = jest.fn().mockReturnThis();
     this.deleteRows = jest.fn().mockReturnThis();
-    
+
     // Add missing methods required by SheetDBLib tests
     this.getValues = jest.fn();
     this.getSheetInfo = jest.fn();
@@ -109,7 +109,7 @@ export class PropertiesServiceMock {
     this.getScriptProperties = () => this;
     this.getUserProperties = () => this;
     this.getDocumentProperties = () => this;
-    
+
     this.getScriptProperty = this.getProperty;
     this.getUserProperty = this.getProperty;
     this.getDocumentProperty = this.getProperty;
@@ -138,7 +138,7 @@ export class PropertiesServiceMock {
       const val = this._store.get(key);
       return val ? JSON.parse(val) : null;
     });
-    
+
     // Additional helper methods from legacy fakes
     this.getScriptPropertyJSON = this.getObjectProperty;
     this.setScriptPropertyJSON = this.setObjectProperty;
@@ -195,13 +195,23 @@ export class DocumentBuilderMock {
   execute = jest.fn(() => {
     const standardResults = [];
     const nonBatchResults = [];
-    
+
     // Track what would have happened
-    this.operations.forEach(op => {
+    this.operations.forEach((op) => {
       if (op.type === 'createTable') {
-        standardResults.push({ operation: 'createTable', result: { success: true, rows: (op.data || []).length, columns: (op.data && op.data[0] || []).length } });
+        standardResults.push({
+          operation: 'createTable',
+          result: {
+            success: true,
+            rows: (op.data || []).length,
+            columns: ((op.data && op.data[0]) || []).length
+          }
+        });
       } else if (op.type === 'exportPDF') {
-        nonBatchResults.push({ operation: 'exportPDF', result: { id: 'pdf123', name: op.fileName } });
+        nonBatchResults.push({
+          operation: 'exportPDF',
+          result: { id: 'pdf123', name: op.fileName }
+        });
       } else if (op.type === 'addHeader' || op.type === 'addFooter') {
         standardResults.push({ operation: op.type, result: { success: true } });
       }
@@ -383,13 +393,13 @@ export class TriggerServiceMock {
 
     this.getTriggers = jest.fn(() => [...this._triggers]);
     this.getAllTriggers = this.getTriggers;
-    
-    this.getTriggersByFunction = jest.fn((functionName) => 
+
+    this.getTriggersByFunction = jest.fn((functionName) =>
       this._triggers.filter((t) => t.functionName === functionName)
     );
 
-    this.getTriggerById = jest.fn((triggerId) => 
-      this._triggers.find((t) => t.id === triggerId) || null
+    this.getTriggerById = jest.fn(
+      (triggerId) => this._triggers.find((t) => t.id === triggerId) || null
     );
 
     this.deleteAllTriggers = jest.fn(() => {
@@ -397,10 +407,10 @@ export class TriggerServiceMock {
     });
 
     this.getTriggerCount = jest.fn(() => this._triggers.length);
-    this.hasTriggerForFunction = jest.fn((functionName) => 
+    this.hasTriggerForFunction = jest.fn((functionName) =>
       this._triggers.some((t) => t.functionName === functionName)
     );
-    
+
     this.clear = this.deleteAllTriggers;
   }
 }
@@ -412,15 +422,19 @@ export class TriggerServiceMock {
 export class MailServiceMock {
   constructor() {
     this.send = jest.fn(() => ({ success: true, messageId: 'mock-mail-id' }));
-    this.sendBatch = jest.fn(() => ({ 
-      successful: [], 
-      failed: [], 
-      sent: 0 
+    this.sendBatch = jest.fn(() => ({
+      successful: [],
+      failed: [],
+      sent: 0
     }));
-    this.sendBulk = jest.fn(() => ({ sent: 0, failed: 0, details: { successful: [], failed: [] } }));
-    this.createDraft = jest.fn(() => ({ 
-      success: true, 
-      id: 'draft-id' 
+    this.sendBulk = jest.fn(() => ({
+      sent: 0,
+      failed: 0,
+      details: { successful: [], failed: [] }
+    }));
+    this.createDraft = jest.fn(() => ({
+      success: true,
+      id: 'draft-id'
     }));
     this.createDraftsBatch = jest.fn(() => ({ successful: [], failed: [] }));
     this.sendNotification = jest.fn(() => ({ success: true }));
@@ -474,8 +488,6 @@ export class DriveServiceMock {
     // Standard-API accessor used by consumers that route native Drive operations
     // through the wrapper (e.g. JobRunnerLib persistence/log-capture). Falls back
     // to the global DriveApp when present so existing DriveApp mocks keep working.
-    this.getStandardApp = jest.fn(() =>
-      typeof DriveApp !== 'undefined' ? DriveApp : undefined
-    );
+    this.getStandardApp = jest.fn(() => (typeof DriveApp !== 'undefined' ? DriveApp : undefined));
   }
 }

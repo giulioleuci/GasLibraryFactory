@@ -15,7 +15,7 @@ function initIntegrationTests_Utils() {
   runner.register(`${NS}/Drive_Sheet_Integration`, () => {
     const driveService = ServiceFactory.getDriveService();
     const spreadsheetService = ServiceFactory.getSpreadsheetService();
-    
+
     const root = testContext.getRootFolder();
     const folderName = 'IntegrationTest_' + new Date().getTime();
     const folder = driveService.createFolder(folderName, root.getId());
@@ -25,17 +25,18 @@ function initIntegrationTests_Utils() {
     const ss = spreadsheetService.createSpreadsheet('TestSS', folder.id);
     SmartAssert.notNull(ss, 'Spreadsheet should be created in folder');
 
-    driveService.deleteFiles([folder.id]);  });
+    driveService.deleteFiles([folder.id]);
+  });
 
   // --- Trigger Management ---
   runner.register(`${NS}/Trigger_Management`, () => {
     const triggerId = TriggerTestUtils.createTestTrigger('dummyFunction', 1);
     SmartAssert.notNull(triggerId, 'Trigger should be created');
-    
+
     const triggers = TriggerTestUtils.getAllTriggers();
-    const found = triggers.find(t => t.id === triggerId);
+    const found = triggers.find((t) => t.id === triggerId);
     SmartAssert.notNull(found, 'Trigger should be found in project triggers');
-    
+
     const deleted = TriggerTestUtils.deleteTrigger(triggerId);
     SmartAssert.isTrue(deleted, 'Trigger should be deleted');
   });
@@ -44,7 +45,7 @@ function initIntegrationTests_Utils() {
   runner.register(`${NS}/TemplateEngine_Doc`, () => {
     testContext.resetDocument();
     const doc = testContext.getDocument();
-    
+
     const body = doc.getBody();
     body.appendParagraph('Hello {{name}}!');
     doc.saveAndClose();
@@ -53,9 +54,9 @@ function initIntegrationTests_Utils() {
     const mustache = new Mustache({ logger });
     const placeholderService = new PlaceholderService({ logger, mustache });
     const docProcessor = new DocumentProcessor(placeholderService);
-    
+
     docProcessor.process(doc.getId(), { name: 'World' });
-    
+
     const updatedDoc = DocumentApp.openById(doc.getId());
     const text = updatedDoc.getBody().getText();
     SmartAssert.isTrue(text.includes('Hello World!'), 'Placeholder should be replaced');
@@ -101,11 +102,16 @@ function initIntegrationTests_Utils() {
     testContext.resetSpreadsheet(ss);
     const sheet = ss.getSheets()[0];
     sheet.setName('Template');
-    sheet.getRange('C1').setValue('{{dynamic_columns[source=students, value=name, acl=email, scope=column]}}');
+    sheet
+      .getRange('C1')
+      .setValue('{{dynamic_columns[source=students, value=name, acl=email, scope=column]}}');
     SpreadsheetApp.flush();
 
     const logger = new LoggerService();
-    const placeholderService = new PlaceholderService({ logger, mustache: new Mustache({ logger }) });
+    const placeholderService = new PlaceholderService({
+      logger,
+      mustache: new Mustache({ logger })
+    });
 
     const currentUser = Session.getActiveUser().getEmail();
     const context = {
@@ -119,11 +125,21 @@ function initIntegrationTests_Utils() {
     SpreadsheetApp.flush();
 
     const updatedSheet = SpreadsheetApp.openById(ss.getId()).getSheetByName('Template');
-    SmartAssert.equals(updatedSheet.getRange('C1').getValue(), 'Student A', 'C1 should be Student A');
-    SmartAssert.equals(updatedSheet.getRange('D1').getValue(), 'Student B', 'D1 should be Student B');
+    SmartAssert.equals(
+      updatedSheet.getRange('C1').getValue(),
+      'Student A',
+      'C1 should be Student A'
+    );
+    SmartAssert.equals(
+      updatedSheet.getRange('D1').getValue(),
+      'Student B',
+      'D1 should be Student B'
+    );
 
     const protections = updatedSheet.getProtections(SpreadsheetApp.ProtectionType.RANGE);
-    const ourProtections = protections.filter(p => p.getDescription() === '[WTE] Dynamic Column: students');
+    const ourProtections = protections.filter(
+      (p) => p.getDescription() === '[WTE] Dynamic Column: students'
+    );
     SmartAssert.equals(ourProtections.length, 2, 'Should have 2 dynamic column protected ranges');
   });
 
@@ -164,11 +180,18 @@ function initIntegrationTests_Utils() {
     testContext.resetSpreadsheet(ss);
     const sheet = ss.getSheets()[0];
     sheet.setName('Matrix');
-    sheet.getRange('A1').setValue('{{matrice_dati[sorgente=items, colonne=id;name;price, intestazioni=ID;Name;Price]}}');
+    sheet
+      .getRange('A1')
+      .setValue(
+        '{{matrice_dati[sorgente=items, colonne=id;name;price, intestazioni=ID;Name;Price]}}'
+      );
     SpreadsheetApp.flush();
 
     const logger = new LoggerService();
-    const placeholderService = new PlaceholderService({ logger, mustache: new Mustache({ logger }) });
+    const placeholderService = new PlaceholderService({
+      logger,
+      mustache: new Mustache({ logger })
+    });
 
     const data = {
       items: [
@@ -185,7 +208,7 @@ function initIntegrationTests_Utils() {
     SmartAssert.equals(values[1][1], 'Item 1', 'First item name should be present');
     SmartAssert.equals(values[2][2], 20, 'Second item price should be present');
   });
-  }
+}
 
 function dummyFunction() {
   Logger.log('Dummy function executed');

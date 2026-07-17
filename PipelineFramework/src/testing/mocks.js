@@ -55,7 +55,7 @@ export class PipelineContextMock {
       executionHistory: []
     };
 
-    this.get = jest.fn((key, defaultValue = null) => 
+    this.get = jest.fn((key, defaultValue = null) =>
       Object.prototype.hasOwnProperty.call(this._data, key) ? this._data[key] : defaultValue
     );
     this.set = jest.fn((key, value) => {
@@ -66,20 +66,20 @@ export class PipelineContextMock {
     this.getData = jest.fn(() => this._data);
     this.getAll = jest.fn(() => this._data);
     this.getSummary = jest.fn(() => ({
-      success: this._metadata.executionHistory.every(r => r.status === 'success'),
+      success: this._metadata.executionHistory.every((r) => r.status === 'success'),
       totalSteps: this._metadata.executionHistory.length,
       history: this._metadata.executionHistory
     }));
     this.getMetadata = jest.fn(() => this._metadata);
     this.setMetadata = jest.fn().mockReturnThis();
-    
+
     this.requestStop = jest.fn((reason) => {
       this._metadata.stopRequested = true;
       this._metadata.stopReason = reason;
       return this;
     });
     this.shouldStop = jest.fn(() => this._metadata.stopRequested);
-    
+
     this.recordStepExecution = jest.fn((stepName, status, duration) => {
       this._metadata.executionHistory.push({ stepName, status, duration, timestamp: Date.now() });
       return this;

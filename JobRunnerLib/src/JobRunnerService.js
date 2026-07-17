@@ -19,9 +19,11 @@ export class MyJobRunnerService {
       throw new Error('MyJobRunnerService: logger is required and cannot be null or undefined');
     }
     if (typeof logger !== 'object') {
-      throw new Error(`MyJobRunnerService: logger must be of type object, received: ${typeof logger}`);
+      throw new Error(
+        `MyJobRunnerService: logger must be of type object, received: ${typeof logger}`
+      );
     }
-    ['info', 'debug', 'error'].forEach(method => {
+    ['info', 'debug', 'error'].forEach((method) => {
       if (typeof logger[method] !== 'function') {
         throw new Error(`MyJobRunnerService: logger must have method: ${method}`);
       }
@@ -31,7 +33,9 @@ export class MyJobRunnerService {
       throw new Error('MyJobRunnerService: utils is required and cannot be null or undefined');
     }
     if (typeof utils !== 'object') {
-      throw new Error(`MyJobRunnerService: utils must be of type object, received: ${typeof utils}`);
+      throw new Error(
+        `MyJobRunnerService: utils must be of type object, received: ${typeof utils}`
+      );
     }
 
     if (jobDefinitionRegistry == null) {
@@ -79,8 +83,11 @@ export class MyJobRunnerService {
       {
         manager: this._logCapturer,
         methods: [
-          '_validateLoggingConfig', '_displayLogs', '_displayLogsInSidebar',
-          '_displayLogsInDriveFile', '_escapeHtml'
+          '_validateLoggingConfig',
+          '_displayLogs',
+          '_displayLogsInSidebar',
+          '_displayLogsInDriveFile',
+          '_escapeHtml'
         ]
       }
     ]);
@@ -90,7 +97,7 @@ export class MyJobRunnerService {
 
   _delegate(delegations) {
     delegations.forEach(({ manager, methods }) => {
-      methods.forEach(method => {
+      methods.forEach((method) => {
         if (typeof manager[method] === 'function') {
           this[method] = manager[method].bind(manager);
         }

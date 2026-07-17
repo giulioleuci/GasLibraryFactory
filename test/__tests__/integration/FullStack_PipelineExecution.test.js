@@ -86,7 +86,8 @@ describe('Full Stack Integration: Pipeline Execution', () => {
 
     _executeLogic(context) {
       if (this._expressionEngine) {
-        const contextData = typeof context.getAll === 'function' ? context.getAll() : context.getData();
+        const contextData =
+          typeof context.getAll === 'function' ? context.getAll() : context.getData();
         const shouldExecute = this._expressionEngine.evaluate(this._condition, contextData);
         if (!shouldExecute) {
           return { skipped: true, reason: 'Condition not met' };
@@ -99,7 +100,8 @@ describe('Full Stack Integration: Pipeline Execution', () => {
 
     shouldExecute(context) {
       if (this._expressionEngine) {
-        const contextData = typeof context.getAll === 'function' ? context.getAll() : context.getData();
+        const contextData =
+          typeof context.getAll === 'function' ? context.getAll() : context.getData();
         return this._expressionEngine.evaluate(this._condition, contextData);
       }
       return true;
@@ -193,7 +195,7 @@ describe('Full Stack Integration: Pipeline Execution', () => {
       expect(context.getSummary().totalSteps).toBe(3);
       expect(mockDataSource.getData).toHaveBeenCalled();
       expect(mockDataTarget.saveData).toHaveBeenCalled();
-      
+
       const savedData = mockDataTarget.saveData.mock.calls[0][0];
       expect(savedData).toHaveLength(1);
       expect(savedData[0].name).toBe('Item A');
@@ -203,7 +205,7 @@ describe('Full Stack Integration: Pipeline Execution', () => {
   describe('Producer-Consumer Pattern', () => {
     test('Producer makes decision and Consumer executes it', () => {
       const mockApi = { call: jest.fn((type) => ({ status: 'ok', type })) };
-      
+
       const pipeline = new Pipeline(mockLogger)
         .addStep(new DecisionStep(mockLogger, expressionEngine))
         .addStep(new ActionStep(mockLogger, mockApi));
@@ -267,10 +269,14 @@ describe('Full Stack Integration: Pipeline Execution', () => {
       };
 
       const pipeline = new Pipeline(mockLogger, exceptionService).addStep(failingStep);
-      
+
       // Configure exceptionService to actually retry for this test
       exceptionService.executeWithRetry.mockImplementation((fn) => {
-        try { return fn(); } catch (e) { return fn(); }
+        try {
+          return fn();
+        } catch (e) {
+          return fn();
+        }
       });
 
       pipeline.execute({});
@@ -282,10 +288,10 @@ describe('Full Stack Integration: Pipeline Execution', () => {
     test('Lifecycle hooks are called in order', () => {
       const logs = [];
       const pipeline = new Pipeline(mockLogger);
-      
+
       pipeline.beforeStep((step) => logs.push(`before:${step.getName()}`));
       pipeline.afterStep((step) => logs.push(`after:${step.getName()}`));
-      
+
       const step = {
         getName: () => 'test',
         execute: jest.fn(() => {

@@ -27,7 +27,14 @@ function initGasDataImporterTests() {
     const spreadsheetService = new SpreadsheetService(logger, cache, utils, exceptionService);
     const db = new DatabaseService(ssTarget.getId(), logger, utils, cache, exceptionService);
 
-    const engine = new ImportEngine(logger, driveService, spreadsheetService, db, null, exceptionService);
+    const engine = new ImportEngine(
+      logger,
+      driveService,
+      spreadsheetService,
+      db,
+      null,
+      exceptionService
+    );
 
     const recipe = {
       name: 'Import Users',
@@ -36,7 +43,7 @@ function initGasDataImporterTests() {
         config: { sheetId: ssSource.getId(), range: 'Source!A1:C', hasHeaders: true }
       },
       transform: {
-        mapping: { 'First Name': 'FIRST_NAME', 'Last Name': 'LAST_NAME', 'Email': 'EMAIL' }
+        mapping: { 'First Name': 'FIRST_NAME', 'Last Name': 'LAST_NAME', Email: 'EMAIL' }
       },
       load: {
         targetTable: sheetTarget.getName(),
@@ -65,7 +72,7 @@ function initGasDataImporterTests() {
     const sheetSource = ssSource.insertSheet('Updates_' + new Date().getTime());
     sheetSource.appendRow(['SKU', 'Name', 'Qty']);
     sheetSource.appendRow(['SKU-001', 'Widget Updated', 15]); // UPSERT
-    sheetSource.appendRow(['SKU-002', 'New Gadget', 5]);      // INSERT
+    sheetSource.appendRow(['SKU-002', 'New Gadget', 5]); // INSERT
     SpreadsheetApp.flush();
 
     const logger = new LoggerService();
@@ -76,16 +83,27 @@ function initGasDataImporterTests() {
     const spreadsheetService = new SpreadsheetService(logger, cache, utils, exceptionService);
     const db = new DatabaseService(ss.getId(), logger, utils, cache, exceptionService);
 
-    const engine = new ImportEngine(logger, driveService, spreadsheetService, db, null, exceptionService);
+    const engine = new ImportEngine(
+      logger,
+      driveService,
+      spreadsheetService,
+      db,
+      null,
+      exceptionService
+    );
 
     const recipe = {
       name: 'Upsert Inventory',
       source: {
         type: 'SheetById',
-        config: { sheetId: ssSource.getId(), range: sheetSource.getName() + '!A1:C', hasHeaders: true }
+        config: {
+          sheetId: ssSource.getId(),
+          range: sheetSource.getName() + '!A1:C',
+          hasHeaders: true
+        }
       },
       transform: {
-        mapping: { 'SKU': 'SKU', 'Name': 'Name', 'Qty': 'Qty' }
+        mapping: { SKU: 'SKU', Name: 'Name', Qty: 'Qty' }
       },
       load: {
         targetTable: 'Inventory',
@@ -100,7 +118,7 @@ function initGasDataImporterTests() {
 
     const data = db.select().from('Inventory').execute();
     SmartAssert.equals(data.length, 2, 'Should have 2 records total');
-    const widget = data.find(r => r.SKU === 'SKU-001');
+    const widget = data.find((r) => r.SKU === 'SKU-001');
     SmartAssert.equals(widget.Name, 'Widget Updated', 'Name should be updated');
     SmartAssert.equals(widget.Qty, 15, 'Qty should be updated');
   });

@@ -11,52 +11,52 @@ function initSheetDBLibTests() {
   runner.register(`${NS}/DatabaseService/Initialization`, () => {
     const ss = testContext.getSpreadsheet();
     testContext.resetSpreadsheet(ss);
-    
+
     const logger = new LoggerService();
     const utils = new UtilsService((ms) => Utilities.sleep(ms));
     const cache = CacheService.getScriptCache();
     const exceptionService = new ExceptionService(logger, utils);
     const db = new DatabaseService(ss.getId(), logger, utils, cache, exceptionService);
-    
+
     SmartAssert.notNull(db, 'DatabaseService should initialize with a spreadsheet');
   });
 
   runner.register(`${NS}/TableService/CRUD`, () => {
     const ss = testContext.getSpreadsheet();
     testContext.resetSpreadsheet(ss);
-    
+
     const tableName = 'Users';
     const sheet = ss.insertSheet(tableName);
     sheet.appendRow(['ID', 'Name', 'Email']);
-    
+
     const logger = new LoggerService();
     const utils = new UtilsService((ms) => Utilities.sleep(ms));
     const cache = CacheService.getScriptCache();
     const exceptionService = new ExceptionService(logger, utils);
     const spreadsheetService = new SpreadsheetService(logger, cache, utils, exceptionService);
     const table = new TableService(tableName, ss.getId(), spreadsheetService, logger, utils);
-    
+
     // Create
     const newId = 'user_123';
     table.insertRow({ ID: newId, Name: 'Test User', Email: 'test@example.com' });
-    
+
     // Read
     const record = table.getRowById(newId);
     SmartAssert.notNull(record, 'Should find the inserted record');
     SmartAssert.equals(record.Name, 'Test User', 'Name should match');
-    
+
     // Update
     table.updateRowById(newId, { Name: 'Updated Name' });
     const updated = table.getRowById(newId);
     SmartAssert.equals(updated.Name, 'Updated Name', 'Name should be updated');
-    
+
     // Delete
     table.deleteRowById(newId);
     const deleted = table.deleteRowById(newId);
     SmartAssert.isNull(deleted, 'Record should be deleted');
-    });
+  });
 
-    runner.register(`${NS}/TableService/DataTypes`, () => {
+  runner.register(`${NS}/TableService/DataTypes`, () => {
     const ss = testContext.getSpreadsheet();
     testContext.resetSpreadsheet(ss);
 
@@ -89,9 +89,9 @@ function initSheetDBLibTests() {
     SmartAssert.equals(record.DateVal.getTime(), testDate.getTime(), 'Date should match');
     SmartAssert.equals(record.NumberVal, 123.45, 'Number should match');
     SmartAssert.isTrue(record.BooleanVal, 'Boolean should match');
-    });
+  });
 
-    runner.register(`${NS}/TableService/BulkOperations`, () => {
+  runner.register(`${NS}/TableService/BulkOperations`, () => {
     const ss = testContext.getSpreadsheet();
     testContext.resetSpreadsheet(ss);
 
@@ -112,8 +112,8 @@ function initSheetDBLibTests() {
 
     // 2. Bulk update
     const updates = {
-      '1': { Status: 'Processed' },
-      '2': { Status: 'Processed' }
+      1: { Status: 'Processed' },
+      2: { Status: 'Processed' }
     };
     table.updateRowsByIds(updates);
 
@@ -124,16 +124,16 @@ function initSheetDBLibTests() {
     table.deleteRowsByIds(['1', '2']);
     SmartAssert.isNull(table.getRowById('1'), 'Row 1 should be deleted');
     SmartAssert.isNull(table.getRowById('2'), 'Row 2 should be deleted');
-    });
+  });
 
-    runner.register(`${NS}/Join/InnerJoin`, () => {
+  runner.register(`${NS}/Join/InnerJoin`, () => {
     const ss = testContext.getSpreadsheet();
     testContext.resetSpreadsheet(ss);
-    
+
     const authors = ss.insertSheet('Authors');
     authors.appendRow(['id', 'name']);
     authors.appendRow(['1', 'John']);
-    
+
     const books = ss.insertSheet('Books');
     books.appendRow(['id', 'title', 'author_id']);
     books.appendRow(['b1', 'Book 1', '1']);
@@ -144,8 +144,9 @@ function initSheetDBLibTests() {
     const cache = CacheService.getScriptCache();
     const exceptionService = new ExceptionService(logger, utils);
     const db = new DatabaseService(ss.getId(), logger, utils, cache, exceptionService);
-    
-    const results = db.select(['Authors.name', 'Books.title'])
+
+    const results = db
+      .select(['Authors.name', 'Books.title'])
       .from('Authors')
       .join('Books', 'Authors.id', '==', 'Books.author_id')
       .execute();
@@ -160,7 +161,7 @@ function initSheetDBLibTests() {
       spreadsheetId: 'dummy-id',
       tags: ['europe']
     });
-    
+
     SmartAssert.equals(partition.id, 'p1', 'Partition ID should match');
     SmartAssert.isTrue(partition.hasTag('europe'), 'Should have tag');
   });

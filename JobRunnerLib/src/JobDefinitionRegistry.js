@@ -57,7 +57,9 @@ export class JobDefinitionRegistry {
     }
 
     if (this.definitions.has(jobName)) {
-      this.logger.warn(`JobDefinitionRegistry.register: Overwriting existing definition for job '${jobName}'`);
+      this.logger.warn(
+        `JobDefinitionRegistry.register: Overwriting existing definition for job '${jobName}'`
+      );
     }
 
     this.definitions.set(jobName, definition);
@@ -73,10 +75,14 @@ export class JobDefinitionRegistry {
       return null;
     }
     if (!this.definitions.has(jobName)) {
-      this.logger.error(`JobDefinitionRegistry.getDefinition: Job '${jobName}' not found in registry`);
+      this.logger.error(
+        `JobDefinitionRegistry.getDefinition: Job '${jobName}' not found in registry`
+      );
       return null;
     }
-    this.logger.debug(`JobDefinitionRegistry.getDefinition: Job '${jobName}' retrieved successfully`);
+    this.logger.debug(
+      `JobDefinitionRegistry.getDefinition: Job '${jobName}' retrieved successfully`
+    );
     return this.definitions.get(jobName);
   }
 
@@ -122,7 +128,9 @@ export class JobDefinitionRegistry {
       return false;
     }
     if (!this.definitions.has(jobName)) {
-      this.logger.warn(`JobDefinitionRegistry.removeJob: Job '${jobName}' did not exist in registry`);
+      this.logger.warn(
+        `JobDefinitionRegistry.removeJob: Job '${jobName}' did not exist in registry`
+      );
       return false;
     }
     this.definitions.unregister(jobName);
@@ -139,7 +147,9 @@ export class JobDefinitionRegistry {
       jobsByCategory: this._calculateJobsByCategory(),
       jobsWithParameters: this._countJobsWithParameters()
     };
-    this.logger.debug(`JobDefinitionRegistry.getStatistics: ${stats.totalJobs} total jobs in registry`);
+    this.logger.debug(
+      `JobDefinitionRegistry.getStatistics: ${stats.totalJobs} total jobs in registry`
+    );
     return stats;
   }
 
@@ -148,22 +158,43 @@ export class JobDefinitionRegistry {
    */
   _validateJobDefinition(jobName, jobDefinition) {
     if (jobDefinition.name === undefined || jobDefinition.name === null) {
-      throw new Error(`JobDefinitionRegistry.register: Required field 'name' missing for job '${jobName}'`);
+      throw new Error(
+        `JobDefinitionRegistry.register: Required field 'name' missing for job '${jobName}'`
+      );
     }
     if (jobDefinition.action === undefined || jobDefinition.action === null) {
-      throw new Error(`JobDefinitionRegistry.register: Required field 'action' missing for job '${jobName}'`);
+      throw new Error(
+        `JobDefinitionRegistry.register: Required field 'action' missing for job '${jobName}'`
+      );
     }
     if (typeof jobDefinition.action !== 'function') {
-      throw new Error(`JobDefinitionRegistry.register: Field 'action' must be a function for job '${jobName}'`);
+      throw new Error(
+        `JobDefinitionRegistry.register: Field 'action' must be a function for job '${jobName}'`
+      );
     }
-    if (jobDefinition.requiredParameters !== undefined && !Array.isArray(jobDefinition.requiredParameters)) {
-      throw new Error(`JobDefinitionRegistry.register: Field 'requiredParameters' must be an array for job '${jobName}'`);
+    if (
+      jobDefinition.requiredParameters !== undefined &&
+      !Array.isArray(jobDefinition.requiredParameters)
+    ) {
+      throw new Error(
+        `JobDefinitionRegistry.register: Field 'requiredParameters' must be an array for job '${jobName}'`
+      );
     }
-    if (jobDefinition.iterationLevels !== undefined && !Array.isArray(jobDefinition.iterationLevels)) {
-      throw new Error(`JobDefinitionRegistry.register: Field 'iterationLevels' must be an array for job '${jobName}'`);
+    if (
+      jobDefinition.iterationLevels !== undefined &&
+      !Array.isArray(jobDefinition.iterationLevels)
+    ) {
+      throw new Error(
+        `JobDefinitionRegistry.register: Field 'iterationLevels' must be an array for job '${jobName}'`
+      );
     }
-    if (jobDefinition.finalAction !== undefined && typeof jobDefinition.finalAction !== 'function') {
-      throw new Error(`JobDefinitionRegistry.register: Field 'finalAction' must be a function for job '${jobName}'`);
+    if (
+      jobDefinition.finalAction !== undefined &&
+      typeof jobDefinition.finalAction !== 'function'
+    ) {
+      throw new Error(
+        `JobDefinitionRegistry.register: Field 'finalAction' must be a function for job '${jobName}'`
+      );
     }
   }
 

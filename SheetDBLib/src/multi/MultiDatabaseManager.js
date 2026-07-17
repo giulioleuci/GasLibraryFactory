@@ -74,14 +74,14 @@ export class MultiDatabaseManager {
       `MultiDatabaseManager initialized with ${this._configuration.size()} partitions`
     );
   }
-/**
- * @description Retrieves a DatabaseService for a specific partition, using connection pooling.
- * @param {string} partitionIdOrAlias - Target partition ID or registered alias.
- * @returns {DatabaseService} Initialized database service instance.
- * @throws {PartitionNotFoundError} If the identifier is not registered.
- * @throws {PartitionConnectionError} If the underlying Spreadsheet connection fails.
- */
-getPartition(partitionIdOrAlias) {
+  /**
+   * @description Retrieves a DatabaseService for a specific partition, using connection pooling.
+   * @param {string} partitionIdOrAlias - Target partition ID or registered alias.
+   * @returns {DatabaseService} Initialized database service instance.
+   * @throws {PartitionNotFoundError} If the identifier is not registered.
+   * @throws {PartitionConnectionError} If the underlying Spreadsheet connection fails.
+   */
+  getPartition(partitionIdOrAlias) {
     return this._coordinator.getPartition(partitionIdOrAlias);
   }
 

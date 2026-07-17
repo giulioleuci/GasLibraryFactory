@@ -30,7 +30,10 @@ export class Pipeline {
       }
     }
 
-    if (exceptionService !== null && (typeof exceptionService !== 'object' || Array.isArray(exceptionService))) {
+    if (
+      exceptionService !== null &&
+      (typeof exceptionService !== 'object' || Array.isArray(exceptionService))
+    ) {
       throw new Error('Pipeline: exceptionService is required and must be an object');
     }
 
@@ -173,7 +176,11 @@ export class Pipeline {
    */
   _executeStep(step, context) {
     if (this._exceptionService && typeof this._exceptionService.executeWithRetry === 'function') {
-      return this._exceptionService.executeWithRetry(() => step.execute(context), {}, this._maxRetries);
+      return this._exceptionService.executeWithRetry(
+        () => step.execute(context),
+        {},
+        this._maxRetries
+      );
     }
     return step.execute(context);
   }
@@ -197,7 +204,9 @@ export class Pipeline {
       const stepNames = this._steps.map((s) => s.getName());
       context.set('dryRun', true);
       context.set('simulatedSteps', stepNames);
-      this._logger.info(`[${this._name}] [DRY-RUN] Would execute ${this._steps.length} steps: ${stepNames.join(', ')}`);
+      this._logger.info(
+        `[${this._name}] [DRY-RUN] Would execute ${this._steps.length} steps: ${stepNames.join(', ')}`
+      );
       context.markCompleted();
       this._invokeHooks(this._hooks.onComplete, context, true);
       return context;
@@ -215,7 +224,9 @@ export class Pipeline {
       this._invokeHooks(this._hooks.beforeStep, step, context);
 
       if (this._monitor && this._jobId && typeof this._monitor.logStepStart === 'function') {
-        try { this._monitor.logStepStart(this._jobId, stepName); } catch (_e) {}
+        try {
+          this._monitor.logStepStart(this._jobId, stepName);
+        } catch (_e) {}
       }
 
       let result;
@@ -227,7 +238,9 @@ export class Pipeline {
         context.recordStepExecution(stepName, 'failed', 0, { error: error.message });
 
         if (this._monitor && this._jobId && typeof this._monitor.logStepComplete === 'function') {
-          try { this._monitor.logStepComplete(this._jobId, stepName, false); } catch (_e) {}
+          try {
+            this._monitor.logStepComplete(this._jobId, stepName, false);
+          } catch (_e) {}
         }
 
         if (this._stopOnError) {
@@ -242,7 +255,12 @@ export class Pipeline {
           ? 'completed'
           : 'failed';
 
-      context.recordStepExecution(stepName, status, result.durationMs || 0, result.error ? { error: result.error.message } : {});
+      context.recordStepExecution(
+        stepName,
+        status,
+        result.durationMs || 0,
+        result.error ? { error: result.error.message } : {}
+      );
 
       if (this._monitor && this._jobId) {
         try {

@@ -8,7 +8,7 @@
 /**
  * @class TriggerService
  * @description Facade for Google Apps Script ScriptApp trigger management. Specializes in time-based scheduling for JobRunnerLib resumption and recurring maintenance tasks. Provides programmatic discovery, audit, and cleanup of script triggers.
- * 
+ *
  * @property {LoggerService} _logger Diagnostic logger.
  */
 export class TriggerService {

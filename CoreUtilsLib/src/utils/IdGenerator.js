@@ -64,7 +64,10 @@ export class IdGenerator {
    * @param {string} [alphabet='ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789'] Character set.
    * @returns {string} Random ID string.
    */
-  generateCustomId(length = 12, alphabet = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789') {
+  generateCustomId(
+    length = 12,
+    alphabet = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789'
+  ) {
     return IdGenerator.generateCustomId(length, alphabet);
   }
 

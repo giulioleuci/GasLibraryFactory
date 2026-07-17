@@ -27,14 +27,14 @@ FakeShop is a comprehensive Google Apps Script demonstration application showcas
 
 ### 1.1 Core Business Entities
 
-| Entity | Description |
-|--------|-------------|
+| Entity       | Description                                                      |
+| ------------ | ---------------------------------------------------------------- |
 | **Employee** | Store staff with roles, departments, and delegation capabilities |
-| **Customer** | Registered customers with purchase history |
-| **Product** | Inventory items with stock levels and pricing |
-| **Order** | Customer purchases with line items and status tracking |
-| **Supplier** | Inventory suppliers for restocking |
-| **Report** | Generated analytics documents |
+| **Customer** | Registered customers with purchase history                       |
+| **Product**  | Inventory items with stock levels and pricing                    |
+| **Order**    | Customer purchases with line items and status tracking           |
+| **Supplier** | Inventory suppliers for restocking                               |
+| **Report**   | Generated analytics documents                                    |
 
 ### 1.2 Business Processes
 
@@ -69,80 +69,80 @@ FakeShop is a comprehensive Google Apps Script demonstration application showcas
 
 ### 2.1 Complete Library Usage Matrix
 
-| Library | Feature Used | Application Component |
-|---------|--------------|----------------------|
-| **CoreUtilsLib** | LoggerService | All modules (centralized logging) |
-| | UtilsService | Date formatting, UUID generation, data transforms |
-| | TypeGuards | Input validation across all services |
-| | ValidationUtils | Interface validation for DI |
-| | PiiRedactor | Customer data protection in logs |
-| | HashUtils | Order reference generation |
-| | BoundedMap | In-memory caching for active sessions |
-| **GasResilienceLib** | ExceptionService | All Google API calls |
-| | CircuitBreaker | External service protection |
-| | ErrorClassifier | Automatic error categorization |
-| **GoogleApiWrapper** | DriveService | Template storage, report generation |
-| | DocumentService | Invoice/report document creation |
-| | SpreadsheetService | Database operations |
-| | MailService (dry-run) | Order confirmations, alerts |
-| | PermissionService | Employee file access control |
-| | MenuBuilder | Admin UI menu |
-| | SidebarBuilder | Dashboard sidebar |
-| | DialogBuilder | Confirmation dialogs |
-| | CacheService | Performance optimization |
-| | PropertiesService | Configuration storage |
-| | LockService | Concurrent order processing |
-| | TriggerService | Scheduled report generation |
-| **WorkspaceTemplateEngine** | PlaceholderService | Invoice generation |
-| | Mustache | Email templates |
-| | DocumentProcessor | Google Docs templates |
-| | SheetProcessor | Report sheet templates |
-| **GasExpressionEngineLib** | ExpressionEngineService | Business rule evaluation |
-| | | Discount eligibility |
-| | | Stock alert conditions |
-| **SheetDBLib** | DatabaseService | All data persistence |
-| | TableService | CRUD operations |
-| | AdvancedQueryBuilder | Complex order queries |
-| | ColumnFamily | Dynamic product attributes |
-| | SchemaResolver | Multi-category product schemas |
-| | MultiDatabaseManager | Multi-year order archives |
-| | CrossPartitionQuery | Historical analytics |
-| | PartitionRouter | Year-based routing |
-| **RoleResolutionLib** | RoleResolver | Employee role resolution |
-| | Delegation | Illness replacement handling |
-| | DelegationChain | Multi-level delegation |
-| | RoutingPolicy | Notification routing |
-| | RoleRegistry | Role definitions |
-| **ComposableContentLib** | ContentComposer | Report content assembly |
-| | BlockRegistry | Reusable report sections |
-| | HtmlRenderer | Email body generation |
-| | MarkdownRenderer | Internal documentation |
-| **JobRunnerLib** | JobRunnerService | Bulk order processing |
-| | JobDefinitionRegistry | Job type registration |
-| | JobQueue | Background task management |
-| **PipelineFramework** | Pipeline | Order processing workflow |
-| | Step | Individual processing steps |
-| | PostProcessableStep | Auto-updates after steps |
-| | CellUpdatePostProcessor | Status updates |
-| | LogAuditPostProcessor | Audit trail |
-| | CounterUpdatePostProcessor | Statistics counters |
-| **ContextEngine** | ContextAssembler | Data gathering for reports |
-| | ProviderRegistry | Data provider management |
-| | SwapAndEnrichInterceptor | Testing/staging swaps |
-| | DependencyResolver | Provider dependencies |
-| **GasDataImporter** | ImportEngine | Supplier catalog imports |
-| | SourceStrategy | Multiple import sources |
-| | Transformer | Data normalization |
-| **DomainRepositoryLib** | Entity | Domain object base |
-| | Repository | Data access patterns |
-| | Specification | Query specifications |
-| | EntityMapper | Sheet-to-entity mapping |
-| | ZodValidator | Schema validation |
-| | DomainEvent | Event dispatching |
-| **GasOnlineTestFramework** | TestFramework | Online integration tests |
-| | Assert | Test assertions |
-| **GasProcessMonitorLib** | ProcessMonitorService | Pipeline monitoring |
-| | DashboardUi | Real-time progress display |
+| Library                     | Feature Used               | Application Component                             |
+| --------------------------- | -------------------------- | ------------------------------------------------- |
+| **CoreUtilsLib**            | LoggerService              | All modules (centralized logging)                 |
+|                             | UtilsService               | Date formatting, UUID generation, data transforms |
+|                             | TypeGuards                 | Input validation across all services              |
+|                             | ValidationUtils            | Interface validation for DI                       |
+|                             | PiiRedactor                | Customer data protection in logs                  |
+|                             | HashUtils                  | Order reference generation                        |
+|                             | BoundedMap                 | In-memory caching for active sessions             |
+| **GasResilienceLib**        | ExceptionService           | All Google API calls                              |
+|                             | CircuitBreaker             | External service protection                       |
+|                             | ErrorClassifier            | Automatic error categorization                    |
+| **GoogleApiWrapper**        | DriveService               | Template storage, report generation               |
+|                             | DocumentService            | Invoice/report document creation                  |
+|                             | SpreadsheetService         | Database operations                               |
+|                             | MailService (dry-run)      | Order confirmations, alerts                       |
+|                             | PermissionService          | Employee file access control                      |
+|                             | MenuBuilder                | Admin UI menu                                     |
+|                             | SidebarBuilder             | Dashboard sidebar                                 |
+|                             | DialogBuilder              | Confirmation dialogs                              |
+|                             | CacheService               | Performance optimization                          |
+|                             | PropertiesService          | Configuration storage                             |
+|                             | LockService                | Concurrent order processing                       |
+|                             | TriggerService             | Scheduled report generation                       |
+| **WorkspaceTemplateEngine** | PlaceholderService         | Invoice generation                                |
+|                             | Mustache                   | Email templates                                   |
+|                             | DocumentProcessor          | Google Docs templates                             |
+|                             | SheetProcessor             | Report sheet templates                            |
+| **GasExpressionEngineLib**  | ExpressionEngineService    | Business rule evaluation                          |
+|                             |                            | Discount eligibility                              |
+|                             |                            | Stock alert conditions                            |
+| **SheetDBLib**              | DatabaseService            | All data persistence                              |
+|                             | TableService               | CRUD operations                                   |
+|                             | AdvancedQueryBuilder       | Complex order queries                             |
+|                             | ColumnFamily               | Dynamic product attributes                        |
+|                             | SchemaResolver             | Multi-category product schemas                    |
+|                             | MultiDatabaseManager       | Multi-year order archives                         |
+|                             | CrossPartitionQuery        | Historical analytics                              |
+|                             | PartitionRouter            | Year-based routing                                |
+| **RoleResolutionLib**       | RoleResolver               | Employee role resolution                          |
+|                             | Delegation                 | Illness replacement handling                      |
+|                             | DelegationChain            | Multi-level delegation                            |
+|                             | RoutingPolicy              | Notification routing                              |
+|                             | RoleRegistry               | Role definitions                                  |
+| **ComposableContentLib**    | ContentComposer            | Report content assembly                           |
+|                             | BlockRegistry              | Reusable report sections                          |
+|                             | HtmlRenderer               | Email body generation                             |
+|                             | MarkdownRenderer           | Internal documentation                            |
+| **JobRunnerLib**            | JobRunnerService           | Bulk order processing                             |
+|                             | JobDefinitionRegistry      | Job type registration                             |
+|                             | JobQueue                   | Background task management                        |
+| **PipelineFramework**       | Pipeline                   | Order processing workflow                         |
+|                             | Step                       | Individual processing steps                       |
+|                             | PostProcessableStep        | Auto-updates after steps                          |
+|                             | CellUpdatePostProcessor    | Status updates                                    |
+|                             | LogAuditPostProcessor      | Audit trail                                       |
+|                             | CounterUpdatePostProcessor | Statistics counters                               |
+| **ContextEngine**           | ContextAssembler           | Data gathering for reports                        |
+|                             | ProviderRegistry           | Data provider management                          |
+|                             | SwapAndEnrichInterceptor   | Testing/staging swaps                             |
+|                             | DependencyResolver         | Provider dependencies                             |
+| **GasDataImporter**         | ImportEngine               | Supplier catalog imports                          |
+|                             | SourceStrategy             | Multiple import sources                           |
+|                             | Transformer                | Data normalization                                |
+| **DomainRepositoryLib**     | Entity                     | Domain object base                                |
+|                             | Repository                 | Data access patterns                              |
+|                             | Specification              | Query specifications                              |
+|                             | EntityMapper               | Sheet-to-entity mapping                           |
+|                             | ZodValidator               | Schema validation                                 |
+|                             | DomainEvent                | Event dispatching                                 |
+| **GasOnlineTestFramework**  | TestFramework              | Online integration tests                          |
+|                             | Assert                     | Test assertions                                   |
+| **GasProcessMonitorLib**    | ProcessMonitorService      | Pipeline monitoring                               |
+|                             | DashboardUi                | Real-time progress display                        |
 
 ---
 
@@ -218,7 +218,7 @@ FakeShop is a comprehensive Google Apps Script demonstration application showcas
 **PRODUCTS Table (with Dynamic Schema)**
 | Column | Type | Description |
 |--------|------|-------------|
-| product_id | UUID | Primary key |
+| product*id | UUID | Primary key |
 | sku | STRING | Unique |
 | name | STRING | |
 | description | TEXT | |
@@ -229,11 +229,12 @@ FakeShop is a comprehensive Google Apps Script demonstration application showcas
 | reorder_level | INTEGER | |
 | supplier_id | UUID | FK to SUPPLIERS |
 | status | STRING | ACTIVE, DISCONTINUED, OUT_OF_STOCK |
-| attr_* | DYNAMIC | Category-specific attributes (ColumnFamily) |
+| attr*\* | DYNAMIC | Category-specific attributes (ColumnFamily) |
 | created_at | TIMESTAMP | |
 | updated_at | TIMESTAMP | |
 
 **Dynamic Column Families for Products:**
+
 - `ELECTRONICS`: attr_brand, attr_warranty_months, attr_voltage
 - `CLOTHING`: attr_size, attr_color, attr_material
 - `HOME`: attr_dimensions, attr_weight, attr_assembly_required
@@ -792,19 +793,19 @@ const partitionConfig = {
   defaultPartition: 'orders_2026',
   routingStrategy: 'TAG_BASED',
   aliases: {
-    'current': 'orders_2026',
-    'previous': 'orders_2025'
+    current: 'orders_2026',
+    previous: 'orders_2025'
   }
 };
 ```
 
 ### 7.2 Routing Strategies Used
 
-| Strategy | Use Case |
-|----------|----------|
-| **TAG_BASED** | Route orders to partition by year tag |
-| **EXPLICIT** | Direct partition specification for queries |
-| **PRIORITY** | Fallback routing for reads |
+| Strategy      | Use Case                                   |
+| ------------- | ------------------------------------------ |
+| **TAG_BASED** | Route orders to partition by year tag      |
+| **EXPLICIT**  | Direct partition specification for queries |
+| **PRIORITY**  | Fallback routing for reads                 |
 
 ### 7.3 Cross-Partition Query Examples
 
@@ -853,17 +854,24 @@ const roleDefinitions = {
   },
   MANAGER: {
     permissions: [
-      'orders:read', 'orders:write', 'orders:approve',
-      'employees:read', 'employees:write',
-      'reports:read', 'reports:generate',
-      'inventory:read', 'inventory:write'
+      'orders:read',
+      'orders:write',
+      'orders:approve',
+      'employees:read',
+      'employees:write',
+      'reports:read',
+      'reports:generate',
+      'inventory:read',
+      'inventory:write'
     ],
     scope: { type: 'DEPARTMENT' }
   },
   SALES: {
     permissions: [
-      'orders:read', 'orders:write',
-      'customers:read', 'customers:write',
+      'orders:read',
+      'orders:write',
+      'customers:read',
+      'customers:write',
       'products:read',
       'reports:read'
     ],
@@ -871,18 +879,16 @@ const roleDefinitions = {
   },
   WAREHOUSE: {
     permissions: [
-      'inventory:read', 'inventory:write',
-      'orders:read', 'orders:fulfill',
+      'inventory:read',
+      'inventory:write',
+      'orders:read',
+      'orders:fulfill',
       'products:read'
     ],
     scope: { type: 'DEPARTMENT', value: 'OPERATIONS' }
   },
   SUPPORT: {
-    permissions: [
-      'orders:read',
-      'customers:read', 'customers:write',
-      'products:read'
-    ],
+    permissions: ['orders:read', 'customers:read', 'customers:write', 'products:read'],
     scope: { type: 'DEPARTMENT', value: 'CUSTOMER_SERVICE' }
   }
 };
@@ -912,14 +918,14 @@ DelegationChain validates:
 
 ### 8.3 Routing Policies
 
-| Policy | Description | Use Case |
-|--------|-------------|----------|
-| FIRST_AVAILABLE | Return first resolved actor | Default assignment |
-| ALL_MATCHING | Return all actors with role | Team notifications |
-| BROADCAST_TEAM | All team members | Department announcements |
-| ESCALATION | Try each level until success | Support tickets |
-| ROUND_ROBIN | Distribute evenly | Workload balancing |
-| CUSTOM | User-defined logic | Special routing needs |
+| Policy          | Description                  | Use Case                 |
+| --------------- | ---------------------------- | ------------------------ |
+| FIRST_AVAILABLE | Return first resolved actor  | Default assignment       |
+| ALL_MATCHING    | Return all actors with role  | Team notifications       |
+| BROADCAST_TEAM  | All team members             | Department announcements |
+| ESCALATION      | Try each level until success | Support tickets          |
+| ROUND_ROBIN     | Distribute evenly            | Workload balancing       |
+| CUSTOM          | User-defined logic           | Special routing needs    |
 
 ---
 
@@ -932,74 +938,140 @@ DelegationChain validates:
 // MENU AND UI ENTRY POINTS
 // ═══════════════════════════════════════════════════════════════
 
-function onOpen() { /* Create menu */ }
-function showDashboard() { /* Show sidebar */ }
-function showOrderDialog() { /* Show order creation dialog */ }
+function onOpen() {
+  /* Create menu */
+}
+function showDashboard() {
+  /* Show sidebar */
+}
+function showOrderDialog() {
+  /* Show order creation dialog */
+}
 
 // ═══════════════════════════════════════════════════════════════
 // EMPLOYEE MANAGEMENT
 // ═══════════════════════════════════════════════════════════════
 
-function createEmployee(employeeData) { /* ... */ }
-function updateEmployee(employeeId, updates) { /* ... */ }
-function deactivateEmployee(employeeId) { /* ... */ }
-function createDelegation(delegatorId, delegateId, reason, startDate, endDate) { /* ... */ }
-function revokeDelegation(delegationId) { /* ... */ }
-function resolveRoleActor(roleName, scope) { /* ... */ }
+function createEmployee(employeeData) {
+  /* ... */
+}
+function updateEmployee(employeeId, updates) {
+  /* ... */
+}
+function deactivateEmployee(employeeId) {
+  /* ... */
+}
+function createDelegation(delegatorId, delegateId, reason, startDate, endDate) {
+  /* ... */
+}
+function revokeDelegation(delegationId) {
+  /* ... */
+}
+function resolveRoleActor(roleName, scope) {
+  /* ... */
+}
 
 // ═══════════════════════════════════════════════════════════════
 // CUSTOMER MANAGEMENT
 // ═══════════════════════════════════════════════════════════════
 
-function createCustomer(customerData) { /* ... */ }
-function updateCustomer(customerId, updates) { /* ... */ }
-function getCustomerHistory(customerId) { /* Cross-partition query */ }
-function promoteToVip(customerId) { /* ... */ }
+function createCustomer(customerData) {
+  /* ... */
+}
+function updateCustomer(customerId, updates) {
+  /* ... */
+}
+function getCustomerHistory(customerId) {
+  /* Cross-partition query */
+}
+function promoteToVip(customerId) {
+  /* ... */
+}
 
 // ═══════════════════════════════════════════════════════════════
 // PRODUCT & INVENTORY
 // ═══════════════════════════════════════════════════════════════
 
-function createProduct(productData) { /* With dynamic attributes */ }
-function updateStock(productId, quantity, reason) { /* ... */ }
-function getLowStockProducts() { /* ... */ }
-function importSupplierCatalog(folderId) { /* GasDataImporter */ }
+function createProduct(productData) {
+  /* With dynamic attributes */
+}
+function updateStock(productId, quantity, reason) {
+  /* ... */
+}
+function getLowStockProducts() {
+  /* ... */
+}
+function importSupplierCatalog(folderId) {
+  /* GasDataImporter */
+}
 
 // ═══════════════════════════════════════════════════════════════
 // ORDER PROCESSING
 // ═══════════════════════════════════════════════════════════════
 
-function createOrder(orderData) { /* Full pipeline */ }
-function processOrder(orderId) { /* Pipeline execution */ }
-function cancelOrder(orderId, reason) { /* ... */ }
-function getOrderStatus(orderId) { /* ... */ }
-function bulkImportOrders(ordersData) { /* JobRunner */ }
+function createOrder(orderData) {
+  /* Full pipeline */
+}
+function processOrder(orderId) {
+  /* Pipeline execution */
+}
+function cancelOrder(orderId, reason) {
+  /* ... */
+}
+function getOrderStatus(orderId) {
+  /* ... */
+}
+function bulkImportOrders(ordersData) {
+  /* JobRunner */
+}
 
 // ═══════════════════════════════════════════════════════════════
 // REPORTING & ANALYTICS
 // ═══════════════════════════════════════════════════════════════
 
-function generateMonthlyReport(year, month) { /* ... */ }
-function generateYearOverYearAnalysis() { /* Cross-partition */ }
-function getTopCustomers(limit, years) { /* Cross-partition */ }
-function getTopProducts(limit, years) { /* Cross-partition */ }
-function getSalesbyEmployee(employeeId, year) { /* ... */ }
+function generateMonthlyReport(year, month) {
+  /* ... */
+}
+function generateYearOverYearAnalysis() {
+  /* Cross-partition */
+}
+function getTopCustomers(limit, years) {
+  /* Cross-partition */
+}
+function getTopProducts(limit, years) {
+  /* Cross-partition */
+}
+function getSalesbyEmployee(employeeId, year) {
+  /* ... */
+}
 
 // ═══════════════════════════════════════════════════════════════
 // PROCESS MONITORING
 // ═══════════════════════════════════════════════════════════════
 
-function getMonitorState(jobId) { /* For GasProcessMonitorLib */ }
-function getActiveJobs() { /* ... */ }
+function getMonitorState(jobId) {
+  /* For GasProcessMonitorLib */
+}
+function getActiveJobs() {
+  /* ... */
+}
 
 // ═══════════════════════════════════════════════════════════════
 // TESTING HOOKS (for online tests)
 // ═══════════════════════════════════════════════════════════════
 
-function runAllOnlineTests() { /* ... */ }
-function runEmployeeTests() { /* ... */ }
-function runOrderTests() { /* ... */ }
-function runMultiDatabaseTests() { /* ... */ }
+function runAllOnlineTests() {
+  /* ... */
+}
+function runEmployeeTests() {
+  /* ... */
+}
+function runOrderTests() {
+  /* ... */
+}
+function runMultiDatabaseTests() {
+  /* ... */
+}
 ```
 
 ---
@@ -1064,16 +1136,16 @@ function runMultiDatabaseTests() { /* ... */ }
 
 ### 10.2 Test Coverage Targets
 
-| Module | Target Coverage | Key Test Scenarios |
-|--------|----------------|-------------------|
-| Domain Entities | 95%+ | Validation, state transitions, invariants |
-| Value Objects | 100% | Immutability, equality, validation |
-| Services | 90%+ | Happy path, error handling, edge cases |
-| Pipelines | 85%+ | Step execution, post-processors, rollback |
-| Specifications | 100% | All business rules |
-| Providers | 90%+ | Data retrieval, transformation |
-| Composers | 90%+ | Block composition, rendering |
-| Role Resolution | 95%+ | Delegation chains, routing policies |
+| Module          | Target Coverage | Key Test Scenarios                        |
+| --------------- | --------------- | ----------------------------------------- |
+| Domain Entities | 95%+            | Validation, state transitions, invariants |
+| Value Objects   | 100%            | Immutability, equality, validation        |
+| Services        | 90%+            | Happy path, error handling, edge cases    |
+| Pipelines       | 85%+            | Step execution, post-processors, rollback |
+| Specifications  | 100%            | All business rules                        |
+| Providers       | 90%+            | Data retrieval, transformation            |
+| Composers       | 90%+            | Block composition, rendering              |
+| Role Resolution | 95%+            | Delegation chains, routing policies       |
 
 ### 10.3 Critical Test Scenarios
 
@@ -1177,6 +1249,7 @@ describe('MultiDatabaseQueries', () => {
 **Objective:** Set up infrastructure and base domain
 
 **Tasks:**
+
 1. Create Google Drive folder structure
 2. Create all spreadsheet databases with schemas
 3. Create template documents
@@ -1188,12 +1261,14 @@ describe('MultiDatabaseQueries', () => {
 9. Write unit tests for all domain objects
 
 **Libraries Used:**
+
 - CoreUtilsLib (logging, validation, utilities)
 - GoogleApiWrapper (DriveService, SpreadsheetService)
 - SheetDBLib (DatabaseService, TableService)
 - DomainRepositoryLib (Entity, Repository, ZodValidator)
 
 **Deliverables:**
+
 - [ ] Folder structure created on Drive
 - [ ] All database spreadsheets with headers
 - [ ] All template documents created
@@ -1206,6 +1281,7 @@ describe('MultiDatabaseQueries', () => {
 **Objective:** Implement complete order processing
 
 **Tasks:**
+
 1. Create Order aggregate and OrderItem entity
 2. Create OrderRepository (multi-partition aware)
 3. Implement OrderService
@@ -1217,6 +1293,7 @@ describe('MultiDatabaseQueries', () => {
 9. Write integration tests
 
 **Libraries Used:**
+
 - PipelineFramework (Pipeline, Step, PostProcessors)
 - WorkspaceTemplateEngine (PlaceholderService)
 - ComposableContentLib (ContentComposer)
@@ -1224,6 +1301,7 @@ describe('MultiDatabaseQueries', () => {
 - GoogleApiWrapper (DocumentService, MailService dry-run)
 
 **Deliverables:**
+
 - [ ] Order processing pipeline complete
 - [ ] Invoice generation working
 - [ ] Email sending in dry-run mode
@@ -1237,6 +1315,7 @@ describe('MultiDatabaseQueries', () => {
 **Objective:** Implement role resolution and delegation system
 
 **Tasks:**
+
 1. Create role definitions and registry
 2. Implement assignment and delegation sources
 3. Create delegation manager
@@ -1247,12 +1326,14 @@ describe('MultiDatabaseQueries', () => {
 8. Write comprehensive delegation tests
 
 **Libraries Used:**
+
 - RoleResolutionLib (RoleResolver, Delegation, RoutingPolicy)
 - PipelineFramework (delegation pipeline)
 - WorkspaceTemplateEngine (delegation notice)
 - GoogleApiWrapper (PermissionService)
 
 **Deliverables:**
+
 - [ ] Role resolution working with delegation
 - [ ] Delegation chain following (up to 3 levels)
 - [ ] Permission transfer implemented
@@ -1266,6 +1347,7 @@ describe('MultiDatabaseQueries', () => {
 **Objective:** Implement historical data analysis
 
 **Tasks:**
+
 1. Configure multi-database partitions
 2. Implement partition router
 3. Create cross-partition query builders
@@ -1277,6 +1359,7 @@ describe('MultiDatabaseQueries', () => {
 9. Write multi-database tests
 
 **Libraries Used:**
+
 - SheetDBLib (MultiDatabaseManager, CrossPartitionQuery)
 - ContextEngine (ContextAssembler, DataProvider)
 - ComposableContentLib (report blocks)
@@ -1284,6 +1367,7 @@ describe('MultiDatabaseQueries', () => {
 - GasProcessMonitorLib (progress tracking)
 
 **Deliverables:**
+
 - [ ] Cross-partition queries working
 - [ ] Year-over-year analysis implemented
 - [ ] Report generation pipeline complete
@@ -1298,6 +1382,7 @@ describe('MultiDatabaseQueries', () => {
 **Objective:** Implement data import and inventory management
 
 **Tasks:**
+
 1. Create supplier catalog import configuration
 2. Implement import transformers
 3. Create inventory alert specifications
@@ -1306,12 +1391,14 @@ describe('MultiDatabaseQueries', () => {
 6. Write import integration tests
 
 **Libraries Used:**
+
 - GasDataImporter (ImportEngine)
 - SheetDBLib (ColumnFamily, SchemaResolver)
 - GasExpressionEngineLib (alert conditions)
 - GoogleApiWrapper (MailService for alerts)
 
 **Deliverables:**
+
 - [ ] Supplier catalog import working
 - [ ] Dynamic product attributes working
 - [ ] Low stock alerts implemented
@@ -1324,6 +1411,7 @@ describe('MultiDatabaseQueries', () => {
 **Objective:** Create user interface and finalize
 
 **Tasks:**
+
 1. Create admin menu with MenuBuilder
 2. Create dashboard sidebar with SidebarBuilder
 3. Create order entry dialog with DialogBuilder
@@ -1334,11 +1422,13 @@ describe('MultiDatabaseQueries', () => {
 8. Final integration testing
 
 **Libraries Used:**
+
 - GoogleApiWrapper (MenuBuilder, SidebarBuilder, DialogBuilder)
 - GasProcessMonitorLib (DashboardUi)
 - GasOnlineTestFramework (online tests)
 
 **Deliverables:**
+
 - [ ] Full UI implemented
 - [ ] Process monitoring working
 - [ ] All online tests passing
@@ -1658,42 +1748,42 @@ describe('MultiDatabaseQueries', () => {
 
 ```javascript
 // VIP Discount (10%)
-"customer.type == 'VIP' && order.total >= 100"
+"customer.type == 'VIP' && order.total >= 100";
 
 // Volume Discount (5%)
-"order.itemCount >= 10"
+'order.itemCount >= 10';
 
 // First-Time Customer Discount (15%)
-"customer.totalOrders == 0"
+'customer.totalOrders == 0';
 
 // Wholesale Pricing
-"customer.type == 'WHOLESALE' && order.total >= 500"
+"customer.type == 'WHOLESALE' && order.total >= 500";
 ```
 
 ### B.2 Stock Alert Conditions
 
 ```javascript
 // Low Stock Warning
-"product.stockQuantity <= product.reorderLevel"
+'product.stockQuantity <= product.reorderLevel';
 
 // Critical Stock Alert
-"product.stockQuantity <= (product.reorderLevel * 0.5)"
+'product.stockQuantity <= (product.reorderLevel * 0.5)';
 
 // Out of Stock
-"product.stockQuantity == 0"
+'product.stockQuantity == 0';
 ```
 
 ### B.3 Order Validation
 
 ```javascript
 // Valid Order Total
-"order.total > 0 && order.total <= 50000"
+'order.total > 0 && order.total <= 50000';
 
 // Valid Quantity
-"item.quantity > 0 && item.quantity <= 1000"
+'item.quantity > 0 && item.quantity <= 1000';
 
 // Delivery Date Validation
-"order.requestedDeliveryDate >= today() + 2"
+'order.requestedDeliveryDate >= today() + 2';
 ```
 
 ---
@@ -1768,9 +1858,9 @@ const reportBlocks = {
 
 ## Document History
 
-| Version | Date | Author | Changes |
-|---------|------|--------|---------|
-| 1.0 | 2026-02-03 | Claude | Initial design document |
+| Version | Date       | Author | Changes                 |
+| ------- | ---------- | ------ | ----------------------- |
+| 1.0     | 2026-02-03 | Claude | Initial design document |
 
 ---
 

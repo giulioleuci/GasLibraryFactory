@@ -199,16 +199,12 @@ export class ContextAssembler {
       'assembleAsync',
       'assembleInto'
     ];
-    executionMethods.forEach(m => {
+    executionMethods.forEach((m) => {
       this[m] = this._stepExecutor[m].bind(this._stepExecutor);
     });
 
-    const analyzerMethods = [
-      'validateRecipe',
-      'analyzeRecipeDependencies',
-      'getConfigSummary'
-    ];
-    analyzerMethods.forEach(m => {
+    const analyzerMethods = ['validateRecipe', 'analyzeRecipeDependencies', 'getConfigSummary'];
+    analyzerMethods.forEach((m) => {
       this[m] = this._dependencyAnalyzer[m].bind(this._dependencyAnalyzer);
     });
   }
@@ -257,5 +253,4 @@ export class ContextAssembler {
   get postProcessor() {
     return this._postProcessor;
   }
-
 }

@@ -38,11 +38,20 @@ module.exports = (env, argv) => {
   // Library directories that Code.js already provides on global
   // Use externals to avoid re-bundling them in the test bundle
   const libraryDirs = [
-    'CoreUtilsLib', 'GasResilienceLib', 'GoogleApiWrapper',
-    'WorkspaceTemplateEngine', 'GasExpressionEngineLib', 'SheetDBLib',
-    'JobRunnerLib', 'PipelineFramework', 'ContextEngine',
-    'GasDataImporter', 'DomainRepositoryLib', 'RoleResolutionLib',
-    'ComposableContentLib', 'GasProcessMonitorLib'
+    'CoreUtilsLib',
+    'GasResilienceLib',
+    'GoogleApiWrapper',
+    'WorkspaceTemplateEngine',
+    'GasExpressionEngineLib',
+    'SheetDBLib',
+    'JobRunnerLib',
+    'PipelineFramework',
+    'ContextEngine',
+    'GasDataImporter',
+    'DomainRepositoryLib',
+    'RoleResolutionLib',
+    'ComposableContentLib',
+    'GasProcessMonitorLib'
   ];
 
   return {
@@ -83,7 +92,7 @@ module.exports = (env, argv) => {
     // Tests import from @LibName aliases; webpack resolves to global properties.
     // GasOnlineTestFramework is NOT externalized because the test bundle needs it.
     externals: [
-      function({ request }, callback) {
+      function ({ request }, callback) {
         // Match @LibraryName alias imports (but keep @GasOnlineTestFramework internal)
         for (const lib of libraryDirs) {
           if (request === `@${lib}` || request.startsWith(`@${lib}/`)) {
@@ -153,10 +162,7 @@ module.exports = (env, argv) => {
 
     // Suppress some noisy warnings from test files
     stats: {
-      warningsFilter: [
-        /Critical dependency/,
-        /the request of a dependency is an expression/
-      ]
+      warningsFilter: [/Critical dependency/, /the request of a dependency is an expression/]
     }
   };
 };

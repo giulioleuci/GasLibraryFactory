@@ -8,7 +8,7 @@ function initRoleResolutionLibTests() {
   runner.register(`${NS}/Resolver/SheetDB_Integration`, () => {
     const ss = testContext.getSpreadsheet();
     testContext.resetSpreadsheet(ss);
-    
+
     const sheet = ss.getSheets()[0];
     sheet.setName('Assignments');
     sheet.appendRow(['actorId', 'roleId', 'scope']);
@@ -20,11 +20,11 @@ function initRoleResolutionLibTests() {
     const cache = CacheService.getScriptCache();
     const exceptionService = new ExceptionService(logger, utils);
     const db = new DatabaseService(ss.getId(), logger, utils, cache, exceptionService);
-    
+
     // Mocking source for brevity in integration
     const registry = new RoleRegistry({ logger });
     registry.register(new Role({ id: 'admin', name: 'Administrator' }));
-    
+
     // In a real scenario, we'd use a SheetDB-backed AssignmentSource
     // For this test, we verify we can reach the data
     const data = db.select().from('Assignments').execute();

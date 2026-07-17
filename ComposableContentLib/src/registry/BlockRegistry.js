@@ -188,4 +188,3 @@ export class BlockRegistry {
     return `BlockRegistry[${this._definitions.size} block types]`;
   }
 }
-

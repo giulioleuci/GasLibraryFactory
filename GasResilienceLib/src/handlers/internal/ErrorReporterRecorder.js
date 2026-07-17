@@ -32,17 +32,23 @@ export class ErrorReporterRecorder {
 
     if (details.type === 'FAILURE') {
       if (!details.classification || typeof details.classification !== 'object') {
-        throw new Error('ErrorReporter.record: details.classification is required for FAILURE type');
+        throw new Error(
+          'ErrorReporter.record: details.classification is required for FAILURE type'
+        );
       }
       if (!details.classification.type || typeof details.classification.type !== 'string') {
         throw new Error('ErrorReporter.record: details.classification.type is required');
       }
     } else if (details.type === 'RECOVERED') {
       if (typeof details.attempt !== 'number' || details.attempt < 1) {
-        throw new Error('ErrorReporter.record: details.attempt is required for RECOVERED type and must be >= 1');
+        throw new Error(
+          'ErrorReporter.record: details.attempt is required for RECOVERED type and must be >= 1'
+        );
       }
     } else {
-      throw new Error(`ErrorReporter.record: invalid type "${details.type}". Must be "FAILURE" or "RECOVERED"`);
+      throw new Error(
+        `ErrorReporter.record: invalid type "${details.type}". Must be "FAILURE" or "RECOVERED"`
+      );
     }
 
     this.facade._sessionErrors.push({
@@ -55,7 +61,7 @@ export class ErrorReporterRecorder {
       this.facade._sessionErrors.shift();
       this._logger.warn(
         `[MEMORY_LIMIT] Session error log exceeded ${MAX_SESSION_ERRORS} entries. ` +
-        'Oldest entry removed. Counters remain accurate.'
+          'Oldest entry removed. Counters remain accurate.'
       );
     }
 

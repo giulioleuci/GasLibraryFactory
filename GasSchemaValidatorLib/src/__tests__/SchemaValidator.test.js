@@ -39,7 +39,9 @@ describe('SchemaValidator', () => {
 
     it('logs debug message on validation failure', () => {
       const schema = z.object({ name: z.string() });
-      try { validator.validate(schema, { name: 123 }); } catch {}
+      try {
+        validator.validate(schema, { name: 123 });
+      } catch {}
       expect(mockLogger.debug).toHaveBeenCalled();
     });
   });
@@ -55,9 +57,9 @@ describe('SchemaValidator', () => {
       const schema = z.object({ name: z.string() });
       const result = validator.safeValidate(schema, { name: 123 });
       expect(result.success).toBe(false);
-      expect(result.errors).toEqual(expect.arrayContaining([
-        expect.objectContaining({ field: 'name' })
-      ]));
+      expect(result.errors).toEqual(
+        expect.arrayContaining([expect.objectContaining({ field: 'name' })])
+      );
     });
   });
 
@@ -84,9 +86,9 @@ describe('SchemaValidator', () => {
       const result = schema.safeParse({ user: { email: 'bad' } });
       expect(result.success).toBe(false);
       const formatted = SchemaValidator.formatZodError(result.error);
-      expect(formatted).toEqual(expect.arrayContaining([
-        { field: 'user.email', message: expect.any(String) }
-      ]));
+      expect(formatted).toEqual(
+        expect.arrayContaining([{ field: 'user.email', message: expect.any(String) }])
+      );
     });
 
     it('returns field as empty string for top-level errors', () => {
@@ -186,9 +188,8 @@ describe('GasValidators', () => {
   describe('a1Notation()', () => {
     const schema = GasValidators.a1Notation();
 
-    it.each(['A1', 'B10', 'A1:B10', 'Sheet1!A1:B10'])(
-      'accepts valid notation: %s',
-      (val) => expect(() => schema.parse(val)).not.toThrow()
+    it.each(['A1', 'B10', 'A1:B10', 'Sheet1!A1:B10'])('accepts valid notation: %s', (val) =>
+      expect(() => schema.parse(val)).not.toThrow()
     );
 
     it('rejects invalid notation', () => {

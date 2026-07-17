@@ -11,7 +11,7 @@
  * @class GoogleService
  * @abstract
  * @description Abstract foundation for Google Apps Script service wrappers. Implements standardized dependency injection (DI), multi-level caching strategies, and resilient execution patterns via GasResilienceLib.
- * 
+ *
  * @property {LoggerService} _logger Diagnostic logging provider.
  * @property {Cache} _cache State persistence provider (get/put/remove).
  * @property {UtilsService} _utils Foundational utility provider.
@@ -21,12 +21,12 @@ export class GoogleService {
   /**
    * @protected
    * @description Initializes service with validated dependencies. Enforces abstract class restriction.
-   * 
+   *
    * @param {LoggerService} logger Diagnostic logger (required methods: debug, info, warn, error).
    * @param {Cache} cache GAS Cache service (required methods: get, put, remove).
    * @param {UtilsService} utils Foundational utilities.
    * @param {ExceptionService} exceptionService Resiliency provider (required methods: executeWithRetry).
-   * 
+   *
    * @throws {TypeError} If instantiated directly as GoogleService.
    * @throws {Error} If any dependency is null, undefined, or missing required methods.
    */

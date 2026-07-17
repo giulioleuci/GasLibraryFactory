@@ -69,9 +69,9 @@ describe('ProducerStep - Comprehensive Test Suite', () => {
     });
 
     it('should throw error if expressionEngine is invalid', () => {
-      expect(() => new TestProducerStep('test', mocks.logger, null, { outputKey: 'result' })).toThrow(
-        'ProducerStep: expressionEngine is required and must be an object'
-      );
+      expect(
+        () => new TestProducerStep('test', mocks.logger, null, { outputKey: 'result' })
+      ).toThrow('ProducerStep: expressionEngine is required and must be an object');
 
       expect(
         () => new TestProducerStep('test', mocks.logger, 'not an object', { outputKey: 'result' })
@@ -323,7 +323,9 @@ describe('ProducerStep - Comprehensive Test Suite', () => {
       step.execute(context);
 
       expect(mocks.logger.debug).toHaveBeenCalledWith('[test] Evaluating business rules...');
-      expect(mocks.logger.debug).toHaveBeenCalledWith('[test] Evaluated result: HIGH (type: string)');
+      expect(mocks.logger.debug).toHaveBeenCalledWith(
+        '[test] Evaluated result: HIGH (type: string)'
+      );
       expect(mocks.logger.info).toHaveBeenCalledWith('[test] Decision made: result = HIGH');
     });
 

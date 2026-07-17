@@ -89,7 +89,9 @@ export class TableSearchEngine {
     });
 
     this.facade._indices[columnName] = index;
-    this.facade._logger.debug(`Index created on column "${columnName}" with ${index.size} unique values`);
+    this.facade._logger.debug(
+      `Index created on column "${columnName}" with ${index.size} unique values`
+    );
     return this.facade;
   }
 
@@ -113,7 +115,9 @@ export class TableSearchEngine {
     }
 
     // Return copies of the matching rows with virtual columns applied
-    return rowIndices.map((idx) => this.facade._applyVirtualColumns({ ...this.facade._rowsCache[idx] }));
+    return rowIndices.map((idx) =>
+      this.facade._applyVirtualColumns({ ...this.facade._rowsCache[idx] })
+    );
   }
 
   /**

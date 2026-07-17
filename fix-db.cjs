@@ -2,7 +2,7 @@ const fs = require('fs');
 const path = require('path');
 
 function walkDir(dir, callback) {
-  fs.readdirSync(dir).forEach(f => {
+  fs.readdirSync(dir).forEach((f) => {
     let dirPath = path.join(dir, f);
     let isDirectory = fs.statSync(dirPath).isDirectory();
     if (isDirectory) {
@@ -20,14 +20,15 @@ const targetDirs = [
   'GasDataImporter/__testOnline__'
 ];
 
-targetDirs.forEach(dir => {
+targetDirs.forEach((dir) => {
   if (fs.existsSync(dir)) {
     walkDir(dir, (filePath) => {
       let content = fs.readFileSync(filePath, 'utf8');
       let changed = false;
 
-      const dbRegex = /(?:const logger = new LoggerService\(\);\s*)?const db = new DatabaseService\((.*?)\);/g;
-      
+      const dbRegex =
+        /(?:const logger = new LoggerService\(\);\s*)?const db = new DatabaseService\((.*?)\);/g;
+
       content = content.replace(dbRegex, (match, p1) => {
         changed = true;
         // p1 is the spreadsheet ID
@@ -37,7 +38,7 @@ targetDirs.forEach(dir => {
     const exceptionService = new ExceptionService(logger, utils);
     const db = new DatabaseService(${p1}, logger, utils, cache, exceptionService);`;
       });
-      
+
       if (changed) {
         fs.writeFileSync(filePath, content);
         console.log('Fixed', filePath);

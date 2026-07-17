@@ -31,9 +31,7 @@ describe('FolderStrategy - Comprehensive Test Suite', () => {
 
     // Mock SpreadsheetService - getSheetInfo and getRanges
     mockSpreadsheetService = {
-      getSheetInfo: jest.fn().mockReturnValue(
-        [{ name: 'Sheet1', rowCount: 3, columnCount: 3 }]
-      ),
+      getSheetInfo: jest.fn().mockReturnValue([{ name: 'Sheet1', rowCount: 3, columnCount: 3 }]),
       getRanges: jest.fn().mockReturnValue([
         ['Name', 'Age', 'Email'],
         ['John', 30, 'john@example.com'],
@@ -297,12 +295,10 @@ describe('FolderStrategy - Comprehensive Test Suite', () => {
     });
 
     it('should use specified tab name for all files', () => {
-      mockSpreadsheetService.getSheetInfo.mockReturnValue(
-        [
-          { name: 'Data', rowCount: 3, columnCount: 3 },
-          { name: 'Sheet1', rowCount: 3, columnCount: 3 }
-        ]
-      );
+      mockSpreadsheetService.getSheetInfo.mockReturnValue([
+        { name: 'Data', rowCount: 3, columnCount: 3 },
+        { name: 'Sheet1', rowCount: 3, columnCount: 3 }
+      ]);
 
       const config = {
         folderId: 'folder123',
@@ -440,9 +436,9 @@ describe('FolderStrategy - Comprehensive Test Suite', () => {
     });
 
     it('should throw SourceError when tab not found', () => {
-      mockSpreadsheetService.getSheetInfo.mockReturnValue(
-        [{ name: 'DifferentSheet', rowCount: 3, columnCount: 3 }]
-      );
+      mockSpreadsheetService.getSheetInfo.mockReturnValue([
+        { name: 'DifferentSheet', rowCount: 3, columnCount: 3 }
+      ]);
 
       const config = {
         folderId: 'folder123',
@@ -457,9 +453,9 @@ describe('FolderStrategy - Comprehensive Test Suite', () => {
     });
 
     it('should return empty array for empty sheet', () => {
-      mockSpreadsheetService.getSheetInfo.mockReturnValue(
-        [{ name: 'Sheet1', rowCount: 0, columnCount: 0 }]
-      );
+      mockSpreadsheetService.getSheetInfo.mockReturnValue([
+        { name: 'Sheet1', rowCount: 0, columnCount: 0 }
+      ]);
 
       const config = { folderId: 'folder123' };
 
@@ -490,9 +486,9 @@ describe('FolderStrategy - Comprehensive Test Suite', () => {
   // ===================================================================
   describe('Integration Tests', () => {
     it('should handle complete workflow with all options', () => {
-      mockSpreadsheetService.getSheetInfo.mockReturnValue(
-        [{ name: 'Data', rowCount: 3, columnCount: 3 }]
-      );
+      mockSpreadsheetService.getSheetInfo.mockReturnValue([
+        { name: 'Data', rowCount: 3, columnCount: 3 }
+      ]);
 
       const config = {
         folderId: 'folder123',

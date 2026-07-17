@@ -78,7 +78,7 @@ export class ResilienceExecutionHandler {
     const absoluteMaxAttempts = this.facade._config
       ? this.facade._config.getLimit('ABSOLUTE_MAX_ATTEMPTS')
       : this.facade.constructor.ABSOLUTE_MAX_ATTEMPTS;
-      
+
     while (attempt < absoluteMaxAttempts) {
       attempt++;
       try {
@@ -128,7 +128,9 @@ export class ResilienceExecutionHandler {
         classification = this.facade._classifier.classify(lastError);
 
         // Check if we should retry based on the recovery strategy (GRL-H005)
-        if (!this.facade._recoveryManager.applyStrategy(classification, attempt, mode, maxAttempts)) {
+        if (
+          !this.facade._recoveryManager.applyStrategy(classification, attempt, mode, maxAttempts)
+        ) {
           break; // Max retries reached or error is not recoverable
         }
         // If applyStrategy returns true, it has already applied the backoff delay

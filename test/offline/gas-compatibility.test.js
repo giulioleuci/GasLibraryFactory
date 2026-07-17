@@ -102,9 +102,7 @@ describe('GAS V8 Compatibility', () => {
       const sizeBytes = Buffer.byteLength(bundleSource, 'utf8');
       const sizeKB = (sizeBytes / 1024).toFixed(1);
       if (sizeBytes > GAS_FILE_SIZE_WARNING) {
-        console.warn(
-          `  Warning: Bundle is ${sizeKB} KB - approaching 4 MB warning threshold`
-        );
+        console.warn(`  Warning: Bundle is ${sizeKB} KB - approaching 4 MB warning threshold`);
       }
       // This is a soft check - we warn but don't fail
       expect(sizeBytes).toBeLessThan(GAS_FILE_SIZE_LIMIT);
@@ -140,8 +138,8 @@ describe('GAS V8 Compatibility', () => {
       const esmImports = lines.filter(
         (line) => /^\s*import\s+/.test(line) && !line.includes("'use strict'")
       );
-      const esmExports = lines.filter(
-        (line) => /^\s*export\s+(default|{|const|let|var|function|class)\s/.test(line)
+      const esmExports = lines.filter((line) =>
+        /^\s*export\s+(default|{|const|let|var|function|class)\s/.test(line)
       );
       expect(esmImports).toHaveLength(0);
       expect(esmExports).toHaveLength(0);

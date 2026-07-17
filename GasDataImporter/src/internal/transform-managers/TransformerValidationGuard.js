@@ -27,9 +27,7 @@ export class TransformerValidationGuard {
       try {
         const isValid = this.facade._evaluateExpression(rule, row);
         if (isValid === false) {
-          this._logger.warn(
-            `[Transformer] Row ${rowIndex} rejected by validation rule: "${rule}"`
-          );
+          this._logger.warn(`[Transformer] Row ${rowIndex} rejected by validation rule: "${rule}"`);
           return false;
         }
       } catch (error) {

@@ -162,13 +162,7 @@ export class QueueStateManager {
   }
 
   reset() {
-    const keys = [
-      'job',
-      'lock_timestamp',
-      'retryCount',
-      'failureInfo',
-      'version'
-    ];
+    const keys = ['job', 'lock_timestamp', 'retryCount', 'failureInfo', 'version'];
     keys.forEach((suffix) => this._propertiesService.deleteProperty(this._key(suffix)));
   }
 }

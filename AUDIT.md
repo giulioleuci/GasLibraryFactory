@@ -56,13 +56,13 @@ These were added in the completed phases and are exported from `@CoreUtilsLib`:
 - **`BaseError`** (`CoreUtilsLib/src/errors/BaseError.js`) — standardized error base (name, context,
   timestamp, `Error.captureStackTrace`, `toJSON`, chaining). All library base errors already extend it.
 - **`Registry`** (`CoreUtilsLib/src/internal/Registry.js`) — Map-backed `register/set/get/has/
-  unregister/clear/keys/values/entries/size` with optional logger, `entityName`, and a `validateValue`
+unregister/clear/keys/values/entries/size` with optional logger, `entityName`, and a `validateValue`
   hook. Compose it for any new Map-backed store.
 - **`Result`** (`CoreUtilsLib/src/Result.js`) — frozen-friendly success/error value object
   (`value`, `error`, `isSuccess()`, `isError()`, `toJSON()`, `ok()/fail()/empty()`). **Relevant to WP-13.**
 - **`ServiceFactory`** (`GoogleApiWrapper/src/internal/core/ServiceFactory.js`) — the DI container
   (`getLogger/getUtils/getUtilitiesService/getCache/getCacheService/getExceptionService/
-  getDriveService/getDocumentService/getSpreadsheetService/getPermissionService/getPropertiesService/…`).
+getDriveService/getDocumentService/getSpreadsheetService/getPermissionService/getPropertiesService/…`).
 - **Mock pattern:** `test/fakes/MockFactory.js` + per-lib `src/testing/mocks.js`. **Preserve this when
   adding/refactoring classes** — add mocks for any new collaborator that a test needs to inject.
 
@@ -95,6 +95,7 @@ test (`__testOnline__/integration/IntegrationTests_DriveWrapper.gs`) covers the 
 access is allowed here).
 
 ### Why it is complex
+
 - It is a **1,219-line class with ~32 methods** spanning four unrelated concerns intermixed: table
   **data retrieval** (getters), **structural** ops (insert/append/delete rows & columns), **cell
   formatting** (background/padding/vertical-alignment), and **row styling** (bold/alignment/min-height/
@@ -107,13 +108,15 @@ access is allowed here).
   keep every method callable with identical name/signature/return.
 
 ### What makes it tractable (verified)
+
 - The methods are **independent**: they reference only `this.facade`, `this._logger`, `this._cache`,
   `this._utils`, `this._exceptionService` — **no method calls a sibling method on `this`**. So each can
   be moved verbatim into a collaborator that exposes the same five fields, with zero cross-wiring.
 - The constructor today is just `constructor(facade){ this.facade=facade; this._logger=facade._logger;
-  this._cache=facade._cache; this._utils=facade._utils; this._exceptionService=facade._exceptionService; }`.
+this._cache=facade._cache; this._utils=facade._utils; this._exceptionService=facade._exceptionService; }`.
 
 ### Steps
+
 1. Create `GoogleApiWrapper/src/internal/services-managers/document-table/` with four collaborators,
    each taking `facade` and setting the same five fields:
    - `TableReader.js` — getters: `getDocumentTables`, `getTableStructure`, `getTableData`, `getTableRow`,
@@ -125,8 +128,8 @@ access is allowed here).
    - `TableCellFormatter.js` — `setCellBackgroundColor`, `setCellPadding`, `setCellVerticalAlignment`.
    - `TableRowFormatter.js` — `setRowBackgroundColor`, `setRowMinimumHeight`, `setRowTextAlignment`,
      `setRowBold`.
-   (Move each method **verbatim**, with its JSDoc. Keep getters next to their writers if that reduces
-   churn — the exact grouping is flexible as long as no file exceeds ~400 LOC.)
+     (Move each method **verbatim**, with its JSDoc. Keep getters next to their writers if that reduces
+     churn — the exact grouping is flexible as long as no file exceeds ~400 LOC.)
 2. Reduce `DocumentTableManager` to a thin façade: construct the four collaborators in the constructor and
    expose their methods. Use the idiomatic explicit-delegation style (preferred, post-WP-12) **or** the
    existing bind-loop style used by `DriveService` — but explicit delegating methods are now the house
@@ -134,6 +137,7 @@ access is allowed here).
 3. Keep error handling consistent via GoogleApiWrapper's `ErrorHandler` (already used inside the methods).
 
 ### Acceptance
+
 All existing `DocumentTableManager` tests pass via the façade (`GoogleApiWrapper/src/internal/
 services-managers/__tests__/`); no file in `document-table/` exceeds ~400 LOC; public API identical;
 `npm run build:production` green.
@@ -146,6 +150,7 @@ services-managers/__tests__/`); no file in `document-table/` exceeds ~400 LOC; p
 **Risk:** High (rendering correctness).
 
 ### Why it is complex
+
 - It is a **1,057-line monolith** combining: scanning/lexing (`_MustacheScanner`, ~line 10), context
   resolution (`_MustacheContext`, ~line 72), a filter registry + application (`registerFilter`, ~line 439),
   template parsing (`_parseTemplate`/`_squashTokens`/`_nestTokens`), the rendering pipeline
@@ -159,6 +164,7 @@ services-managers/__tests__/`); no file in `document-table/` exceeds ~400 LOC; p
   rendered strings, so any drift in section/partial/whitespace handling fails loudly.
 
 ### Steps
+
 1. Extract into `WorkspaceTemplateEngine/src/internal/mustache/`:
    - `Scanner.js` (lexing — from `_MustacheScanner`),
    - `Parser.js` (tokens → AST + `_squashTokens`/`_nestTokens`),
@@ -173,6 +179,7 @@ services-managers/__tests__/`); no file in `document-table/` exceeds ~400 LOC; p
    existing end-to-end Mustache tests as the byte-for-byte regression guard.
 
 ### Acceptance
+
 Existing template-rendering tests pass byte-for-byte; collaborators are independently unit-testable;
 façade API (`render`, `registerFilter`) unchanged; `npm run build:production` green.
 
@@ -184,6 +191,7 @@ façade API (`render`, `registerFilter`) unchanged; `npm run build:production` g
 `GoogleApiWrapper/src/services/PropertiesService.js` (758 LOC). **Risk:** Medium. **Layer:** L2.
 
 ### Why it is complex
+
 - **PermissionService:** the cache-key generation + `cache.remove(...)` dance and the try/catch+log
   boilerplate are **smeared across every method** (cache invalidation at several call sites), and
   email→permissionId resolution is inlined in `removeAccess`/`changeRoles`. The behavior to preserve
@@ -195,6 +203,7 @@ façade API (`render`, `registerFilter`) unchanged; `npm run build:production` g
   JSON round-tripping of objects and null/undefined handling.
 
 ### Steps
+
 1. **PermissionService** → keep `PermissionService` as the façade and extract internal collaborators
    (under `GoogleApiWrapper/src/internal/...`): a `PermissionCache` (owns `_generateCacheKey` + put/remove)
    and a `PermissionIdResolver` (email→permissionId). Route every method's cache invalidation and ID
@@ -206,6 +215,7 @@ façade API (`render`, `registerFilter`) unchanged; `npm run build:production` g
    JSDoc to module docs / `DOCS_LIBS`.
 
 ### Acceptance
+
 Service tests pass unchanged; cache-invalidation and JSON round-trip behavior identical; each file
 materially smaller with single-purpose helpers; `npm run build:production` green.
 
@@ -217,6 +227,7 @@ materially smaller with single-purpose helpers; `npm run build:production` green
 `JobRunnerLib/src/JobQueue.js` (678 LOC). **Risk:** Medium–High. **May reuse `Result` (WP-08, done).**
 
 ### Why it is complex
+
 - **Repository:** cache lookups, hydration calls, and dry-run flag handling are **interleaved inside every
   query/persist method** (e.g. `findById`). Pulling identity/caching and hydration into separate layers
   without changing query results or cache semantics is delicate — the repository tests cover cache hits/
@@ -230,6 +241,7 @@ materially smaller with single-purpose helpers; `npm run build:production` green
   suspension, and resume-after-timeout — so the timeout/lock/persistence ordering must be reproduced exactly.
 
 ### Steps
+
 1. **Repository** → extract an identity/cache layer (`RepositoryCache` wrapping findById cache
    get/put/invalidate), route hydration through the existing `hydrationService` from a single place, and
    isolate the dry-run flag into a small policy object. `Repository` keeps query/persist **orchestration
@@ -240,6 +252,7 @@ materially smaller with single-purpose helpers; `npm run build:production` green
    via `JobExecutor` → persist via `JobStateManager` → schedule via the trigger service.
 
 ### Acceptance
+
 JobRunner/Repository tests pass unchanged; `execute()` no longer contains direct Properties or trigger API
 calls; state/trigger ownership is single-sourced; `npm run build:production` green.
 

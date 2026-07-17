@@ -909,7 +909,9 @@ describe('DocumentService - Comprehensive Test Suite', () => {
   describe('_executeBatchUpdate Implementation', () => {
     beforeEach(() => {
       // Restore the original implementation by re-binding from the manager
-      service._executeBatchUpdate = service._batchUpdateHandler._executeBatchUpdate.bind(service._batchUpdateHandler);
+      service._executeBatchUpdate = service._batchUpdateHandler._executeBatchUpdate.bind(
+        service._batchUpdateHandler
+      );
       service._invalidateCache = jest.fn();
     });
 
@@ -1180,7 +1182,9 @@ describe('DocumentService - Comprehensive Test Suite', () => {
     it('should clear cache for deleted documents', () => {
       global.Drive.Files.update
         .mockReturnValueOnce({}) // Success
-        .mockImplementationOnce(() => { throw new Error('Failed'); }); // Failure
+        .mockImplementationOnce(() => {
+          throw new Error('Failed');
+        }); // Failure
 
       const result = service.deleteDocuments(['doc1', 'doc2']);
 

@@ -45,10 +45,7 @@ global.Utilities = {
     let byteCount = 16;
     if (algorithm === 'SHA_256' || algorithm === global.Utilities.DigestAlgorithm.SHA_256) {
       byteCount = 32;
-    } else if (
-      algorithm === 'SHA_512' ||
-      algorithm === global.Utilities.DigestAlgorithm.SHA_512
-    ) {
+    } else if (algorithm === 'SHA_512' || algorithm === global.Utilities.DigestAlgorithm.SHA_512) {
       byteCount = 64;
     }
 

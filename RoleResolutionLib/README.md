@@ -43,14 +43,7 @@ RoleResolutionLib provides a flexible, data-source-agnostic system for mapping a
 The library is part of the GasLibraryFactory monorepo and is bundled via Webpack:
 
 ```javascript
-import {
-  RoleResolver,
-  Role,
-  Actor,
-  Scope,
-  Delegation,
-  RoutingPolicy
-} from '@RoleResolutionLib';
+import { RoleResolver, Role, Actor, Scope, Delegation, RoutingPolicy } from '@RoleResolutionLib';
 ```
 
 ## Dependencies
@@ -129,9 +122,9 @@ A Delegation allows one actor to delegate their roles to another:
 
 ```javascript
 const delegation = new Delegation({
-  principalId: 'john@example.com',     // Delegating from
-  delegateId: 'jane@example.com',       // Delegating to
-  roleIds: '*',                          // All roles (or ['project_manager'])
+  principalId: 'john@example.com', // Delegating from
+  delegateId: 'jane@example.com', // Delegating to
+  roleIds: '*', // All roles (or ['project_manager'])
   scope: Scope.project('project_alpha'),
   validFrom: new Date('2024-06-01'),
   validUntil: new Date('2024-06-30'),
@@ -143,14 +136,14 @@ const delegation = new Delegation({
 
 When a role has been delegated, how should communications be routed?
 
-| Policy | Primary | CC | Description |
-|--------|---------|-----|-------------|
-| `DELEGATE_ONLY` | Delegate | - | Only delegate receives |
-| `PRINCIPAL_ONLY` | Principal | - | Only original holder receives |
-| `BOTH_EQUAL` | Both | - | Both receive as primary |
-| `DELEGATE_PRIMARY_CC` | Delegate | Principal | Delegate primary, principal CC'd |
-| `PRINCIPAL_PRIMARY_CC` | Principal | Delegate | Principal primary, delegate CC'd |
-| `CHAIN_ALL` | End of chain | All in chain | All actors in delegation chain |
+| Policy                 | Primary      | CC           | Description                      |
+| ---------------------- | ------------ | ------------ | -------------------------------- |
+| `DELEGATE_ONLY`        | Delegate     | -            | Only delegate receives           |
+| `PRINCIPAL_ONLY`       | Principal    | -            | Only original holder receives    |
+| `BOTH_EQUAL`           | Both         | -            | Both receive as primary          |
+| `DELEGATE_PRIMARY_CC`  | Delegate     | Principal    | Delegate primary, principal CC'd |
+| `PRINCIPAL_PRIMARY_CC` | Principal    | Delegate     | Principal primary, delegate CC'd |
+| `CHAIN_ALL`            | End of chain | All in chain | All actors in delegation chain   |
 
 ## Resolution Strategies
 
@@ -176,18 +169,22 @@ import {
 
 // Setup role registry
 const roleRegistry = new RoleRegistry();
-roleRegistry.register(new Role({
-  id: 'project_manager',
-  name: 'Project Manager'
-}));
+roleRegistry.register(
+  new Role({
+    id: 'project_manager',
+    name: 'Project Manager'
+  })
+);
 
 // Setup assignment source
 const assignmentSource = new InMemoryAssignmentSource();
-assignmentSource.add(new Assignment({
-  roleId: 'project_manager',
-  actorId: 'john@example.com',
-  scope: Scope.project('alpha')
-}));
+assignmentSource.add(
+  new Assignment({
+    roleId: 'project_manager',
+    actorId: 'john@example.com',
+    scope: Scope.project('alpha')
+  })
+);
 
 // Create resolver
 const resolver = new RoleResolver({
@@ -199,23 +196,25 @@ const resolver = new RoleResolver({
 // Resolve role
 const result = resolver.resolve('project_manager', Scope.project('alpha'));
 
-console.log(result.actors);           // [Actor { id: 'john@example.com' }]
-console.log(result.routing.primary);  // ['john@example.com']
+console.log(result.actors); // [Actor { id: 'john@example.com' }]
+console.log(result.routing.primary); // ['john@example.com']
 ```
 
 ### Resolution with Delegations
 
 ```javascript
 // John delegates to Jane for June
-delegationSource.add(new Delegation({
-  principalId: 'john@example.com',
-  delegateId: 'jane@example.com',
-  roleIds: '*',
-  scope: Scope.project('alpha'),
-  validFrom: new Date('2024-06-01'),
-  validUntil: new Date('2024-06-30'),
-  routingPolicy: RoutingPolicy.DELEGATE_PRIMARY_CC
-}));
+delegationSource.add(
+  new Delegation({
+    principalId: 'john@example.com',
+    delegateId: 'jane@example.com',
+    roleIds: '*',
+    scope: Scope.project('alpha'),
+    validFrom: new Date('2024-06-01'),
+    validUntil: new Date('2024-06-30'),
+    routingPolicy: RoutingPolicy.DELEGATE_PRIMARY_CC
+  })
+);
 
 // Resolve in June
 const juneResult = resolver.resolve('project_manager', Scope.project('alpha'), {
@@ -223,18 +222,20 @@ const juneResult = resolver.resolve('project_manager', Scope.project('alpha'), {
 });
 
 console.log(juneResult.routing.primary); // ['jane@example.com']
-console.log(juneResult.routing.cc);      // ['john@example.com']
+console.log(juneResult.routing.cc); // ['john@example.com']
 ```
 
 ### Fallback Roles
 
 ```javascript
 // Role with fallback
-roleRegistry.register(new Role({
-  id: 'tech_lead',
-  name: 'Tech Lead',
-  fallbackRoles: ['engineering_manager', 'cto']
-}));
+roleRegistry.register(
+  new Role({
+    id: 'tech_lead',
+    name: 'Tech Lead',
+    fallbackRoles: ['engineering_manager', 'cto']
+  })
+);
 
 // No tech lead assigned
 const result = resolver.resolve('tech_lead', Scope.project('alpha'), {
@@ -248,19 +249,23 @@ const result = resolver.resolve('tech_lead', Scope.project('alpha'), {
 
 ```javascript
 // A → B → C delegation chain
-delegationSource.add(new Delegation({
-  principalId: 'alice@example.com',
-  delegateId: 'bob@example.com',
-  roleIds: '*',
-  routingPolicy: RoutingPolicy.CHAIN_ALL
-}));
+delegationSource.add(
+  new Delegation({
+    principalId: 'alice@example.com',
+    delegateId: 'bob@example.com',
+    roleIds: '*',
+    routingPolicy: RoutingPolicy.CHAIN_ALL
+  })
+);
 
-delegationSource.add(new Delegation({
-  principalId: 'bob@example.com',
-  delegateId: 'charlie@example.com',
-  roleIds: '*',
-  routingPolicy: RoutingPolicy.CHAIN_ALL
-}));
+delegationSource.add(
+  new Delegation({
+    principalId: 'bob@example.com',
+    delegateId: 'charlie@example.com',
+    roleIds: '*',
+    routingPolicy: RoutingPolicy.CHAIN_ALL
+  })
+);
 
 // Result with CHAIN_ALL routes to entire chain
 const result = resolver.resolve('approver', Scope.global());
@@ -281,24 +286,27 @@ class SheetDBAssignmentSource {
   findAssignments(roleId, scope, options = {}) {
     const { asOfDate = new Date() } = options;
 
-    return this._db.select()
+    return this._db
+      .select()
       .from('RoleAssignments')
       .where('role_id', '=', roleId)
       .where('scope_type', '=', scope.type)
       .where('scope_value', '=', scope.value)
       .execute()
-      .filter(row => {
+      .filter((row) => {
         const validFrom = row.valid_from ? new Date(row.valid_from) : null;
         const validUntil = row.valid_until ? new Date(row.valid_until) : null;
-        return (!validFrom || validFrom <= asOfDate) &&
-               (!validUntil || validUntil >= asOfDate);
+        return (!validFrom || validFrom <= asOfDate) && (!validUntil || validUntil >= asOfDate);
       })
-      .map(row => new Assignment({
-        roleId: row.role_id,
-        actorId: row.actor_id,
-        scope: new Scope(row.scope_type, row.scope_value),
-        priority: row.priority
-      }));
+      .map(
+        (row) =>
+          new Assignment({
+            roleId: row.role_id,
+            actorId: row.actor_id,
+            scope: new Scope(row.scope_type, row.scope_value),
+            priority: row.priority
+          })
+      );
   }
 }
 ```
@@ -330,33 +338,33 @@ try {
 
 ### Classes
 
-| Class | Description |
-|-------|-------------|
-| `RoleResolver` | Main resolution engine |
-| `Role` | Role definition value object |
-| `Actor` | Actor value object (person, system, group) |
-| `Scope` | Scope value object |
-| `Assignment` | Role-to-actor assignment |
-| `Delegation` | Delegation configuration |
-| `DelegationChain` | Chain of delegations |
-| `DelegationValidator` | Validates delegations |
-| `RoleRegistry` | Registry of role definitions |
-| `RoutingResolver` | Resolves routing based on delegation chain |
+| Class                 | Description                                |
+| --------------------- | ------------------------------------------ |
+| `RoleResolver`        | Main resolution engine                     |
+| `Role`                | Role definition value object               |
+| `Actor`               | Actor value object (person, system, group) |
+| `Scope`               | Scope value object                         |
+| `Assignment`          | Role-to-actor assignment                   |
+| `Delegation`          | Delegation configuration                   |
+| `DelegationChain`     | Chain of delegations                       |
+| `DelegationValidator` | Validates delegations                      |
+| `RoleRegistry`        | Registry of role definitions               |
+| `RoutingResolver`     | Resolves routing based on delegation chain |
 
 ### Enums
 
-| Enum | Values |
-|------|--------|
-| `ScopeType` | GLOBAL, ORG_UNIT, PROJECT, RESOURCE, CUSTOM |
-| `ActorType` | PERSON, SYSTEM, GROUP |
-| `RoutingPolicy` | DELEGATE_ONLY, PRINCIPAL_ONLY, BOTH_EQUAL, DELEGATE_PRIMARY_CC, PRINCIPAL_PRIMARY_CC, CHAIN_ALL |
-| `ResolutionStrategy` | FIRST, ALL, PRIORITY |
+| Enum                 | Values                                                                                          |
+| -------------------- | ----------------------------------------------------------------------------------------------- |
+| `ScopeType`          | GLOBAL, ORG_UNIT, PROJECT, RESOURCE, CUSTOM                                                     |
+| `ActorType`          | PERSON, SYSTEM, GROUP                                                                           |
+| `RoutingPolicy`      | DELEGATE_ONLY, PRINCIPAL_ONLY, BOTH_EQUAL, DELEGATE_PRIMARY_CC, PRINCIPAL_PRIMARY_CC, CHAIN_ALL |
+| `ResolutionStrategy` | FIRST, ALL, PRIORITY                                                                            |
 
 ### Interfaces
 
-| Interface | Methods |
-|-----------|---------|
-| `AssignmentSource` | `findAssignments(roleId, scope, options)` |
+| Interface          | Methods                                            |
+| ------------------ | -------------------------------------------------- |
+| `AssignmentSource` | `findAssignments(roleId, scope, options)`          |
 | `DelegationSource` | `findDelegations(actorId, roleId, scope, options)` |
 
 ## Version

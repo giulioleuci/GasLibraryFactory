@@ -9,15 +9,21 @@ export class ValidationException extends BaseError {
     this.validationErrors = errors; // backwards compat with existing consumers
   }
 
-  getErrors() { return this.errors; }
+  getErrors() {
+    return this.errors;
+  }
 
-  hasErrors() { return this.errors && this.errors.length > 0; }
+  hasErrors() {
+    return this.errors && this.errors.length > 0;
+  }
 
   getErrorsForField(fieldName) {
     return this.errors.filter((e) => e.field === fieldName);
   }
 
-  toObject() { return { ...this.toJSON(), errors: this.errors }; }
+  toObject() {
+    return { ...this.toJSON(), errors: this.errors };
+  }
 
   withContext(additionalContext) {
     const mergedContext = { ...this.context, ...additionalContext };

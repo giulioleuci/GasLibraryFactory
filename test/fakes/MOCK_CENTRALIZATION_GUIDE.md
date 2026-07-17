@@ -21,12 +21,14 @@ All mocks in this project are centralized in `/test/fakes/` and within each libr
 All mocks in the project are now high-fidelity Jest mocks. They use Jest's spy system but include "Happy Path" logic (e.g., in-memory storage, immediate retry) to provide realistic behavior without the overhead of full fake classes.
 
 **Benefits:**
+
 - Assertion capabilities (e.g., `logger.hasLog('pattern')`)
 - Stateful behavior (e.g., `cache` store, `properties` store)
 - Lightweight and spy-capable
 - Standardized across all libraries
 
 **Example:**
+
 ```javascript
 import { MockFactory } from '../../test/fakes';
 
@@ -84,25 +86,25 @@ const database = MockFactory.createJestDatabase({
 
 ### Orchestration
 
-| Method | Returns | Use Case |
-|--------|---------|----------|
+| Method            | Returns                   | Use Case                       |
+| ----------------- | ------------------------- | ------------------------------ |
 | `createAllJest()` | Object with all SDK mocks | Standard high-fidelity testing |
 
 ### Library Mocks (Jest-based)
 
-| Method | Returns | Library |
-|--------|---------|---------|
-| `createJestLogger()` | LoggerServiceMock | CoreUtilsLib |
-| `createJestCache()` | CacheInterfaceMock | CoreUtilsLib |
-| `createJestUtils()` | UtilsServiceMock | CoreUtilsLib |
-| `createJestExceptionService()` | ExceptionServiceMock | GasResilienceLib |
-| `createJestDatabase()` | DatabaseServiceMock | SheetDBLib |
-| `createJestStep(name)` | StepMock | PipelineFramework |
-| `createJestMonitor()` | ProcessMonitorServiceMock | GasProcessMonitorLib |
-| `createJestSpreadsheetService()` | SpreadsheetServiceMock | GoogleApiWrapper |
-| `createPropertiesService()` | PropertiesServiceMock | GoogleApiWrapper |
-| `createTriggerService()` | TriggerServiceMock | GoogleApiWrapper |
-| `createMustache()` | MustacheMock | WorkspaceTemplateEngine |
+| Method                           | Returns                   | Library                 |
+| -------------------------------- | ------------------------- | ----------------------- |
+| `createJestLogger()`             | LoggerServiceMock         | CoreUtilsLib            |
+| `createJestCache()`              | CacheInterfaceMock        | CoreUtilsLib            |
+| `createJestUtils()`              | UtilsServiceMock          | CoreUtilsLib            |
+| `createJestExceptionService()`   | ExceptionServiceMock      | GasResilienceLib        |
+| `createJestDatabase()`           | DatabaseServiceMock       | SheetDBLib              |
+| `createJestStep(name)`           | StepMock                  | PipelineFramework       |
+| `createJestMonitor()`            | ProcessMonitorServiceMock | GasProcessMonitorLib    |
+| `createJestSpreadsheetService()` | SpreadsheetServiceMock    | GoogleApiWrapper        |
+| `createPropertiesService()`      | PropertiesServiceMock     | GoogleApiWrapper        |
+| `createTriggerService()`         | TriggerServiceMock        | GoogleApiWrapper        |
+| `createMustache()`               | MustacheMock              | WorkspaceTemplateEngine |
 
 ---
 
@@ -128,6 +130,7 @@ const database = MockFactory.createJestDatabase({
 The **Testing SDK** migration has unified the project under a single, high-fidelity mocking strategy. By combining the assertion power of "Smart Fakes" with the flexibility of "Jest Mocks," we have reduced boilerplate, increased test fidelity, and ensured that changes to service interfaces only need to be updated in one place (`mocks.js`).
 
 **Result:**
+
 - **Zero Duplication**: One mock implementation per service.
 - **High Fidelity**: Mocks behave like real services (in-memory).
 - **Fluent Assertions**: Use `hasLog`, `getLogsByLevel`, etc.

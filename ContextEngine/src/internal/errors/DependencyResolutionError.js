@@ -30,4 +30,3 @@ export class DependencyResolutionError extends ContextEngineError {
     this.providerName = context.providerName;
   }
 }
-

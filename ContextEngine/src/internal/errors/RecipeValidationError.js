@@ -42,13 +42,13 @@ import { ContextEngineError } from './ContextEngineError';
 
 /**
  * Error signaling structural or configuration non-compliance in a Context Recipe.
- * 
+ *
  * @class RecipeValidationError
  * @extends ContextEngineError
- * 
+ *
  * @description
- * Thrown by RecipeParser.validate() or parse() during pre-execution checks. Aggregates 
- * multiple validation failures (missing fields, duplicate names, invalid types) into 
+ * Thrown by RecipeParser.validate() or parse() during pre-execution checks. Aggregates
+ * multiple validation failures (missing fields, duplicate names, invalid types) into
  * the validationErrors property to enable comprehensive error reporting.
  *
  * @example

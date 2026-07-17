@@ -40,7 +40,7 @@ describe('Integration Test 5: Importer-Validation Flow', () => {
 
     mockDriveService = MockFactory.createJestDriveService();
     mockSpreadsheetService = MockFactory.createJestSpreadsheetService();
-    
+
     mockTable = {
       insertRows: jest.fn(),
       updateRows: jest.fn(),
@@ -56,7 +56,7 @@ describe('Integration Test 5: Importer-Validation Flow', () => {
         Users: mockTable
       }
     };
-    
+
     // We can use a mock expression engine to have full control over returns
     expressionEngine = {
       evaluate: jest.fn(),
@@ -88,7 +88,7 @@ describe('Integration Test 5: Importer-Validation Flow', () => {
       const mockStrategy = {
         extract: jest.fn().mockReturnValue([
           { age: 25 }, // Valid
-          { age: -5 }  // Invalid
+          { age: -5 } // Invalid
         ])
       };
       jest.spyOn(engine._sourceFactory, 'createStrategy').mockReturnValue(mockStrategy);
@@ -120,11 +120,7 @@ describe('Integration Test 5: Importer-Validation Flow', () => {
       };
 
       const mockStrategy = {
-        extract: jest.fn().mockReturnValue([
-          { age: -1 },
-          { age: -2 },
-          { age: 10 }
-        ])
+        extract: jest.fn().mockReturnValue([{ age: -1 }, { age: -2 }, { age: 10 }])
       };
       jest.spyOn(engine._sourceFactory, 'createStrategy').mockReturnValue(mockStrategy);
 
@@ -168,19 +164,16 @@ describe('Integration Test 5: Importer-Validation Flow', () => {
         name: 'Multi-rule Validation',
         source: { type: 'SheetById', config: { sheetId: '123' } },
         transform: {
-          validation: [
-            '{{age}} >= 18',
-            '{{status}} == "active"'
-          ]
+          validation: ['{{age}} >= 18', '{{status}} == "active"']
         },
         load: { targetTable: 'Users', conflictResolution: 'INSERT_ONLY' }
       };
 
       const mockStrategy = {
         extract: jest.fn().mockReturnValue([
-          { age: 20, status: 'active' },   // Passes both
-          { age: 15, status: 'active' },   // Fails first
-          { age: 20, status: 'inactive' }  // Fails second
+          { age: 20, status: 'active' }, // Passes both
+          { age: 15, status: 'active' }, // Fails first
+          { age: 20, status: 'inactive' } // Fails second
         ])
       };
       jest.spyOn(engine._sourceFactory, 'createStrategy').mockReturnValue(mockStrategy);
@@ -206,10 +199,7 @@ describe('Integration Test 5: Importer-Validation Flow', () => {
         name: 'Short-circuit Validation',
         source: { type: 'SheetById', config: { sheetId: '123' } },
         transform: {
-          validation: [
-            'RULE1',
-            'RULE2'
-          ]
+          validation: ['RULE1', 'RULE2']
         },
         load: { targetTable: 'Users', conflictResolution: 'INSERT_ONLY' }
       };
@@ -252,11 +242,11 @@ describe('Integration Test 5: Importer-Validation Flow', () => {
       const mockStrategy = {
         extract: jest.fn().mockReturnValue([
           { Name: 'John Doe', Age: 25 }, // Valid
-          { Name: 'Jane Doe', Age: 15 }  // Invalid
+          { Name: 'Jane Doe', Age: 15 } // Invalid
         ])
       };
       jest.spyOn(engine._sourceFactory, 'createStrategy').mockReturnValue(mockStrategy);
-      
+
       expressionEngine.evaluate.mockImplementation((expr, row) => row.AGE >= 18);
 
       // 3. Run import
@@ -266,7 +256,7 @@ describe('Integration Test 5: Importer-Validation Flow', () => {
       expect(result.success).toBe(true);
       expect(result.extract.rowsExtracted).toBe(2);
       expect(result.transform.rowsTransformed).toBe(1); // Only 1 row should pass validation
-      
+
       // 5. Verify row reached loader/database
       // Result contains stats from loader, and mockDatabaseService was used.
       // But we need to verify if Loader correctly called insertRows.

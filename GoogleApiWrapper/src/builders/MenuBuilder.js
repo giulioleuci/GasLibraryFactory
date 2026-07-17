@@ -7,7 +7,7 @@
 /**
  * @class MenuBuilder
  * @description Fluent builder for GAS UI menus. Wraps native Menu API to provide chainable addition of items, separators, and nested submenus. Decouples menu structure definition from native UI commitment.
- * 
+ *
  * @property {GoogleAppsScript.Base.Ui} _ui Native GAS UI provider.
  * @property {GoogleAppsScript.Base.Menu} _menu Current native menu object.
  * @property {LoggerService} _logger Diagnostic logger.

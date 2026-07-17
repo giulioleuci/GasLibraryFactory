@@ -42,13 +42,13 @@ import { ContextEngineError } from './ContextEngineError';
 
 /**
  * Error signaling a missing registration for a requested DataProvider type.
- * 
+ *
  * @class ProviderNotFoundError
  * @extends ContextEngineError
- * 
+ *
  * @description
- * Thrown during ContextAssembler.assemble() or ProviderRegistry.get() when a recipe 
- * references an unregistered provider. Includes technical context for typo detection 
+ * Thrown during ContextAssembler.assemble() or ProviderRegistry.get() when a recipe
+ * references an unregistered provider. Includes technical context for typo detection
  * (registeredProviders) and dependency mapping (recipeName, currentProvider).
  *
  * @example

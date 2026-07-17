@@ -69,7 +69,9 @@ describe('VisibilityEvaluator', () => {
       context.toObject.mockReturnValue({ user: { isPremium: true } });
 
       expect(evaluatorWithEngine.isVisible('{{user.isPremium}} == true', context)).toBe(true);
-      expect(mocks.expressionEngine.evaluate).toHaveBeenCalledWith('{{user.isPremium}} == true', { user: { isPremium: true } });
+      expect(mocks.expressionEngine.evaluate).toHaveBeenCalledWith('{{user.isPremium}} == true', {
+        user: { isPremium: true }
+      });
     });
   });
 

@@ -395,7 +395,9 @@ describe('Cross-Cutting Concern: Cache Invalidation', () => {
       // Assert: Each has separate cache entry
       expect(mockCache._store.get('Entities:unique-1')).toBeDefined();
       expect(mockCache._store.get('Entities:unique-2')).toBeDefined();
-      expect(mockCache._store.get('Entities:unique-1')).not.toBe(mockCache._store.get('Entities:unique-2'));
+      expect(mockCache._store.get('Entities:unique-1')).not.toBe(
+        mockCache._store.get('Entities:unique-2')
+      );
     });
   });
 

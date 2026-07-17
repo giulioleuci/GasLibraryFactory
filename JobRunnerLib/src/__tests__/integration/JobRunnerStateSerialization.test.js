@@ -54,24 +54,32 @@ describe('Integration Test 6: JobRunner-State Serialization', () => {
       })
     };
 
-    stateManager = new JobStateManager('test-job', mockPropertiesService, mockUtils, mockLockService);
+    stateManager = new JobStateManager(
+      'test-job',
+      mockPropertiesService,
+      mockUtils,
+      mockLockService
+    );
   });
 
   describe('State Serialization', () => {
     test('should serialize complex state object to JSON string', () => {
-      const complexState = { 
-        users: [{ id: 1, name: 'Alice' }, { id: 2, name: 'Bob' }], 
-        index: 5, 
-        errors: ['fail 1', 'fail 2'] 
+      const complexState = {
+        users: [
+          { id: 1, name: 'Alice' },
+          { id: 2, name: 'Bob' }
+        ],
+        index: 5,
+        errors: ['fail 1', 'fail 2']
       };
-      
+
       stateManager.saveResumeState(complexState);
-      
+
       expect(mockPropertiesService.setObjectProperty).toHaveBeenCalledWith(
         'state_test-job',
         complexState
       );
-      
+
       const storedVal = store.get('state_test-job');
       expect(typeof storedVal).toBe('string');
       expect(JSON.parse(storedVal)).toEqual(complexState);
@@ -80,9 +88,9 @@ describe('Integration Test 6: JobRunner-State Serialization', () => {
     test('should serialize Date objects in state', () => {
       const now = new Date();
       const stateWithDate = { lastRun: now };
-      
+
       stateManager.saveResumeState(stateWithDate);
-      
+
       const storedVal = store.get('state_test-job');
       expect(storedVal).toContain(now.toISOString());
     });
@@ -95,7 +103,7 @@ describe('Integration Test 6: JobRunner-State Serialization', () => {
           }
         }
       };
-      
+
       stateManager.saveResumeState(deeplyNested);
       expect(JSON.parse(store.get('state_test-job'))).toEqual(deeplyNested);
     });
@@ -105,20 +113,20 @@ describe('Integration Test 6: JobRunner-State Serialization', () => {
     test('should deserialize state back to original structure', () => {
       const originalState = { count: 10, items: ['a', 'b'] };
       stateManager.saveResumeState(originalState);
-      
+
       const loadedState = stateManager.loadResumeState();
       expect(loadedState).toEqual(originalState);
     });
 
     test('should restore Date objects from ISO strings', () => {
       const now = new Date();
-      
+
       // Manually populate store with stringified state
       store.set('state_test-job', JSON.stringify({ timestamp: now }));
-      
+
       // Manually simulate what real PropertiesService does (reviving dates)
       mockPropertiesService.getObjectProperty.mockReturnValue({ timestamp: now });
-      
+
       const loadedState = stateManager.loadResumeState();
       expect(loadedState.timestamp).toEqual(now);
     });
@@ -127,17 +135,14 @@ describe('Integration Test 6: JobRunner-State Serialization', () => {
   describe('Properties Service Integration', () => {
     test('should use job name as part of property key', () => {
       stateManager.saveType('IMPORT');
-      expect(mockPropertiesService.setProperty).toHaveBeenCalledWith(
-        'type_test-job',
-        'IMPORT'
-      );
+      expect(mockPropertiesService.setProperty).toHaveBeenCalledWith('type_test-job', 'IMPORT');
     });
 
     test('should handle large state objects via tiered storage', () => {
       // Create a state larger than LARGE_STATE_THRESHOLD (8KB)
       const largeData = 'x'.repeat(9000);
       const largeState = { data: largeData };
-      
+
       // Mock DriveApp globally for this test
       global.DriveApp = {
         getFoldersByName: jest.fn().mockReturnValue({
@@ -155,16 +160,16 @@ describe('Integration Test 6: JobRunner-State Serialization', () => {
       };
 
       stateManager.saveResumeState(largeState);
-      
+
       // Should NOT call setObjectProperty for large state
       expect(mockPropertiesService.setObjectProperty).not.toHaveBeenCalled();
-      
+
       // Should call setProperty with DRIVE prefix
       expect(mockPropertiesService.setProperty).toHaveBeenCalledWith(
         'state_test-job',
         expect.stringContaining('__DRIVE__:drive-file-123')
       );
-      
+
       // Clean up global mock
       delete global.DriveApp;
     });

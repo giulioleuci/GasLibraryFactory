@@ -16,7 +16,7 @@ function _getNativePropertiesService() {
 /**
  * @class PropertiesService
  * @description Facade for Google Apps Script native PropertiesService. Implements type-safe key-value storage with automatic JSON serialization, ISO date revival, and batch I/O optimization. Supports Script, User, and Document scopes.
- * 
+ *
  * @property {LoggerService} _logger Diagnostic logger.
  * @property {Object} _properties Native GAS Properties instance.
  */

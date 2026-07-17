@@ -27,7 +27,11 @@ export class SmartAssert {
           return v;
         });
       } catch (_e2) {
-        try { return String(value); } catch (_e3) { return '[Unserializable]'; }
+        try {
+          return String(value);
+        } catch (_e3) {
+          return '[Unserializable]';
+        }
       }
     }
   }
@@ -37,7 +41,7 @@ export class SmartAssert {
     const expectedStr = this._safeStringify(expected);
     const actualStr = this._safeStringify(actual);
     const logMessage = `[ASSERT:${status}] Expected: ${expectedStr} | Actual: ${actualStr} | Desc: ${message}`;
-    
+
     if (typeof Logger !== 'undefined') {
       Logger.log(logMessage);
     } else {

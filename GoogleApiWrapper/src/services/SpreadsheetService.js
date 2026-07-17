@@ -14,7 +14,7 @@ import { SpreadsheetHybridManager } from '../internal/services-managers/Spreadsh
  * @class SpreadsheetService
  * @extends GoogleService
  * @description Orchestrator for Google Sheets operations. Implements Facade/Delegation pattern across Range, Grid, Metadata, and Hybrid managers. Optimizes performance via Advanced Sheets API batching and intelligent metadata caching.
- * 
+ *
  * @property {SpreadsheetMetadataCache} _metadataCache Internal metadata registry.
  * @property {SpreadsheetRangeManager} _rangeManager Logic for cell value mutations.
  * @property {SpreadsheetGridManager} _gridManager Logic for sheet and grid mutations.
@@ -38,31 +38,51 @@ export class SpreadsheetService extends GoogleService {
       {
         manager: this._metadataCache,
         methods: [
-          'getSpreadsheetMetadata', 'getSheetInfo', '_getCachedSheetMetadata',
-          '_clearSheetMetadataCache', '_parseRangeToGridRange', '_parseA1',
-          '_parseCell', '_columnToIndex'
+          'getSpreadsheetMetadata',
+          'getSheetInfo',
+          '_getCachedSheetMetadata',
+          '_clearSheetMetadataCache',
+          '_parseRangeToGridRange',
+          '_parseA1',
+          '_parseCell',
+          '_columnToIndex'
         ]
       },
       {
         manager: this._rangeManager,
         methods: [
-          'updateRanges', 'getRanges', 'appendRows', 'insertRow',
-          'getLastError', 'clearRanges'
+          'updateRanges',
+          'getRanges',
+          'appendRows',
+          'insertRow',
+          'getLastError',
+          'clearRanges'
         ]
       },
       {
         manager: this._gridManager,
         methods: [
-          'formatRanges', 'setColumnWidths', 'createSheets', 'deleteSheets',
-          'deleteRow', 'deleteRows', 'expandSheetGrid', 'getProtectedRanges',
-          'deleteProtectedRanges', 'protectRanges'
+          'formatRanges',
+          'setColumnWidths',
+          'createSheets',
+          'deleteSheets',
+          'deleteRow',
+          'deleteRows',
+          'expandSheetGrid',
+          'getProtectedRanges',
+          'deleteProtectedRanges',
+          'protectRanges'
         ]
       },
       {
         manager: this._hybridManager,
         methods: [
-          'createSpreadsheet', 'openStandard', 'getActiveStandard',
-          'getStandardApp', 'flushBatch', '_verifyAdvancedSheets'
+          'createSpreadsheet',
+          'openStandard',
+          'getActiveStandard',
+          'getStandardApp',
+          'flushBatch',
+          '_verifyAdvancedSheets'
         ]
       }
     ]);
@@ -74,7 +94,7 @@ export class SpreadsheetService extends GoogleService {
 
   _delegate(delegations) {
     delegations.forEach(({ manager, methods }) => {
-      methods.forEach(method => {
+      methods.forEach((method) => {
         if (typeof manager[method] === 'function') {
           this[method] = manager[method].bind(manager);
         }

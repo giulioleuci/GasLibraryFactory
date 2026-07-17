@@ -52,13 +52,13 @@ import { ContextEngineError } from './ContextEngineError';
 
 /**
  * Error signaling failure during DataProvider._fetchData() execution.
- * 
+ *
  * @class ProviderExecutionError
  * @extends ContextEngineError
- * 
+ *
  * @description
- * Wraps original exceptions caught during provider data retrieval. Provides technical context 
- * for debugging and retry classification by GasResilienceLib, distinguishing between 
+ * Wraps original exceptions caught during provider data retrieval. Provides technical context
+ * for debugging and retry classification by GasResilienceLib, distinguishing between
  * transient (e.g., timeouts, 429) and permanent (e.g., 401, 403, 404) failures.
  *
  * @example

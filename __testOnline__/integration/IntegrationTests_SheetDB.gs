@@ -17,7 +17,7 @@ function initIntegrationTests_SheetDB() {
   runner.register(`${NS}/CRUD_Lifecycle`, () => {
     const ss = testContext.getSpreadsheet();
     testContext.resetSpreadsheet(ss);
-    
+
     const sheet = ss.getSheets()[0];
     sheet.setName('Users');
     sheet.appendRow(['id', 'name', 'email', 'age', 'status']);
@@ -88,7 +88,7 @@ function initIntegrationTests_SheetDB() {
 
     const count = table.getRows().length;
     SmartAssert.equals(count, totalRows, `Should have ${totalRows} rows`);
-    
+
     const sample = db.select(['value']).from('Data').where('value', '>', 400).execute();
     SmartAssert.greaterThan(sample.length, 0, 'Should find rows with value > 400');
   });
@@ -108,7 +108,7 @@ function initIntegrationTests_SheetDB() {
     const exceptionService = new ExceptionService(logger, utils);
     const db = new DatabaseService(ss.getId(), logger, utils, cache, exceptionService);
     const isoDate = new Date().toISOString();
-    
+
     db.tables['Events'].insertRow({
       name: 'Date Test',
       created_at: isoDate
@@ -134,7 +134,7 @@ function initIntegrationTests_SheetDB() {
     const exceptionService = new ExceptionService(logger, utils);
     const db = new DatabaseService(ss.getId(), logger, utils, cache, exceptionService);
     const largeText = 'A'.repeat(5000);
-    
+
     db.tables['Docs'].insertRow({ content: largeText });
     db.save();
 
@@ -173,12 +173,12 @@ function initIntegrationTests_SheetDB() {
   runner.register(`${NS}/Advanced_Queries`, () => {
     const ss = testContext.getSpreadsheet();
     testContext.resetSpreadsheet(ss);
-    
+
     const usersSheet = ss.getSheets()[0];
     usersSheet.setName('Users');
     usersSheet.appendRow(['id', 'name', 'deptId']);
     usersSheet.appendRow(['U1', 'Alice', 'D1']);
-    
+
     const deptsSheet = ss.insertSheet('Depts');
     deptsSheet.appendRow(['id', 'name']);
     deptsSheet.appendRow(['D1', 'Engineering']);
@@ -189,8 +189,9 @@ function initIntegrationTests_SheetDB() {
     const cache = CacheService.getScriptCache();
     const exceptionService = new ExceptionService(logger, utils);
     const db = new DatabaseService(ss.getId(), logger, utils, cache, exceptionService);
-    
-    const result = db.select(['Users.name', 'Depts.name as deptName'])
+
+    const result = db
+      .select(['Users.name', 'Depts.name as deptName'])
       .from('Users')
       .join('Depts', 'Users.deptId', '==', 'Depts.id')
       .execute();

@@ -14,8 +14,9 @@ function initGoogleApiWrapperTests() {
   if (typeof initGoogleApiWrapperTests_Docs === 'function') initGoogleApiWrapperTests_Docs(NS);
   if (typeof initGoogleApiWrapperTests_Sheets === 'function') initGoogleApiWrapperTests_Sheets(NS);
   if (typeof initGoogleApiWrapperTests_Gmail === 'function') initGoogleApiWrapperTests_Gmail(NS);
-  if (typeof initGoogleApiWrapperTests_Services === 'function') initGoogleApiWrapperTests_Services(NS);
-  
+  if (typeof initGoogleApiWrapperTests_Services === 'function')
+    initGoogleApiWrapperTests_Services(NS);
+
   // Basic Logger test (stays here as it's foundational)
   runner.register(`${NS}/LoggerService/BasicLogging`, () => {
     const logger = new LoggerService();
@@ -23,7 +24,7 @@ function initGoogleApiWrapperTests() {
     logger.warn('Test warning message');
     logger.error('Test error message');
     logger.debug('Test debug message');
-    
+
     SmartAssert.notNull(logger, 'LoggerService should be created');
   });
 }
@@ -42,5 +43,13 @@ function createGoogleApiWrapperDeps() {
   const mailUtils = {
     sleep: (ms) => utils.sleep(ms)
   };
-  return { logger, utils, cache, exceptionService, utilitiesService, cacheServiceWrapper, mailUtils };
+  return {
+    logger,
+    utils,
+    cache,
+    exceptionService,
+    utilitiesService,
+    cacheServiceWrapper,
+    mailUtils
+  };
 }

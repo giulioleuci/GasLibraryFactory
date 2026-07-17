@@ -12,7 +12,7 @@ function initIntegrationTests() {
 
   // Register generic integration tests if any
   const NS = 'Integration';
-  
+
   runner.register(`${NS}/Master/HealthCheck`, () => {
     SmartAssert.notNull(testContext, 'TestContext should be available');
     SmartAssert.notNull(testContext.getRootFolder(), 'Root folder should be accessible');

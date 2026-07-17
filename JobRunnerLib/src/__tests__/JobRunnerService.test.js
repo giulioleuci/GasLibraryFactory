@@ -56,7 +56,7 @@ describe('JobRunnerService (Stateful Library Pattern)', () => {
   beforeEach(() => {
     global.resetGasMocks();
     const mocks = MockFactory.createAllJest();
-    
+
     logger = mocks.logger;
     utils = mocks.utils;
     propertiesService = mocks.propertiesService;

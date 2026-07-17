@@ -4,17 +4,21 @@
 **Scopo:** Ottimizzare l'I/O verso i servizi Google tramite l'uso sistematico di Advanced REST APIs e architetture Batch-First.
 
 ## 🎯 Scopi Dettagliati
+
 L'uso standard delle classi `App` (es. `DriveApp`) è lento perché ogni operazione è una chiamata di rete singola. Questa libreria:
+
 - **Batching Multipart**: Raggruppa centinaia di richieste in un unico payload HTTP (Drive/Sheets API).
 - **Quota Tracking**: Monitora i limiti di invio email per prevenire blocchi dell'account.
 - **Abstract Factory**: Centralizza la creazione di servizi (Drive, Sheets, Docs, Gmail) iniettando automaticamente Logger e Resilience.
 
 ## 🏗️ Pattern Architetturali
+
 - **Adapter Pattern**: Converte le interfacce complesse delle REST API di Google in metodi semplici e consistenti.
 - **Bridge Pattern**: Separa l'astrazione del servizio dalla sua implementazione batch, permettendo di aggiornare le API (es. Drive v2 -> v3) senza cambiare il codice che le consuma.
 - **Singleton/Service Locator**: La `ServiceFactory` garantisce che per ogni esecuzione esista una sola istanza configurata di ciascun servizio, ottimizzando il caching interno.
 
 ## 🛠️ Casi d'Uso comuni
+
 - Eliminazione di 500 file in una singola chiamata (`DriveService.deleteFiles`).
 - Aggiornamento di range non contigui in uno Sheet con una sola operazione (`SpreadsheetService.updateRanges`).
 - Condivisione silenziosa di file (senza email di notifica) tramite `PermissionService`.
@@ -25,4 +29,5 @@ L'uso standard delle classi `App` (es. `DriveApp`) è lento perché ogni operazi
   - Esempio d'uso reale (SGSA/ALDO, `DocumentTableFacade`): scan dei marker `{{TABELLA:<sheetFileId>}}` con `scanDocumentStructure`, poi `insertTableAtMarker` per posizionare la tabella e `document(fileId).replaceText(marker, '').execute()` per ripulire il marker.
 
 ---
-*Parte dello stack GasLibraryFactory*
+
+_Parte dello stack GasLibraryFactory_

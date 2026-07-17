@@ -129,9 +129,17 @@ export class UtilsServiceMock {
   constructor() {
     this.sleep = jest.fn().mockImplementation((ms) => Promise.resolve());
     this.generateUuid = jest.fn(() => 'GENERATED_UUID_123');
-    this.formatDate = jest.fn((date, format) => (date instanceof Date ? date.toISOString() : String(date)));
+    this.formatDate = jest.fn((date, format) =>
+      date instanceof Date ? date.toISOString() : String(date)
+    );
     this.parseDate = jest.fn((str) => new Date(str));
-    this.isEmpty = jest.fn((val) => val === null || val === undefined || (typeof val === 'string' && val.trim() === '') || (Array.isArray(val) && val.length === 0));
+    this.isEmpty = jest.fn(
+      (val) =>
+        val === null ||
+        val === undefined ||
+        (typeof val === 'string' && val.trim() === '') ||
+        (Array.isArray(val) && val.length === 0)
+    );
     this.isEqual = jest.fn((a, b) => JSON.stringify(a) === JSON.stringify(b));
     this.deepClone = jest.fn((obj) => (obj ? JSON.parse(JSON.stringify(obj)) : obj));
     this.deepMerge = jest.fn((target, source) => Object.assign({}, target, source));

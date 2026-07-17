@@ -123,7 +123,9 @@ export class DocumentBatchUpdateHandler {
     }
 
     try {
-      this._logger.info(`Executing batch update with ${requests.length} requests on document ${documentId}`);
+      this._logger.info(
+        `Executing batch update with ${requests.length} requests on document ${documentId}`
+      );
 
       const executeUpdate = () => {
         return Docs.Documents.batchUpdate({ requests: requests }, documentId);

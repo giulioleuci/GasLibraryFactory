@@ -341,13 +341,9 @@ describe('ErrorHandler Integration', () => {
 
   describe('error context enrichment', () => {
     it('should add context to errors', () => {
-      const error = new ServiceError(
-        'Test error',
-        'DriveService',
-        'createFile',
-        null,
-        { fileId: '123' }
-      );
+      const error = new ServiceError('Test error', 'DriveService', 'createFile', null, {
+        fileId: '123'
+      });
 
       expect(error.context).toBeDefined();
       expect(error.serviceName).toBe('DriveService');

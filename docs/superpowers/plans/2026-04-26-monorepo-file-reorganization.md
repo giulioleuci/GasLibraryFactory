@@ -13,6 +13,7 @@
 ## Phase 1: CoreUtilsLib (Layer 0 Foundation)
 
 **Files:**
+
 - Create: `CoreUtilsLib/src/{facades,errors,internal,builders,utils}/`
 - Move: 6 files to internal/, 1 to facades/, 1 to errors/, 3 to builders/
 - Update: `CoreUtilsLib/src/__tests__/**/*.js`, `CoreUtilsLib/index.js`
@@ -57,15 +58,18 @@ Expected: Shows all current imports.
 - [ ] **Step 3: Update imports in source files**
 
 For each file that imports LodashFacade:
+
 - Change `from './LodashFacade'` → `from './facades/LodashFacade'`
 - Change `from '../LodashFacade'` → `from '../facades/LodashFacade'`
 - Change `from '../../LodashFacade'` → `from '../../facades/LodashFacade'`
 
 Example files to update:
+
 - `CoreUtilsLib/src/LoggerService.js` (if it imports LodashFacade)
 - `CoreUtilsLib/src/UtilsService.js` (if it imports LodashFacade)
 
 Use find/replace:
+
 ```bash
 find CoreUtilsLib/src -name "*.js" -type f ! -path "*/__tests__/*" ! -path "*/facades/*" -exec sed -i "s|from '\\.\\./LodashFacade'|from '../facades/LodashFacade'|g" {} \;
 find CoreUtilsLib/src -name "*.js" -type f ! -path "*/__tests__/*" ! -path "*/facades/*" -exec sed -i "s|from '\\.\\./\\.\\.LodashFacade'|from '../../facades/LodashFacade'|g" {} \;
@@ -86,6 +90,7 @@ grep -r "from '[./]*\.\./\?BaseError'" CoreUtilsLib/ --include="*.js" | grep -v 
 ```
 
 Use find/replace:
+
 ```bash
 find CoreUtilsLib/src -name "*.js" -type f ! -path "*/__tests__/*" ! -path "*/errors/*" -exec sed -i "s|from '\\.\\./BaseError'|from '../errors/BaseError'|g" {} \;
 find CoreUtilsLib/src -name "*.js" -type f ! -path "*/__tests__/*" ! -path "*/errors/*" -exec sed -i "s|from '\\.\\./\\.\\.BaseError'|from '../../errors/BaseError'|g" {} \;
@@ -108,6 +113,7 @@ mv CoreUtilsLib/src/RegexUtils.js CoreUtilsLib/src/internal/RegexUtils.js
 - [ ] **Step 2: Update imports for each moved file**
 
 For BoundedMap:
+
 ```bash
 find CoreUtilsLib/src -name "*.js" -type f ! -path "*/__tests__/*" ! -path "*/internal/*" -exec sed -i "s|from '\\.\\./BoundedMap'|from '../internal/BoundedMap'|g" {} \;
 find CoreUtilsLib/src -name "*.js" -type f ! -path "*/__tests__/*" ! -path "*/internal/*" -exec sed -i "s|from '\\.\\./\\.\\.BoundedMap'|from '../../internal/BoundedMap'|g" {} \;
@@ -200,12 +206,14 @@ find CoreUtilsLib/src/__tests__ -name "*.js" -type f
 - [ ] **Step 2: Update test imports for moved files**
 
 For each test file, update imports:
+
 - `from '../LodashFacade'` → `from '../facades/LodashFacade'`
 - `from '../BaseError'` → `from '../errors/BaseError'`
 - `from '../BoundedMap'` → `from '../internal/BoundedMap'`
 - etc.
 
 Use bulk find/replace:
+
 ```bash
 find CoreUtilsLib/src/__tests__ -name "*.js" -type f -exec sed -i "s|from '\\.\\./LodashFacade'|from '../facades/LodashFacade'|g" {} \;
 find CoreUtilsLib/src/__tests__ -name "*.js" -type f -exec sed -i "s|from '\\.\\./BaseError'|from '../errors/BaseError'|g" {} \;
@@ -255,6 +263,7 @@ Expected: Commit succeeds with message showing files moved/modified.
 ## Phase 2: GasResilienceLib (Layer 1 Resilience)
 
 **Files:**
+
 - Create: `GasResilienceLib/src/{internal,handlers}/`
 - Move: 2 exception files, 3 manager files
 - Update: handler imports, index.js
@@ -299,6 +308,7 @@ rmdir GasResilienceLib/src/handlers/managers
 - [ ] **Step 2: Update imports in handler files**
 
 In files like `ErrorReporter.js`:
+
 ```bash
 find GasResilienceLib/src/handlers -name "*.js" -type f ! -path "*/internal/*" -exec sed -i "s|from '\\.\\./managers/ErrorReporterRecorder'|from './internal/ErrorReporterRecorder'|g" {} \;
 find GasResilienceLib/src/handlers -name "*.js" -type f ! -path "*/internal/*" -exec sed -i "s|from '\\.\\./managers/ErrorReporterSanitizer'|from './internal/ErrorReporterSanitizer'|g" {} \;
@@ -375,19 +385,23 @@ For libraries 3–16 (GasSchemaValidatorLib, GoogleApiWrapper, WorkspaceTemplate
 **Standard template for each library:**
 
 ### Task N.1: Create Directory Structure
+
 - Create all required subdirectories (internal/, facades/, builders/, etc.)
 
 ### Task N.2–N.M: Move Files by Category
+
 - Move files to appropriate subfolders
 - Update imports (find/replace patterns)
 - Update test imports
 - Update index.js exports
 
 ### Task N.Final: Test & Commit
+
 - Run `npm test -- LibraryName`
 - Commit with message: `refactor(LibraryName): reorganize files into internal/, {facades,builders,handlers,etc.}/`
 
 **Key principles for all phases:**
+
 - Update imports systematically using find/replace before running tests
 - Maintain all index.js exports for backward compatibility
 - Always run tests after a library is reorganized
@@ -454,28 +468,33 @@ git commit -m "refactor: complete monorepo file reorganization - all 16 librarie
 ### For Each Library Phase:
 
 **1. Directory Creation Pattern:**
+
 ```bash
 cd LibraryName/src
 mkdir -p internal facades builders handlers managers errors utils
 ```
 
 **2. File Movement Pattern:**
+
 ```bash
 mv LibraryName/src/OldLocation/File.js LibraryName/src/NewLocation/File.js
 ```
 
 **3. Import Update Pattern (find/replace):**
+
 ```bash
 find LibraryName/src -name "*.js" -type f ! -path "*/__tests__/*" ! -path "*/NewLocation/*" -exec sed -i "s|from '\\.\\./OldLocation/FileName'|from '../NewLocation/FileName'|g" {} \;
 ```
 
 **4. Test Import Update Pattern:**
+
 ```bash
 find LibraryName/src/__tests__ -name "*.js" -type f -exec sed -i "s|from '\\.\\./FileName'|from '../NewLocation/FileName'|g" {} \;
 ```
 
 **5. Index.js Export Update Pattern:**
 Verify all previous exports exist; update paths for moved files:
+
 ```javascript
 export { default as ClassName } from './src/NewLocation/FileName.js';
 ```
@@ -507,8 +526,9 @@ export { default as ClassName } from './src/NewLocation/FileName.js';
 ✅ No broken imports across monorepo
 
 ✅ Code structure logically organized:
-   - Public APIs at root level or marked folders
-   - Internal implementations in `internal/` subfolders
-   - Managers/handlers grouped logically
-   - Facade patterns isolated
-   - Error types organized together
+
+- Public APIs at root level or marked folders
+- Internal implementations in `internal/` subfolders
+- Managers/handlers grouped logically
+- Facade patterns isolated
+- Error types organized together

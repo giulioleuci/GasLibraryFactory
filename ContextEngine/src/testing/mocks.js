@@ -7,7 +7,7 @@
 /**
  * High-fidelity mock for DataProvider implementation in unit tests.
  * Simulates provider lifecycle, data retrieval, and parameter validation.
- * 
+ *
  * @class DataProviderMock
  */
 export class DataProviderMock {
@@ -23,7 +23,7 @@ export class DataProviderMock {
 
   /**
    * Fluent helper to configure static mock data return values.
-   * 
+   *
    * @param {*} data - Payload to return from provide and _fetchData.
    * @returns {DataProviderMock} Current instance for chaining.
    */
@@ -37,7 +37,7 @@ export class DataProviderMock {
 /**
  * High-fidelity mock for ContextInterceptor implementation.
  * Simulates context transformation and conditional filtering logic.
- * 
+ *
  * @class InterceptorMock
  */
 export class InterceptorMock {
@@ -50,7 +50,7 @@ export class InterceptorMock {
 
   /**
    * Fluent helper to inject custom interception implementation.
-   * 
+   *
    * @param {Function} interceptFn - Logic mapping PipelineContext to transformed PipelineContext.
    * @returns {InterceptorMock} Current instance for chaining.
    */
@@ -62,7 +62,7 @@ export class InterceptorMock {
 
 /**
  * In-memory registry mock for provider lifecycle and dependency resolution testing.
- * 
+ *
  * @class ProviderRegistryMock
  */
 export class ProviderRegistryMock {

@@ -5,7 +5,12 @@
 // Coverage: 100% of all classes and methods
 // ===================================================================
 
-import { BaseError, ValidationError, ConfigurationError, OperationError } from '../errors/BaseError';
+import {
+  BaseError,
+  ValidationError,
+  ConfigurationError,
+  OperationError
+} from '../errors/BaseError';
 
 describe('BaseError - Comprehensive Test Suite', () => {
   // ===================================================================

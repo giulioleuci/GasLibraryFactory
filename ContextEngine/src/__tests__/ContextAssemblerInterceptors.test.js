@@ -62,8 +62,11 @@ describe('ContextAssembler - Interceptor Integration', () => {
 
     it('should apply interceptors to provider results', () => {
       const interceptor = new ContextEngineTesting.InterceptorMock('SimpleInterceptor');
-      interceptor.intercept.mockImplementation((name, data, context, options) => ({ ...data, intercepted: true }));
-      
+      interceptor.intercept.mockImplementation((name, data, context, options) => ({
+        ...data,
+        intercepted: true
+      }));
+
       interceptorRegistry.registerSingleton('SimpleInterceptor', interceptor);
 
       assembler = new ContextAssembler(
@@ -173,7 +176,10 @@ describe('ContextAssembler - Interceptor Integration', () => {
         }
       }
 
-      interceptorRegistry.registerSingleton('OptionAware', new OptionAwareInterceptor(mocks.logger));
+      interceptorRegistry.registerSingleton(
+        'OptionAware',
+        new OptionAwareInterceptor(mocks.logger)
+      );
 
       assembler = new ContextAssembler(
         mocks.logger,
@@ -218,7 +224,10 @@ describe('ContextAssembler - Interceptor Integration', () => {
         }
       }
 
-      interceptorRegistry.registerSingleton('Conditional', new ConditionalInterceptor(mocks.logger));
+      interceptorRegistry.registerSingleton(
+        'Conditional',
+        new ConditionalInterceptor(mocks.logger)
+      );
 
       assembler = new ContextAssembler(
         mocks.logger,
@@ -254,7 +263,10 @@ describe('ContextAssembler - Interceptor Integration', () => {
         }
       }
 
-      interceptorRegistry.registerSingleton('PostProcess', new PostProcessInterceptor(mocks.logger));
+      interceptorRegistry.registerSingleton(
+        'PostProcess',
+        new PostProcessInterceptor(mocks.logger)
+      );
 
       assembler = new ContextAssembler(
         mocks.logger,

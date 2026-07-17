@@ -13,6 +13,7 @@ The project follows a **Clean Architecture** approach with a strictly layered de
 - **L4: Context & Domain** (`ContextEngine`, `RoleResolutionLib`, `ComposableContentLib`, `GasExpressionEngineLib`, `GasDataImporter`)
 
 ### Key Components
+
 - **CoreUtilsLib**: Foundational stateless utilities.
 - **GasResilienceLib**: Implements retries, exponential backoff, and Circuit Breaker patterns.
 - **GasSchemaValidatorLib**: Zod-based validation engine for robust runtime type-checking.
@@ -36,15 +37,18 @@ The project follows a **Clean Architecture** approach with a strictly layered de
 The source files are bundled into a single `dist/Code.js` file, which is then post-processed for GAS compatibility.
 
 ### Key Build Commands
+
 - `npm run build:production`: Production build (minified, optimized).
 - `npm run build:testing`: Testing build (readable code, includes online tests).
 - `npm run build:testoffline`: Runs full Jest suite against source + bundle.
 
 ### Deployment Commands
+
 - `npm run push:production`: Build and push to the production GAS script.
 - `npm run push:testing`: Build and push to the testing GAS script.
 
 ### Testing Commands
+
 - `npm test`: Run local Jest tests (mocked environment). **Warning: Run tests one at a time to avoid RAM saturation (e.g., using `--runInBand` or targeting specific files).**
 - `npm run test:watch`: Run Jest in watch mode.
 - `npm run test:coverage`: Generate test coverage reports.
@@ -56,9 +60,9 @@ The source files are bundled into a single `dist/Code.js` file, which is then po
 2. **Never Edit `dist/`**: The `dist/` directory is automatically generated. Only modify source modules within the library directories (e.g., `CoreUtilsLib/src/`).
 3. **Build Script Transformations**: The `scripts/build-and-prepare.cjs` script performs critical transformations (polyfills, regex safety, etc.). If runtime behavior differs from source, verify this script.
 4. **Debugging Workflow**:
-    - Locate errors in the compiled `dist/Code.js`.
-    - Use `dist/source-map-index.json` or source maps to map back to source modules.
-    - Propose minimal fixes in the **source** code.
+   - Locate errors in the compiled `dist/Code.js`.
+   - Use `dist/source-map-index.json` or source maps to map back to source modules.
+   - Propose minimal fixes in the **source** code.
 5. **Dependency Management**: Do not introduce circular dependencies between libraries. Follow the established layered architecture.
 
 ## 📂 Key Directory Mapping

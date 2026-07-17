@@ -26,10 +26,7 @@ describe('MockFactory - Enhanced Methods', () => {
       const database = MockFactory.createJestDatabase();
 
       const query = database.select(['name', 'email']);
-      query.from('Users')
-        .where('age', '>', 18)
-        .orderBy('name')
-        .limit(10);
+      query.from('Users').where('age', '>', 18).orderBy('name').limit(10);
 
       expect(database.select).toHaveBeenCalledWith(['name', 'email']);
       expect(query.from).toHaveBeenCalledWith('Users');
@@ -268,11 +265,14 @@ describe('MockFactory - Enhanced Methods', () => {
 
     it('should support ContextEngine testing pattern', () => {
       const userProvider = MockFactory.createJestDataProvider({
-        users: [{ id: 1, name: 'Alice' }, { id: 2, name: 'Bob' }]
+        users: [
+          { id: 1, name: 'Alice' },
+          { id: 2, name: 'Bob' }
+        ]
       });
 
       const orderProvider = MockFactory.createJestDataProvider({
-        orders: [{ id: 100, total: 50.00 }]
+        orders: [{ id: 100, total: 50.0 }]
       });
 
       const registry = MockFactory.createJestProviderRegistry({
@@ -281,7 +281,10 @@ describe('MockFactory - Enhanced Methods', () => {
       });
 
       expect(registry.get('UserProvider').provide()).toEqual({
-        users: [{ id: 1, name: 'Alice' }, { id: 2, name: 'Bob' }]
+        users: [
+          { id: 1, name: 'Alice' },
+          { id: 2, name: 'Bob' }
+        ]
       });
     });
 

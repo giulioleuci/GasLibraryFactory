@@ -2,11 +2,11 @@
  * @file CoreUtilsLib/src/LodashFacade.js
  * @description Centralized facade for utility functions using a Hybrid Approach.
  *
- * This module provides a unified interface to utility functions, employing a 
+ * This module provides a unified interface to utility functions, employing a
  * Strategic Hybrid Approach for optimal performance in Google Apps Script V8:
- * 1. **Native JS**: Used for trivial utilities (compact, flatten, isString, etc.) 
+ * 1. **Native JS**: Used for trivial utilities (compact, flatten, isString, etc.)
  *    to eliminate overhead and minimize external dependencies.
- * 2. **es-toolkit/compat**: Retained for complex, edge-case utilities 
+ * 2. **es-toolkit/compat**: Retained for complex, edge-case utilities
  *    (cloneDeep, merge, get, set, debounce) where external testing adds high value.
  *
  * **Benefits:**

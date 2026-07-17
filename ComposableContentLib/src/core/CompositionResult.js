@@ -267,4 +267,3 @@ export class CompositionResult {
     return `CompositionResult[${this.recipeId}] ${this.visibleBlocks}/${this.totalBlocks} blocks, ${this.content.length} chars (${this.processingTime}ms)`;
   }
 }
-

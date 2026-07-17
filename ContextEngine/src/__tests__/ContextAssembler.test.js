@@ -63,10 +63,10 @@ describe('ContextAssembler - Comprehensive Test Suite', () => {
     }));
 
     const orderProvider = MockFactory.createJestDataProvider('OrderDataProvider');
-    orderProvider.provide.mockImplementation((name, parameters) => ([
+    orderProvider.provide.mockImplementation((name, parameters) => [
       { id: 1, userId: parameters.userId, total: 50, status: 'completed' },
       { id: 2, userId: parameters.userId, total: 75, status: 'pending' }
-    ]));
+    ]);
 
     mockRegistry.registerSingleton('UserDataProvider', userProvider);
     mockRegistry.registerSingleton('OrderDataProvider', orderProvider);
@@ -691,7 +691,10 @@ describe('ContextAssembler - Comprehensive Test Suite', () => {
         }
       }
 
-      mockRegistry.registerSingleton('OrganizationProvider', new OrganizationProvider(mocks.logger));
+      mockRegistry.registerSingleton(
+        'OrganizationProvider',
+        new OrganizationProvider(mocks.logger)
+      );
       mockRegistry.registerSingleton('PermissionsProvider', new PermissionsProvider(mocks.logger));
 
       const recipe = {

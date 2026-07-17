@@ -1,4 +1,7 @@
-const { sources: { RawSource }, Compilation } = require('webpack');
+const {
+  sources: { RawSource },
+  Compilation
+} = require('webpack');
 
 class StripCommentsPlugin {
   apply(compiler) {

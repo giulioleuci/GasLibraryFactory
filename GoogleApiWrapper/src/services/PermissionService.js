@@ -70,11 +70,12 @@ export class PermissionService extends GoogleService {
 
         try {
           const createdPerm = this._exceptionService.executeWithRetry(
-            () => Drive.Permissions.create(permResource, fileId, { sendNotificationEmail: sendEmail }),
+            () =>
+              Drive.Permissions.create(permResource, fileId, { sendNotificationEmail: sendEmail }),
             {},
             3
           );
-          
+
           results.successful.push({
             fileId,
             permission: createdPerm,
@@ -89,7 +90,7 @@ export class PermissionService extends GoogleService {
           this._logger.warn(`Failed to share file ${fileId} with ${perm.email}: ${error.message}`);
         }
       });
-      
+
       // Clear cache
       const cacheKey = this._generateCacheKey(this._cachePrefix, fileId, 'getPermissions');
       this._cache.remove(cacheKey);
@@ -152,7 +153,7 @@ export class PermissionService extends GoogleService {
           {},
           3
         );
-        
+
         results.successful.push({
           fileId,
           permissionId,
@@ -165,7 +166,9 @@ export class PermissionService extends GoogleService {
           error: error,
           statusCode: error.code || 500
         });
-        this._logger.warn(`Failed to remove permission ${permissionId} from file ${fileId}: ${error.message}`);
+        this._logger.warn(
+          `Failed to remove permission ${permissionId} from file ${fileId}: ${error.message}`
+        );
       }
     });
 
@@ -315,7 +318,7 @@ export class PermissionService extends GoogleService {
               {},
               3
             );
-            
+
             results.successful.push({
               fileId,
               permissionId: perm.id,
@@ -330,13 +333,15 @@ export class PermissionService extends GoogleService {
               error: error,
               statusCode: error.code || 500
             });
-            this._logger.warn(`Failed to update role for ${change.email} on ${fileId}: ${error.message}`);
+            this._logger.warn(
+              `Failed to update role for ${change.email} on ${fileId}: ${error.message}`
+            );
           }
         } else {
           this._logger.warn(`Permission not found for ${change.email} on ${fileId}`);
         }
       });
-      
+
       // Clear cache if there were any successful updates
       const cacheKey = this._generateCacheKey(this._cachePrefix, fileId, 'getPermissions');
       this._cache.remove(cacheKey);
@@ -493,14 +498,15 @@ export class PermissionService extends GoogleService {
 
         try {
           this._exceptionService.executeWithRetry(
-            () => Drive.Permissions.create(permResource, fileId, { 
-              sendNotificationEmail: sendEmail,
-              transferOwnership: true 
-            }),
+            () =>
+              Drive.Permissions.create(permResource, fileId, {
+                sendNotificationEmail: sendEmail,
+                transferOwnership: true
+              }),
             {},
             3
           );
-          
+
           results.successful.push({
             fileId,
             newOwnerEmail: email,
@@ -513,10 +519,12 @@ export class PermissionService extends GoogleService {
             error: error,
             statusCode: error.code || 500
           });
-          this._logger.warn(`Failed to transfer ownership of ${fileId} to ${email}: ${error.message}`);
+          this._logger.warn(
+            `Failed to transfer ownership of ${fileId} to ${email}: ${error.message}`
+          );
         }
       });
-      
+
       // Clear cache
       const cacheKey = this._generateCacheKey(this._cachePrefix, fileId, 'getPermissions');
       this._cache.remove(cacheKey);
@@ -670,11 +678,14 @@ export class PermissionService extends GoogleService {
     uncachedIds.forEach((fileId) => {
       try {
         const response = this._exceptionService.executeWithRetry(
-          () => Drive.Permissions.list(fileId, { fields: 'permissions(id,emailAddress,role,type,domain)' }),
+          () =>
+            Drive.Permissions.list(fileId, {
+              fields: 'permissions(id,emailAddress,role,type,domain)'
+            }),
           {},
           3
         );
-        
+
         if (response && response.permissions) {
           cacheResults[fileId] = response.permissions;
 

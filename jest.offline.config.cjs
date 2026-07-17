@@ -19,10 +19,7 @@ module.exports = {
 
   // 1. Set up GAS global mocks (Utilities, CacheService, etc.)
   // 2. Load the compiled bundle into global scope
-  setupFilesAfterEnv: [
-    '<rootDir>/test/setup.js',
-    '<rootDir>/test/offline-setup.js'
-  ],
+  setupFilesAfterEnv: ['<rootDir>/test/setup.js', '<rootDir>/test/offline-setup.js'],
 
   testMatch: ['<rootDir>/test/offline/**/*.test.js'],
 
@@ -34,9 +31,7 @@ module.exports = {
   },
 
   // Allow transforming specific ESM dependencies used in test files
-  transformIgnorePatterns: [
-    '/node_modules/(?!(es-toolkit|nanoid|date-fns|ms|@faker-js))'
-  ],
+  transformIgnorePatterns: ['/node_modules/(?!(es-toolkit|nanoid|date-fns|ms|@faker-js))'],
 
   verbose: true
 };

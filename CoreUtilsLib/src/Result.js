@@ -58,7 +58,11 @@ export class Result {
     return {
       success: this.isSuccess(),
       value: this.value,
-      error: this.error ? (this.error.message != null ? this.error.message : String(this.error)) : null
+      error: this.error
+        ? this.error.message != null
+          ? this.error.message
+          : String(this.error)
+        : null
     };
   }
 

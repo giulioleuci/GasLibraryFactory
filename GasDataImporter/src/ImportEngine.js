@@ -66,16 +66,12 @@ class ImportEngine {
       '_executeLoad',
       '_generateDryRunLoadResult'
     ];
-    pipelineMethods.forEach(m => {
+    pipelineMethods.forEach((m) => {
       this[m] = this._pipelineExecutor[m].bind(this._pipelineExecutor);
     });
 
-    const registryMethods = [
-      'registerCustomSource',
-      'getAvailableSourceTypes',
-      'getConfigSummary'
-    ];
-    registryMethods.forEach(m => {
+    const registryMethods = ['registerCustomSource', 'getAvailableSourceTypes', 'getConfigSummary'];
+    registryMethods.forEach((m) => {
       this[m] = this._strategyRegistry[m].bind(this._strategyRegistry);
     });
 

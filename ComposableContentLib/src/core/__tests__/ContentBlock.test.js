@@ -90,9 +90,15 @@ describe('ContentBlock', () => {
       // In JavaScript, we can instantiate the "abstract" class to test its base methods
       const block = new ContentBlock(mockDefinition);
 
-      expect(() => block.getData({})).toThrow('ContentBlock.getData() must be implemented by subclass');
-      expect(() => block.isEmpty({})).toThrow('ContentBlock.isEmpty() must be implemented by subclass');
-      expect(() => block.getTemplateId('html')).toThrow('ContentBlock.getTemplateId() must be implemented by subclass');
+      expect(() => block.getData({})).toThrow(
+        'ContentBlock.getData() must be implemented by subclass'
+      );
+      expect(() => block.isEmpty({})).toThrow(
+        'ContentBlock.isEmpty() must be implemented by subclass'
+      );
+      expect(() => block.getTemplateId('html')).toThrow(
+        'ContentBlock.getTemplateId() must be implemented by subclass'
+      );
     });
   });
 
@@ -151,9 +157,15 @@ describe('ContentBlock', () => {
       });
 
       class TestBlock extends ContentBlock {
-        getData() { return {}; }
-        isEmpty() { return true; } // Force empty
-        getTemplateId() { return 'temp'; }
+        getData() {
+          return {};
+        }
+        isEmpty() {
+          return true;
+        } // Force empty
+        getTemplateId() {
+          return 'temp';
+        }
       }
 
       const hideBlock = new TestBlock(hideDef);
@@ -175,9 +187,15 @@ describe('ContentBlock', () => {
       });
 
       class TestBlock extends ContentBlock {
-        getData() { return {}; }
-        isEmpty() { return true; } // Force empty
-        getTemplateId() { return 'temp'; }
+        getData() {
+          return {};
+        }
+        isEmpty() {
+          return true;
+        } // Force empty
+        getTemplateId() {
+          return 'temp';
+        }
       }
 
       const showBlock = new TestBlock(showDef);
@@ -192,9 +210,15 @@ describe('ContentBlock', () => {
 
     it('should return error BlockResult when an error occurs', () => {
       class ErrorBlock extends ContentBlock {
-        getData() { throw new Error('Test Error'); }
-        isEmpty() { return false; }
-        getTemplateId() { return 'temp'; }
+        getData() {
+          throw new Error('Test Error');
+        }
+        isEmpty() {
+          return false;
+        }
+        getTemplateId() {
+          return 'temp';
+        }
       }
 
       const errorBlock = new ErrorBlock(mockDefinition);
@@ -209,7 +233,9 @@ describe('ContentBlock', () => {
   describe('render', () => {
     it('should call renderer.render and return its result', () => {
       class TestBlock extends ContentBlock {
-        getData() {} isEmpty() {} getTemplateId() {}
+        getData() {}
+        isEmpty() {}
+        getTemplateId() {}
       }
 
       const block = new TestBlock(mockDefinition, { custom: 'config' });
@@ -234,19 +260,25 @@ describe('ContentBlock', () => {
 
     it('should throw if renderer is missing', () => {
       class TestBlock extends ContentBlock {
-        getData() {} isEmpty() {} getTemplateId() {}
+        getData() {}
+        isEmpty() {}
+        getTemplateId() {}
       }
 
       const block = new TestBlock(mockDefinition);
 
-      expect(() => block.render({}, 'html', null, 'template_id')).toThrow('Renderer is required for rendering');
+      expect(() => block.render({}, 'html', null, 'template_id')).toThrow(
+        'Renderer is required for rendering'
+      );
     });
   });
 
   describe('_getMetadata', () => {
     it('should return default metadata', () => {
       class TestBlock extends ContentBlock {
-        getData() {} isEmpty() {} getTemplateId() {}
+        getData() {}
+        isEmpty() {}
+        getTemplateId() {}
       }
 
       const block = new TestBlock(mockDefinition);
@@ -264,7 +296,9 @@ describe('ContentBlock', () => {
   describe('supportsFormat', () => {
     it('should delegate to definition', () => {
       class TestBlock extends ContentBlock {
-        getData() {} isEmpty() {} getTemplateId() {}
+        getData() {}
+        isEmpty() {}
+        getTemplateId() {}
       }
 
       const block = new TestBlock(mockDefinition);
@@ -278,7 +312,9 @@ describe('ContentBlock', () => {
   describe('toString', () => {
     it('should return formatted string', () => {
       class TestBlock extends ContentBlock {
-        getData() {} isEmpty() {} getTemplateId() {}
+        getData() {}
+        isEmpty() {}
+        getTemplateId() {}
       }
 
       const block = new TestBlock(mockDefinition);
@@ -327,13 +363,26 @@ describe('SimpleContentBlock', () => {
     });
 
     it('should throw if dataExtractor is missing or invalid', () => {
-      expect(() => new SimpleContentBlock(mockDefinition, { templates: {} })).toThrow('SimpleContentBlock requires a dataExtractor function');
-      expect(() => new SimpleContentBlock(mockDefinition, { dataExtractor: 'not_a_function', templates: {} })).toThrow('SimpleContentBlock requires a dataExtractor function');
+      expect(() => new SimpleContentBlock(mockDefinition, { templates: {} })).toThrow(
+        'SimpleContentBlock requires a dataExtractor function'
+      );
+      expect(
+        () =>
+          new SimpleContentBlock(mockDefinition, { dataExtractor: 'not_a_function', templates: {} })
+      ).toThrow('SimpleContentBlock requires a dataExtractor function');
     });
 
     it('should throw if templates is missing or invalid', () => {
-      expect(() => new SimpleContentBlock(mockDefinition, { dataExtractor: () => ({}) })).toThrow('SimpleContentBlock requires a templates object');
-      expect(() => new SimpleContentBlock(mockDefinition, { dataExtractor: () => ({}), templates: 'not_an_object' })).toThrow('SimpleContentBlock requires a templates object');
+      expect(() => new SimpleContentBlock(mockDefinition, { dataExtractor: () => ({}) })).toThrow(
+        'SimpleContentBlock requires a templates object'
+      );
+      expect(
+        () =>
+          new SimpleContentBlock(mockDefinition, {
+            dataExtractor: () => ({}),
+            templates: 'not_an_object'
+          })
+      ).toThrow('SimpleContentBlock requires a templates object');
     });
   });
 
@@ -385,7 +434,9 @@ describe('SimpleContentBlock', () => {
       });
 
       it('should throw error for invalid format', () => {
-        expect(() => block.getTemplateId('invalid_format')).toThrow('No template defined for format: invalid_format');
+        expect(() => block.getTemplateId('invalid_format')).toThrow(
+          'No template defined for format: invalid_format'
+        );
       });
     });
   });

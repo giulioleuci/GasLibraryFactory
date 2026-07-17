@@ -56,17 +56,27 @@ describe('Assignment', () => {
     });
 
     it('should throw error if roleId is missing or not a string', () => {
-      expect(() => new Assignment({ actorId: 'user-456', scope: defaultScope })).toThrow('Assignment roleId is required and must be a string');
-      expect(() => new Assignment({ roleId: 123, actorId: 'user-456', scope: defaultScope })).toThrow('Assignment roleId is required and must be a string');
+      expect(() => new Assignment({ actorId: 'user-456', scope: defaultScope })).toThrow(
+        'Assignment roleId is required and must be a string'
+      );
+      expect(
+        () => new Assignment({ roleId: 123, actorId: 'user-456', scope: defaultScope })
+      ).toThrow('Assignment roleId is required and must be a string');
     });
 
     it('should throw error if actorId is missing or not a string', () => {
-      expect(() => new Assignment({ roleId: 'role-123', scope: defaultScope })).toThrow('Assignment actorId is required and must be a string');
-      expect(() => new Assignment({ roleId: 'role-123', actorId: 456, scope: defaultScope })).toThrow('Assignment actorId is required and must be a string');
+      expect(() => new Assignment({ roleId: 'role-123', scope: defaultScope })).toThrow(
+        'Assignment actorId is required and must be a string'
+      );
+      expect(
+        () => new Assignment({ roleId: 'role-123', actorId: 456, scope: defaultScope })
+      ).toThrow('Assignment actorId is required and must be a string');
     });
 
     it('should throw error if scope is missing', () => {
-      expect(() => new Assignment({ roleId: 'role-123', actorId: 'user-456' })).toThrow('Assignment scope is required');
+      expect(() => new Assignment({ roleId: 'role-123', actorId: 'user-456' })).toThrow(
+        'Assignment scope is required'
+      );
     });
 
     it('should instantiate Scope if a plain object is provided', () => {
@@ -90,8 +100,12 @@ describe('Assignment', () => {
         metadata: { key: 'value' }
       });
 
-      expect(() => { assignment.roleId = 'new-role'; }).toThrow();
-      expect(() => { assignment.metadata.key = 'new-value'; }).toThrow();
+      expect(() => {
+        assignment.roleId = 'new-role';
+      }).toThrow();
+      expect(() => {
+        assignment.metadata.key = 'new-value';
+      }).toThrow();
     });
   });
 
@@ -163,46 +177,87 @@ describe('Assignment', () => {
     });
 
     it('should return false if inactive', () => {
-      const assignment = new Assignment({ roleId: 'r', actorId: 'a', scope: defaultScope, isActive: false });
+      const assignment = new Assignment({
+        roleId: 'r',
+        actorId: 'a',
+        scope: defaultScope,
+        isActive: false
+      });
       expect(assignment.isValidAt()).toBe(false);
     });
 
     it('should return false if current date is before validFrom', () => {
-      const assignment = new Assignment({ roleId: 'r', actorId: 'a', scope: defaultScope, validFrom });
+      const assignment = new Assignment({
+        roleId: 'r',
+        actorId: 'a',
+        scope: defaultScope,
+        validFrom
+      });
       const beforeDate = new Date('2022-12-31T23:59:59.999Z');
       expect(assignment.isValidAt(beforeDate)).toBe(false);
     });
 
     it('should return true if current date is exactly validFrom', () => {
-      const assignment = new Assignment({ roleId: 'r', actorId: 'a', scope: defaultScope, validFrom });
+      const assignment = new Assignment({
+        roleId: 'r',
+        actorId: 'a',
+        scope: defaultScope,
+        validFrom
+      });
       expect(assignment.isValidAt(validFrom)).toBe(true);
     });
 
     it('should return true if current date is after validFrom', () => {
-      const assignment = new Assignment({ roleId: 'r', actorId: 'a', scope: defaultScope, validFrom });
+      const assignment = new Assignment({
+        roleId: 'r',
+        actorId: 'a',
+        scope: defaultScope,
+        validFrom
+      });
       const afterDate = new Date('2023-01-02T00:00:00.000Z');
       expect(assignment.isValidAt(afterDate)).toBe(true);
     });
 
     it('should return false if current date is after validTo', () => {
-      const assignment = new Assignment({ roleId: 'r', actorId: 'a', scope: defaultScope, validTo });
+      const assignment = new Assignment({
+        roleId: 'r',
+        actorId: 'a',
+        scope: defaultScope,
+        validTo
+      });
       const afterDate = new Date('2024-01-01T00:00:00.000Z');
       expect(assignment.isValidAt(afterDate)).toBe(false);
     });
 
     it('should return true if current date is exactly validTo', () => {
-      const assignment = new Assignment({ roleId: 'r', actorId: 'a', scope: defaultScope, validTo });
+      const assignment = new Assignment({
+        roleId: 'r',
+        actorId: 'a',
+        scope: defaultScope,
+        validTo
+      });
       expect(assignment.isValidAt(validTo)).toBe(true);
     });
 
     it('should return true if current date is before validTo', () => {
-      const assignment = new Assignment({ roleId: 'r', actorId: 'a', scope: defaultScope, validTo });
+      const assignment = new Assignment({
+        roleId: 'r',
+        actorId: 'a',
+        scope: defaultScope,
+        validTo
+      });
       const beforeDate = new Date('2023-12-30T23:59:59.999Z');
       expect(assignment.isValidAt(beforeDate)).toBe(true);
     });
 
     it('should evaluate both validFrom and validTo correctly', () => {
-      const assignment = new Assignment({ roleId: 'r', actorId: 'a', scope: defaultScope, validFrom, validTo });
+      const assignment = new Assignment({
+        roleId: 'r',
+        actorId: 'a',
+        scope: defaultScope,
+        validFrom,
+        validTo
+      });
       const middleDate = new Date('2023-06-15T00:00:00.000Z');
 
       expect(assignment.isValidAt(new Date('2022-12-31'))).toBe(false); // Before
@@ -219,17 +274,31 @@ describe('Assignment', () => {
     const projectScope2 = Scope.project('PRJ-2');
 
     it('should return true for matching roleId, matching scope, and valid date', () => {
-      const assignment = new Assignment({ roleId: 'admin', actorId: 'user-1', scope: projectScope1 });
+      const assignment = new Assignment({
+        roleId: 'admin',
+        actorId: 'user-1',
+        scope: projectScope1
+      });
       expect(assignment.matches('admin', projectScope1)).toBe(true);
     });
 
     it('should return false for different roleId', () => {
-      const assignment = new Assignment({ roleId: 'admin', actorId: 'user-1', scope: projectScope1 });
+      const assignment = new Assignment({
+        roleId: 'admin',
+        actorId: 'user-1',
+        scope: projectScope1
+      });
       expect(assignment.matches('editor', projectScope1)).toBe(false);
     });
 
     it('should return false if not valid at given date', () => {
-      const assignment = new Assignment({ roleId: 'admin', actorId: 'user-1', scope: projectScope1, validFrom, validTo });
+      const assignment = new Assignment({
+        roleId: 'admin',
+        actorId: 'user-1',
+        scope: projectScope1,
+        validFrom,
+        validTo
+      });
       const outOfBoundsDate = new Date('2024-01-01');
       expect(assignment.matches('admin', projectScope1, outOfBoundsDate)).toBe(false);
     });
@@ -241,12 +310,20 @@ describe('Assignment', () => {
     });
 
     it('should return false if assignment scope does not contain/match queried scope', () => {
-      const assignment = new Assignment({ roleId: 'admin', actorId: 'user-1', scope: projectScope1 });
+      const assignment = new Assignment({
+        roleId: 'admin',
+        actorId: 'user-1',
+        scope: projectScope1
+      });
       expect(assignment.matches('admin', projectScope2)).toBe(false);
     });
 
     it('should return false if assignment scope is narrower than queried scope', () => {
-      const assignment = new Assignment({ roleId: 'admin', actorId: 'user-1', scope: projectScope1 });
+      const assignment = new Assignment({
+        roleId: 'admin',
+        actorId: 'user-1',
+        scope: projectScope1
+      });
       expect(assignment.matches('admin', globalScope)).toBe(false);
     });
   });
@@ -289,7 +366,12 @@ describe('Assignment', () => {
 
   describe('getMetadata', () => {
     it('should return value for existing key', () => {
-      const assignment = new Assignment({ roleId: 'r', actorId: 'a', scope: defaultScope, metadata: { role: 'admin' } });
+      const assignment = new Assignment({
+        roleId: 'r',
+        actorId: 'a',
+        scope: defaultScope,
+        metadata: { role: 'admin' }
+      });
       expect(assignment.getMetadata('role')).toBe('admin');
     });
 
@@ -339,7 +421,11 @@ describe('Assignment', () => {
     });
 
     it('should serialize dates to null if they are not set', () => {
-      const assignment = new Assignment({ roleId: 'admin', actorId: 'user-1', scope: defaultScope });
+      const assignment = new Assignment({
+        roleId: 'admin',
+        actorId: 'user-1',
+        scope: defaultScope
+      });
       const json = assignment.toJSON();
 
       expect(json.validFrom).toBeNull();
@@ -404,32 +490,63 @@ describe('Assignment', () => {
 
   describe('toString', () => {
     it('should format string correctly for active assignment with no dates', () => {
-      const assignment = new Assignment({ roleId: 'ADMIN', actorId: 'USER', scope: Scope.project('PRJ') });
+      const assignment = new Assignment({
+        roleId: 'ADMIN',
+        actorId: 'USER',
+        scope: Scope.project('PRJ')
+      });
       expect(assignment.toString()).toBe('Assignment[ADMIN -> USER] Scope[PROJECT:PRJ]');
     });
 
     it('should format string correctly for inactive assignment', () => {
-      const assignment = new Assignment({ roleId: 'ADMIN', actorId: 'USER', scope: Scope.project('PRJ'), isActive: false });
+      const assignment = new Assignment({
+        roleId: 'ADMIN',
+        actorId: 'USER',
+        scope: Scope.project('PRJ'),
+        isActive: false
+      });
       expect(assignment.toString()).toBe('Assignment[ADMIN -> USER] Scope[PROJECT:PRJ] [INACTIVE]');
     });
 
     it('should format string correctly for assignment with validFrom only', () => {
       const validFromStr = '2023-01-01T00:00:00.000Z';
-      const assignment = new Assignment({ roleId: 'ADMIN', actorId: 'USER', scope: Scope.project('PRJ'), validFrom: validFromStr });
-      expect(assignment.toString()).toBe(`Assignment[ADMIN -> USER] Scope[PROJECT:PRJ] [${validFromStr} to ...]`);
+      const assignment = new Assignment({
+        roleId: 'ADMIN',
+        actorId: 'USER',
+        scope: Scope.project('PRJ'),
+        validFrom: validFromStr
+      });
+      expect(assignment.toString()).toBe(
+        `Assignment[ADMIN -> USER] Scope[PROJECT:PRJ] [${validFromStr} to ...]`
+      );
     });
 
     it('should format string correctly for assignment with validTo only', () => {
       const validToStr = '2023-12-31T23:59:59.999Z';
-      const assignment = new Assignment({ roleId: 'ADMIN', actorId: 'USER', scope: Scope.project('PRJ'), validTo: validToStr });
-      expect(assignment.toString()).toBe(`Assignment[ADMIN -> USER] Scope[PROJECT:PRJ] [... to ${validToStr}]`);
+      const assignment = new Assignment({
+        roleId: 'ADMIN',
+        actorId: 'USER',
+        scope: Scope.project('PRJ'),
+        validTo: validToStr
+      });
+      expect(assignment.toString()).toBe(
+        `Assignment[ADMIN -> USER] Scope[PROJECT:PRJ] [... to ${validToStr}]`
+      );
     });
 
     it('should format string correctly for assignment with both dates', () => {
       const validFromStr = '2023-01-01T00:00:00.000Z';
       const validToStr = '2023-12-31T23:59:59.999Z';
-      const assignment = new Assignment({ roleId: 'ADMIN', actorId: 'USER', scope: Scope.project('PRJ'), validFrom: validFromStr, validTo: validToStr });
-      expect(assignment.toString()).toBe(`Assignment[ADMIN -> USER] Scope[PROJECT:PRJ] [${validFromStr} to ${validToStr}]`);
+      const assignment = new Assignment({
+        roleId: 'ADMIN',
+        actorId: 'USER',
+        scope: Scope.project('PRJ'),
+        validFrom: validFromStr,
+        validTo: validToStr
+      });
+      expect(assignment.toString()).toBe(
+        `Assignment[ADMIN -> USER] Scope[PROJECT:PRJ] [${validFromStr} to ${validToStr}]`
+      );
     });
   });
 });

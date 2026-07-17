@@ -12,7 +12,7 @@ export class DriveFolderManager {
     // Bind helper methods
     this._isDryRun = facade._isDryRun.bind(facade);
     this._generateDryRunId = facade._generateDryRunId.bind(facade);
-    
+
     // Bind facade methods used by this manager
     this.searchFiles = (...args) => this.facade.searchFiles(...args);
   }

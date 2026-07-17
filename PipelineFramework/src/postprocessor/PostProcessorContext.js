@@ -70,7 +70,9 @@ export class PostProcessorContext {
     if (!this.stepResult.output) {
       return defaultValue;
     }
-    return Object.prototype.hasOwnProperty.call(this.stepResult.output, key) ? this.stepResult.output[key] : defaultValue;
+    return Object.prototype.hasOwnProperty.call(this.stepResult.output, key)
+      ? this.stepResult.output[key]
+      : defaultValue;
   }
 
   /**
@@ -142,7 +144,9 @@ export class PostProcessorContext {
    * @returns {*} Metadata value or defaultValue.
    */
   getMetadata(key, defaultValue = null) {
-    return Object.prototype.hasOwnProperty.call(this.metadata, key) ? this.metadata[key] : defaultValue;
+    return Object.prototype.hasOwnProperty.call(this.metadata, key)
+      ? this.metadata[key]
+      : defaultValue;
   }
 
   /**

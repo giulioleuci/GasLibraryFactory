@@ -25,7 +25,7 @@ describe('AdvancedQueryBuilder - Comprehensive Test Suite', () => {
       { ID: '3', name: 'Charlie', age: 35, status: 'inactive' },
       { ID: '4', name: 'David', age: 28, status: 'active' }
     ]);
-    
+
     dbMock._logger = mockLogger;
     mockDatabase = dbMock;
 

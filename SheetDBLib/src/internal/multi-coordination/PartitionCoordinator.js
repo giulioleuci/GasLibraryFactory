@@ -5,7 +5,10 @@
  */
 
 import { DatabaseService } from '../../DatabaseService.js';
-import { PartitionConnectionError, PartitionNotFoundError } from '../../multi/MultiDatabaseError.js';
+import {
+  PartitionConnectionError,
+  PartitionNotFoundError
+} from '../../multi/MultiDatabaseError.js';
 import { cloneDeep } from '@CoreUtilsLib';
 
 /**

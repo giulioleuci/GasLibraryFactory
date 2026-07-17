@@ -24,8 +24,8 @@ A high-performance, **Zod-powered validation engine** for Google Apps Script. Pa
 - **Efficient Caching**: Uses a `WeakMap` to cache `safeParse` functions, minimizing overhead during repeated validations of the same schema.
 - **Detailed Error Reporting**: Automatically formats Zod errors into a clean, field-based structure (`{ field: string, message: string }`).
 - **Flexible Validation Modes**:
-    - `validate()`: Throws a `ValidationException` on failure (ideal for fail-fast logic).
-    - `safeValidate()`: Returns a `{ success, data, errors }` object (ideal for form handling or non-blocking checks).
+  - `validate()`: Throws a `ValidationException` on failure (ideal for fail-fast logic).
+  - `safeValidate()`: Returns a `{ success, data, errors }` object (ideal for form handling or non-blocking checks).
 
 ---
 
@@ -47,7 +47,7 @@ const UserSchema = z.object({
 
 const userData = {
   id: 123,
-  email: "invalid-email",
+  email: 'invalid-email',
   roles: []
 };
 
@@ -57,7 +57,7 @@ try {
 } catch (error) {
   if (error.name === 'ValidationException') {
     console.log(error.message); // "Validation failed for UserAccount"
-    console.log(error.errors);   // [{ field: "email", message: "Invalid email" }, ...]
+    console.log(error.errors); // [{ field: "email", message: "Invalid email" }, ...]
   }
 }
 
@@ -76,24 +76,24 @@ if (!result.success) {
 
 ### `SchemaValidator`
 
-| Method | Description |
-| :--- | :--- |
-| `validate(schema, data, entityType?)` | Validates data against a schema. Throws `ValidationException` if invalid. |
-| `safeValidate(schema, data, entityType?)` | Validates data and returns a result object `{ success: boolean, data?: any, errors?: Array }`. |
-| `static formatZodError(zodError)` | Static utility to convert a `ZodError` into a flat array of field errors. |
-| `static toValidationException(zodError, entityType?)` | Static utility to wrap a `ZodError` into a `ValidationException`. |
+| Method                                                | Description                                                                                    |
+| :---------------------------------------------------- | :--------------------------------------------------------------------------------------------- |
+| `validate(schema, data, entityType?)`                 | Validates data against a schema. Throws `ValidationException` if invalid.                      |
+| `safeValidate(schema, data, entityType?)`             | Validates data and returns a result object `{ success: boolean, data?: any, errors?: Array }`. |
+| `static formatZodError(zodError)`                     | Static utility to convert a `ZodError` into a flat array of field errors.                      |
+| `static toValidationException(zodError, entityType?)` | Static utility to wrap a `ZodError` into a `ValidationException`.                              |
 
 ### `ValidationException`
 
 Extends `BaseError` (from `CoreUtilsLib`).
 
 - **Properties**:
-    - `entityType`: The name of the object being validated (e.g., 'User', 'Config').
-    - `errors`: Array of `{ field: string, message: string }`.
+  - `entityType`: The name of the object being validated (e.g., 'User', 'Config').
+  - `errors`: Array of `{ field: string, message: string }`.
 - **Methods**:
-    - `getErrors()`: Returns all validation errors.
-    - `getErrorsForField(fieldName)`: Filters errors by field name.
-    - `hasErrors()`: Returns true if any errors exist.
+  - `getErrors()`: Returns all validation errors.
+  - `getErrorsForField(fieldName)`: Filters errors by field name.
+  - `hasErrors()`: Returns true if any errors exist.
 
 ---
 

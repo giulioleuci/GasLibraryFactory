@@ -6,10 +6,10 @@
 
 /**
  * Transparent proxy logger that captures and buffers log messages for post-execution analysis.
- * 
+ *
  * @description
- * Intercepts all log calls (debug, info, warn, error), stores them in a memory buffer with timestamps 
- * and levels, and forwards them to an underlying LoggerService. Optimized for background job logging 
+ * Intercepts all log calls (debug, info, warn, error), stores them in a memory buffer with timestamps
+ * and levels, and forwards them to an underlying LoggerService. Optimized for background job logging
  * and UI replay.
  *
  * @class

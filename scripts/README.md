@@ -7,27 +7,27 @@ ESM scripts use `.js`.
 
 ## Build & bundle
 
-| Script | Wired via | Purpose |
-|---|---|---|
-| `build-and-prepare.cjs` | `npm run build:production` / `build:testing` / `build:testoffline` | Webpack build + GAS V8 compatibility post-processing (the canonical deploy pipeline). |
-| `generate-offline-test-entry.cjs` | `webpack.offline-tests.config.cjs` | Generates the offline-test entry bundle. |
+| Script                            | Wired via                                                          | Purpose                                                                               |
+| --------------------------------- | ------------------------------------------------------------------ | ------------------------------------------------------------------------------------- |
+| `build-and-prepare.cjs`           | `npm run build:production` / `build:testing` / `build:testoffline` | Webpack build + GAS V8 compatibility post-processing (the canonical deploy pipeline). |
+| `generate-offline-test-entry.cjs` | `webpack.offline-tests.config.cjs`                                 | Generates the offline-test entry bundle.                                              |
 
 ## Documentation
 
-| Script | Wired via | Purpose |
-|---|---|---|
-| `generate-docs.js` (ESM) | `npm run docs` / `docs:watch` | Generates per-library Markdown API docs into `docs/` using `jsdoc-api`. |
-| `generate-simplified-docs.cjs` | manual | Produces condensed library docs. |
+| Script                         | Wired via                     | Purpose                                                                 |
+| ------------------------------ | ----------------------------- | ----------------------------------------------------------------------- |
+| `generate-docs.js` (ESM)       | `npm run docs` / `docs:watch` | Generates per-library Markdown API docs into `docs/` using `jsdoc-api`. |
+| `generate-simplified-docs.cjs` | manual                        | Produces condensed library docs.                                        |
 
 ## CLASP / project setup (shell)
 
-| Script | Purpose |
-|---|---|
-| `create-appsscript-configs.sh` | Creates per-library `appsscript.json` configs. |
-| `create-claspignore-files.sh` | Creates per-library `.claspignore` files. |
-| `setup-all-clasp-projects.sh` | Bootstraps CLASP projects for every library. |
-| `update-library-dependencies.sh` | Updates library dependency manifests. |
-| `fix-clasp-conflict.sh` | Resolves CLASP push conflicts. |
+| Script                           | Purpose                                        |
+| -------------------------------- | ---------------------------------------------- |
+| `create-appsscript-configs.sh`   | Creates per-library `appsscript.json` configs. |
+| `create-claspignore-files.sh`    | Creates per-library `.claspignore` files.      |
+| `setup-all-clasp-projects.sh`    | Bootstraps CLASP projects for every library.   |
+| `update-library-dependencies.sh` | Updates library dependency manifests.          |
+| `fix-clasp-conflict.sh`          | Resolves CLASP push conflicts.                 |
 
 ## Configuration files (repo root)
 

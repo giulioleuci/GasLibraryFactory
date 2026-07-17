@@ -7,7 +7,7 @@
 import { cloneDeep, get as lodashGet, set as lodashSet } from '@CoreUtilsLib';
 
 /**
- * @description Encapsulated state container for rendering context. 
+ * @description Encapsulated state container for rendering context.
  * Supports dot-notation resolution, merging global vs. block-local data, and immutable scoping.
  * @class
  * @example

@@ -71,7 +71,12 @@ describe('Repository - Comprehensive Test Suite', () => {
     mocks.logger.log = jest.fn();
 
     // Create repository
-    repository = new TestRepository(mockDatabase, mocks.logger, mocks.cache, mocks.exceptionService);
+    repository = new TestRepository(
+      mockDatabase,
+      mocks.logger,
+      mocks.cache,
+      mocks.exceptionService
+    );
 
     // Mock internal services
     mockQueryTranslator = {

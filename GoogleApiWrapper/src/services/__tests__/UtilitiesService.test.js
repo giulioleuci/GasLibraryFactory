@@ -129,7 +129,9 @@ describe('UtilitiesService - Comprehensive Test Suite', () => {
       const utilities = new UtilitiesService(mocks.logger);
 
       expect(() => utilities.sleep(1000)).toThrow('Sleep interrupted');
-      expect(mocks.logger.error).toHaveBeenCalledWith(expect.stringContaining('Error during sleep'));
+      expect(mocks.logger.error).toHaveBeenCalledWith(
+        expect.stringContaining('Error during sleep')
+      );
     });
 
     it('should handle zero milliseconds', () => {
@@ -358,7 +360,9 @@ describe('UtilitiesService - Comprehensive Test Suite', () => {
       const utilities = new UtilitiesService(mocks.logger);
       utilities.parseCsv('a,b\n1,2');
 
-      expect(mocks.logger.debug).toHaveBeenCalledWith(expect.stringContaining('Parsed CSV (2 rows)'));
+      expect(mocks.logger.debug).toHaveBeenCalledWith(
+        expect.stringContaining('Parsed CSV (2 rows)')
+      );
     });
 
     it('should throw on parse error', () => {

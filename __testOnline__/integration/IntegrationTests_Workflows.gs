@@ -18,7 +18,7 @@ function initIntegrationTests_Workflows() {
     const jobRunner = new JobRunnerService(logger, utils, registry);
 
     const jobId = 'test-job-' + new Date().getTime();
-    
+
     function registerHandlers(queue) {
       queue.registerJobHandler('testJob', function* (params) {
         yield { percentage: 50 };
@@ -49,7 +49,7 @@ function initIntegrationTests_Workflows() {
     const exceptionService = new ExceptionService(logger, utils);
     const db = new DatabaseService(ss.getId(), logger, utils, cache, exceptionService);
     const registry = createDefaultRegistry({ logger: logger });
-    
+
     // Create a processor that logs to Audit table
     const auditProcessor = new LogAuditPostProcessor(
       'audit-p',

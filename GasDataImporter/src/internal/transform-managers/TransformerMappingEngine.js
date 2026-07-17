@@ -37,7 +37,10 @@ export class TransformerMappingEngine {
     }
 
     for (const [key, value] of Object.entries(sourceRow)) {
-      if (!Object.prototype.hasOwnProperty.call(mapping, key) && !Object.prototype.hasOwnProperty.call(mappedRow, key)) {
+      if (
+        !Object.prototype.hasOwnProperty.call(mapping, key) &&
+        !Object.prototype.hasOwnProperty.call(mappedRow, key)
+      ) {
         mappedRow[key] = value;
       }
     }

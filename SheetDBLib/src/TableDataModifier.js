@@ -61,7 +61,9 @@ export class TableDataModifier {
     }
 
     try {
-      this.facade._logger.debug(`Queuing batch insert of ${rowsArray.length} rows for '${this.facade.sheetName}'`);
+      this.facade._logger.debug(
+        `Queuing batch insert of ${rowsArray.length} rows for '${this.facade.sheetName}'`
+      );
 
       // BATCH QUEUE: Add rows to queue instead of writing immediately
       this.facade._insertQueue.push(...completeRows);
@@ -84,7 +86,9 @@ export class TableDataModifier {
 
       return completeRows;
     } catch (e) {
-      this.facade._logger.error(`Failed to queue batch insert rows in '${this.facade.sheetName}': ${e.message}`);
+      this.facade._logger.error(
+        `Failed to queue batch insert rows in '${this.facade.sheetName}': ${e.message}`
+      );
       throw e;
     }
   }
@@ -111,7 +115,9 @@ export class TableDataModifier {
     const targetRowIndex = this.facade._findRowIndexById(id);
 
     if (targetRowIndex === -1) {
-      this.facade._logger.error(`No row found with ${this.facade._keyField}=${id} in ${this.facade.sheetName}`);
+      this.facade._logger.error(
+        `No row found with ${this.facade._keyField}=${id} in ${this.facade.sheetName}`
+      );
       throw new OperationError(
         `No row found with ${this.facade._keyField}=${id} in ${this.facade.sheetName}`,
         'updateRowById',
@@ -156,7 +162,9 @@ export class TableDataModifier {
 
       return rowToUpdate;
     } catch (e) {
-      this.facade._logger.error(`Error queuing row update in '${this.facade.sheetName}': ${e.message}`);
+      this.facade._logger.error(
+        `Error queuing row update in '${this.facade.sheetName}': ${e.message}`
+      );
       throw e;
     }
   }
@@ -170,7 +178,9 @@ export class TableDataModifier {
    * @throws {OperationError} If ID not found.
    */
   patchRow(id, partialObj) {
-    this.facade._logger.debug(`Starting patch of row with ${this.facade._keyField}=${id} in '${this.facade.sheetName}'`);
+    this.facade._logger.debug(
+      `Starting patch of row with ${this.facade._keyField}=${id} in '${this.facade.sheetName}'`
+    );
 
     this.facade._ensureDataLoaded();
 
@@ -180,7 +190,9 @@ export class TableDataModifier {
     const targetRowIndex = this.facade._findRowIndexById(id);
 
     if (targetRowIndex === -1) {
-      this.facade._logger.error(`No row found with ${this.facade._keyField}=${id} in ${this.facade.sheetName}`);
+      this.facade._logger.error(
+        `No row found with ${this.facade._keyField}=${id} in ${this.facade.sheetName}`
+      );
       throw new OperationError(
         `No row found with ${this.facade._keyField}=${id} in ${this.facade.sheetName}`,
         'patchRow',
@@ -232,7 +244,7 @@ export class TableDataModifier {
       // BATCH QUEUE: Queue the updated complete row
       const updatedRow = { ...originalRow, ...validatedPartial };
       this.facade._applyVirtualColumns(updatedRow);
-      
+
       this.facade._updateQueue.set(id, updatedRow);
 
       this.facade._logger.debug(`Successfully queued patch row in '${this.facade.sheetName}'`);
@@ -246,7 +258,9 @@ export class TableDataModifier {
 
       return updatedRow;
     } catch (e) {
-      this.facade._logger.error(`Error queuing patched row in '${this.facade.sheetName}': ${e.message}`);
+      this.facade._logger.error(
+        `Error queuing patched row in '${this.facade.sheetName}': ${e.message}`
+      );
       throw e;
     }
   }
@@ -283,7 +297,9 @@ export class TableDataModifier {
       this.facade._deleteQueue.add(id);
       this.facade._updateQueue.delete(id); // If it was queued for update, it's now deleted
       // Remove from insert queue if it was just added
-      const insertIndex = this.facade._insertQueue.findIndex(r => r[this.facade._keyField] === id);
+      const insertIndex = this.facade._insertQueue.findIndex(
+        (r) => r[this.facade._keyField] === id
+      );
       if (insertIndex !== -1) {
         this.facade._insertQueue.splice(insertIndex, 1);
         this.facade._deleteQueue.delete(id); // No need to delete from remote if it was never pushed
@@ -302,7 +318,9 @@ export class TableDataModifier {
       this.facade._logger.debug(`Row deletion queued successfully from '${this.facade.sheetName}'`);
       return deletedRow; // SDL-M007: Return the deleted row object
     } catch (e) {
-      this.facade._logger.error(`Error queuing row deletion from '${this.facade.sheetName}': ${e.message}`);
+      this.facade._logger.error(
+        `Error queuing row deletion from '${this.facade.sheetName}': ${e.message}`
+      );
       throw e;
     }
   }
@@ -337,12 +355,12 @@ export class TableDataModifier {
     if (!ids || ids.length === 0) return [];
     const deletedRows = [];
     for (const id of ids) {
-       try {
-         const result = this.deleteRowById(id);
-         if (result) deletedRows.push(result);
-       } catch (e) {
-         this.facade._logger.warn(`Failed to process bulk delete for ID ${id}: ${e.message}`);
-       }
+      try {
+        const result = this.deleteRowById(id);
+        if (result) deletedRows.push(result);
+      } catch (e) {
+        this.facade._logger.warn(`Failed to process bulk delete for ID ${id}: ${e.message}`);
+      }
     }
     return deletedRows;
   }

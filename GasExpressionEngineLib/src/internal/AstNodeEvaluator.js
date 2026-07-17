@@ -71,7 +71,7 @@ export class AstNodeEvaluator {
     if (node.type === 'MemberExpression') {
       const objectPath = this._buildPathFromMemberExpression(node.object);
       const propertyName = node.computed
-        ? this.facade._evaluateNode(node.property, {}) 
+        ? this.facade._evaluateNode(node.property, {})
         : node.property.name;
       return `${objectPath}.${propertyName}`;
     }

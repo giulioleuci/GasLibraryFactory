@@ -7,7 +7,7 @@
 /**
  * @class UtilitiesService
  * @description Lightweight facade for Google Apps Script native Utilities. Provides stateless infrastructure for encoding, timing, formatting, compression, and cryptography with consistent error handling.
- * 
+ *
  * @property {LoggerService} _logger Diagnostic logger.
  * @property {ExceptionService} _exceptionService Resiliency provider.
  */

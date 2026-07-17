@@ -13,13 +13,13 @@ function initJobRunnerLibTests() {
 
     const scriptProps = PropertiesService.getScriptProperties();
     const testKey = 'job_test_' + new Date().getTime();
-    
+
     scriptProps.setProperty(testKey, JSON.stringify({ status: 'OK' }));
     const val = scriptProps.getProperty(testKey);
-    
+
     SmartAssert.notNull(val, 'PropertiesService should persist data');
     SmartAssert.isTrue(val.includes('OK'), 'Value should match');
-    
+
     scriptProps.deleteProperty(testKey);
   });
 
@@ -42,10 +42,10 @@ function initJobRunnerLibTests() {
           const doc = DocumentApp.create('Report_' + departments[i]);
           const url = doc.getUrl();
           sheet.appendRow([departments[i], 'Generated', url]);
-          
+
           // Cleanup doc
           DriveApp.getFileById(doc.getId()).setTrashed(true);
-          
+
           yield { percentage: ((i + 1) / departments.length) * 100 };
         }
         return { success: true };

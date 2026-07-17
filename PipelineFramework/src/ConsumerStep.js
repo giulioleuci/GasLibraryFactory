@@ -8,10 +8,10 @@ import { Step } from './Step';
 
 /**
  * Abstract base for "Action" steps in the Producer-Consumer pipeline pattern.
- * 
+ *
  * @description
- * Decouples business logic from technical execution. Reads a specific inputKey set by 
- * a ProducerStep and executes infrastructure operations (API calls, I/O) without 
+ * Decouples business logic from technical execution. Reads a specific inputKey set by
+ * a ProducerStep and executes infrastructure operations (API calls, I/O) without
  * knowledge of decision rules.
  *
  * @class

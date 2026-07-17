@@ -26,7 +26,7 @@ import { DriveMetadataService } from './drive/DriveMetadataService';
  * @class DriveService
  * @extends GoogleService
  * @description Batch-first Google Drive facade. Orchestrates file, folder, shortcut, and metadata operations using Advanced Drive API v2. Supports dry-run simulations and automated retry logic.
- * 
+ *
  * @property {DriveFileManager} fileManager Logic for file mutations.
  * @property {DriveFolderManager} folderManager Logic for folder mutations.
  * @property {DriveShortcutHandler} shortcutHandler Logic for shortcut processing.
@@ -60,34 +60,41 @@ export class DriveService extends GoogleService {
         '[DRY-RUN] DriveService initialized in dry-run mode. No mutations will be performed.'
       );
     }
-    
+
     // Initialize internal specialized managers
     this.fileManager = new DriveFileManager(this);
     this.folderManager = new DriveFolderManager(this);
     this.shortcutHandler = new DriveShortcutHandler(this);
     this.metadataService = new DriveMetadataService(this);
-    
+
     // Delegate DriveFileManager methods
-    const fileMethods = ['deleteFiles', 'restoreFiles', 'copyFiles', 'moveFiles', 'renameFiles', 'getFileByIdStandard'];
-    fileMethods.forEach(m => {
+    const fileMethods = [
+      'deleteFiles',
+      'restoreFiles',
+      'copyFiles',
+      'moveFiles',
+      'renameFiles',
+      'getFileByIdStandard'
+    ];
+    fileMethods.forEach((m) => {
       this[m] = this.fileManager[m].bind(this.fileManager);
     });
-    
+
     // Delegate DriveFolderManager methods
     const folderMethods = ['createFolder', 'getFolderByIdStandard'];
-    folderMethods.forEach(m => {
+    folderMethods.forEach((m) => {
       this[m] = this.folderManager[m].bind(this.folderManager);
     });
-    
+
     // Delegate DriveShortcutHandler methods
     const shortcutMethods = ['createShortcut', 'getTargetId', 'isShortcut'];
-    shortcutMethods.forEach(m => {
+    shortcutMethods.forEach((m) => {
       this[m] = this.shortcutHandler[m].bind(this.shortcutHandler);
     });
-    
+
     // Delegate DriveMetadataService methods
     const metadataMethods = ['updateMetadata', 'getFiles', 'searchFiles'];
-    metadataMethods.forEach(m => {
+    metadataMethods.forEach((m) => {
       this[m] = this.metadataService[m].bind(this.metadataService);
     });
   }

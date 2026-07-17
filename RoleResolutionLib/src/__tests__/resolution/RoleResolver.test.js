@@ -126,9 +126,13 @@ describe('RoleResolver', () => {
         resolutionStrategy: ResolutionStrategy.ALL
       });
       registry.register(multiRole);
-      
-      assignmentSource.addAssignment(new Assignment({ id: 'as-1', roleId: 'MULTI', actorId: john.id, scope: salesScope }));
-      assignmentSource.addAssignment(new Assignment({ id: 'as-2', roleId: 'MULTI', actorId: jane.id, scope: salesScope }));
+
+      assignmentSource.addAssignment(
+        new Assignment({ id: 'as-1', roleId: 'MULTI', actorId: john.id, scope: salesScope })
+      );
+      assignmentSource.addAssignment(
+        new Assignment({ id: 'as-2', roleId: 'MULTI', actorId: jane.id, scope: salesScope })
+      );
 
       const result = resolver.resolve('MULTI', salesScope);
       expect(result.allActors).toHaveLength(2);
@@ -163,7 +167,12 @@ describe('RoleResolver', () => {
         new Assignment({ id: 'as-1', roleId: 'APPROVER', actorId: john.id, scope: projectScope })
       );
       assignmentSource.addAssignment(
-        new Assignment({ id: 'as-2', roleId: 'PROJECT_MANAGER', actorId: bob.id, scope: projectScope })
+        new Assignment({
+          id: 'as-2',
+          roleId: 'PROJECT_MANAGER',
+          actorId: bob.id,
+          scope: projectScope
+        })
       );
 
       const result = resolver.resolve('APPROVER', projectScope);
@@ -193,10 +202,10 @@ describe('RoleResolver', () => {
       // effectiveActor should be jane
       expect(result.effectiveActor.id).toBe(jane.id);
       expect(result.principalActor.id).toBe(john.id);
-      
+
       // Routing should contain both due to BOTH_EQUAL policy from delegation
-      expect(result.routing.primary.map(a => a.id)).toContain(john.id);
-      expect(result.routing.primary.map(a => a.id)).toContain(jane.id);
+      expect(result.routing.primary.map((a) => a.id)).toContain(john.id);
+      expect(result.routing.primary.map((a) => a.id)).toContain(jane.id);
     });
 
     it('should filter out inactive delegations', () => {
@@ -230,7 +239,7 @@ describe('RoleResolver', () => {
       const strictResolver = new RoleResolver(registry, assignmentSource, delegationSource, {
         throwOnNotFound: true
       });
-      
+
       expect(() => strictResolver.resolve('MANAGER', salesScope)).toThrow(NoActorFoundError);
     });
 

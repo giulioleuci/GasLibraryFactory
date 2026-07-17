@@ -7,7 +7,7 @@
 /**
  * @class MailService
  * @description Stateless service for email management via GmailApp/MailApp. Implements quota awareness, sequential rate limiting, and resilient delivery via exceptionService.
- * 
+ *
  * @property {LoggerService} _logger Diagnostic logger.
  * @property {UtilsService} _utils Foundational utilities (requires sleep).
  * @property {ExceptionService} _exceptionService Resiliency provider.
@@ -55,7 +55,7 @@ export class MailService {
     try {
       const { to, subject, body, htmlBody, ...rest } = emailOptions;
       const recipient = Array.isArray(to) ? to.join(',') : to;
-      
+
       const options = {
         htmlBody: htmlBody,
         cc: Array.isArray(rest.cc) ? rest.cc.join(',') : rest.cc,
@@ -142,7 +142,8 @@ export class MailService {
     recipientData.forEach((recipient, i) => {
       const body = bodyGenerator(recipient);
       const emailOptions = { to: recipient.email, subject };
-      if (isHtml) emailOptions.htmlBody = body; else emailOptions.body = body;
+      if (isHtml) emailOptions.htmlBody = body;
+      else emailOptions.body = body;
 
       const result = this.send(emailOptions);
       if (result.success) {
@@ -185,6 +186,6 @@ export class MailService {
    */
   _escapeHtml(text) {
     const map = { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#039;' };
-    return String(text).replace(/[&<>"']/g, m => map[m]);
+    return String(text).replace(/[&<>"']/g, (m) => map[m]);
   }
 }

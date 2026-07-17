@@ -12,9 +12,7 @@ export class SchemaValidator {
 
     if (!result.success) {
       const errors = SchemaValidator.formatZodError(result.error);
-      const message = entityType
-        ? `Validation failed for ${entityType}`
-        : 'Validation failed';
+      const message = entityType ? `Validation failed for ${entityType}` : 'Validation failed';
       this._logger.debug(`[SchemaValidator] ${message}: ${JSON.stringify(errors)}`);
       throw new ValidationException(message, entityType, errors);
     }
@@ -45,9 +43,7 @@ export class SchemaValidator {
 
   static toValidationException(zodError, entityType = null) {
     const errors = SchemaValidator.formatZodError(zodError);
-    const message = entityType
-      ? `Validation failed for ${entityType}`
-      : 'Validation failed';
+    const message = entityType ? `Validation failed for ${entityType}` : 'Validation failed';
     return new ValidationException(message, entityType, errors);
   }
 

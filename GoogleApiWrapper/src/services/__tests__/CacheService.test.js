@@ -682,7 +682,9 @@ describe('CacheService - Comprehensive Test Suite', () => {
         it('should log debug message when no tracked keys', () => {
           cache.removeByPrefix('prefix_');
 
-          expect(mocks.logger.debug).toHaveBeenCalledWith(expect.stringContaining('No tracked keys'));
+          expect(mocks.logger.debug).toHaveBeenCalledWith(
+            expect.stringContaining('No tracked keys')
+          );
         });
 
         it('should log debug message when no matching keys', () => {

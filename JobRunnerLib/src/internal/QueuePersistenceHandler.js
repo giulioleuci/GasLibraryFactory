@@ -17,10 +17,14 @@ export class QueuePersistenceHandler {
 
   constructor(jobName, propertiesService, stateManager, driveService = null) {
     if (!jobName || typeof jobName !== 'string') {
-      throw new Error('QueuePersistenceHandler: jobName is required and must be a non-empty string');
+      throw new Error(
+        'QueuePersistenceHandler: jobName is required and must be a non-empty string'
+      );
     }
     if (!propertiesService || typeof propertiesService !== 'object') {
-      throw new Error('QueuePersistenceHandler: propertiesService is required and must be an object');
+      throw new Error(
+        'QueuePersistenceHandler: propertiesService is required and must be an object'
+      );
     }
 
     this.jobName = jobName;

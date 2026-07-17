@@ -175,13 +175,13 @@ new leaks fail `npm run lint`.
 
 ### Sanctioned exceptions (the only ones)
 
-- **`GoogleApiWrapper/**`** — it *is* the L2 abstraction.
-- **`GasOnlineTestFramework/**`** — runs inside real GAS by design.
+- **`GoogleApiWrapper/**`\** — it *is\* the L2 abstraction.
+- **`GasOnlineTestFramework/**`\*\* — runs inside real GAS by design.
 - **`CoreUtilsLib/src/internal/HashUtils.js`** and
   **`CoreUtilsLib/src/utils/IdGenerator.js`** — the single sanctioned **L0**
   native boundary. They use `Utilities.computeDigest` / `Utilities.getUuid`
   guarded by `typeof Utilities !== 'undefined'` with pure-JS fallbacks. Because
-  L0 sits *below* `GoogleApiWrapper`, it cannot route through it, so this direct
+  L0 sits _below_ `GoogleApiWrapper`, it cannot route through it, so this direct
   (guarded) use is intentional and allowed.
 - Test files, `**/testing/**` mocks, and `**/__testOnline__/**` — legitimately
   stub or exercise the globals.
@@ -275,6 +275,6 @@ When proposing a fix, include:
 3. Corrected code snippet
 4. Why the fix works in GAS
 
-Never modify: dist/*
+Never modify: dist/\*
 
 Only modify **source modules**.

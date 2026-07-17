@@ -293,4 +293,3 @@ export class PlainTextRenderer extends BlockRenderer {
     }
   }
 }
-

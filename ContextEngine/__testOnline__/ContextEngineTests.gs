@@ -12,13 +12,15 @@ function initContextEngineTests() {
     const registry = new ProviderRegistry(logger);
 
     class ProfileProvider extends DataProvider {
-      _fetchData(params) { return { name: 'Sarah', role: 'PM' }; }
+      _fetchData(params) {
+        return { name: 'Sarah', role: 'PM' };
+      }
     }
     registry.registerSingleton('Profile', new ProfileProvider(logger));
 
     const assembler = new ContextAssembler(logger, registry, null, exceptionService);
     const recipe = { providers: [{ name: 'user', type: 'Profile', parameters: {} }] };
-    
+
     const context = assembler.assemble(recipe, {});
     SmartAssert.equals(context.user.name, 'Sarah', 'Should assemble name');
 

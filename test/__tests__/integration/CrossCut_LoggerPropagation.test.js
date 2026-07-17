@@ -165,8 +165,9 @@ describe('Cross-Cutting Concern: Logger Propagation', () => {
       const mockUtils = mocks.utils;
       const exceptionService = mocks.exceptionService;
 
-      const pipeline = new Pipeline(mockLogger, exceptionService, { name: 'SuccessPipeline' })
-        .addStep(new SuccessfulStep('success', mockLogger));
+      const pipeline = new Pipeline(mockLogger, exceptionService, {
+        name: 'SuccessPipeline'
+      }).addStep(new SuccessfulStep('success', mockLogger));
 
       // Act
       pipeline.execute({});
@@ -266,8 +267,9 @@ describe('Cross-Cutting Concern: Logger Propagation', () => {
       const mockUtils = mocks.utils;
       const exceptionService = mocks.exceptionService;
 
-      const pipeline = new Pipeline(mockLogger, exceptionService, { name: 'TimedPipeline' })
-        .addStep(new TimedStep('timed', mockLogger));
+      const pipeline = new Pipeline(mockLogger, exceptionService, {
+        name: 'TimedPipeline'
+      }).addStep(new TimedStep('timed', mockLogger));
 
       // Act
       pipeline.execute({});

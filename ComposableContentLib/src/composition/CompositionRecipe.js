@@ -20,7 +20,7 @@ import { RecipeValidationError } from '../errors/ComposableContentError.js';
  */
 
 /**
- * @description Immutable model for multi-block content composition. 
+ * @description Immutable model for multi-block content composition.
  * Defines block selection, execution order, visibility logic, and serialization metadata.
  * @class
  * @example

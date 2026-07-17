@@ -8,13 +8,27 @@ import { QueuePersistenceHandler } from '../QueuePersistenceHandler';
 import { QueueProgressTracker } from '../QueueProgressTracker';
 
 export class JobStateManager {
-  static get STATE_RUNNING() { return QueueStateManager.STATE_RUNNING; }
-  static get STATE_COMPLETED() { return QueueStateManager.STATE_COMPLETED; }
-  static get STATE_CANCELLED() { return QueueStateManager.STATE_CANCELLED; }
-  static get STATE_FAILED() { return QueueStateManager.STATE_FAILED; }
-  static get STATE_PENDING() { return QueueStateManager.STATE_PENDING; }
-  static get LOCK_RETRY_DELAY_MS() { return QueueStateManager.LOCK_RETRY_DELAY_MS; }
-  static get LARGE_STATE_THRESHOLD() { return QueuePersistenceHandler.LARGE_STATE_THRESHOLD; }
+  static get STATE_RUNNING() {
+    return QueueStateManager.STATE_RUNNING;
+  }
+  static get STATE_COMPLETED() {
+    return QueueStateManager.STATE_COMPLETED;
+  }
+  static get STATE_CANCELLED() {
+    return QueueStateManager.STATE_CANCELLED;
+  }
+  static get STATE_FAILED() {
+    return QueueStateManager.STATE_FAILED;
+  }
+  static get STATE_PENDING() {
+    return QueueStateManager.STATE_PENDING;
+  }
+  static get LOCK_RETRY_DELAY_MS() {
+    return QueueStateManager.LOCK_RETRY_DELAY_MS;
+  }
+  static get LARGE_STATE_THRESHOLD() {
+    return QueuePersistenceHandler.LARGE_STATE_THRESHOLD;
+  }
 
   constructor(jobName, propertiesService, utils, lockService, driveService = null) {
     this.jobName = jobName;
@@ -33,21 +47,45 @@ export class JobStateManager {
     this.progressTracker = new QueueProgressTracker(jobName, propertiesService);
 
     const stateMethods = [
-      '_key', 'getStateVersion', '_incrementVersion', 'setState', 'getState',
-      'isCancelled', 'getStateWithVersion', 'tryAcquireRunning', 'releaseLock',
-      'getRetryCount', 'incrementRetryCount', 'resetRetryCount', 'saveFailureInfo', 'getFailureInfo'
+      '_key',
+      'getStateVersion',
+      '_incrementVersion',
+      'setState',
+      'getState',
+      'isCancelled',
+      'getStateWithVersion',
+      'tryAcquireRunning',
+      'releaseLock',
+      'getRetryCount',
+      'incrementRetryCount',
+      'resetRetryCount',
+      'saveFailureInfo',
+      'getFailureInfo'
     ];
-    stateMethods.forEach(m => { this[m] = this.stateManager[m].bind(this.stateManager); });
+    stateMethods.forEach((m) => {
+      this[m] = this.stateManager[m].bind(this.stateManager);
+    });
 
     const persistenceMethods = [
-      'batchSave', 'saveResumeState', 'loadResumeState', '_saveLargeStateToDrive',
-      '_loadLargeStateFromDrive', '_getOrCreateJobStateFolder', 'saveConfiguration',
-      'loadConfiguration', 'saveType', 'loadType'
+      'batchSave',
+      'saveResumeState',
+      'loadResumeState',
+      '_saveLargeStateToDrive',
+      '_loadLargeStateFromDrive',
+      '_getOrCreateJobStateFolder',
+      'saveConfiguration',
+      'loadConfiguration',
+      'saveType',
+      'loadType'
     ];
-    persistenceMethods.forEach(m => { this[m] = this.persistenceHandler[m].bind(this.persistenceHandler); });
+    persistenceMethods.forEach((m) => {
+      this[m] = this.persistenceHandler[m].bind(this.persistenceHandler);
+    });
 
     const progressMethods = ['saveProgress'];
-    progressMethods.forEach(m => { this[m] = this.progressTracker[m].bind(this.progressTracker); });
+    progressMethods.forEach((m) => {
+      this[m] = this.progressTracker[m].bind(this.progressTracker);
+    });
   }
 
   reset() {
@@ -74,7 +112,9 @@ export class JobRunnerStateManager {
 
   cancelJob(jobName) {
     if (!jobName || typeof jobName !== 'string') {
-      throw new Error('JobRunnerService.cancelJob: jobName is required and must be a non-empty string');
+      throw new Error(
+        'JobRunnerService.cancelJob: jobName is required and must be a non-empty string'
+      );
     }
     this.facade._logger.info(`JobRunnerService.cancelJob: Cancelling job '${jobName}'`);
     const queue = this.facade._createQueue();

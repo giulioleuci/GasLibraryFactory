@@ -40,7 +40,8 @@ function walkDir(dir, results) {
   for (const entry of entries) {
     const fullPath = path.join(dir, entry.name);
     if (entry.isDirectory()) {
-      if (entry.name === 'node_modules' || entry.name === 'dist' || entry.name === '__testOnline__') continue;
+      if (entry.name === 'node_modules' || entry.name === 'dist' || entry.name === '__testOnline__')
+        continue;
       walkDir(fullPath, results);
     } else if (entry.isFile()) {
       results.push(fullPath);
@@ -117,8 +118,12 @@ const libraryEntries = {};
 let totalTestFiles = 0;
 
 // Compute paths to JestCompat and GasMockSetup relative to outputDir
-const jestCompatRelPath = path.relative(outputDir, path.join(rootDir, 'test/offline-bundle/JestCompat.js')).replace(/\\/g, '/');
-const gasMockRelPath = path.relative(outputDir, path.join(rootDir, 'test/offline-bundle/GasMockSetup.js')).replace(/\\/g, '/');
+const jestCompatRelPath = path
+  .relative(outputDir, path.join(rootDir, 'test/offline-bundle/JestCompat.js'))
+  .replace(/\\/g, '/');
+const gasMockRelPath = path
+  .relative(outputDir, path.join(rootDir, 'test/offline-bundle/GasMockSetup.js'))
+  .replace(/\\/g, '/');
 
 function generateEntryContent(name, testFiles, runnerName) {
   const relativePaths = testFiles.map((f) => {
@@ -288,11 +293,7 @@ for (const [name, info] of Object.entries(libraryEntries)) {
   };
 }
 
-fs.writeFileSync(
-  path.join(outputDir, 'manifest.json'),
-  JSON.stringify(manifest, null, 2),
-  'utf8'
-);
+fs.writeFileSync(path.join(outputDir, 'manifest.json'), JSON.stringify(manifest, null, 2), 'utf8');
 
 // Print summary
 console.log(`\nOffline Test Entry Generator`);

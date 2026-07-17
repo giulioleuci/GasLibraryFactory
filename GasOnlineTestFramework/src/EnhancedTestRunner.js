@@ -57,7 +57,7 @@ export class EnhancedTestRunner {
    * @returns {Object} Execution statistics and failure records.
    */
   run(filter = null) {
-    const testsToRun = this.registry.filter(test => {
+    const testsToRun = this.registry.filter((test) => {
       if (!filter) return true;
       if (typeof filter === 'string') return test.path.includes(filter);
       if (filter instanceof RegExp) return filter.test(test.path);
@@ -100,7 +100,7 @@ export class EnhancedTestRunner {
 
     try {
       this._runHooks('beforeEach');
-      
+
       // Execute test function
       test.fn();
 
@@ -165,7 +165,7 @@ export class EnhancedTestRunner {
     this._log(`FAILED: ${this.results.failed}`);
     this._log(`SKIPPED: ${this.results.skipped}`);
     this._log('═══════════════════════════════════════════════');
-    
+
     if (this.results.failed > 0) {
       this._log('FAILED TESTS:');
       for (const err of this.results.errors) {

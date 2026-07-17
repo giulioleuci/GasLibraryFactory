@@ -3,8 +3,16 @@ import { ResolutionResult } from '../../core/ResolutionResult.js';
 describe('ResolutionResult', () => {
   const mockRole = { id: 'role-1', toJSON: () => ({ id: 'role-1' }) };
   const mockScope = { id: 'scope-1', toJSON: () => ({ id: 'scope-1' }) };
-  const mockActor1 = { id: 'user-1', displayName: 'User 1', toJSON: () => ({ id: 'user-1', displayName: 'User 1' }) };
-  const mockActor2 = { id: 'user-2', displayName: 'User 2', toJSON: () => ({ id: 'user-2', displayName: 'User 2' }) };
+  const mockActor1 = {
+    id: 'user-1',
+    displayName: 'User 1',
+    toJSON: () => ({ id: 'user-1', displayName: 'User 1' })
+  };
+  const mockActor2 = {
+    id: 'user-2',
+    displayName: 'User 2',
+    toJSON: () => ({ id: 'user-2', displayName: 'User 2' })
+  };
 
   describe('constructor', () => {
     it('should create a valid ResolutionResult with all fields', () => {
@@ -73,58 +81,100 @@ describe('ResolutionResult', () => {
       expect(Object.isFrozen(result.metadata)).toBe(true);
 
       // Verify that modification attempts throw in strict mode (Jest runs in strict mode)
-      expect(() => { result.effectiveActor = mockActor1; }).toThrow();
-      expect(() => { result.allActors.push(mockActor1); }).toThrow();
+      expect(() => {
+        result.effectiveActor = mockActor1;
+      }).toThrow();
+      expect(() => {
+        result.allActors.push(mockActor1);
+      }).toThrow();
     });
   });
 
   describe('isResolved', () => {
     it('should return true if effectiveActor is present', () => {
-      const result = new ResolutionResult({ requestedRole: mockRole, scope: mockScope, effectiveActor: mockActor1 });
+      const result = new ResolutionResult({
+        requestedRole: mockRole,
+        scope: mockScope,
+        effectiveActor: mockActor1
+      });
       expect(result.isResolved()).toBe(true);
     });
 
     it('should return false if effectiveActor is null', () => {
-      const result = new ResolutionResult({ requestedRole: mockRole, scope: mockScope, effectiveActor: null });
+      const result = new ResolutionResult({
+        requestedRole: mockRole,
+        scope: mockScope,
+        effectiveActor: null
+      });
       expect(result.isResolved()).toBe(false);
     });
   });
 
   describe('isDelegated', () => {
     it('should return true if delegationChain has items', () => {
-      const result = new ResolutionResult({ requestedRole: mockRole, scope: mockScope, delegationChain: [{ from: mockActor1, to: mockActor2 }] });
+      const result = new ResolutionResult({
+        requestedRole: mockRole,
+        scope: mockScope,
+        delegationChain: [{ from: mockActor1, to: mockActor2 }]
+      });
       expect(result.isDelegated()).toBe(true);
     });
 
     it('should return false if delegationChain is empty', () => {
-      const result = new ResolutionResult({ requestedRole: mockRole, scope: mockScope, delegationChain: [] });
+      const result = new ResolutionResult({
+        requestedRole: mockRole,
+        scope: mockScope,
+        delegationChain: []
+      });
       expect(result.isDelegated()).toBe(false);
     });
   });
 
   describe('getDelegationDepth', () => {
     it('should return the length of the delegation chain', () => {
-      const result = new ResolutionResult({ requestedRole: mockRole, scope: mockScope, delegationChain: [1, 2, 3] });
+      const result = new ResolutionResult({
+        requestedRole: mockRole,
+        scope: mockScope,
+        delegationChain: [1, 2, 3]
+      });
       expect(result.getDelegationDepth()).toBe(3);
     });
   });
 
   describe('hasEffectiveActorChange', () => {
     it('should return true if effectiveActor differs from principalActor', () => {
-      const result = new ResolutionResult({ requestedRole: mockRole, scope: mockScope, principalActor: mockActor1, effectiveActor: mockActor2 });
+      const result = new ResolutionResult({
+        requestedRole: mockRole,
+        scope: mockScope,
+        principalActor: mockActor1,
+        effectiveActor: mockActor2
+      });
       expect(result.hasEffectiveActorChange()).toBe(true);
     });
 
     it('should return false if effectiveActor is same as principalActor', () => {
-      const result = new ResolutionResult({ requestedRole: mockRole, scope: mockScope, principalActor: mockActor1, effectiveActor: mockActor1 });
+      const result = new ResolutionResult({
+        requestedRole: mockRole,
+        scope: mockScope,
+        principalActor: mockActor1,
+        effectiveActor: mockActor1
+      });
       expect(result.hasEffectiveActorChange()).toBe(false);
     });
 
     it('should return false if either actor is missing', () => {
-      const result1 = new ResolutionResult({ requestedRole: mockRole, scope: mockScope, principalActor: mockActor1 });
+      const result1 = new ResolutionResult({
+        requestedRole: mockRole,
+        scope: mockScope,
+        principalActor: mockActor1
+      });
       expect(result1.hasEffectiveActorChange()).toBe(false);
 
-      const result2 = new ResolutionResult({ requestedRole: mockRole, scope: mockScope, effectiveActor: mockActor1 });
+      const result2 = new ResolutionResult({
+        requestedRole: mockRole,
+        scope: mockScope,
+        effectiveActor: mockActor1
+      });
       expect(result2.hasEffectiveActorChange()).toBe(false);
     });
   });
@@ -138,7 +188,9 @@ describe('ResolutionResult', () => {
       });
       const recipients = result.getAllRoutingRecipients();
       expect(recipients).toHaveLength(3);
-      expect(recipients).toEqual(expect.arrayContaining([mockActor1, mockActor2, { id: 'user-3' }]));
+      expect(recipients).toEqual(
+        expect.arrayContaining([mockActor1, mockActor2, { id: 'user-3' }])
+      );
     });
   });
 
@@ -239,7 +291,9 @@ describe('ResolutionResult', () => {
         fallbackUsed: true,
         fallbackRoleId: 'fallback-role'
       });
-      expect(result.toString()).toBe('ResolutionResult[role-1] -> User 1 [fallback: fallback-role]');
+      expect(result.toString()).toBe(
+        'ResolutionResult[role-1] -> User 1 [fallback: fallback-role]'
+      );
     });
   });
 });

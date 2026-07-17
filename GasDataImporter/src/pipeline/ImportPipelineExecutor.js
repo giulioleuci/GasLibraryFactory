@@ -11,7 +11,8 @@ export class ImportPipelineExecutor {
     const dryRun = options.dryRun === true;
     const maxRetries = options.maxRetries || 3;
     const jobId = options.jobId || null;
-    const postTransform = typeof options.postTransform === 'function' ? options.postTransform : null;
+    const postTransform =
+      typeof options.postTransform === 'function' ? options.postTransform : null;
 
     this.facade.logger.info(`[ImportEngine] Starting import: ${recipe.name || 'Unnamed'}`);
     if (dryRun) {
@@ -48,7 +49,9 @@ export class ImportPipelineExecutor {
       };
     } catch (error) {
       const duration = Date.now() - startTime;
-      this.facade.logger.error(`[ImportEngine] Import failed after ${duration}ms: ${error.message}`);
+      this.facade.logger.error(
+        `[ImportEngine] Import failed after ${duration}ms: ${error.message}`
+      );
 
       if (error instanceof ImportError) {
         throw error;

@@ -37,7 +37,8 @@ export class DelegationRules {
     }
 
     return (
-      this.state.scopeRestriction.contains(targetScope) || this.state.scopeRestriction.matches(targetScope)
+      this.state.scopeRestriction.contains(targetScope) ||
+      this.state.scopeRestriction.matches(targetScope)
     );
   }
 

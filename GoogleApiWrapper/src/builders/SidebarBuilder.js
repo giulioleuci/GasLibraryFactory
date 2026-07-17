@@ -40,7 +40,9 @@ export class SidebarBuilder {
 
   setContentFromTemplate(template) {
     if (!template || typeof template.evaluate !== 'function') {
-      throw new Error('SidebarBuilder.setContentFromTemplate: template must be an HtmlTemplate object');
+      throw new Error(
+        'SidebarBuilder.setContentFromTemplate: template must be an HtmlTemplate object'
+      );
     }
     this._htmlOutput = template.evaluate();
     this._logger.debug('SidebarBuilder: Set content from HtmlTemplate');

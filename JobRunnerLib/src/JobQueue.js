@@ -60,8 +60,13 @@ export class JobExecutor {
     this._logger = logger;
     this._stateManager = stateManager;
     this._triggerManager = triggerManager;
-    this.progressTracker = new QueueProgressTracker(this._stateManager.jobName, this._stateManager._propertiesService);
-    this._calculateExactTotal = this.progressTracker._calculateExactTotal.bind(this.progressTracker);
+    this.progressTracker = new QueueProgressTracker(
+      this._stateManager.jobName,
+      this._stateManager._propertiesService
+    );
+    this._calculateExactTotal = this.progressTracker._calculateExactTotal.bind(
+      this.progressTracker
+    );
   }
 
   /**
@@ -384,14 +389,14 @@ export class JobQueue {
 
   /**
    * Orchestrates job execution, state loading, and retry/timeout logic.
-   * 
+   *
    * @param {string} jobName Unique instance identifier (used for state key).
    * @param {string} jobType Registered handler type.
    * @param {Object} [parameters={}] Input data and context.
    * @param {boolean} [forceRestart=false] If true, purges existing state/locks before start.
    * @returns {*} Generator return value if complete; null if suspended or failed.
    * @throws {Error} If handler missing, fatal error occurs, or parameters are invalid.
-   * 
+   *
    * @example
    * queue.registerJobHandler('sync', function*(params) {
    *   yield { percentage: 50 };

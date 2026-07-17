@@ -13,6 +13,7 @@ This document outlines all local offline tests (Jest) and online tests (GasOnlin
 #### 1.1 Entity Tests
 
 ##### Employee.test.js
+
 ```javascript
 describe('Employee Entity', () => {
   describe('creation', () => {
@@ -47,6 +48,7 @@ describe('Employee Entity', () => {
 ```
 
 ##### Customer.test.js
+
 ```javascript
 describe('Customer Entity', () => {
   describe('creation', () => {
@@ -73,6 +75,7 @@ describe('Customer Entity', () => {
 ```
 
 ##### Product.test.js
+
 ```javascript
 describe('Product Entity', () => {
   describe('creation', () => {
@@ -108,6 +111,7 @@ describe('Product Entity', () => {
 ```
 
 ##### Order.test.js
+
 ```javascript
 describe('Order Aggregate', () => {
   describe('creation', () => {
@@ -158,6 +162,7 @@ describe('Order Aggregate', () => {
 #### 1.2 Value Object Tests
 
 ##### Email.test.js
+
 ```javascript
 describe('Email Value Object', () => {
   it('should create valid email');
@@ -170,6 +175,7 @@ describe('Email Value Object', () => {
 ```
 
 ##### Money.test.js
+
 ```javascript
 describe('Money Value Object', () => {
   it('should create with amount and currency');
@@ -186,6 +192,7 @@ describe('Money Value Object', () => {
 ```
 
 ##### Address.test.js
+
 ```javascript
 describe('Address Value Object', () => {
   it('should create valid address');
@@ -199,6 +206,7 @@ describe('Address Value Object', () => {
 ```
 
 ##### OrderNumber.test.js
+
 ```javascript
 describe('OrderNumber Value Object', () => {
   it('should generate order number with year prefix');
@@ -213,6 +221,7 @@ describe('OrderNumber Value Object', () => {
 #### 1.3 Repository Tests
 
 ##### EmployeeRepository.test.js
+
 ```javascript
 describe('EmployeeRepository', () => {
   describe('CRUD operations', () => {
@@ -234,6 +243,7 @@ describe('EmployeeRepository', () => {
 ```
 
 ##### OrderRepository.test.js
+
 ```javascript
 describe('OrderRepository', () => {
   describe('single partition', () => {
@@ -256,6 +266,7 @@ describe('OrderRepository', () => {
 #### 1.4 Specification Tests
 
 ##### ActiveEmployeeSpec.test.js
+
 ```javascript
 describe('ActiveEmployeeSpec', () => {
   it('should satisfy for ACTIVE employee');
@@ -266,6 +277,7 @@ describe('ActiveEmployeeSpec', () => {
 ```
 
 ##### VipCustomerSpec.test.js
+
 ```javascript
 describe('VipCustomerSpec', () => {
   it('should satisfy for VIP customer');
@@ -275,6 +287,7 @@ describe('VipCustomerSpec', () => {
 ```
 
 ##### LowStockProductSpec.test.js
+
 ```javascript
 describe('LowStockProductSpec', () => {
   it('should satisfy when stock <= reorder level');
@@ -284,6 +297,7 @@ describe('LowStockProductSpec', () => {
 ```
 
 ##### HighValueOrderSpec.test.js
+
 ```javascript
 describe('HighValueOrderSpec', () => {
   it('should satisfy for orders over threshold');
@@ -297,6 +311,7 @@ describe('HighValueOrderSpec', () => {
 ### 2. Service Layer Tests
 
 ##### EmployeeService.test.js
+
 ```javascript
 describe('EmployeeService', () => {
   describe('createEmployee', () => {
@@ -322,6 +337,7 @@ describe('EmployeeService', () => {
 ```
 
 ##### OrderService.test.js
+
 ```javascript
 describe('OrderService', () => {
   describe('createOrder', () => {
@@ -348,6 +364,7 @@ describe('OrderService', () => {
 ```
 
 ##### AnalyticsService.test.js
+
 ```javascript
 describe('AnalyticsService', () => {
   describe('getYearlyTotals', () => {
@@ -380,6 +397,7 @@ describe('AnalyticsService', () => {
 ### 3. Pipeline Tests
 
 ##### OrderProcessingPipeline.test.js
+
 ```javascript
 describe('OrderProcessingPipeline', () => {
   describe('full execution', () => {
@@ -454,6 +472,7 @@ describe('OrderProcessingPipeline', () => {
 ```
 
 ##### EmployeeDelegationPipeline.test.js
+
 ```javascript
 describe('EmployeeDelegationPipeline', () => {
   describe('full execution', () => {
@@ -493,6 +512,7 @@ describe('EmployeeDelegationPipeline', () => {
 ### 4. Provider Tests
 
 ##### OrderDataProvider.test.js
+
 ```javascript
 describe('OrderDataProvider', () => {
   it('should implement DataProviderInterface');
@@ -505,6 +525,7 @@ describe('OrderDataProvider', () => {
 ```
 
 ##### AnalyticsDataProvider.test.js
+
 ```javascript
 describe('AnalyticsDataProvider', () => {
   it('should implement DataProviderInterface');
@@ -519,6 +540,7 @@ describe('AnalyticsDataProvider', () => {
 ### 5. Composer Tests
 
 ##### InvoiceComposer.test.js
+
 ```javascript
 describe('InvoiceComposer', () => {
   it('should compose invoice content');
@@ -531,6 +553,7 @@ describe('InvoiceComposer', () => {
 ```
 
 ##### ReportComposer.test.js
+
 ```javascript
 describe('ReportComposer', () => {
   it('should compose report from blocks');
@@ -546,6 +569,7 @@ describe('ReportComposer', () => {
 ### 6. Role Tests
 
 ##### DelegationManager.test.js
+
 ```javascript
 describe('DelegationManager', () => {
   describe('createDelegation', () => {
@@ -572,6 +596,7 @@ describe('DelegationManager', () => {
 ```
 
 ##### RoutingPolicies.test.js
+
 ```javascript
 describe('RoutingPolicies', () => {
   describe('FIRST_AVAILABLE', () => {
@@ -606,6 +631,7 @@ describe('RoutingPolicies', () => {
 ### 7. Integration Tests
 
 ##### OrderWorkflow.integration.test.js
+
 ```javascript
 describe('Order Workflow Integration', () => {
   it('should process order end-to-end');
@@ -617,6 +643,7 @@ describe('Order Workflow Integration', () => {
 ```
 
 ##### DelegationWorkflow.integration.test.js
+
 ```javascript
 describe('Delegation Workflow Integration', () => {
   it('should create delegation end-to-end');
@@ -627,6 +654,7 @@ describe('Delegation Workflow Integration', () => {
 ```
 
 ##### MultiDatabaseQueries.integration.test.js
+
 ```javascript
 describe('Multi-Database Integration', () => {
   it('should query single partition');
@@ -638,6 +666,7 @@ describe('Multi-Database Integration', () => {
 ```
 
 ##### ReportGeneration.integration.test.js
+
 ```javascript
 describe('Report Generation Integration', () => {
   it('should gather data from all sources');
@@ -743,13 +772,13 @@ describe('Email Dry Run Online', () => {
 
 ### Fixtures Usage
 
-| Fixture | Used By | Description |
-|---------|---------|-------------|
-| employees.json | Employee tests, Delegation tests | 6 employees with various statuses |
-| customers.json | Customer tests, Order tests | 5 customers of different types |
-| products.json | Product tests, Order tests, Inventory tests | 7 products across categories |
-| orders.json | Order tests, Analytics tests | 10 orders across 3 years |
-| templates.json | Template tests, Composer tests | Template metadata |
+| Fixture        | Used By                                     | Description                       |
+| -------------- | ------------------------------------------- | --------------------------------- |
+| employees.json | Employee tests, Delegation tests            | 6 employees with various statuses |
+| customers.json | Customer tests, Order tests                 | 5 customers of different types    |
+| products.json  | Product tests, Order tests, Inventory tests | 7 products across categories      |
+| orders.json    | Order tests, Analytics tests                | 10 orders across 3 years          |
+| templates.json | Template tests, Composer tests              | Template metadata                 |
 
 ### Mock Configuration
 
@@ -771,17 +800,17 @@ const createMocks = () => ({
 
 ## Coverage Targets
 
-| Module | Target | Notes |
-|--------|--------|-------|
-| Domain Entities | 95% | All business logic |
-| Value Objects | 100% | Immutable, must be complete |
-| Repositories | 90% | CRUD + queries |
-| Services | 90% | Business operations |
-| Pipelines | 85% | Step execution |
-| Specifications | 100% | Business rules |
-| Providers | 90% | Data retrieval |
-| Composers | 90% | Content generation |
-| Role Resolution | 95% | Delegation logic |
+| Module          | Target | Notes                       |
+| --------------- | ------ | --------------------------- |
+| Domain Entities | 95%    | All business logic          |
+| Value Objects   | 100%   | Immutable, must be complete |
+| Repositories    | 90%    | CRUD + queries              |
+| Services        | 90%    | Business operations         |
+| Pipelines       | 85%    | Step execution              |
+| Specifications  | 100%   | Business rules              |
+| Providers       | 90%    | Data retrieval              |
+| Composers       | 90%    | Content generation          |
+| Role Resolution | 95%    | Delegation logic            |
 
 ---
 

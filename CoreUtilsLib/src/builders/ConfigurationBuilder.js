@@ -151,7 +151,6 @@ export class ConfigurationBuilder {
     return builder;
   }
 
-
   // ===================================================================
   // LEGACY PRIVATE METHODS (Delegated for backward compatibility)
   // ===================================================================

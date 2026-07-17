@@ -37,20 +37,14 @@ export class TableSchemaValidator {
     }
 
     if (!this.facade._schemaValidator) {
-      throw new ConfigurationError(
-        'Schema validation requires a SchemaValidator instance'
-      );
+      throw new ConfigurationError('Schema validation requires a SchemaValidator instance');
     }
 
     const schema = isUpdate ? this.facade._schema.partial() : this.facade._schema;
     const result = this.facade._schemaValidator.safeValidate(schema, rowObj);
 
     if (!result.success) {
-      throw new ValidationException(
-        'Row validation failed',
-        this.facade.sheetName,
-        result.errors
-      );
+      throw new ValidationException('Row validation failed', this.facade.sheetName, result.errors);
     }
 
     return result.data;

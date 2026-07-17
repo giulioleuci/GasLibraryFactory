@@ -6,7 +6,10 @@
 
 import { PostProcessor } from '../PostProcessor';
 import { ValueResolver } from '../ValueResolver';
-import { ConfigurationError, RecordNotFoundError } from '../../internal/postprocessor-errors/PostProcessorError';
+import {
+  ConfigurationError,
+  RecordNotFoundError
+} from '../../internal/postprocessor-errors/PostProcessorError';
 
 /**
  * @enum {string}

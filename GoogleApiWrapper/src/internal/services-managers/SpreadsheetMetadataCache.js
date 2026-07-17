@@ -72,8 +72,10 @@ export class SpreadsheetMetadataCache {
 
     const gridRange = { sheetId: sheet.properties.sheetId };
     const rangeParts = range.split(':');
-    const isColumnOnly = rangeParts.length === 2 && /^[A-Z]+$/.test(rangeParts[0]) && /^[A-Z]+$/.test(rangeParts[1]);
-    const isRowOnly = rangeParts.length === 2 && /^\d+$/.test(rangeParts[0]) && /^\d+$/.test(rangeParts[1]);
+    const isColumnOnly =
+      rangeParts.length === 2 && /^[A-Z]+$/.test(rangeParts[0]) && /^[A-Z]+$/.test(rangeParts[1]);
+    const isRowOnly =
+      rangeParts.length === 2 && /^\d+$/.test(rangeParts[0]) && /^\d+$/.test(rangeParts[1]);
 
     if (isColumnOnly) {
       gridRange.startColumnIndex = this._columnToIndex(rangeParts[0]);

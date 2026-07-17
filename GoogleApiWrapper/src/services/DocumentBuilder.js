@@ -6,7 +6,7 @@
 /**
  * @class DocumentBuilder
  * @description Fluent builder for Google Docs. Accumulates mutation operations for atomic execution via batchUpdate.
- * 
+ *
  * @property {string} documentId Target document identifier.
  * @property {GoogleService} service Reference to the Google Docs service.
  * @property {Array<Object>} operations Queue of pending document mutations.

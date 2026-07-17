@@ -62,10 +62,10 @@ This library utilizes several key design patterns to ensure flexibility and test
 
 This library uses a **Hybrid Retention Strategy** to balance performance and robustness:
 
-| Library | Usage | Strategy |
-| :--- | :--- | :--- |
-| **date-fns** | Dates | **REPLACED** with native `Date` implementations. |
-| **nanoid** | IDs | **REPLACED** with native secure string generation. |
+| Library        | Usage | Strategy                                                                    |
+| :------------- | :---- | :-------------------------------------------------------------------------- |
+| **date-fns**   | Dates | **REPLACED** with native `Date` implementations.                            |
+| **nanoid**     | IDs   | **REPLACED** with native secure string generation.                          |
 | **es-toolkit** | Utils | **HYBRID**. Native for simple utils; `es-toolkit/compat` for complex logic. |
 
 ---

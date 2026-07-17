@@ -21,9 +21,7 @@ describe('SheetByIdStrategy - Comprehensive Test Suite', () => {
     };
 
     mockSpreadsheetService = {
-      getSheetInfo: jest.fn().mockReturnValue(
-        [{ name: 'Sheet1', rowCount: 10, columnCount: 3 }]
-      ),
+      getSheetInfo: jest.fn().mockReturnValue([{ name: 'Sheet1', rowCount: 10, columnCount: 3 }]),
       getRanges: jest.fn().mockReturnValue([
         ['Name', 'Age', 'Email'],
         ['John', 30, 'john@example.com'],
@@ -80,9 +78,9 @@ describe('SheetByIdStrategy - Comprehensive Test Suite', () => {
     });
 
     it('should use specified tab name when provided', () => {
-      mockSpreadsheetService.getSheetInfo.mockReturnValue(
-        [{ name: 'CustomSheet', rowCount: 10, columnCount: 3 }]
-      );
+      mockSpreadsheetService.getSheetInfo.mockReturnValue([
+        { name: 'CustomSheet', rowCount: 10, columnCount: 3 }
+      ]);
 
       const config = { sheetId: 'abc123', tabName: 'CustomSheet' };
 
@@ -216,9 +214,9 @@ describe('SheetByIdStrategy - Comprehensive Test Suite', () => {
     });
 
     it('should throw SourceError when tab name not found', () => {
-      mockSpreadsheetService.getSheetInfo.mockReturnValue(
-        [{ name: 'DifferentSheet', rowCount: 10, columnCount: 3 }]
-      );
+      mockSpreadsheetService.getSheetInfo.mockReturnValue([
+        { name: 'DifferentSheet', rowCount: 10, columnCount: 3 }
+      ]);
 
       const config = {
         sheetId: 'abc123',
@@ -251,9 +249,9 @@ describe('SheetByIdStrategy - Comprehensive Test Suite', () => {
     });
 
     it('should return empty array for empty sheet', () => {
-      mockSpreadsheetService.getSheetInfo.mockReturnValue(
-        [{ name: 'Sheet1', rowCount: 0, columnCount: 0 }]
-      );
+      mockSpreadsheetService.getSheetInfo.mockReturnValue([
+        { name: 'Sheet1', rowCount: 0, columnCount: 0 }
+      ]);
 
       const config = { sheetId: 'abc123' };
 
@@ -264,9 +262,9 @@ describe('SheetByIdStrategy - Comprehensive Test Suite', () => {
     });
 
     it('should return empty array when lastRow is 0', () => {
-      mockSpreadsheetService.getSheetInfo.mockReturnValue(
-        [{ name: 'Sheet1', rowCount: 0, columnCount: 5 }]
-      );
+      mockSpreadsheetService.getSheetInfo.mockReturnValue([
+        { name: 'Sheet1', rowCount: 0, columnCount: 5 }
+      ]);
 
       const config = { sheetId: 'abc123' };
 
@@ -276,9 +274,9 @@ describe('SheetByIdStrategy - Comprehensive Test Suite', () => {
     });
 
     it('should return empty array when lastColumn is 0', () => {
-      mockSpreadsheetService.getSheetInfo.mockReturnValue(
-        [{ name: 'Sheet1', rowCount: 10, columnCount: 0 }]
-      );
+      mockSpreadsheetService.getSheetInfo.mockReturnValue([
+        { name: 'Sheet1', rowCount: 10, columnCount: 0 }
+      ]);
 
       const config = { sheetId: 'abc123' };
 
@@ -323,9 +321,9 @@ describe('SheetByIdStrategy - Comprehensive Test Suite', () => {
   // ===================================================================
   describe('Integration Tests', () => {
     it('should extract data from specific tab with range and headers', () => {
-      mockSpreadsheetService.getSheetInfo.mockReturnValue(
-        [{ name: 'Data', rowCount: 100, columnCount: 10 }]
-      );
+      mockSpreadsheetService.getSheetInfo.mockReturnValue([
+        { name: 'Data', rowCount: 100, columnCount: 10 }
+      ]);
 
       const config = {
         sheetId: 'abc123',
@@ -466,9 +464,9 @@ describe('SheetByIdStrategy - Comprehensive Test Suite', () => {
 
     it('should handle very long sheet names in range', () => {
       const longName = 'A'.repeat(100);
-      mockSpreadsheetService.getSheetInfo.mockReturnValue(
-        [{ name: longName, rowCount: 10, columnCount: 3 }]
-      );
+      mockSpreadsheetService.getSheetInfo.mockReturnValue([
+        { name: longName, rowCount: 10, columnCount: 3 }
+      ]);
 
       const config = {
         sheetId: 'abc123',
@@ -482,9 +480,9 @@ describe('SheetByIdStrategy - Comprehensive Test Suite', () => {
 
     it('should handle sheet names with special characters', () => {
       const specialName = 'Sheet-1 (Copy)';
-      mockSpreadsheetService.getSheetInfo.mockReturnValue(
-        [{ name: specialName, rowCount: 10, columnCount: 3 }]
-      );
+      mockSpreadsheetService.getSheetInfo.mockReturnValue([
+        { name: specialName, rowCount: 10, columnCount: 3 }
+      ]);
 
       const config = {
         sheetId: 'abc123',
@@ -528,7 +526,9 @@ describe('SheetByIdStrategy - Comprehensive Test Suite', () => {
     });
 
     it('returns [] for an empty sheet without throwing', () => {
-      mockSpreadsheetService.getSheetInfo.mockReturnValue([{ name: 'Sheet1', rowCount: 0, columnCount: 0 }]);
+      mockSpreadsheetService.getSheetInfo.mockReturnValue([
+        { name: 'Sheet1', rowCount: 0, columnCount: 0 }
+      ]);
 
       expect(strategy.extractRaw({ sheetId: 'abc123' })).toEqual([]);
     });
@@ -538,7 +538,9 @@ describe('SheetByIdStrategy - Comprehensive Test Suite', () => {
     });
 
     it('throws SourceError when tab name not found, same as extract()', () => {
-      expect(() => strategy.extractRaw({ sheetId: 'abc123', tabName: 'Ghost' })).toThrow(SourceError);
+      expect(() => strategy.extractRaw({ sheetId: 'abc123', tabName: 'Ghost' })).toThrow(
+        SourceError
+      );
     });
 
     it('does not hydrate rows into header-keyed objects (unlike extract())', () => {

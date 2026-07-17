@@ -129,7 +129,7 @@ export class MockFactory {
     const utils = options.utils || MockFactory.createJestUtils();
     const cache = options.cache || MockFactory.createJestCache();
     const exceptionService = options.exceptionService || MockFactory.createJestExceptionService();
-    
+
     const db = new SheetDBTesting.DatabaseServiceMock(logger, utils, cache, exceptionService);
     if (options.tables) {
       Object.entries(options.tables).forEach(([name, table]) => {

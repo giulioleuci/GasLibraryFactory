@@ -145,7 +145,9 @@ export class Step {
     }
 
     const contextData = context.getData();
-    const missingKeys = keys.filter((key) => !Object.prototype.hasOwnProperty.call(contextData, key));
+    const missingKeys = keys.filter(
+      (key) => !Object.prototype.hasOwnProperty.call(contextData, key)
+    );
 
     if (missingKeys.length > 0) {
       throw new ContextValidationError(this._name, missingKeys, contextData);

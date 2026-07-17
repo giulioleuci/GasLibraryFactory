@@ -81,22 +81,22 @@ describe('InMemoryDelegationSource', () => {
         principalId: 'p1',
         delegateId: 'd1',
         validFrom: pastDate,
-        validTo: futureDate,
+        validTo: futureDate
       });
       // The Delegation value object has an isValidAt method
       expect(source._isValidDelegation(del, now)).toBe(true);
     });
 
     it('should use delegation.isValidAt if it exists and returns false', () => {
-        const del = new Delegation({
-          id: 'del-1',
-          principalId: 'p1',
-          delegateId: 'd1',
-          validFrom: pastDate,
-          validTo: new Date('2022-12-31T12:00:00Z'),
-        });
-        expect(source._isValidDelegation(del, now)).toBe(false);
+      const del = new Delegation({
+        id: 'del-1',
+        principalId: 'p1',
+        delegateId: 'd1',
+        validFrom: pastDate,
+        validTo: new Date('2022-12-31T12:00:00Z')
       });
+      expect(source._isValidDelegation(del, now)).toBe(false);
+    });
 
     it('should fallback to manual checking - inactive', () => {
       const del = {
@@ -192,7 +192,7 @@ describe('InMemoryDelegationSource', () => {
       it('should return active delegations for a delegate', () => {
         const results = source.getActiveDelegationsForDelegate('d1', now);
         expect(results).toHaveLength(2);
-        expect(results.map(d => d.id)).toEqual(['del-1', 'del-3']);
+        expect(results.map((d) => d.id)).toEqual(['del-1', 'del-3']);
       });
 
       it('should return empty array if delegate has no active delegations', () => {
@@ -207,60 +207,70 @@ describe('InMemoryDelegationSource', () => {
 
     beforeEach(() => {
       // p1 -> p2 -> p3
-      source.addDelegation(new Delegation({
-        id: 'chain-1',
-        principalId: 'p1',
-        delegateId: 'p2',
-        roleIds: ['role-a'],
-        validFrom: pastDate,
-        validTo: futureDate
-      }));
-      source.addDelegation(new Delegation({
-        id: 'chain-2',
-        principalId: 'p2',
-        delegateId: 'p3',
-        roleIds: ['role-a'],
-        validFrom: pastDate,
-        validTo: futureDate
-      }));
+      source.addDelegation(
+        new Delegation({
+          id: 'chain-1',
+          principalId: 'p1',
+          delegateId: 'p2',
+          roleIds: ['role-a'],
+          validFrom: pastDate,
+          validTo: futureDate
+        })
+      );
+      source.addDelegation(
+        new Delegation({
+          id: 'chain-2',
+          principalId: 'p2',
+          delegateId: 'p3',
+          roleIds: ['role-a'],
+          validFrom: pastDate,
+          validTo: futureDate
+        })
+      );
 
       // another unrelated delegation
-      source.addDelegation(new Delegation({
-        id: 'other',
-        principalId: 'p1',
-        delegateId: 'p4',
-        roleIds: ['role-b'],
-        validFrom: pastDate,
-        validTo: futureDate
-      }));
+      source.addDelegation(
+        new Delegation({
+          id: 'other',
+          principalId: 'p1',
+          delegateId: 'p4',
+          roleIds: ['role-b'],
+          validFrom: pastDate,
+          validTo: futureDate
+        })
+      );
 
       // Circular delegation: p5 -> p6 -> p5
-      source.addDelegation(new Delegation({
-        id: 'circ-1',
-        principalId: 'p5',
-        delegateId: 'p6',
-        roleIds: ['role-c'],
-        validFrom: pastDate,
-        validTo: futureDate
-      }));
-      source.addDelegation(new Delegation({
-        id: 'circ-2',
-        principalId: 'p6',
-        delegateId: 'p5',
-        roleIds: ['role-c'],
-        validFrom: pastDate,
-        validTo: futureDate
-      }));
+      source.addDelegation(
+        new Delegation({
+          id: 'circ-1',
+          principalId: 'p5',
+          delegateId: 'p6',
+          roleIds: ['role-c'],
+          validFrom: pastDate,
+          validTo: futureDate
+        })
+      );
+      source.addDelegation(
+        new Delegation({
+          id: 'circ-2',
+          principalId: 'p6',
+          delegateId: 'p5',
+          roleIds: ['role-c'],
+          validFrom: pastDate,
+          validTo: futureDate
+        })
+      );
 
       // Delegation using manual object (no appliesToRole method)
       source.addDelegation({
-          id: 'manual-1',
-          principalId: 'p7',
-          delegateId: 'p8',
-          roleIds: ['role-d'],
-          isActive: true,
-          validFrom: pastDate,
-          validTo: futureDate
+        id: 'manual-1',
+        principalId: 'p7',
+        delegateId: 'p8',
+        roleIds: ['role-d'],
+        isActive: true,
+        validFrom: pastDate,
+        validTo: futureDate
       });
     });
 
@@ -284,14 +294,14 @@ describe('InMemoryDelegationSource', () => {
     });
 
     it('should work with manual objects lacking appliesToRole/appliesToScope', () => {
-        const chain = source.getDelegationChain('p7', 'role-d', scope, now);
-        expect(chain).toHaveLength(1);
-        expect(chain[0].id).toBe('manual-1');
+      const chain = source.getDelegationChain('p7', 'role-d', scope, now);
+      expect(chain).toHaveLength(1);
+      expect(chain[0].id).toBe('manual-1');
     });
 
     it('should not include manual objects if role mismatch', () => {
-        const chain = source.getDelegationChain('p7', 'role-a', scope, now);
-        expect(chain).toHaveLength(0);
+      const chain = source.getDelegationChain('p7', 'role-a', scope, now);
+      expect(chain).toHaveLength(0);
     });
   });
 });

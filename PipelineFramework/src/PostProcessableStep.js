@@ -11,10 +11,10 @@ import { PostProcessorRegistry } from './postprocessor/PostProcessorRegistry';
 
 /**
  * Step extension with automated post-processor lifecycle integration.
- * 
+ *
  * @description
- * Enhances base Step logic with an optional PostProcessorChain. Automatically instantiates 
- * and executes processors based on step outcome (success/failure) using injected services 
+ * Enhances base Step logic with an optional PostProcessorChain. Automatically instantiates
+ * and executes processors based on step outcome (success/failure) using injected services
  * (SheetDB, ExpressionEngine).
  *
  * @class

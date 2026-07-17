@@ -8,7 +8,7 @@ function initWorkspaceTemplateEngineTests() {
   runner.register(`${NS}/Document/Substitution`, () => {
     testContext.resetDocument();
     const doc = testContext.getDocument();
-    
+
     const body = doc.getBody();
     body.appendParagraph('Hello {{name}}! Welcome to {{place}}.');
     doc.saveAndClose();
@@ -17,9 +17,9 @@ function initWorkspaceTemplateEngineTests() {
     const mustache = new Mustache({ logger });
     const placeholderService = new PlaceholderService({ logger, mustache });
     const docProcessor = new DocumentProcessor(placeholderService);
-    
+
     docProcessor.process(doc.getId(), { name: 'Alice', place: 'Wonderland' });
-    
+
     const updatedDoc = DocumentApp.openById(doc.getId());
     const text = updatedDoc.getBody().getText();
     SmartAssert.isTrue(text.includes('Hello Alice'), 'Should substitute name');
@@ -29,7 +29,7 @@ function initWorkspaceTemplateEngineTests() {
   runner.register(`${NS}/Document/Table_Iteration`, () => {
     testContext.resetDocument();
     const doc = testContext.getDocument();
-    
+
     const body = doc.getBody();
     body.appendTable([
       ['Name', 'Age'],
@@ -41,16 +41,16 @@ function initWorkspaceTemplateEngineTests() {
     const mustache = new Mustache({ logger });
     const placeholderService = new PlaceholderService({ logger, mustache });
     const docProcessor = new DocumentProcessor(placeholderService);
-    
+
     const data = {
       students: [
         { name: 'Alice', age: 25 },
         { name: 'Bob', age: 30 }
       ]
     };
-    
+
     docProcessor.process(doc.getId(), data);
-    
+
     const updatedDoc = DocumentApp.openById(doc.getId());
     const table = updatedDoc.getBody().getTables()[0];
     SmartAssert.equals(table.getNumRows(), 3, 'Table should have 3 rows');
@@ -62,22 +62,24 @@ function initWorkspaceTemplateEngineTests() {
     const ss = testContext.getSpreadsheet();
     testContext.resetSpreadsheet(ss);
     const sheet = ss.getSheets()[0];
-    
-    sheet.getRange('A1').setValue('{{matrice_dati[sorgente=users, colonne=name;email, intestazioni=Name;Email]}}');
+
+    sheet
+      .getRange('A1')
+      .setValue('{{matrice_dati[sorgente=users, colonne=name;email, intestazioni=Name;Email]}}');
     SpreadsheetApp.flush();
 
     const logger = new LoggerService();
     const mustache = new Mustache({ logger });
     const placeholderService = new PlaceholderService({ logger, mustache });
     const sheetProcessor = new SheetProcessor(placeholderService);
-    
+
     const data = {
       users: [
         { name: 'Alice', email: 'alice@example.com' },
         { name: 'Bob', email: 'bob@example.com' }
       ]
     };
-    
+
     sheetProcessor.process(ss.getId(), data);
     SpreadsheetApp.flush();
 

@@ -102,7 +102,7 @@ module.exports = (env, argv) => {
               const parts = testFile.split(path.sep);
               const libraryName = parts[0];
               const fileName = path.basename(testFile, '.gs');
-              
+
               // Simplify naming: if fileName already starts with libraryName, don't repeat it
               let outputFileName;
               if (fileName.startsWith(libraryName)) {
@@ -110,7 +110,7 @@ module.exports = (env, argv) => {
               } else {
                 outputFileName = `TEST_${libraryName}_${fileName}.gs`;
               }
-              
+
               const destPath = path.join(distDir, outputFileName);
               fs.copyFileSync(sourcePath, destPath);
               testFileMap[outputFileName] = testFile;
@@ -157,7 +157,8 @@ module.exports = (env, argv) => {
             if (fs.existsSync(humanTests)) {
               const destPath = path.join(distDir, 'TEST_HUMAN_InspectionTests.gs');
               fs.copyFileSync(humanTests, destPath);
-              testFileMap['TEST_HUMAN_InspectionTests.gs'] = '__testOnline__/HumanInspectionTests.gs';
+              testFileMap['TEST_HUMAN_InspectionTests.gs'] =
+                '__testOnline__/HumanInspectionTests.gs';
               copiedCount++;
             }
 
@@ -166,7 +167,9 @@ module.exports = (env, argv) => {
             fs.writeFileSync(testMapPath, JSON.stringify(testFileMap, null, 2));
 
             console.log(`CopyOnlineTestsPlugin: ${copiedCount} test file(s) copied to dist/`);
-            console.log(`CopyOnlineTestsPlugin: test-file-map.json written with ${Object.keys(testFileMap).length} mapping(s)`);
+            console.log(
+              `CopyOnlineTestsPlugin: test-file-map.json written with ${Object.keys(testFileMap).length} mapping(s)`
+            );
             callback();
           });
         }

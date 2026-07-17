@@ -15,13 +15,17 @@ export class JobRunnerLogCapturer {
     }
     const validTargets = ['sidebar', 'driveFile'];
     if (!validTargets.includes(loggingConfig.target)) {
-      throw new Error(`MyJobRunnerService: loggingConfig.target must be one of: ${validTargets.join(', ')}`);
+      throw new Error(
+        `MyJobRunnerService: loggingConfig.target must be one of: ${validTargets.join(', ')}`
+      );
     }
     if (loggingConfig.target === 'sidebar' && !loggingConfig.uiService) {
       throw new Error('MyJobRunnerService: loggingConfig.uiService is required for sidebar target');
     }
     if (loggingConfig.target === 'driveFile' && !loggingConfig.driveService) {
-      throw new Error('MyJobRunnerService: loggingConfig.driveService is required for driveFile target');
+      throw new Error(
+        'MyJobRunnerService: loggingConfig.driveService is required for driveFile target'
+      );
     }
   }
 
@@ -31,11 +35,19 @@ export class JobRunnerLogCapturer {
       this._logger.debug('MyJobRunnerService._displayLogs: No logs to display');
       return;
     }
-    this._logger.debug(`MyJobRunnerService._displayLogs: Displaying ${logCount} log entries via ${loggingConfig.target}`);
+    this._logger.debug(
+      `MyJobRunnerService._displayLogs: Displaying ${logCount} log entries via ${loggingConfig.target}`
+    );
     if (loggingConfig.target === 'sidebar') {
       this._displayLogsInSidebar(capturingLogger, loggingConfig.uiService, jobName, error);
     } else if (loggingConfig.target === 'driveFile') {
-      this._displayLogsInDriveFile(capturingLogger, loggingConfig.driveService, loggingConfig.driveFolderId, jobName, error);
+      this._displayLogsInDriveFile(
+        capturingLogger,
+        loggingConfig.driveService,
+        loggingConfig.driveFolderId,
+        jobName,
+        error
+      );
     }
   }
 
@@ -57,14 +69,30 @@ export class JobRunnerLogCapturer {
       ${error ? `<div style="margin-top: 5px; font-size: 12px;">Error: ${this._escapeHtml(error.message)}</div>` : ''}</div>
       <div class="logs-container">${logsHtml}</div><div class="footer"><button onclick="google.script.host.close()">Close</button></div>`;
     uiService.createSidebar().setTitle(`Job Log: ${jobName}`).setContent(html).setWidth(500).show();
-    this._logger.info(`MyJobRunnerService: Job logs displayed in sidebar (${capturingLogger.getLogCount()} entries)`);
+    this._logger.info(
+      `MyJobRunnerService: Job logs displayed in sidebar (${capturingLogger.getLogCount()} entries)`
+    );
   }
 
   _displayLogsInDriveFile(capturingLogger, driveService, folderId, jobName, error) {
     const timestamp = new Date().toISOString().replace(/[:.]/g, '-');
     const statusText = error ? 'FAILED' : 'COMPLETED';
     const fileName = `JobLog_${jobName}_${statusText}_${timestamp}.txt`;
-    const header = [`Job Execution Log`, `==================`, `Job Name: ${jobName}`, `Status: ${statusText}`, `Timestamp: ${new Date().toISOString()}`, error ? `Error: ${error.message}` : '', `Log Entries: ${capturingLogger.getLogCount()}`, ``, `Logs:`, `------`, ``].filter(line => line !== null).join('\n');
+    const header = [
+      `Job Execution Log`,
+      `==================`,
+      `Job Name: ${jobName}`,
+      `Status: ${statusText}`,
+      `Timestamp: ${new Date().toISOString()}`,
+      error ? `Error: ${error.message}` : '',
+      `Log Entries: ${capturingLogger.getLogCount()}`,
+      ``,
+      `Logs:`,
+      `------`,
+      ``
+    ]
+      .filter((line) => line !== null)
+      .join('\n');
     const logsText = capturingLogger.getLogsAsText();
     const fullContent = header + logsText;
     try {

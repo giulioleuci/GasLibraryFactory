@@ -15,7 +15,7 @@ function _getNativeCacheService() {
 /**
  * @class CacheService
  * @description Facade for Google Apps Script native CacheService. Provides unified access to Script, User, and Document cache scopes with consistent error handling, automatic serialization, and TTL enforcement.
- * 
+ *
  * @property {LoggerService} _logger Diagnostic logger.
  * @property {ExceptionService} _exceptionService Resiliency provider.
  */
@@ -109,7 +109,7 @@ export class CacheService {
 /**
  * @class Cache
  * @description Wrapper for Google Apps Script Cache instances. Extends native functionality with automatic string conversion, TTL enforcement (max 6h), and diagnostic logging.
- * 
+ *
  * @property {Object} _cache Native GAS Cache instance.
  * @property {LoggerService} _logger Diagnostic logger.
  * @property {string} _type Cache scope identifier ('script', 'user', 'document').

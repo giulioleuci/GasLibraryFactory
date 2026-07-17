@@ -89,7 +89,10 @@ describe('DelegationRules', () => {
     });
 
     it('should return true if scopeRestriction contains targetScope', () => {
-      const mockScopeRestriction = { contains: jest.fn().mockReturnValue(true), matches: jest.fn().mockReturnValue(false) };
+      const mockScopeRestriction = {
+        contains: jest.fn().mockReturnValue(true),
+        matches: jest.fn().mockReturnValue(false)
+      };
       const rules = new DelegationRules({ scopeRestriction: mockScopeRestriction });
       const targetScope = { type: 'PROJECT', value: '123' };
 
@@ -98,7 +101,10 @@ describe('DelegationRules', () => {
     });
 
     it('should return true if scopeRestriction matches targetScope', () => {
-      const mockScopeRestriction = { contains: jest.fn().mockReturnValue(false), matches: jest.fn().mockReturnValue(true) };
+      const mockScopeRestriction = {
+        contains: jest.fn().mockReturnValue(false),
+        matches: jest.fn().mockReturnValue(true)
+      };
       const rules = new DelegationRules({ scopeRestriction: mockScopeRestriction });
       const targetScope = { type: 'PROJECT', value: '123' };
 
@@ -107,7 +113,10 @@ describe('DelegationRules', () => {
     });
 
     it('should return false if scopeRestriction neither contains nor matches targetScope', () => {
-      const mockScopeRestriction = { contains: jest.fn().mockReturnValue(false), matches: jest.fn().mockReturnValue(false) };
+      const mockScopeRestriction = {
+        contains: jest.fn().mockReturnValue(false),
+        matches: jest.fn().mockReturnValue(false)
+      };
       const rules = new DelegationRules({ scopeRestriction: mockScopeRestriction });
       const targetScope = { type: 'PROJECT', value: '123' };
 
@@ -117,7 +126,10 @@ describe('DelegationRules', () => {
 
   describe('appliesTo', () => {
     it('should return true if all conditions are met', () => {
-      const mockScopeRestriction = { contains: jest.fn().mockReturnValue(true), matches: jest.fn().mockReturnValue(false) };
+      const mockScopeRestriction = {
+        contains: jest.fn().mockReturnValue(true),
+        matches: jest.fn().mockReturnValue(false)
+      };
       const validFrom = new Date('2024-01-01T00:00:00Z');
       const rules = new DelegationRules({
         isActive: true,
@@ -137,12 +149,20 @@ describe('DelegationRules', () => {
 
     it('should return false if appliesToRole is false', () => {
       const validFrom = new Date('2024-01-01T00:00:00Z');
-      const rules = new DelegationRules({ isActive: true, validFrom, validTo: null, roleIds: ['role1'] });
+      const rules = new DelegationRules({
+        isActive: true,
+        validFrom,
+        validTo: null,
+        roleIds: ['role1']
+      });
       expect(rules.appliesTo('role2', {})).toBe(false);
     });
 
     it('should return false if appliesToScope is false', () => {
-      const mockScopeRestriction = { contains: jest.fn().mockReturnValue(false), matches: jest.fn().mockReturnValue(false) };
+      const mockScopeRestriction = {
+        contains: jest.fn().mockReturnValue(false),
+        matches: jest.fn().mockReturnValue(false)
+      };
       const validFrom = new Date('2024-01-01T00:00:00Z');
       const rules = new DelegationRules({
         isActive: true,

@@ -13,12 +13,18 @@ function initDomainRepositoryLibTests() {
       this.email = data.email || null;
       this.status = data.status || 'active';
     }
-    toData() { return { id: this.id, name: this.name, email: this.email, status: this.status }; }
-    static fromData(data) { return new Customer(data); }
+    toData() {
+      return { id: this.id, name: this.name, email: this.email, status: this.status };
+    }
+    static fromData(data) {
+      return new Customer(data);
+    }
   }
 
   class CustomerRepository extends Repository {
-    constructor(database) { super(database, 'Customers', Customer); }
+    constructor(database) {
+      super(database, 'Customers', Customer);
+    }
   }
 
   runner.register(`${NS}/Repository/CRUD_Integration`, () => {
@@ -66,9 +72,17 @@ function initDomainRepositoryLibTests() {
     SpreadsheetApp.flush();
 
     class DynamicEntity extends Entity {
-      constructor(data) { super(data); this.name = data.name; this.meta = data.meta || {}; }
-      toData() { return { id: this.id, name: this.name, meta: this.meta }; }
-      static fromData(data) { return new DynamicEntity(data); }
+      constructor(data) {
+        super(data);
+        this.name = data.name;
+        this.meta = data.meta || {};
+      }
+      toData() {
+        return { id: this.id, name: this.name, meta: this.meta };
+      }
+      static fromData(data) {
+        return new DynamicEntity(data);
+      }
     }
 
     class DynamicRepository extends Repository {
@@ -96,7 +110,7 @@ function initDomainRepositoryLibTests() {
     metaMap.set('size', 'large');
     const entity = new DynamicEntity({ name: 'Item', meta: metaMap });
     const saved = repo.save(entity);
-    
+
     const found = repo.findById(saved.id);
     SmartAssert.equals(found.meta.get('color'), 'red', 'Should hydrate dynamic field');
     SmartAssert.equals(found.meta.get('size'), 'large', 'Should hydrate dynamic field');

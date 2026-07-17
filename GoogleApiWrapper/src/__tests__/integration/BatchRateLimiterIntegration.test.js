@@ -38,14 +38,14 @@ global.BatchResponseParser = class {
     const text = response.getContentText();
     const parts = text.split('--batch_test_boundary');
     const parsed = [];
-    
-    parts.forEach(part => {
+
+    parts.forEach((part) => {
       if (part.includes('HTTP/1.1')) {
         const isSuccess = part.includes('200 OK');
         parsed.push({ success: isSuccess });
       }
     });
-    
+
     return parsed;
   }
 };
@@ -210,11 +210,7 @@ ${JSON.stringify(part.data)}`
   describe('RateLimiter', () => {
     it('should allow operations within rate limit', () => {
       // 10 operations per second using config object
-      const limiter = new RateLimiter(
-        { requestsPerMinute: 600, burstCapacity: 10 },
-        logger,
-        utils
-      );
+      const limiter = new RateLimiter({ requestsPerMinute: 600, burstCapacity: 10 }, logger, utils);
 
       const startTime = Date.now();
       for (let i = 0; i < 5; i++) {
@@ -242,11 +238,7 @@ ${JSON.stringify(part.data)}`
     });
 
     it('should reject if insufficient tokens and no wait', () => {
-      const limiter = new RateLimiter(
-        { requestsPerMinute: 300, burstCapacity: 5 },
-        logger,
-        utils
-      );
+      const limiter = new RateLimiter({ requestsPerMinute: 300, burstCapacity: 5 }, logger, utils);
 
       // Consume all tokens
       for (let i = 0; i < 5; i++) {
@@ -258,11 +250,7 @@ ${JSON.stringify(part.data)}`
     });
 
     it('should report throttle statistics when rate limited', () => {
-      const limiter = new RateLimiter(
-        { requestsPerMinute: 600, burstCapacity: 10 },
-        logger,
-        utils
-      );
+      const limiter = new RateLimiter({ requestsPerMinute: 600, burstCapacity: 10 }, logger, utils);
 
       // Consume all tokens
       for (let i = 0; i < 10; i++) {

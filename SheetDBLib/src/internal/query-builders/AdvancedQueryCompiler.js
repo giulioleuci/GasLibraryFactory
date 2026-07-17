@@ -166,7 +166,8 @@ export class AdvancedQueryCompiler {
       rightHashMap = new Map();
       for (let i = 0; i < rightRows.length; i++) {
         const rightRow = rightRows[i];
-        const foreignValue = rightRow[foreignField.includes('.') ? foreignField.split('.').pop() : foreignField];
+        const foreignValue =
+          rightRow[foreignField.includes('.') ? foreignField.split('.').pop() : foreignField];
         if (!rightHashMap.has(foreignValue)) rightHashMap.set(foreignValue, []);
         rightHashMap.get(foreignValue).push({ row: rightRow, index: i });
       }
@@ -179,7 +180,13 @@ export class AdvancedQueryCompiler {
       if (useHashJoin) {
         const matchingRightRows = rightHashMap.get(localValue) || [];
         for (const { row: rightRow, index: rightIndex } of matchingRightRows) {
-          if (_compareValues(localValue, operator, rightRow[foreignField.includes('.') ? foreignField.split('.').pop() : foreignField])) {
+          if (
+            _compareValues(
+              localValue,
+              operator,
+              rightRow[foreignField.includes('.') ? foreignField.split('.').pop() : foreignField]
+            )
+          ) {
             hasMatch = true;
             const mergedRow = { ...leftRow, ...prefixRow(rightRow, tableName) };
             result.push(mergedRow);
@@ -189,7 +196,8 @@ export class AdvancedQueryCompiler {
       } else {
         for (let i = 0; i < rightRows.length; i++) {
           const rightRow = rightRows[i];
-          const foreignValue = rightRow[foreignField.includes('.') ? foreignField.split('.').pop() : foreignField];
+          const foreignValue =
+            rightRow[foreignField.includes('.') ? foreignField.split('.').pop() : foreignField];
           if (_compareValues(localValue, operator, foreignValue)) {
             hasMatch = true;
             const mergedRow = { ...leftRow, ...prefixRow(rightRow, tableName) };
@@ -243,22 +251,30 @@ export class AdvancedQueryCompiler {
    */
   _tryIndexOptimization(table) {
     if (this.facade.conditions.length === 0) return null;
-    const allAndEquality = this.facade.conditions.every(cond => cond.type === 'AND' && (cond.operator === '=' || cond.operator === '=='));
+    const allAndEquality = this.facade.conditions.every(
+      (cond) => cond.type === 'AND' && (cond.operator === '=' || cond.operator === '==')
+    );
 
     if (!allAndEquality) {
       if (this.facade.conditions.length !== 1) return null;
       const condition = this.facade.conditions[0];
-      if ((condition.operator === '=' || condition.operator === '==') && condition.field === table._keyField) {
+      if (
+        (condition.operator === '=' || condition.operator === '==') &&
+        condition.field === table._keyField
+      ) {
         const row = table.getRowById(condition.value);
         this.facade._optimizedField = condition.field;
         return row ? [row] : [];
       }
-      if (table._indices[condition.field] && (condition.operator === '=' || condition.operator === '==')) {
+      if (
+        table._indices[condition.field] &&
+        (condition.operator === '=' || condition.operator === '==')
+      ) {
         const index = table._indices[condition.field];
         const rowIndices = index.get(condition.value) || [];
         this.facade._optimizedField = condition.field;
         table._ensureDataLoaded();
-        return rowIndices.map(idx => ({ ...table._rowsCache[idx] }));
+        return rowIndices.map((idx) => ({ ...table._rowsCache[idx] }));
       }
       return null;
     }
@@ -288,8 +304,10 @@ export class AdvancedQueryCompiler {
     if (bestCondition && bestIndex) {
       table._ensureDataLoaded();
       this.facade._optimizedField = bestCondition.field;
-      const candidateRows = bestIndex.map(idx => ({ ...table._rowsCache[idx] }));
-      const remainingConditions = this.facade.conditions.filter(c => c.field !== bestCondition.field);
+      const candidateRows = bestIndex.map((idx) => ({ ...table._rowsCache[idx] }));
+      const remainingConditions = this.facade.conditions.filter(
+        (c) => c.field !== bestCondition.field
+      );
       if (remainingConditions.length === 0) return candidateRows;
       return this._applyConditionsFiltered(candidateRows, remainingConditions);
     }
@@ -303,7 +321,7 @@ export class AdvancedQueryCompiler {
    */
   _getRemainingConditions() {
     if (!this.facade._optimizedField) return this.facade.conditions;
-    return this.facade.conditions.filter(cond => cond.field !== this.facade._optimizedField);
+    return this.facade.conditions.filter((cond) => cond.field !== this.facade._optimizedField);
   }
 
   /**
@@ -331,7 +349,7 @@ export class AdvancedQueryCompiler {
    * @private
    */
   _applyConditionsFiltered(rows, conditions) {
-    return rows.filter(row => {
+    return rows.filter((row) => {
       let finalResult = true;
       for (const cond of conditions) {
         const rowValue = this._getFieldValue(row, cond.field);
@@ -363,10 +381,12 @@ export class AdvancedQueryCompiler {
     if (!rows || rows.length === 0) return [];
     const groups = {};
     for (const row of rows) {
-      const key = this.facade.groupByFields.map(f => {
-        const val = this._getFieldValue(row, f);
-        return _isNullOrUndefined(val) ? 'NULL' : val.toString();
-      }).join('|');
+      const key = this.facade.groupByFields
+        .map((f) => {
+          const val = this._getFieldValue(row, f);
+          return _isNullOrUndefined(val) ? 'NULL' : val.toString();
+        })
+        .join('|');
       if (!groups[key]) groups[key] = [];
       groups[key].push(row);
     }
@@ -375,7 +395,8 @@ export class AdvancedQueryCompiler {
       const group = groups[key];
       const resultRow = {};
       const firstRow = group[0];
-      for (const field of this.facade.groupByFields) resultRow[field] = this._getFieldValue(firstRow, field);
+      for (const field of this.facade.groupByFields)
+        resultRow[field] = this._getFieldValue(firstRow, field);
       for (const agg of this.facade.aggregations) resultRow[agg.alias] = agg.calculate(group);
       results.push(resultRow);
     }

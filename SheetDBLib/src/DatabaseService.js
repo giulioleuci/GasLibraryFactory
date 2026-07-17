@@ -48,7 +48,14 @@ export class MyDatabaseService {
     this._delegate([
       {
         manager: this._connectionManager,
-        methods: ['save', 'beginTransaction', 'commit', 'rollback', '_performRollback', 'inTransaction']
+        methods: [
+          'save',
+          'beginTransaction',
+          'commit',
+          'rollback',
+          '_performRollback',
+          'inTransaction'
+        ]
       },
       {
         manager: this._schemaExplorer,
@@ -73,7 +80,7 @@ export class MyDatabaseService {
 
   _delegate(delegations) {
     delegations.forEach(({ manager, methods }) => {
-      methods.forEach(method => {
+      methods.forEach((method) => {
         if (typeof manager[method] === 'function') {
           this[method] = manager[method].bind(manager);
         }

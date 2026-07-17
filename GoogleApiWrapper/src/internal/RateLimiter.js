@@ -33,9 +33,10 @@ export class RateLimiter {
       throw new Error('RateLimiter: burst capacity must be at least 1');
     }
 
-    const maxWaitThresholdMs = config.maxWaitThresholdMs !== undefined
-      ? config.maxWaitThresholdMs
-      : DEFAULT_MAX_WAIT_THRESHOLD_MS;
+    const maxWaitThresholdMs =
+      config.maxWaitThresholdMs !== undefined
+        ? config.maxWaitThresholdMs
+        : DEFAULT_MAX_WAIT_THRESHOLD_MS;
     if (maxWaitThresholdMs < 0) {
       throw new Error('RateLimiter: maxWaitThresholdMs must be non-negative');
     }
@@ -107,7 +108,9 @@ export class RateLimiter {
 
     bucket.throttledCount += 1;
     this._stats.throttledRequests += 1;
-    this._log(`Rate limit reached for '${operationName}' (need ${tokensRequired}, have ${bucket.tokens.toFixed(2)})`);
+    this._log(
+      `Rate limit reached for '${operationName}' (need ${tokensRequired}, have ${bucket.tokens.toFixed(2)})`
+    );
     return false;
   }
 
@@ -144,7 +147,9 @@ export class RateLimiter {
 
   acquire(operationName, tokensRequired = 1) {
     if (!this.tryAcquire(operationName, tokensRequired)) {
-      throw new Error(`Rate limit exceeded for operation '${operationName}'. Please try again later.`);
+      throw new Error(
+        `Rate limit exceeded for operation '${operationName}'. Please try again later.`
+      );
     }
   }
 
@@ -187,13 +192,9 @@ export class RateLimiter {
   getGlobalStats() {
     const { totalRequests, throttledRequests, totalWaitTime } = this._stats;
     const throttleRate =
-      totalRequests === 0
-        ? '0%'
-        : `${((throttledRequests / totalRequests) * 100).toFixed(2)}%`;
+      totalRequests === 0 ? '0%' : `${((throttledRequests / totalRequests) * 100).toFixed(2)}%`;
     const avgWaitTime =
-      totalRequests === 0
-        ? '0ms'
-        : `${(totalWaitTime / totalRequests).toFixed(2)}ms`;
+      totalRequests === 0 ? '0ms' : `${(totalWaitTime / totalRequests).toFixed(2)}ms`;
 
     return {
       totalRequests,

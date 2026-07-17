@@ -16,14 +16,14 @@ var uuidCounter = 0;
 
 if (typeof global.Utilities === 'undefined') {
   global.Utilities = {
-    sleep: jest.fn(function() {}),
+    sleep: jest.fn(function () {}),
 
-    getUuid: jest.fn(function() {
+    getUuid: jest.fn(function () {
       uuidCounter++;
       return 'test-uuid-' + String(uuidCounter).padStart(4, '0');
     }),
 
-    formatDate: jest.fn(function(date, timezone, format) {
+    formatDate: jest.fn(function (date, timezone, format) {
       if (!(date instanceof Date)) throw new Error('Invalid date');
       if (!format) format = 'yyyy-MM-dd';
       var year = date.getFullYear();
@@ -41,7 +41,7 @@ if (typeof global.Utilities === 'undefined') {
         .replace('ss', seconds);
     }),
 
-    base64Encode: jest.fn(function(data) {
+    base64Encode: jest.fn(function (data) {
       if (typeof data === 'string') {
         if (typeof btoa === 'function') return btoa(data);
         return data;
@@ -49,19 +49,19 @@ if (typeof global.Utilities === 'undefined') {
       return String(data);
     }),
 
-    base64Decode: jest.fn(function(encoded) {
+    base64Decode: jest.fn(function (encoded) {
       if (typeof atob === 'function') return atob(encoded);
       return encoded;
     }),
 
-    parseCsv: jest.fn(function(csvString) {
+    parseCsv: jest.fn(function (csvString) {
       if (!csvString) return [];
-      return csvString.split('\n').map(function(line) {
+      return csvString.split('\n').map(function (line) {
         return line.split(',');
       });
     }),
 
-    computeDigest: jest.fn(function(algorithm, value) {
+    computeDigest: jest.fn(function (algorithm, value) {
       var hash = 0;
       for (var i = 0; i < value.length; i++) {
         hash = ((hash << 5) - hash + value.charCodeAt(i)) | 0;
@@ -93,14 +93,26 @@ if (typeof global.Utilities === 'undefined') {
 
 if (typeof global.Session === 'undefined') {
   global.Session = {
-    getActiveUser: jest.fn(function() {
-      return { getEmail: function() { return 'test@example.com'; } };
+    getActiveUser: jest.fn(function () {
+      return {
+        getEmail: function () {
+          return 'test@example.com';
+        }
+      };
     }),
-    getEffectiveUser: jest.fn(function() {
-      return { getEmail: function() { return 'test@example.com'; } };
+    getEffectiveUser: jest.fn(function () {
+      return {
+        getEmail: function () {
+          return 'test@example.com';
+        }
+      };
     }),
-    getScriptTimeZone: jest.fn(function() { return 'Europe/Rome'; }),
-    getTemporaryActiveUserKey: jest.fn(function() { return 'temp-user-key-123'; })
+    getScriptTimeZone: jest.fn(function () {
+      return 'Europe/Rome';
+    }),
+    getTemporaryActiveUserKey: jest.fn(function () {
+      return 'temp-user-key-123';
+    })
   };
 }
 
@@ -108,12 +120,12 @@ if (typeof global.Session === 'undefined') {
 
 if (typeof global.Logger === 'undefined') {
   global.Logger = {
-    log: function(msg) {
+    log: function (msg) {
       if (typeof console !== 'undefined') {
         console.log(msg);
       }
     },
-    clear: function() {}
+    clear: function () {}
   };
 }
 
@@ -126,27 +138,46 @@ if (typeof global.CacheService === 'undefined') {
     if (!cacheStores[name]) cacheStores[name] = {};
     var store = cacheStores[name];
     return {
-      get: jest.fn(function(key) { return store[key] || null; }),
-      put: jest.fn(function(key, value) { store[key] = String(value); }),
-      remove: jest.fn(function(key) { delete store[key]; }),
-      removeAll: jest.fn(function(keys) {
-        if (keys) keys.forEach(function(k) { delete store[k]; });
+      get: jest.fn(function (key) {
+        return store[key] || null;
       }),
-      getAll: jest.fn(function(keys) {
+      put: jest.fn(function (key, value) {
+        store[key] = String(value);
+      }),
+      remove: jest.fn(function (key) {
+        delete store[key];
+      }),
+      removeAll: jest.fn(function (keys) {
+        if (keys)
+          keys.forEach(function (k) {
+            delete store[k];
+          });
+      }),
+      getAll: jest.fn(function (keys) {
         var result = {};
-        keys.forEach(function(k) { if (store[k]) result[k] = store[k]; });
+        keys.forEach(function (k) {
+          if (store[k]) result[k] = store[k];
+        });
         return result;
       }),
-      putAll: jest.fn(function(values) {
-        Object.keys(values).forEach(function(k) { store[k] = String(values[k]); });
+      putAll: jest.fn(function (values) {
+        Object.keys(values).forEach(function (k) {
+          store[k] = String(values[k]);
+        });
       })
     };
   }
 
   global.CacheService = {
-    getScriptCache: jest.fn(function() { return createCacheStore('script'); }),
-    getUserCache: jest.fn(function() { return createCacheStore('user'); }),
-    getDocumentCache: jest.fn(function() { return createCacheStore('document'); })
+    getScriptCache: jest.fn(function () {
+      return createCacheStore('script');
+    }),
+    getUserCache: jest.fn(function () {
+      return createCacheStore('user');
+    }),
+    getDocumentCache: jest.fn(function () {
+      return createCacheStore('document');
+    })
   };
 }
 
@@ -159,23 +190,41 @@ if (typeof global.PropertiesService === 'undefined') {
     if (!propStores[name]) propStores[name] = {};
     var store = propStores[name];
     return {
-      getProperty: jest.fn(function(key) { return store[key] || null; }),
-      setProperty: jest.fn(function(key, value) { store[key] = String(value); }),
-      deleteProperty: jest.fn(function(key) { delete store[key]; }),
-      getProperties: jest.fn(function() { return Object.assign({}, store); }),
-      setProperties: jest.fn(function(props) {
-        Object.keys(props).forEach(function(k) { store[k] = String(props[k]); });
+      getProperty: jest.fn(function (key) {
+        return store[key] || null;
       }),
-      deleteAllProperties: jest.fn(function() {
-        Object.keys(store).forEach(function(k) { delete store[k]; });
+      setProperty: jest.fn(function (key, value) {
+        store[key] = String(value);
+      }),
+      deleteProperty: jest.fn(function (key) {
+        delete store[key];
+      }),
+      getProperties: jest.fn(function () {
+        return Object.assign({}, store);
+      }),
+      setProperties: jest.fn(function (props) {
+        Object.keys(props).forEach(function (k) {
+          store[k] = String(props[k]);
+        });
+      }),
+      deleteAllProperties: jest.fn(function () {
+        Object.keys(store).forEach(function (k) {
+          delete store[k];
+        });
       })
     };
   }
 
   global.PropertiesService = {
-    getScriptProperties: jest.fn(function() { return createPropertyStore('script'); }),
-    getUserProperties: jest.fn(function() { return createPropertyStore('user'); }),
-    getDocumentProperties: jest.fn(function() { return createPropertyStore('document'); })
+    getScriptProperties: jest.fn(function () {
+      return createPropertyStore('script');
+    }),
+    getUserProperties: jest.fn(function () {
+      return createPropertyStore('user');
+    }),
+    getDocumentProperties: jest.fn(function () {
+      return createPropertyStore('document');
+    })
   };
 }
 
@@ -185,10 +234,22 @@ if (typeof global.LockService === 'undefined') {
   function createLock() {
     var locked = false;
     return {
-      tryLock: jest.fn(function() { if (!locked) { locked = true; return true; } return false; }),
-      waitLock: jest.fn(function() { locked = true; }),
-      releaseLock: jest.fn(function() { locked = false; }),
-      hasLock: jest.fn(function() { return locked; })
+      tryLock: jest.fn(function () {
+        if (!locked) {
+          locked = true;
+          return true;
+        }
+        return false;
+      }),
+      waitLock: jest.fn(function () {
+        locked = true;
+      }),
+      releaseLock: jest.fn(function () {
+        locked = false;
+      }),
+      hasLock: jest.fn(function () {
+        return locked;
+      })
     };
   }
 
@@ -205,26 +266,54 @@ if (typeof global.ScriptApp === 'undefined') {
   var triggers = [];
 
   global.ScriptApp = {
-    newTrigger: jest.fn(function(functionName) {
+    newTrigger: jest.fn(function (functionName) {
       var trigger = {
         _functionName: functionName,
         _type: 'timeBased',
-        timeBased: function() { return trigger; },
-        everyMinutes: function() { return trigger; },
-        everyHours: function() { return trigger; },
-        atHour: function() { return trigger; },
-        nearMinute: function() { return trigger; },
-        everyDays: function() { return trigger; },
-        everyWeeks: function() { return trigger; },
-        onWeekDay: function() { return trigger; },
-        at: function() { return trigger; },
-        after: function() { return trigger; },
-        create: function() {
+        timeBased: function () {
+          return trigger;
+        },
+        everyMinutes: function () {
+          return trigger;
+        },
+        everyHours: function () {
+          return trigger;
+        },
+        atHour: function () {
+          return trigger;
+        },
+        nearMinute: function () {
+          return trigger;
+        },
+        everyDays: function () {
+          return trigger;
+        },
+        everyWeeks: function () {
+          return trigger;
+        },
+        onWeekDay: function () {
+          return trigger;
+        },
+        at: function () {
+          return trigger;
+        },
+        after: function () {
+          return trigger;
+        },
+        create: function () {
           var t = {
-            getUniqueId: function() { return 'trigger-' + triggers.length; },
-            getHandlerFunction: function() { return functionName; },
-            getTriggerSource: function() { return ScriptApp.TriggerSource.CLOCK; },
-            getEventType: function() { return ScriptApp.EventType.CLOCK; }
+            getUniqueId: function () {
+              return 'trigger-' + triggers.length;
+            },
+            getHandlerFunction: function () {
+              return functionName;
+            },
+            getTriggerSource: function () {
+              return ScriptApp.TriggerSource.CLOCK;
+            },
+            getEventType: function () {
+              return ScriptApp.EventType.CLOCK;
+            }
           };
           triggers.push(t);
           return t;
@@ -232,18 +321,32 @@ if (typeof global.ScriptApp === 'undefined') {
       };
       return trigger;
     }),
-    deleteTrigger: jest.fn(function(trigger) {
+    deleteTrigger: jest.fn(function (trigger) {
       var idx = triggers.indexOf(trigger);
       if (idx !== -1) triggers.splice(idx, 1);
     }),
-    getProjectTriggers: jest.fn(function() { return triggers.slice(); }),
-    EventType: { CLOCK: 'CLOCK', ON_OPEN: 'ON_OPEN', ON_EDIT: 'ON_EDIT', ON_FORM_SUBMIT: 'ON_FORM_SUBMIT' },
+    getProjectTriggers: jest.fn(function () {
+      return triggers.slice();
+    }),
+    EventType: {
+      CLOCK: 'CLOCK',
+      ON_OPEN: 'ON_OPEN',
+      ON_EDIT: 'ON_EDIT',
+      ON_FORM_SUBMIT: 'ON_FORM_SUBMIT'
+    },
     TriggerSource: { SPREADSHEETS: 'SPREADSHEETS', CLOCK: 'CLOCK', FORMS: 'FORMS' },
     WeekDay: {
-      SUNDAY: 1, MONDAY: 2, TUESDAY: 3, WEDNESDAY: 4,
-      THURSDAY: 5, FRIDAY: 6, SATURDAY: 7
+      SUNDAY: 1,
+      MONDAY: 2,
+      TUESDAY: 3,
+      WEDNESDAY: 4,
+      THURSDAY: 5,
+      FRIDAY: 6,
+      SATURDAY: 7
     },
-    getScriptId: jest.fn(function() { return 'test-script-id'; })
+    getScriptId: jest.fn(function () {
+      return 'test-script-id';
+    })
   };
 }
 
@@ -251,11 +354,15 @@ if (typeof global.ScriptApp === 'undefined') {
 
 if (typeof global.SpreadsheetApp === 'undefined') {
   global.SpreadsheetApp = {
-    getActiveSpreadsheet: jest.fn(function() { return null; }),
-    openById: jest.fn(function() { return null; }),
-    getUi: jest.fn(function() {
+    getActiveSpreadsheet: jest.fn(function () {
+      return null;
+    }),
+    openById: jest.fn(function () {
+      return null;
+    }),
+    getUi: jest.fn(function () {
       return {
-        createMenu: jest.fn(function() {
+        createMenu: jest.fn(function () {
           return {
             addItem: jest.fn().mockReturnThis(),
             addSeparator: jest.fn().mockReturnThis(),
@@ -270,10 +377,14 @@ if (typeof global.SpreadsheetApp === 'undefined') {
         prompt: jest.fn()
       };
     }),
-    create: jest.fn(function(name) {
+    create: jest.fn(function (name) {
       return {
-        getId: function() { return 'ss-' + name; },
-        getName: function() { return name; }
+        getId: function () {
+          return 'ss-' + name;
+        },
+        getName: function () {
+          return name;
+        }
       };
     })
   };
@@ -285,15 +396,31 @@ if (typeof global.Sheets === 'undefined') {
   global.Sheets = {
     Spreadsheets: {
       Values: {
-        batchGet: jest.fn(function() { return { valueRanges: [] }; }),
-        batchUpdate: jest.fn(function() { return { responses: [] }; }),
-        get: jest.fn(function() { return { values: [] }; }),
-        update: jest.fn(function() { return {}; }),
-        append: jest.fn(function() { return {}; }),
-        clear: jest.fn(function() { return {}; })
+        batchGet: jest.fn(function () {
+          return { valueRanges: [] };
+        }),
+        batchUpdate: jest.fn(function () {
+          return { responses: [] };
+        }),
+        get: jest.fn(function () {
+          return { values: [] };
+        }),
+        update: jest.fn(function () {
+          return {};
+        }),
+        append: jest.fn(function () {
+          return {};
+        }),
+        clear: jest.fn(function () {
+          return {};
+        })
       },
-      get: jest.fn(function() { return { sheets: [] }; }),
-      batchUpdate: jest.fn(function() { return { replies: [] }; })
+      get: jest.fn(function () {
+        return { sheets: [] };
+      }),
+      batchUpdate: jest.fn(function () {
+        return { replies: [] };
+      })
     }
   };
 }
@@ -302,32 +429,68 @@ if (typeof global.Sheets === 'undefined') {
 
 if (typeof global.DriveApp === 'undefined') {
   global.DriveApp = {
-    getFileById: jest.fn(function() {
+    getFileById: jest.fn(function () {
       return {
-        getId: jest.fn(function() { return 'file-id'; }),
-        getName: jest.fn(function() { return 'test-file'; }),
+        getId: jest.fn(function () {
+          return 'file-id';
+        }),
+        getName: jest.fn(function () {
+          return 'test-file';
+        }),
         setTrashed: jest.fn(),
-        getBlob: jest.fn(function() { return { getDataAsString: function() { return ''; } }; }),
+        getBlob: jest.fn(function () {
+          return {
+            getDataAsString: function () {
+              return '';
+            }
+          };
+        }),
         makeCopy: jest.fn()
       };
     }),
-    getFolderById: jest.fn(function() {
+    getFolderById: jest.fn(function () {
       return {
-        getId: jest.fn(function() { return 'folder-id'; }),
-        getName: jest.fn(function() { return 'test-folder'; }),
+        getId: jest.fn(function () {
+          return 'folder-id';
+        }),
+        getName: jest.fn(function () {
+          return 'test-folder';
+        }),
         setTrashed: jest.fn(),
         createFolder: jest.fn(),
-        getFiles: jest.fn(function() { return { hasNext: function() { return false; } }; })
+        getFiles: jest.fn(function () {
+          return {
+            hasNext: function () {
+              return false;
+            }
+          };
+        })
       };
     }),
-    createFolder: jest.fn(function(name) {
+    createFolder: jest.fn(function (name) {
       return {
-        getId: function() { return 'folder-' + name; },
-        getName: function() { return name; }
+        getId: function () {
+          return 'folder-' + name;
+        },
+        getName: function () {
+          return name;
+        }
       };
     }),
-    Access: { ANYONE: 'ANYONE', ANYONE_WITH_LINK: 'ANYONE_WITH_LINK', DOMAIN: 'DOMAIN', PRIVATE: 'PRIVATE' },
-    Permission: { VIEW: 'VIEW', COMMENT: 'COMMENT', EDIT: 'EDIT', OWNER: 'OWNER', ORGANIZER: 'ORGANIZER', NONE: 'NONE' }
+    Access: {
+      ANYONE: 'ANYONE',
+      ANYONE_WITH_LINK: 'ANYONE_WITH_LINK',
+      DOMAIN: 'DOMAIN',
+      PRIVATE: 'PRIVATE'
+    },
+    Permission: {
+      VIEW: 'VIEW',
+      COMMENT: 'COMMENT',
+      EDIT: 'EDIT',
+      OWNER: 'OWNER',
+      ORGANIZER: 'ORGANIZER',
+      NONE: 'NONE'
+    }
   };
 }
 
@@ -336,16 +499,28 @@ if (typeof global.DriveApp === 'undefined') {
 if (typeof global.Drive === 'undefined') {
   global.Drive = {
     Files: {
-      get: jest.fn(function() { return {}; }),
-      list: jest.fn(function() { return { items: [], files: [] }; }),
-      insert: jest.fn(function() { return { id: 'new-file-id' }; }),
-      update: jest.fn(function() { return {}; }),
+      get: jest.fn(function () {
+        return {};
+      }),
+      list: jest.fn(function () {
+        return { items: [], files: [] };
+      }),
+      insert: jest.fn(function () {
+        return { id: 'new-file-id' };
+      }),
+      update: jest.fn(function () {
+        return {};
+      }),
       remove: jest.fn(),
-      copy: jest.fn(function() { return { id: 'copy-id' }; })
+      copy: jest.fn(function () {
+        return { id: 'copy-id' };
+      })
     },
     Permissions: {
       insert: jest.fn(),
-      list: jest.fn(function() { return { items: [] }; }),
+      list: jest.fn(function () {
+        return { items: [] };
+      }),
       remove: jest.fn()
     }
   };
@@ -355,26 +530,47 @@ if (typeof global.Drive === 'undefined') {
 
 if (typeof global.DocumentApp === 'undefined') {
   global.DocumentApp = {
-    openById: jest.fn(function() { return null; }),
-    create: jest.fn(function(name) {
+    openById: jest.fn(function () {
+      return null;
+    }),
+    create: jest.fn(function (name) {
       return {
-        getId: function() { return 'doc-' + name; },
-        getName: function() { return name; },
-        getBody: function() { return { getText: function() { return ''; } }; }
+        getId: function () {
+          return 'doc-' + name;
+        },
+        getName: function () {
+          return name;
+        },
+        getBody: function () {
+          return {
+            getText: function () {
+              return '';
+            }
+          };
+        }
       };
     }),
     ElementType: {
-      BODY_SECTION: 'BODY_SECTION', PARAGRAPH: 'PARAGRAPH',
-      TEXT: 'TEXT', TABLE: 'TABLE', TABLE_ROW: 'TABLE_ROW',
-      TABLE_CELL: 'TABLE_CELL', LIST_ITEM: 'LIST_ITEM',
-      INLINE_IMAGE: 'INLINE_IMAGE', HORIZONTAL_RULE: 'HORIZONTAL_RULE',
+      BODY_SECTION: 'BODY_SECTION',
+      PARAGRAPH: 'PARAGRAPH',
+      TEXT: 'TEXT',
+      TABLE: 'TABLE',
+      TABLE_ROW: 'TABLE_ROW',
+      TABLE_CELL: 'TABLE_CELL',
+      LIST_ITEM: 'LIST_ITEM',
+      INLINE_IMAGE: 'INLINE_IMAGE',
+      HORIZONTAL_RULE: 'HORIZONTAL_RULE',
       PAGE_BREAK: 'PAGE_BREAK'
     },
     GlyphType: {
-      BULLET: 'BULLET', HOLLOW_BULLET: 'HOLLOW_BULLET',
-      SQUARE_BULLET: 'SQUARE_BULLET', NUMBER: 'NUMBER',
-      LATIN_UPPER: 'LATIN_UPPER', LATIN_LOWER: 'LATIN_LOWER',
-      ROMAN_UPPER: 'ROMAN_UPPER', ROMAN_LOWER: 'ROMAN_LOWER'
+      BULLET: 'BULLET',
+      HOLLOW_BULLET: 'HOLLOW_BULLET',
+      SQUARE_BULLET: 'SQUARE_BULLET',
+      NUMBER: 'NUMBER',
+      LATIN_UPPER: 'LATIN_UPPER',
+      LATIN_LOWER: 'LATIN_LOWER',
+      ROMAN_UPPER: 'ROMAN_UPPER',
+      ROMAN_LOWER: 'ROMAN_LOWER'
     }
   };
 }
@@ -384,11 +580,19 @@ if (typeof global.DocumentApp === 'undefined') {
 if (typeof global.GmailApp === 'undefined') {
   global.GmailApp = {
     sendEmail: jest.fn(),
-    createDraft: jest.fn(function() {
-      return { getId: function() { return 'draft-id'; } };
+    createDraft: jest.fn(function () {
+      return {
+        getId: function () {
+          return 'draft-id';
+        }
+      };
     }),
-    search: jest.fn(function() { return []; }),
-    getRemainingDailyQuota: jest.fn(function() { return 100; })
+    search: jest.fn(function () {
+      return [];
+    }),
+    getRemainingDailyQuota: jest.fn(function () {
+      return 100;
+    })
   };
 }
 
@@ -398,23 +602,45 @@ if (typeof global.Gmail === 'undefined') {
   global.Gmail = {
     Users: {
       Messages: {
-        send: jest.fn(function() { return { id: 'msg-id' }; }),
-        get: jest.fn(function() { return {}; }),
-        list: jest.fn(function() { return { messages: [] }; })
+        send: jest.fn(function () {
+          return { id: 'msg-id' };
+        }),
+        get: jest.fn(function () {
+          return {};
+        }),
+        list: jest.fn(function () {
+          return { messages: [] };
+        })
       },
       Drafts: {
-        create: jest.fn(function() { return { id: 'draft-id' }; }),
-        get: jest.fn(function() { return {}; }),
-        list: jest.fn(function() { return { drafts: [] }; })
+        create: jest.fn(function () {
+          return { id: 'draft-id' };
+        }),
+        get: jest.fn(function () {
+          return {};
+        }),
+        list: jest.fn(function () {
+          return { drafts: [] };
+        })
       },
       Labels: {
-        list: jest.fn(function() { return { labels: [] }; }),
-        get: jest.fn(function() { return {}; }),
-        create: jest.fn(function() { return { id: 'label-id' }; })
+        list: jest.fn(function () {
+          return { labels: [] };
+        }),
+        get: jest.fn(function () {
+          return {};
+        }),
+        create: jest.fn(function () {
+          return { id: 'label-id' };
+        })
       },
       Threads: {
-        list: jest.fn(function() { return { threads: [] }; }),
-        get: jest.fn(function() { return {}; })
+        list: jest.fn(function () {
+          return { threads: [] };
+        }),
+        get: jest.fn(function () {
+          return {};
+        })
       }
     }
   };
@@ -424,19 +650,31 @@ if (typeof global.Gmail === 'undefined') {
 
 if (typeof global.UrlFetchApp === 'undefined') {
   global.UrlFetchApp = {
-    fetch: jest.fn(function() {
+    fetch: jest.fn(function () {
       return {
-        getContentText: function() { return '{}'; },
-        getResponseCode: function() { return 200; },
-        getHeaders: function() { return {}; }
+        getContentText: function () {
+          return '{}';
+        },
+        getResponseCode: function () {
+          return 200;
+        },
+        getHeaders: function () {
+          return {};
+        }
       };
     }),
-    fetchAll: jest.fn(function(requests) {
-      return requests.map(function() {
+    fetchAll: jest.fn(function (requests) {
+      return requests.map(function () {
         return {
-          getContentText: function() { return '{}'; },
-          getResponseCode: function() { return 200; },
-          getHeaders: function() { return {}; }
+          getContentText: function () {
+            return '{}';
+          },
+          getResponseCode: function () {
+            return 200;
+          },
+          getHeaders: function () {
+            return {};
+          }
         };
       });
     })
@@ -447,16 +685,28 @@ if (typeof global.UrlFetchApp === 'undefined') {
 
 if (typeof global.HtmlService === 'undefined') {
   global.HtmlService = {
-    createHtmlOutput: jest.fn(function(html) {
+    createHtmlOutput: jest.fn(function (html) {
       return {
-        setTitle: function() { return this; },
-        setWidth: function() { return this; },
-        setHeight: function() { return this; },
-        getContent: function() { return html || ''; }
+        setTitle: function () {
+          return this;
+        },
+        setWidth: function () {
+          return this;
+        },
+        setHeight: function () {
+          return this;
+        },
+        getContent: function () {
+          return html || '';
+        }
       };
     }),
-    createTemplateFromFile: jest.fn(function() {
-      return { evaluate: function() { return HtmlService.createHtmlOutput(''); } };
+    createTemplateFromFile: jest.fn(function () {
+      return {
+        evaluate: function () {
+          return HtmlService.createHtmlOutput('');
+        }
+      };
     })
   };
 }
@@ -466,10 +716,14 @@ if (typeof global.HtmlService === 'undefined') {
 if (typeof global.ContentService === 'undefined') {
   global.ContentService = {
     MimeType: { JSON: 'application/json', TEXT: 'text/plain' },
-    createTextOutput: jest.fn(function(text) {
+    createTextOutput: jest.fn(function (text) {
       return {
-        setMimeType: function() { return this; },
-        getContent: function() { return text || ''; }
+        setMimeType: function () {
+          return this;
+        },
+        getContent: function () {
+          return text || '';
+        }
       };
     })
   };

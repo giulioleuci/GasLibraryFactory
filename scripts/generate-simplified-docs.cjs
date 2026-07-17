@@ -284,7 +284,9 @@ function parseMethods(content, className) {
   const staticMethods = [];
 
   // Find the class body
-  const classStart = content.search(new RegExp(`class\\s+${className}\\s*(?:extends\\s+\\w+\\s*)?\\{`));
+  const classStart = content.search(
+    new RegExp(`class\\s+${className}\\s*(?:extends\\s+\\w+\\s*)?\\{`)
+  );
   if (classStart === -1) return { methods, staticMethods };
 
   // Find matching closing brace for class
@@ -592,7 +594,9 @@ function main() {
   console.log('='.repeat(60));
   console.log(`Documentation generated: ${path.relative(ROOT_DIR, OUTPUT_FILE)}`);
   console.log(`Total libraries processed: ${libraries.length}`);
-  console.log(`Total classes documented: ${libraries.reduce((sum, lib) => sum + (lib ? lib.classes.length : 0), 0)}`);
+  console.log(
+    `Total classes documented: ${libraries.reduce((sum, lib) => sum + (lib ? lib.classes.length : 0), 0)}`
+  );
   console.log('='.repeat(60));
 }
 

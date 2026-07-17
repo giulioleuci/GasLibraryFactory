@@ -44,7 +44,7 @@ export class Delegation {
       'isIndefinite',
       'getRemainingDays'
     ];
-    methods.forEach(m => {
+    methods.forEach((m) => {
       this[m] = this._rules[m].bind(this._rules);
     });
 

@@ -13,7 +13,7 @@ import { DialogBuilder } from '../builders/DialogBuilder';
  * @class UiService
  * @extends GoogleService
  * @description Unified facade for Google Apps Script UI operations. Abstracts host-specific getUi() calls (Sheets, Docs, Forms, Slides) and provides fluent builders for menus, sidebars, and modal dialogs.
- * 
+ *
  * @property {GoogleAppsScript.Base.Ui} _ui Native GAS UI object.
  */
 export class UiService extends GoogleService {

@@ -25,10 +25,7 @@ describe('DatabaseService - Comprehensive Test Suite', () => {
     spreadsheetService = mocks.spreadsheetService;
 
     // Extend spreadsheetService with DatabaseService-specific behavior
-    spreadsheetService.getSheetInfo.mockReturnValue([
-      { name: 'Users' },
-      { name: 'Orders' }
-    ]);
+    spreadsheetService.getSheetInfo.mockReturnValue([{ name: 'Users' }, { name: 'Orders' }]);
     spreadsheetService.getRanges.mockImplementation((spreadsheetId, ranges) => {
       const result = {};
       ranges.forEach((range) => {
@@ -665,7 +662,10 @@ describe('DatabaseService - Comprehensive Test Suite', () => {
     });
 
     it('should handle getRanges with missing sheets', () => {
-      mocks.spreadsheetService.getSheetInfo.mockReturnValue([{ name: 'Users' }, { name: 'Orders' }]);
+      mocks.spreadsheetService.getSheetInfo.mockReturnValue([
+        { name: 'Users' },
+        { name: 'Orders' }
+      ]);
 
       mocks.spreadsheetService.getRanges.mockReturnValue({
         "'Users'!A:ZZ": [['ID']]

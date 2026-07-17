@@ -13,7 +13,7 @@
       "country": "USA",
       "customer_type": "REGULAR",
       "total_orders": 5,
-      "total_spent": 450.00,
+      "total_spent": 450.0,
       "created_at": "2024-06-15T10:30:00Z",
       "updated_at": "2026-01-20T14:00:00Z"
     },
@@ -30,7 +30,7 @@
       "country": "USA",
       "customer_type": "VIP",
       "total_orders": 25,
-      "total_spent": 3500.00,
+      "total_spent": 3500.0,
       "created_at": "2023-02-10T09:00:00Z",
       "updated_at": "2026-02-01T16:30:00Z"
     },
@@ -47,7 +47,7 @@
       "country": "USA",
       "customer_type": "WHOLESALE",
       "total_orders": 50,
-      "total_spent": 25000.00,
+      "total_spent": 25000.0,
       "created_at": "2022-11-05T08:00:00Z",
       "updated_at": "2026-01-30T11:45:00Z"
     },
@@ -64,7 +64,7 @@
       "country": "USA",
       "customer_type": "REGULAR",
       "total_orders": 0,
-      "total_spent": 0.00,
+      "total_spent": 0.0,
       "created_at": "2026-02-01T12:00:00Z",
       "updated_at": "2026-02-01T12:00:00Z"
     },
@@ -81,7 +81,7 @@
       "country": "USA",
       "customer_type": "REGULAR",
       "total_orders": 12,
-      "total_spent": 890.50,
+      "total_spent": 890.5,
       "created_at": "2024-03-20T14:15:00Z",
       "updated_at": "2026-01-25T10:00:00Z"
     }
