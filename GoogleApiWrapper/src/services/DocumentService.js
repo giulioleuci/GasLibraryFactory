@@ -5,6 +5,7 @@
  * @version 4.0 - Refactored using Facade/Delegation pattern.
  */
 
+import { Delegation } from '@CoreUtilsLib';
 import { GoogleService } from '../internal/core/GoogleService.js';
 import { DocumentBuilder } from './DocumentBuilder.js';
 export { DocumentBuilder };
@@ -38,7 +39,7 @@ export class DocumentService extends GoogleService {
     this._batchUpdateHandler = new DocumentBatchUpdateHandler(this);
 
     // Delegate methods to managers
-    this._delegate([
+    Delegation.delegateMethods(this, [
       {
         manager: this._tableManager,
         methods: [
@@ -98,23 +99,6 @@ export class DocumentService extends GoogleService {
         ]
       }
     ]);
-  }
-
-  /**
-   * @private
-   * @description Maps manager methods to the DocumentService instance.
-   * @param {Array<Object>} delegations Collection of manager-to-method mappings.
-   */
-  _delegate(delegations) {
-    delegations.forEach(({ manager, methods }) => {
-      methods.forEach((method) => {
-        if (typeof manager[method] === 'function') {
-          this[method] = manager[method].bind(manager);
-        } else {
-          this._logger.warn(`Method ${method} not found on manager ${manager.constructor.name}`);
-        }
-      });
-    });
   }
 
   // ===================================================================
