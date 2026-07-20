@@ -17,10 +17,12 @@ export class Delegation {
    * Binds each named method from each manager onto the target object, so calls
    * to `target[method](...)` are forwarded to `manager[method](...)` with the
    * manager's `this` preserved. Methods that don't exist (or aren't functions)
-   * on a given manager are silently skipped.
+   * on a given manager are silently skipped, unless `logger` is provided, in
+   * which case a warning is emitted for each missing method.
    *
    * @param {Object} target - Object onto which delegated methods are attached (typically a facade instance, e.g. `this` inside a constructor).
    * @param {Array<{manager: Object, methods: string[]}>} delegations - Collection of manager/method-name pairs to wire up.
+   * @param {{warn: Function}} [logger] - Optional logger; when given, missing methods are reported via `logger.warn(...)` instead of skipped silently.
    * @returns {Object} The same `target`, for convenience chaining.
    *
    * @example
@@ -33,11 +35,13 @@ export class Delegation {
    *   }
    * }
    */
-  static delegateMethods(target, delegations) {
+  static delegateMethods(target, delegations, logger) {
     delegations.forEach(({ manager, methods }) => {
       methods.forEach((method) => {
         if (typeof manager[method] === 'function') {
           target[method] = manager[method].bind(manager);
+        } else if (logger) {
+          logger.warn(`Method ${method} not found on manager ${manager.constructor.name}`);
         }
       });
     });

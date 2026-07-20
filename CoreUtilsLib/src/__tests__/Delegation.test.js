@@ -45,6 +45,23 @@ describe('Delegation.delegateMethods', () => {
     expect(target.notAFunction).toBeUndefined();
   });
 
+  it('warns via the given logger for methods missing or not functions on the manager', () => {
+    const target = {};
+    const manager = { notAFunction: 'nope' };
+    const logger = { warn: jest.fn() };
+
+    Delegation.delegateMethods(
+      target,
+      [{ manager, methods: ['missingMethod', 'notAFunction'] }],
+      logger
+    );
+
+    expect(target.missingMethod).toBeUndefined();
+    expect(logger.warn).toHaveBeenCalledTimes(2);
+    expect(logger.warn.mock.calls[0][0]).toContain('missingMethod');
+    expect(logger.warn.mock.calls[1][0]).toContain('notAFunction');
+  });
+
   it('returns the target for convenience chaining', () => {
     const target = {};
     const result = Delegation.delegateMethods(target, []);

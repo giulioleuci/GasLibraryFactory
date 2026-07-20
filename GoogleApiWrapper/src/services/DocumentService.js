@@ -39,66 +39,70 @@ export class DocumentService extends GoogleService {
     this._batchUpdateHandler = new DocumentBatchUpdateHandler(this);
 
     // Delegate methods to managers
-    Delegation.delegateMethods(this, [
-      {
-        manager: this._tableManager,
-        methods: [
-          'getDocumentTables',
-          'getTableStructure',
-          'getTableData',
-          'getTableRow',
-          'getTableColumn',
-          'insertTableRow',
-          'appendTableRow',
-          'deleteTableRow',
-          'updateTableCell',
-          'updateTableRow',
-          'updateTableColumn',
-          'copyTableRow',
-          'deleteTableColumn',
-          'insertTableColumn',
-          'appendTableColumn',
-          'setColumnWidth',
-          'getColumnWidth',
-          'setRowBackgroundColor',
-          'setRowMinimumHeight',
-          'getRowMinimumHeight',
-          'clearTableRow',
-          'setCellBackgroundColor',
-          'getCellBackgroundColor',
-          'setCellPadding',
-          'getCellPadding',
-          'setCellVerticalAlignment',
-          'getCellVerticalAlignment',
-          'getCellDetails',
-          'getTableMetadata',
-          'setRowTextAlignment',
-          'setRowBold',
-          '_createTableWithStandardAPI',
-          'insertTableAtMarker'
-        ]
-      },
-      {
-        manager: this._contentExtractor,
-        methods: ['getRawDocumentStructure', 'getDocumentBody', 'scanDocumentStructure']
-      },
-      {
-        manager: this._batchUpdateHandler,
-        methods: [
-          'createDocument',
-          'getDocument',
-          '_executeBatchUpdate',
-          '_executeExportPDF',
-          'batchReplaceText',
-          'deleteDocuments',
-          '_addHeaderWithStandardAPI',
-          '_addFooterWithStandardAPI',
-          'getOrCreateHeader',
-          'getOrCreateFooter',
-          'setHeaderText'
-        ]
-      }
-    ]);
+    Delegation.delegateMethods(
+      this,
+      [
+        {
+          manager: this._tableManager,
+          methods: [
+            'getDocumentTables',
+            'getTableStructure',
+            'getTableData',
+            'getTableRow',
+            'getTableColumn',
+            'insertTableRow',
+            'appendTableRow',
+            'deleteTableRow',
+            'updateTableCell',
+            'updateTableRow',
+            'updateTableColumn',
+            'copyTableRow',
+            'deleteTableColumn',
+            'insertTableColumn',
+            'appendTableColumn',
+            'setColumnWidth',
+            'getColumnWidth',
+            'setRowBackgroundColor',
+            'setRowMinimumHeight',
+            'getRowMinimumHeight',
+            'clearTableRow',
+            'setCellBackgroundColor',
+            'getCellBackgroundColor',
+            'setCellPadding',
+            'getCellPadding',
+            'setCellVerticalAlignment',
+            'getCellVerticalAlignment',
+            'getCellDetails',
+            'getTableMetadata',
+            'setRowTextAlignment',
+            'setRowBold',
+            '_createTableWithStandardAPI',
+            'insertTableAtMarker'
+          ]
+        },
+        {
+          manager: this._contentExtractor,
+          methods: ['getRawDocumentStructure', 'getDocumentBody', 'scanDocumentStructure']
+        },
+        {
+          manager: this._batchUpdateHandler,
+          methods: [
+            'createDocument',
+            'getDocument',
+            '_executeBatchUpdate',
+            '_executeExportPDF',
+            'batchReplaceText',
+            'deleteDocuments',
+            '_addHeaderWithStandardAPI',
+            '_addFooterWithStandardAPI',
+            'getOrCreateHeader',
+            'getOrCreateFooter',
+            'setHeaderText'
+          ]
+        }
+      ],
+      this._logger
+    );
   }
 
   // ===================================================================
