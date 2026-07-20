@@ -4,6 +4,8 @@
  * Provides quota-aware operations and batch processing.
  */
 
+import { HtmlSanitizer } from '@CoreUtilsLib';
+
 /**
  * @class MailService
  * @description Stateless service for email management via GmailApp/MailApp. Implements quota awareness, sequential rate limiting, and resilient delivery via exceptionService.
@@ -168,24 +170,13 @@ export class MailService {
   sendNotification(emails, title, message) {
     const htmlBody = `
       <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; border: 1px solid #e0e0e0; border-radius: 5px;">
-        <h2 style="color: #333;">${this._escapeHtml(title)}</h2>
+        <h2 style="color: #333;">${HtmlSanitizer.escapeHtml(title)}</h2>
         <div style="margin: 20px 0; padding: 15px; background-color: #f5f5f5; border-radius: 5px;">
-          ${this._escapeHtml(message).replace(/\n/g, '<br>')}
+          ${HtmlSanitizer.escapeHtml(message).replace(/\n/g, '<br>')}
         </div>
         <p style="color: #666; font-size: 12px;">Automated notification, do not reply.</p>
       </div>
     `;
     return this.send({ to: emails, subject: title, htmlBody });
-  }
-
-  /**
-   * @private
-   * @description Sanitizes text for safe inclusion in HTML templates.
-   * @param {string} text Raw content.
-   * @returns {string} Escaped string.
-   */
-  _escapeHtml(text) {
-    const map = { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#039;' };
-    return String(text).replace(/[&<>"']/g, (m) => map[m]);
   }
 }

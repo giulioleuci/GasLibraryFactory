@@ -4,7 +4,7 @@
  * @version 2.0 - Refactored using Facade/Delegation pattern.
  */
 
-import { PiiRedactor } from '@CoreUtilsLib';
+import { Delegation, PiiRedactor } from '@CoreUtilsLib';
 import { ErrorReporterRecorder } from './internal/ErrorReporterRecorder.js';
 import { ErrorReporterStatistics } from './internal/ErrorReporterStatistics.js';
 import { ErrorReporterSanitizer } from './internal/ErrorReporterSanitizer.js';
@@ -50,7 +50,7 @@ export class ErrorReporter {
     this._sanitizer = new ErrorReporterSanitizer(this);
 
     // Delegate methods
-    this._delegate([
+    Delegation.delegateMethods(this, [
       {
         manager: this._recorder,
         methods: ['reset', 'record']
@@ -64,15 +64,5 @@ export class ErrorReporter {
         methods: ['_parseStackTrace']
       }
     ]);
-  }
-
-  _delegate(delegations) {
-    delegations.forEach(({ manager, methods }) => {
-      methods.forEach((method) => {
-        if (typeof manager[method] === 'function') {
-          this[method] = manager[method].bind(manager);
-        }
-      });
-    });
   }
 }

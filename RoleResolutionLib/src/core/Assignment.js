@@ -6,6 +6,7 @@
 
 import { Scope } from './Scope.js';
 import { cloneDeep } from '@CoreUtilsLib';
+import { parseDate } from '../internal/DateParsing.js';
 
 /**
  * @class Assignment
@@ -83,23 +84,15 @@ export class Assignment {
 
   /**
    * @function _parseDate
-   * @description Normalizes Date objects or ISO strings.
+   * @description Normalizes Date objects or ISO strings. Delegates to the
+   * shared internal DateParsing helper (dedupe of the duplicate previously
+   * kept in sync manually with DelegationState).
    * @param {Date|string|null} value - Raw input.
    * @returns {Date|null} Valid Date or null if unparseable.
    * @private
    */
   _parseDate(value) {
-    if (value === null || value === undefined) {
-      return null;
-    }
-    if (value instanceof Date) {
-      return new Date(value.getTime());
-    }
-    if (typeof value === 'string') {
-      const parsed = new Date(value);
-      return isNaN(parsed.getTime()) ? null : parsed;
-    }
-    return null;
+    return parseDate(value);
   }
 
   /**

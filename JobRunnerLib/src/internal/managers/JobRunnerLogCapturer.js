@@ -3,6 +3,8 @@
  * @description Manager for log capturing, formatting, and display.
  */
 
+import { HtmlSanitizer } from '@CoreUtilsLib';
+
 export class JobRunnerLogCapturer {
   constructor(facade) {
     this.facade = facade;
@@ -64,9 +66,9 @@ export class JobRunnerLogCapturer {
       .footer { padding: 10px; text-align: center; border-top: 1px solid #ccc; background: #f5f5f5; }
       .footer button { padding: 8px 16px; background: #007bff; color: white; border: none; border-radius: 4px; cursor: pointer; }
       .footer button:hover { background: #0056b3; }</style>
-      <div class="header"><h2>Job Execution Log</h2><div>Job: <strong>${this._escapeHtml(jobName)}</strong></div>
+      <div class="header"><h2>Job Execution Log</h2><div>Job: <strong>${HtmlSanitizer.escapeHtml(jobName)}</strong></div>
       <div class="status">Status: ${statusText}</div>
-      ${error ? `<div style="margin-top: 5px; font-size: 12px;">Error: ${this._escapeHtml(error.message)}</div>` : ''}</div>
+      ${error ? `<div style="margin-top: 5px; font-size: 12px;">Error: ${HtmlSanitizer.escapeHtml(error.message)}</div>` : ''}</div>
       <div class="logs-container">${logsHtml}</div><div class="footer"><button onclick="google.script.host.close()">Close</button></div>`;
     uiService.createSidebar().setTitle(`Job Log: ${jobName}`).setContent(html).setWidth(500).show();
     this._logger.info(
@@ -114,10 +116,5 @@ export class JobRunnerLogCapturer {
       this._logger.error(`MyJobRunnerService: Error saving logs to Drive: ${driveError.message}`);
       throw driveError;
     }
-  }
-
-  _escapeHtml(text) {
-    const map = { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#039;' };
-    return String(text).replace(/[&<>"']/g, (m) => map[m]);
   }
 }

@@ -4,7 +4,7 @@
  */
 
 import { TransformError } from '../internal/errors/TransformError.js';
-import { UtilsService } from '@CoreUtilsLib';
+import { Delegation, UtilsService } from '@CoreUtilsLib';
 import { TransformerMappingEngine } from '../internal/transform-managers/TransformerMappingEngine.js';
 import { TransformerDateStyler } from '../internal/transform-managers/TransformerDateStyler.js';
 import { TransformerNumberSanitizer } from '../internal/transform-managers/TransformerNumberSanitizer.js';
@@ -33,7 +33,7 @@ class Transformer {
     this._validationGuard = new TransformerValidationGuard(this);
 
     // Delegate methods
-    this._delegate([
+    Delegation.delegateMethods(this, [
       {
         manager: this._mappingEngine,
         methods: [
@@ -59,16 +59,6 @@ class Transformer {
         methods: ['_applyValidation', 'validateConfig']
       }
     ]);
-  }
-
-  _delegate(delegations) {
-    delegations.forEach(({ manager, methods }) => {
-      methods.forEach((method) => {
-        if (typeof manager[method] === 'function') {
-          this[method] = manager[method].bind(manager);
-        }
-      });
-    });
   }
 
   /**

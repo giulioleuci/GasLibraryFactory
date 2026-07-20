@@ -4,6 +4,7 @@
  * @version 2.0 - Refactored using Facade/Delegation pattern.
  */
 
+import { Delegation } from '@CoreUtilsLib';
 import {
   QueryCondition,
   QueryAggregation,
@@ -15,6 +16,7 @@ import {
   QueryCache
 } from '../internal/query-builders/AdvancedQueryCompiler.js';
 import { AdvancedQueryPagination } from '../internal/query-builders/AdvancedQueryPagination.js';
+import { createFuzzyCondition } from '../internal/query-builders/FuzzyCondition.js';
 
 export { QueryCondition, QueryAggregation, QueryGroup, QueryCache };
 
@@ -40,7 +42,7 @@ export class AdvancedQueryBuilder {
     this._cache = dbService._cache ? new QueryCache(dbService._cache) : null;
 
     // Delegate execution methods
-    this._delegate([
+    Delegation.delegateMethods(this, [
       {
         manager: this._compiler,
         methods: [
@@ -65,16 +67,6 @@ export class AdvancedQueryBuilder {
         ]
       }
     ]);
-  }
-
-  _delegate(delegations) {
-    delegations.forEach(({ manager, methods }) => {
-      methods.forEach((method) => {
-        if (typeof manager[method] === 'function') {
-          this[method] = manager[method].bind(manager);
-        }
-      });
-    });
   }
 
   select(columns) {
@@ -188,6 +180,18 @@ export class AdvancedQueryBuilder {
     return this.where(field, 'LIKE', `%${pattern}%`);
   }
 
+  whereFuzzy(field, query, options = {}) {
+    this._validator.validateFuzzyCondition(field, query, options);
+    this.conditions.push(createFuzzyCondition(field, query, options, 'AND'));
+    return this;
+  }
+
+  orWhereFuzzy(field, query, options = {}) {
+    this._validator.validateFuzzyCondition(field, query, options);
+    this.conditions.push(createFuzzyCondition(field, query, options, 'OR'));
+    return this;
+  }
+
   whereIn(field, values) {
     this._validator.validateWhereIn(field, values);
     return this.where(field, 'IN', values);
@@ -273,7 +277,10 @@ export class AdvancedQueryBuilder {
     const table = this.dbService.tables[this.tableName];
     let resultRows;
 
-    const indexOptimization = this._tryIndexOptimization(table);
+    const fuzzyConditions = this.conditions.filter((condition) => condition.kind === 'FUZZY');
+    const ordinaryConditions = this.conditions.filter((condition) => condition.kind !== 'FUZZY');
+    const hasOrCondition = this.conditions.some((condition) => condition.type === 'OR');
+    const indexOptimization = hasOrCondition ? null : this._tryIndexOptimization(table, ordinaryConditions);
     if (indexOptimization) {
       resultRows = indexOptimization;
     } else {
@@ -295,11 +302,18 @@ export class AdvancedQueryBuilder {
     }
 
     if (this.conditions.length > 0) {
-      const remainingConditions = indexOptimization
-        ? this._getRemainingConditions()
-        : this.conditions;
-      if (remainingConditions.length > 0) {
-        resultRows = this._applyConditionsFiltered(resultRows, remainingConditions);
+      if (hasOrCondition) {
+        resultRows = this._applyConditionsFiltered(resultRows, this.conditions);
+      } else {
+        const remainingConditions = indexOptimization
+          ? this._getRemainingConditions(ordinaryConditions)
+          : ordinaryConditions;
+        if (remainingConditions.length > 0) {
+          resultRows = this._applyConditionsFiltered(resultRows, remainingConditions);
+        }
+        if (fuzzyConditions.length > 0) {
+          resultRows = this._applyConditionsFiltered(resultRows, fuzzyConditions);
+        }
       }
     }
 

@@ -73,6 +73,7 @@ import {
   // Full facade object
   LodashFacade
 } from '../facades/LodashFacade.js';
+import { StringUtils } from '../utils/StringUtils.js';
 
 describe('LodashFacade - es-toolkit/compat Integration', () => {
   // ===========================================================================
@@ -184,6 +185,16 @@ describe('LodashFacade - es-toolkit/compat Integration', () => {
 
   describe('Object Utilities', () => {
     describe('cloneDeep()', () => {
+      it('should preserve nested arrays and objects without retaining input references', () => {
+        const original = { nested: { values: [1, 2] } };
+        const cloned = cloneDeep(original);
+
+        expect(cloned).toEqual(original);
+        expect(cloned).not.toBe(original);
+        expect(cloned.nested).not.toBe(original.nested);
+        expect(cloned.nested.values).not.toBe(original.nested.values);
+      });
+
       it('should create deep clone', () => {
         const original = { a: { b: 2 } };
         const clone = cloneDeep(original);
@@ -253,6 +264,34 @@ describe('LodashFacade - es-toolkit/compat Integration', () => {
         const result = merge({ a: { b: 1 } }, { a: { c: 2 } });
         expect(result).toEqual({ a: { b: 1, c: 2 } });
       });
+
+      it('should merge nested objects and arrays without mutating source inputs', () => {
+        const defaults = { nested: { values: [1, 2], enabled: true } };
+        const provided = { nested: { values: [3], label: 'custom' } };
+
+        const result = merge({}, defaults, provided);
+
+        expect(result).toEqual({ nested: { values: [3, 2], enabled: true, label: 'custom' } });
+        expect(defaults).toEqual({ nested: { values: [1, 2], enabled: true } });
+        expect(provided).toEqual({ nested: { values: [3], label: 'custom' } });
+      });
+    });
+  });
+
+  describe('String case-conversion facade parity', () => {
+    const stringUtils = new StringUtils();
+
+    it('should match the facade for every facade-backed case-conversion input', () => {
+      const input = 'user profile settings';
+
+      expect(stringUtils.camelCase(input)).toBe(camelCase(input));
+      expect(stringUtils.kebabCase(input)).toBe(kebabCase(input));
+      expect(stringUtils.snakeCase(input)).toBe(snakeCase(input));
+      expect(stringUtils.startCase(input)).toBe(startCase(input));
+      expect(stringUtils.pascalCase(input)).toBe(pascalCase(input));
+      expect(stringUtils.constantCase(input)).toBe(constantCase(input));
+      expect(stringUtils.dotCase(input)).toBe(dotCase(input));
+      expect(stringUtils.pathCase(input)).toBe(pathCase(input));
     });
   });
 

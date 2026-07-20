@@ -1,7 +1,7 @@
 import { FilterRegistry, FilterStrategy } from '../FilterStrategy.js';
 import { createBuiltInFilters } from '../internal/filters/BuiltInFilters.js';
 import { createAdvancedFilters } from '../internal/filters/AdvancedFilters.js';
-import { BaseError } from '@CoreUtilsLib';
+import { BaseError, HtmlSanitizer } from '@CoreUtilsLib';
 
 /**
  * @class MustacheRenderError
@@ -532,38 +532,7 @@ export class MyMustache {
    * @private
    */
   _escapeHtml(string) {
-    // SEC-005: Use 'he' library with custom entity map for only HTML-sensitive characters
-    // This preserves Unicode while encoding XSS-dangerous characters
-    const str = String(string);
-    let result = '';
-
-    for (let i = 0; i < str.length; i++) {
-      const char = str[i];
-      switch (char) {
-        case '&':
-          result += '&amp;';
-          break;
-        case '<':
-          result += '&lt;';
-          break;
-        case '>':
-          result += '&gt;';
-          break;
-        case '"':
-          result += '&quot;';
-          break;
-        case "'":
-          result += '&apos;';
-          break;
-        case '`':
-          result += '&grave;';
-          break;
-        default:
-          result += char;
-      }
-    }
-
-    return result;
+    return HtmlSanitizer.escapeHtml(string);
   }
 
   /**
@@ -619,21 +588,6 @@ export class MyMustache {
       }
     }
     return parts.join('');
-  }
-
-  /**
-   * @description Resolves and executes a single filter strategy.
-   * @param {*} value Input value.
-   * @param {string} filterName Strategy identifier.
-   * @returns {*} Transformed value or original if resolution fails.
-   * @private
-   */
-  _applyFilter(value, filterName) {
-    if (!filterName) {
-      return value;
-    }
-    const filter = this.filterRegistry.get(filterName);
-    return filter ? filter.execute(value) : value;
   }
 
   /**

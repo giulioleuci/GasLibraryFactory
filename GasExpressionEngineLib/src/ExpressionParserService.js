@@ -8,6 +8,7 @@
 
 import { TokenScanner } from './internal/parser/TokenScanner.js';
 import { AstBuilder } from './internal/parser/AstBuilder.js';
+import { assertAllowedExpressionAst, defaultPolicy } from './internal/ExpressionPolicy.js';
 
 /**
  * Syntactic analyzer for logical expressions, transforming string templates into structured Abstract Syntax Trees (AST) using JSEP.
@@ -84,8 +85,11 @@ export class ExpressionParserService {
     const preprocessed = this._tokenScanner.preprocess(expressionString);
     this.logger.debug(`Preprocessed expression: "${preprocessed}"`);
 
-    // Phase 2: Parse using JSEP via AstBuilder
-    return this._astBuilder.buildAst(preprocessed);
+    // Phase 2: Parse using JSEP via AstBuilder and accept only the AST shape
+    // the evaluator supports. This is validation only; nothing is evaluated.
+    const ast = this._astBuilder.buildAst(preprocessed);
+    assertAllowedExpressionAst(ast, defaultPolicy);
+    return ast;
   }
 
   // ===================================================================
@@ -97,13 +101,6 @@ export class ExpressionParserService {
    */
   _configureJSEP() {
     this._astBuilder._configureJSEP();
-  }
-
-  /**
-   * @private
-   */
-  _preprocess(expressionString) {
-    return this._tokenScanner.preprocess(expressionString);
   }
 
   /**

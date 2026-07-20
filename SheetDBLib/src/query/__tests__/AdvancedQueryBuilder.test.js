@@ -289,6 +289,78 @@ describe('AdvancedQueryBuilder - Comprehensive Test Suite', () => {
   });
 
   // ===================================================================
+  // WHERE FUZZY
+  // ===================================================================
+
+  describe('whereFuzzy()', () => {
+    it('delegates fuzzy matching for materialized candidates to the table search engine once', () => {
+      const table = mockDatabase.tables.Users;
+      const fuzzySearchRows = jest.spyOn(table.searchEngine, 'fuzzySearchRows');
+
+      const rows = queryBuilder
+        .from('Users')
+        .where('status', '=', 'active')
+        .whereFuzzy('name', 'alce', { threshold: 0.4 })
+        .get();
+
+      expect(rows.map((row) => row.name)).toEqual(['Alice']);
+      expect(fuzzySearchRows).toHaveBeenCalledTimes(1);
+      expect(fuzzySearchRows).toHaveBeenCalledWith(
+        [{ row: expect.any(Object), value: 'Alice' }, { row: expect.any(Object), value: 'Bob' }, { row: expect.any(Object), value: 'David' }],
+        'alce',
+        ['value'],
+        0.4
+      );
+    });
+
+    it('finds approximate field matches without changing LIKE behavior', () => {
+      const fuzzyRows = queryBuilder
+        .from('Users')
+        .whereFuzzy('name', 'alce', { threshold: 0.4 })
+        .get();
+      const likeRows = new AdvancedQueryBuilder(mockDatabase)
+        .from('Users')
+        .whereLike('name', 'Ali')
+        .get();
+
+      expect(fuzzyRows.map((row) => row.name)).toEqual(['Alice']);
+      expect(likeRows.map((row) => row.name)).toEqual(['Alice']);
+    });
+
+    it('adds an OR fuzzy predicate using the existing left-to-right OR grouping', () => {
+      const rows = queryBuilder
+        .from('Users')
+        .where('status', '=', 'inactive')
+        .orWhereFuzzy('name', 'alce', { threshold: 0.4 })
+        .get();
+
+      expect(rows.map((row) => row.name)).toEqual(['Alice', 'Charlie']);
+    });
+
+    it('preserves source-row order when Fuse gives fuzzy matches equal scores', () => {
+      mockDatabase.tables.Users.setData([
+        { ID: 'second', name: 'Alice' },
+        { ID: 'first', name: 'Alice' }
+      ]);
+
+      const rows = queryBuilder.from('Users').whereFuzzy('name', 'Alice').get();
+
+      expect(rows.map((row) => row.ID)).toEqual(['second', 'first']);
+    });
+
+    it.each([
+      ['', 'alice', {}],
+      ['name', '', {}],
+      ['name', 17, {}],
+      ['name', 'alice', { threshold: -0.01 }],
+      ['name', 'alice', { threshold: 1.01 }],
+      ['name', 'alice', { includeScore: true }]
+    ])('rejects invalid fuzzy arguments', (field, query, options) => {
+      expect(() => queryBuilder.whereFuzzy(field, query, options)).toThrow();
+    });
+  });
+
+  // ===================================================================
   // ORDER BY
   // ===================================================================
 

@@ -17,7 +17,7 @@
  * @requires fuse.js (npm) - For fuzzy search with configurable scoring
  */
 
-import { isEqual, OperationError, isPlainObject } from '@CoreUtilsLib';
+import { isEqual, OperationError, isPlainObject, CellValueCoercion } from '@CoreUtilsLib';
 import { TableDataModifier } from './TableDataModifier.js';
 import { TableSchemaValidator } from './TableSchemaValidator.js';
 import { TableSearchEngine } from './TableSearchEngine.js';
@@ -177,11 +177,6 @@ export class TableService {
   /** @private @description Performs an indexed lookup. */
   _indexedLookup(...args) {
     return this.searchEngine.indexedLookup(...args);
-  }
-
-  /** @private @description Invalidates a search index. */
-  _invalidateIndex(...args) {
-    return this.searchEngine.invalidateIndex(...args);
   }
 
   // --- PUBLIC METHODS ---
@@ -533,25 +528,14 @@ export class TableService {
   /**
    * @function _coerceValue
    * @description Normalizes Sheets API strings into JS primitives (number, boolean).
+   * Delegates to CoreUtilsLib's shared CellValueCoercion (dedupe of the
+   * duplicate previously kept in sync manually with GasDataImporter).
    * @param {*} value - Raw cell data.
    * @returns {*} Primitive or original string.
    * @private
    */
   _coerceValue(value) {
-    if (value === null || value === undefined) return value;
-    if (typeof value !== 'string') return value;
-    if (value.trim() === '') return value;
-
-    const num = Number(value);
-    if (!isNaN(num) && isFinite(num)) {
-      return num;
-    }
-
-    const lower = value.toLowerCase();
-    if (lower === 'true') return true;
-    if (lower === 'false') return false;
-
-    return value;
+    return CellValueCoercion.coerceValue(value);
   }
 
   /**
@@ -593,17 +577,6 @@ export class TableService {
       const rowWithVirtuals = this._applyVirtualColumns({ ...row });
       return rowWithVirtuals[this._keyField] == id;
     });
-  }
-
-  /**
-   * @function _getNextEmptyRow
-   * @description Predicts next insertion point based on current cache length.
-   * @returns {number} 1-based index for Sheets API.
-   * @private
-   */
-  _getNextEmptyRow() {
-    this._ensureDataLoaded();
-    return this._rowsCache.length + 2; // +1 for header, +1 for new row
   }
 
   /**

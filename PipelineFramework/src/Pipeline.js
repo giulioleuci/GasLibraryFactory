@@ -226,7 +226,9 @@ export class Pipeline {
       if (this._monitor && this._jobId && typeof this._monitor.logStepStart === 'function') {
         try {
           this._monitor.logStepStart(this._jobId, stepName);
-        } catch (_e) {}
+        } catch (_e) {
+          this._logger.debug(`[${this._name}] monitor.logStepStart failed: ${_e.message}`);
+        }
       }
 
       let result;
@@ -240,7 +242,9 @@ export class Pipeline {
         if (this._monitor && this._jobId && typeof this._monitor.logStepComplete === 'function') {
           try {
             this._monitor.logStepComplete(this._jobId, stepName, false);
-          } catch (_e) {}
+          } catch (_e) {
+            this._logger.debug(`[${this._name}] monitor.logStepComplete failed: ${_e.message}`);
+          }
         }
 
         if (this._stopOnError) {
@@ -269,7 +273,9 @@ export class Pipeline {
           } else if (typeof this._monitor.logStepComplete === 'function') {
             this._monitor.logStepComplete(this._jobId, stepName, status === 'completed');
           }
-        } catch (_e) {}
+        } catch (_e) {
+          this._logger.debug(`[${this._name}] monitor.logStepSkipped/Complete failed: ${_e.message}`);
+        }
       }
 
       if (status === 'failed') {

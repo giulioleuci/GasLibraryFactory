@@ -483,47 +483,7 @@ describe('JobRunnerService - Logging Features', () => {
     });
   });
 
-  // ===================================================================
-  // HTML ESCAPING
-  // ===================================================================
-
-  describe('_escapeHtml()', () => {
-    it('should escape ampersands', () => {
-      expect(service._escapeHtml('Tom & Jerry')).toBe('Tom &amp; Jerry');
-    });
-
-    it('should escape less than', () => {
-      expect(service._escapeHtml('1 < 2')).toBe('1 &lt; 2');
-    });
-
-    it('should escape greater than', () => {
-      expect(service._escapeHtml('2 > 1')).toBe('2 &gt; 1');
-    });
-
-    it('should escape double quotes', () => {
-      expect(service._escapeHtml('Say "hello"')).toBe('Say &quot;hello&quot;');
-    });
-
-    it('should escape single quotes', () => {
-      expect(service._escapeHtml("It's mine")).toBe('It&#039;s mine');
-    });
-
-    it('should escape script tags', () => {
-      expect(service._escapeHtml('<script>alert("XSS")</script>')).toBe(
-        '&lt;script&gt;alert(&quot;XSS&quot;)&lt;/script&gt;'
-      );
-    });
-
-    it('should handle mixed escaping', () => {
-      expect(service._escapeHtml('<a href="test">Link & Text</a>')).toBe(
-        '&lt;a href=&quot;test&quot;&gt;Link &amp; Text&lt;/a&gt;'
-      );
-    });
-
-    it('should handle non-string inputs', () => {
-      expect(service._escapeHtml(123)).toBe('123');
-      expect(service._escapeHtml(null)).toBe('null');
-      expect(service._escapeHtml(undefined)).toBe('undefined');
-    });
-  });
+  // HTML escaping is now delegated to the shared CoreUtilsLib
+  // HtmlSanitizer.escapeHtml (see CoreUtilsLib/src/__tests__/HtmlSanitizer.test.js);
+  // JobRunnerLogCapturer no longer exposes a private _escapeHtml of its own.
 });

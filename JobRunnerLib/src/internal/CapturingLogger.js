@@ -1,3 +1,5 @@
+import { HtmlSanitizer } from '@CoreUtilsLib';
+
 /**
  * @file JobRunnerLib/src/CapturingLogger.js
  * @description Proxy logger that captures all log messages while forwarding to a real logger
@@ -270,14 +272,7 @@ export class CapturingLogger {
    * @returns {string} HTML-escaped string.
    */
   _escapeHtml(text) {
-    const map = {
-      '&': '&amp;',
-      '<': '&lt;',
-      '>': '&gt;',
-      '"': '&quot;',
-      "'": '&#039;'
-    };
-    return text.replace(/[&<>"']/g, (m) => map[m]);
+    return HtmlSanitizer.escapeHtml(text);
   }
 
   /**

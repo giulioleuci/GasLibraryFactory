@@ -1,5 +1,9 @@
 import { ConfigurationError } from '@CoreUtilsLib';
-import { ValidationException } from '@GasSchemaValidatorLib';
+import { ValidationException, z } from '@GasSchemaValidatorLib';
+
+const zodSchemaProtocol = z.object({
+  safeParse: z.function()
+});
 
 export class TableSchemaValidator {
   constructor(facade) {
@@ -7,7 +11,7 @@ export class TableSchemaValidator {
   }
 
   setSchema(zodSchema) {
-    if (!zodSchema || typeof zodSchema.safeParse !== 'function') {
+    if (!zodSchemaProtocol.safeParse(zodSchema).success) {
       throw new ConfigurationError('setSchema() requires a Zod schema');
     }
     this.facade._schema = zodSchema;

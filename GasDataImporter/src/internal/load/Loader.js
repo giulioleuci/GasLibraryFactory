@@ -370,19 +370,6 @@ class Loader {
   }
 
   /**
-   * Performs an in-memory search for a record matching the specified attribute value.
-   * @private
-   * @param {Object} table search target.
-   * @param {string} key Attribute name.
-   * @param {*} value Target value.
-   * @returns {Object|null} Matching record or null.
-   */
-  _findByKey(table, key, value) {
-    const rows = table.getAllRows();
-    return rows.find((row) => row[key] === value) || null;
-  }
-
-  /**
    * Evaluates if an incoming record possesses a more recent timestamp than the existing persistence state.
    * @private
    * @param {Object} existing current database record.

@@ -8,6 +8,7 @@ import { SchemaTemplate } from '../SchemaTemplate.js';
 import { ColumnFamily, MemberSourceType } from '../ColumnFamily.js';
 import { ColumnType } from '../ColumnType.js';
 import { MockFactory } from '../../../../../test/fakes';
+import { ValidationException } from '@GasSchemaValidatorLib';
 
 describe('SchemaResolver', () => {
   let resolver;
@@ -43,6 +44,37 @@ describe('SchemaResolver', () => {
       const r = new SchemaResolver({ familyRegistry: { attrs: family } });
 
       expect(r.getFamily('attrs')).toBe(family);
+    });
+
+    it('translates malformed resolver configuration into a ValidationException', () => {
+      const invalidOptions = () => new SchemaResolver({ familyRegistry: 'not-a-registry' });
+      expect(invalidOptions).toThrow(ValidationException);
+      expect(invalidOptions).toThrow('Validation failed for SchemaResolver');
+    });
+  });
+
+  describe('template input shape', () => {
+    it('translates malformed column collections into a ValidationException', () => {
+      const invalidTemplate = () =>
+        new SchemaTemplate({
+          tableId: 'products',
+          fixedColumns: 'not-an-array'
+        });
+
+      expect(invalidTemplate).toThrow(ValidationException);
+      expect(invalidTemplate).toThrow('Validation failed for SchemaTemplate');
+    });
+
+    it('continues to accept a valid template definition', () => {
+      expect(
+        () =>
+          new SchemaTemplate({
+            tableId: 'products',
+            fixedColumns: [{ name: 'id', primaryKey: true }],
+            dynamicColumns: [],
+            metadata: {}
+          })
+      ).not.toThrow();
     });
   });
 

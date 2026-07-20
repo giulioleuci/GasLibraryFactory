@@ -427,6 +427,10 @@ describe('CapturingLogger - Comprehensive Test Suite', () => {
       expect(html).not.toContain('<script>alert');
     });
 
+    it('uses the shared five-character HTML escaping contract', () => {
+      expect(capturingLogger._escapeHtml(`&<>"'`)).toBe('&amp;&lt;&gt;&quot;&#39;');
+    });
+
     it('should use monospace font', () => {
       capturingLogger.info('Message');
 

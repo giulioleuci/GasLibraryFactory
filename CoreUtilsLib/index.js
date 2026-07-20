@@ -112,9 +112,17 @@ export { ValidationUtils } from './src/ValidationUtils.js';
 // HTML-context escaping utilities (XSS prevention, ported from ALDO's boxes.ts)
 export { HtmlSanitizer } from './src/utils/HtmlSanitizer.js';
 
+// Sheets-cell-value coercion (string -> number/boolean), shared by SheetDBLib
+// and GasDataImporter (Code Reuse Initiative, dedupe of _coerceValue)
+export { CellValueCoercion } from './src/utils/CellValueCoercion.js';
+
 // Generic date-range VO: containment/duration/overlap + open-ended sentinel
 // (Code Reuse Initiative, ref ALDO_GLF_AUDIT_RESULTS.md B-2)
 export { DateRange } from './src/utils/DateRange.js';
+
+// Shared dynamic-delegation helper for Facade/Delegation-pattern classes
+// (Code Reuse Initiative - deduplicates the copy-pasted private `_delegate` method)
+export { Delegation } from './src/utils/Delegation.js';
 export {
   BaseError,
   ValidationError,

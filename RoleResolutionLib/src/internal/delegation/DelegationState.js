@@ -6,6 +6,7 @@
 import { Scope } from '../../core/Scope.js';
 import { RoutingPolicy, isValidRoutingPolicy } from '../routing/RoutingPolicy.js';
 import { cloneDeep } from '@CoreUtilsLib';
+import { parseDate } from '../DateParsing.js';
 
 export class DelegationState {
   constructor(definition) {
@@ -69,17 +70,7 @@ export class DelegationState {
   }
 
   _parseDate(value) {
-    if (value === null || value === undefined) {
-      return null;
-    }
-    if (value instanceof Date) {
-      return new Date(value.getTime());
-    }
-    if (typeof value === 'string') {
-      const parsed = new Date(value);
-      return isNaN(parsed.getTime()) ? null : parsed;
-    }
-    return null;
+    return parseDate(value);
   }
 
   getMetadata(key, defaultValue = null) {

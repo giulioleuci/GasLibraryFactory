@@ -199,6 +199,7 @@ Constructs complex queries. Created via `db.select()`.
 - **`select(columns)`**: Columns to retrieve.
 - **`from(table)`**: Source table.
 - **`where(field, op, value)`**: Filter conditions (`=`, `!=`, `>`, `<`, `LIKE`, `IN`).
+- **`whereFuzzy(field, query, options = {})`** / **`orWhereFuzzy(field, query, options = {})`**: Opt-in fuzzy text filters. They are additive to existing `where`/`orWhere` conditions; use `threshold` from `0` (strictest) to `1` (loosest), with a default of `0.4`.
 - **`join(table, localField, op, foreignField)`**: Joins another table.
 - **`groupBy(fields)`**: Groups results.
 - **`sum(field)`, `count(field)`**: Aggregations.
@@ -215,6 +216,18 @@ const report = db
   .where('Orders.status', '=', 'completed')
   .where('Orders.total', '>', 100)
   .orderBy('Orders.total', 'DESC')
+  .execute();
+```
+
+**Opt-in Fuzzy Query Example:**
+
+```javascript
+const matchingUsers = db
+  .select()
+  .from('Users')
+  .where('active', '=', true)
+  .whereFuzzy('name', 'Alic', { threshold: 0.4 })
+  .orWhereFuzzy('email', 'alice@example.com')
   .execute();
 ```
 

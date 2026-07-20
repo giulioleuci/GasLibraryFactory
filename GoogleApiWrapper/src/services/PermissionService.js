@@ -883,19 +883,6 @@ export class PermissionService extends GoogleService {
 
     return isSingleId ? links[fileIds] : links;
   }
-
-  // ===================================================================
-  // HELPER METHODS
-  // ===================================================================
-
-  /**
-   * @private
-   * @description Validates presence of Advanced Drive service.
-   * @returns {boolean}
-   */
-  _verifyAdvancedDrive() {
-    return this._verifyAdvancedService('Drive');
-  }
 }
 
 // Export alias for backwards compatibility

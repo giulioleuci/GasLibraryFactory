@@ -83,7 +83,7 @@
     "rootDir": "./dist"
   },
   "dependencies": {
-    "es-toolkit": "^1.43.0",
+    "es-toolkit": "1.43.0",
     "fuse.js": "^7.5.0",
     "he": "^1.2.0",
     "jsep": "^1.4.0",

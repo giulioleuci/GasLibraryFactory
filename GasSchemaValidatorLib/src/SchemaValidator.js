@@ -11,16 +11,17 @@ export class SchemaValidator {
     const result = parse(data);
 
     if (!result.success) {
-      const errors = SchemaValidator.formatZodError(result.error);
-      const message = entityType ? `Validation failed for ${entityType}` : 'Validation failed';
-      this._logger.debug(`[SchemaValidator] ${message}: ${JSON.stringify(errors)}`);
-      throw new ValidationException(message, entityType, errors);
+      const exception = SchemaValidator.toValidationException(result.error, entityType);
+      this._logger.debug(
+        `[SchemaValidator] ${exception.message}: ${JSON.stringify(exception.errors)}`
+      );
+      throw exception;
     }
 
     return result.data;
   }
 
-  safeValidate(schema, data, entityType = null) {
+  safeValidate(schema, data, _entityType = null) {
     const parse = this._getCachedParse(schema);
     const result = parse(data);
 

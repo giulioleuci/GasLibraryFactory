@@ -7,6 +7,34 @@
 import { ColumnFamily, MemberSourceType } from './ColumnFamily.js';
 import { SchemaTemplate } from './SchemaTemplate.js';
 import { cloneDeep } from '@CoreUtilsLib';
+import { SchemaValidator, z } from '@GasSchemaValidatorLib';
+
+const resolverOptionsSchema = z.object({
+  familyRegistry: z.union([z.instanceof(Map), z.record(z.string(), z.unknown())]).optional(),
+  memberLoader: z.union([z.null(), z.object({}).passthrough()]).optional(),
+  logger: z.object({}).passthrough().optional()
+});
+
+const resolveOptionsSchema = z.object({
+  useCache: z.boolean().optional(),
+  context: z.object({}).passthrough().optional()
+});
+
+function parseResolverOptions(options) {
+  const result = resolverOptionsSchema.safeParse(options);
+  if (!result.success) {
+    throw SchemaValidator.toValidationException(result.error, 'SchemaResolver');
+  }
+  return result.data;
+}
+
+function parseResolveOptions(options) {
+  const result = resolveOptionsSchema.safeParse(options);
+  if (!result.success) {
+    throw SchemaValidator.toValidationException(result.error, 'SchemaResolver');
+  }
+  return result.data;
+}
 
 /**
  * ResolvedColumn - Represents a fully resolved column definition.
@@ -55,6 +83,7 @@ export class SchemaResolver {
    * @param {Object} [options.logger=console] - Logger instance for operational feedback.
    */
   constructor(options = {}) {
+    options = parseResolverOptions(options);
     const { familyRegistry = new Map(), memberLoader = null, logger = console } = options;
 
     /**
@@ -151,6 +180,7 @@ export class SchemaResolver {
    * @throws {Error} If template is not a SchemaTemplate, or a required ColumnFamily is missing.
    */
   resolve(template, options = {}) {
+    options = parseResolveOptions(options);
     const { useCache = true, context = {} } = options;
 
     if (!(template instanceof SchemaTemplate)) {

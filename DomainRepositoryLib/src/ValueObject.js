@@ -110,16 +110,4 @@ export class ValueObject {
   getValue() {
     throw new Error(`${this.constructor.name} must implement getValue() method`);
   }
-
-  /**
-   * Verifies that the provided object is deeply frozen to maintain domain integrity.
-   * @protected
-   * @param {Object} obj Target object to verify.
-   * @throws {Error} If the object remains mutable.
-   */
-  _ensureImmutable(obj) {
-    if (!Object.isFrozen(obj)) {
-      throw new Error(`${this.constructor.name} must be immutable`);
-    }
-  }
 }

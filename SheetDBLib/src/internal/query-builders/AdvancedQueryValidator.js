@@ -47,6 +47,43 @@ export class AdvancedQueryValidator {
   }
 
   /**
+   * Validates the opt-in fuzzy predicate API before Fuse receives configuration.
+   * Only threshold is exposed deliberately so query callers cannot override
+   * compiler-owned options such as keys, includeScore, or sorting.
+   *
+   * @param {*} field Target field identifier.
+   * @param {*} query Fuzzy search text.
+   * @param {*} options Fuzzy configuration.
+   * @throws {Error} If the predicate cannot be evaluated safely.
+   */
+  validateFuzzyCondition(field, query, options = {}) {
+    if (typeof field !== 'string' || field.trim().length === 0) {
+      throw new Error('Fuzzy field must be a non-empty string');
+    }
+    if (typeof query !== 'string' || query.trim().length === 0) {
+      throw new Error('Fuzzy query must be a non-empty string');
+    }
+    if (
+      options === null ||
+      typeof options !== 'object' ||
+      Array.isArray(options)
+    ) {
+      throw new Error('Fuzzy options must be an object');
+    }
+    for (const optionName of Object.keys(options)) {
+      if (optionName !== 'threshold') {
+        throw new Error(`Unknown fuzzy option: ${optionName}`);
+      }
+    }
+    if (
+      Object.prototype.hasOwnProperty.call(options, 'threshold') &&
+      (!Number.isFinite(options.threshold) || options.threshold < 0 || options.threshold > 1)
+    ) {
+      throw new Error('Fuzzy threshold must be a finite number between 0 and 1');
+    }
+  }
+
+  /**
    * @description Verifies sort direction identifiers.
    * @param {string} direction - The sort direction string.
    * @throws {Error} If direction is neither 'ASC' nor 'DESC' (case-insensitive).

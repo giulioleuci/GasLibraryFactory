@@ -153,34 +153,6 @@ export class PostProcessorChain {
     return this;
   }
 
-  // ===================================================================
-  // EXECUTION (Delegated to ChainExecutor)
-  // ===================================================================
-
-  /**
-   * Evaluates if a processor should run based on its when condition.
-   *
-   * @param {Object} config - Entry configuration
-   * @param {PostProcessorContext} context - Execution context
-   * @returns {boolean} True if processor should run
-   * @private
-   */
-  _shouldExecute(config, context) {
-    return this._chainExecutor.shouldExecute(config, context);
-  }
-
-  /**
-   * Evaluates a custom condition expression.
-   *
-   * @param {string} condition - Expression to evaluate
-   * @param {PostProcessorContext} context - Execution context
-   * @returns {boolean} Result of expression evaluation
-   * @private
-   */
-  _evaluateCustomCondition(condition, context) {
-    return this._chainExecutor.evaluateCustomCondition(condition, context);
-  }
-
   /**
    * Triggers sequential execution of all processors in the chain.
    *

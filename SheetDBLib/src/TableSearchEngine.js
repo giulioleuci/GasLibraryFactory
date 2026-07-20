@@ -42,17 +42,7 @@ export class TableSearchEngine {
     // Get rows with virtual columns applied
     const rows = this.facade.getRows();
 
-    // Configure Fuse.js
-    const fuseOptions = {
-      keys: fields,
-      threshold: threshold,
-      includeScore: true,
-      ...options
-    };
-
-    // Create Fuse instance and search
-    const fuse = new Fuse(rows, fuseOptions);
-    const results = fuse.search(query);
+    const results = this.fuzzySearchRows(rows, query, fields, threshold, options);
 
     this.facade._logger.debug(
       `Fuzzy search for "${query}" in fields [${fields.join(', ')}] ` +
@@ -60,6 +50,39 @@ export class TableSearchEngine {
     );
 
     return results;
+  }
+
+  /**
+   * @description Executes fuzzy matching against an already materialized row set.
+   * This keeps all Fuse configuration within the table search boundary for callers
+   * such as AdvancedQueryCompiler that have already narrowed their candidates.
+   * @param {Object[]} rows - Candidate records to search.
+   * @param {string} query - Search term.
+   * @param {string[]} fields - Candidate fields to inspect.
+   * @param {number} [threshold=0.3] - Fuse.js sensitivity (0.0 to 1.0).
+   * @param {Object} [options={}] - Fuse.js configuration overrides.
+   * @returns {Object[]} Fuse.js result objects (item, refIndex, score).
+   */
+  fuzzySearchRows(rows, query, fields, threshold = 0.3, options = {}) {
+    if (!Array.isArray(rows)) {
+      throw new Error('Rows must be an array');
+    }
+    if (!query || typeof query !== 'string') {
+      throw new Error('Query must be a non-empty string');
+    }
+    if (!fields || !Array.isArray(fields) || fields.length === 0) {
+      throw new Error('Fields must be a non-empty array of field names');
+    }
+    if (typeof threshold !== 'number' || threshold < 0 || threshold > 1) {
+      throw new Error('Threshold must be a number between 0 and 1');
+    }
+
+    return new Fuse(rows, {
+      keys: fields,
+      threshold,
+      includeScore: true,
+      ...options
+    }).search(query);
   }
 
   /**

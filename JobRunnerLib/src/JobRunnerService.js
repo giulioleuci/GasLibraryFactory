@@ -5,6 +5,7 @@
  * @version 2.0 - Refactored using Facade/Delegation pattern.
  */
 
+import { Delegation } from '@CoreUtilsLib';
 import { PropertiesService, TriggerService, LockService } from '@GoogleApiWrapper';
 import { JobQueue } from './JobQueue.js';
 import { JobRunnerTriggerManager } from './internal/managers/JobRunnerTriggerManager.js';
@@ -67,7 +68,7 @@ export class MyJobRunnerService {
     this._logCapturer = new JobRunnerLogCapturer(this);
 
     // Delegate methods
-    this._delegate([
+    Delegation.delegateMethods(this, [
       {
         manager: this._triggerManager,
         methods: ['_getCurrentTriggerId']
@@ -86,23 +87,12 @@ export class MyJobRunnerService {
           '_validateLoggingConfig',
           '_displayLogs',
           '_displayLogsInSidebar',
-          '_displayLogsInDriveFile',
-          '_escapeHtml'
+          '_displayLogsInDriveFile'
         ]
       }
     ]);
 
     this._logger.debug('MyJobRunnerService: Instance created');
-  }
-
-  _delegate(delegations) {
-    delegations.forEach(({ manager, methods }) => {
-      methods.forEach((method) => {
-        if (typeof manager[method] === 'function') {
-          this[method] = manager[method].bind(manager);
-        }
-      });
-    });
   }
 
   /**

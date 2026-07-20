@@ -128,13 +128,4 @@ export class DriveService extends GoogleService {
   getStandardApp() {
     return DriveApp;
   }
-
-  /**
-   * @private
-   * @description Validates presence of the Advanced Drive service in global context.
-   * @returns {boolean}
-   */
-  _verifyAdvancedDrive() {
-    return this._verifyAdvancedService('Drive');
-  }
 }

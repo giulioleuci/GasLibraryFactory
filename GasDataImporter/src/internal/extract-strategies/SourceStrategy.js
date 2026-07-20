@@ -3,6 +3,7 @@
  * @author GasLibraryFactory
  */
 
+import { CellValueCoercion } from '@CoreUtilsLib';
 import { SourceError } from '../errors/SourceError.js';
 
 /**
@@ -108,25 +109,31 @@ class SourceStrategy {
 
   /**
    * Casts raw string values into their appropriate JavaScript types (Number, Boolean) for domain consistency.
+   * Delegates to CoreUtilsLib's shared CellValueCoercion (dedupe of the
+   * duplicate previously kept in sync manually with SheetDBLib).
    * @protected
    * @param {*} value Raw cell value.
    * @returns {*} Coerced primitive value.
    */
   _coerceValue(value) {
-    if (value === null || value === undefined) return value;
-    if (typeof value !== 'string') return value;
-    if (value.trim() === '') return value;
+    return CellValueCoercion.coerceValue(value);
+  }
 
-    const num = Number(value);
-    if (!isNaN(num) && isFinite(num)) {
-      return num;
+  /**
+   * Converts a 1-based column index into its A1-notation letter (1 -> 'A', 27 -> 'AA').
+   * Shared by strategies that build explicit A1 ranges (FolderStrategy, SheetByIdStrategy).
+   * @protected
+   * @param {number} column 1-based column index.
+   * @returns {string} A1-notation column letter(s).
+   */
+  _columnToLetter(column) {
+    let letter = '';
+    while (column > 0) {
+      const remainder = (column - 1) % 26;
+      letter = String.fromCharCode(65 + remainder) + letter;
+      column = Math.floor((column - 1) / 26);
     }
-
-    const lower = value.toLowerCase();
-    if (lower === 'true') return true;
-    if (lower === 'false') return false;
-
-    return value;
+    return letter;
   }
 
   /**

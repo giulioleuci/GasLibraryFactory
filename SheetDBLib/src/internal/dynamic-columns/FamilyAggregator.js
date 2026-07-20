@@ -6,6 +6,7 @@
 
 import { ColumnFamily } from './ColumnFamily.js';
 import { ColumnType, coerceToType } from './ColumnType.js';
+import { getFamilyOrThrow } from './FamilyMapUtils.js';
 
 /**
  * AggregationType - Supported aggregation operations.
@@ -376,11 +377,7 @@ export class FamilyAggregator {
    * @private
    */
   _getFamily(familyId) {
-    const family = this._familyMap.get(familyId);
-    if (!family) {
-      throw new Error(`Column family not found: ${familyId}`);
-    }
-    return family;
+    return getFamilyOrThrow(this._familyMap, familyId);
   }
 
   /**

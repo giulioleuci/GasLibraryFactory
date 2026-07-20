@@ -249,15 +249,15 @@ export class AdvancedQueryCompiler {
    * @returns {Object[]|null} Filtered records from index or null if no optimization is viable.
    * @private
    */
-  _tryIndexOptimization(table) {
-    if (this.facade.conditions.length === 0) return null;
-    const allAndEquality = this.facade.conditions.every(
+  _tryIndexOptimization(table, conditions = this.facade.conditions) {
+    if (conditions.length === 0) return null;
+    const allAndEquality = conditions.every(
       (cond) => cond.type === 'AND' && (cond.operator === '=' || cond.operator === '==')
     );
 
     if (!allAndEquality) {
-      if (this.facade.conditions.length !== 1) return null;
-      const condition = this.facade.conditions[0];
+      if (conditions.length !== 1) return null;
+      const condition = conditions[0];
       if (
         (condition.operator === '=' || condition.operator === '==') &&
         condition.field === table._keyField
@@ -283,7 +283,7 @@ export class AdvancedQueryCompiler {
     let bestIndex = null;
     let smallestCardinality = Infinity;
 
-    for (const condition of this.facade.conditions) {
+    for (const condition of conditions) {
       if (condition.field === table._keyField) {
         const row = table.getRowById(condition.value);
         this.facade._optimizedField = condition.field;
@@ -305,7 +305,7 @@ export class AdvancedQueryCompiler {
       table._ensureDataLoaded();
       this.facade._optimizedField = bestCondition.field;
       const candidateRows = bestIndex.map((idx) => ({ ...table._rowsCache[idx] }));
-      const remainingConditions = this.facade.conditions.filter(
+      const remainingConditions = conditions.filter(
         (c) => c.field !== bestCondition.field
       );
       if (remainingConditions.length === 0) return candidateRows;
@@ -319,9 +319,9 @@ export class AdvancedQueryCompiler {
    * @returns {Object[]} Collection of pending conditions for full-scan filtering.
    * @private
    */
-  _getRemainingConditions() {
-    if (!this.facade._optimizedField) return this.facade.conditions;
-    return this.facade.conditions.filter((cond) => cond.field !== this.facade._optimizedField);
+  _getRemainingConditions(conditions = this.facade.conditions) {
+    if (!this.facade._optimizedField) return conditions;
+    return conditions.filter((cond) => cond.field !== this.facade._optimizedField);
   }
 
   /**
@@ -349,16 +349,62 @@ export class AdvancedQueryCompiler {
    * @private
    */
   _applyConditionsFiltered(rows, conditions) {
+    const fuzzyMatches = this._compileFuzzyMatches(rows, conditions);
     return rows.filter((row) => {
       let finalResult = true;
-      for (const cond of conditions) {
+      for (let conditionIndex = 0; conditionIndex < conditions.length; conditionIndex++) {
+        const cond = conditions[conditionIndex];
         const rowValue = this._getFieldValue(row, cond.field);
-        let conditionResult = _compareValues(rowValue, cond.operator, cond.value);
+        const conditionResult = cond.kind === 'FUZZY'
+          ? fuzzyMatches.get(conditionIndex).has(row)
+          : _compareValues(rowValue, cond.operator, cond.value);
         if (cond.type === 'AND') finalResult = finalResult && conditionResult;
         else finalResult = finalResult || conditionResult;
       }
       return finalResult;
     });
+  }
+
+  /**
+   * Builds one Fuse index per fuzzy condition for the current materialized row set.
+   * Results are consumed as membership sets, so filtering retains the source-row
+   * ordering already established by the query pipeline (including equal scores).
+   *
+   * @param {Object[]} rows Materialized candidate rows.
+   * @param {Object[]} conditions Conditions to inspect.
+   * @returns {Map<number, Set<Object>>} Matches indexed by condition position.
+   * @private
+   */
+  _compileFuzzyMatches(rows, conditions) {
+    const matchesByCondition = new Map();
+    if (!conditions.some((condition) => condition.kind === 'FUZZY')) return matchesByCondition;
+
+    const hasOrCondition = conditions.some((condition) => condition.type === 'OR');
+    const ordinaryConditions = conditions.filter((condition) => condition.kind !== 'FUZZY');
+    const candidateRows = hasOrCondition
+      ? rows
+      : rows.filter((row) => ordinaryConditions.every((condition) =>
+        _compareValues(this._getFieldValue(row, condition.field), condition.operator, condition.value)
+      ));
+    const table = this.facade.dbService.tables[this.facade.tableName];
+
+    for (let index = 0; index < conditions.length; index++) {
+      const condition = conditions[index];
+      if (condition.kind !== 'FUZZY') continue;
+
+      const candidates = candidateRows.map((row) => ({
+        row,
+        value: this._getFieldValue(row, condition.field)
+      }));
+      const results = table.searchEngine.fuzzySearchRows(
+        candidates,
+        condition.query,
+        ['value'],
+        condition.options.threshold
+      );
+      matchesByCondition.set(index, new Set(results.map((result) => result.item.row)));
+    }
+    return matchesByCondition;
   }
 
   /**

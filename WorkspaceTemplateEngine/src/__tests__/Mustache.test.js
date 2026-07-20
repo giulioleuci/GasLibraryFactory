@@ -559,6 +559,10 @@ describe('Mustache - Comprehensive Test Suite', () => {
   });
 
   describe('HTML Escaping', () => {
+    it('uses the shared five-character HTML escaping contract internally', () => {
+      expect(mustache._escapeHtml(`&<>"'`)).toBe('&amp;&lt;&gt;&quot;&#39;');
+    });
+
     it('should pass through HTML content in GAS context', () => {
       // GAS context: HTML escaping is not appropriate for Google Docs/Sheets output.
       // HTML entities would appear as literal text in documents.

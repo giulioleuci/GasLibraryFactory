@@ -154,9 +154,7 @@ describe('MailService - Simplified Test Suite', () => {
     });
   });
 
-  describe('_escapeHtml()', () => {
-    it('should escape special characters', () => {
-      expect(service._escapeHtml('< > & " \'')).toBe('&lt; &gt; &amp; &quot; &#039;');
-    });
-  });
+  // _escapeHtml was removed in favour of the shared CoreUtilsLib
+  // HtmlSanitizer.escapeHtml (see CoreUtilsLib/src/__tests__/HtmlSanitizer.test.js
+  // for escaping coverage).
 });

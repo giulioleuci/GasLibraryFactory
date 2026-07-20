@@ -217,22 +217,6 @@ class FolderStrategy extends SourceStrategy {
 
     return data;
   }
-
-  /**
-   * Converts a 1-based numeric column index into Excel-style A1 notation letters.
-   * @private
-   * @param {number} column numeric index (e.g., 1 -> 'A', 27 -> 'AA').
-   * @returns {string} Column alphabetic identifier.
-   */
-  _columnToLetter(column) {
-    let letter = '';
-    while (column > 0) {
-      const remainder = (column - 1) % 26;
-      letter = String.fromCharCode(65 + remainder) + letter;
-      column = Math.floor((column - 1) / 26);
-    }
-    return letter;
-  }
 }
 
 export { FolderStrategy };

@@ -4,6 +4,7 @@
  * @version 4.0 - Refactored using Facade/Delegation pattern.
  */
 
+import { Delegation } from '@CoreUtilsLib';
 import { GoogleService } from '../internal/core/GoogleService';
 import { SpreadsheetRangeManager } from '../internal/services-managers/SpreadsheetRangeManager.js';
 import { SpreadsheetGridManager } from '../internal/services-managers/SpreadsheetGridManager.js';
@@ -34,7 +35,7 @@ export class SpreadsheetService extends GoogleService {
     this._hybridManager = new SpreadsheetHybridManager(this);
 
     // Delegate methods
-    this._delegate([
+    Delegation.delegateMethods(this, [
       {
         manager: this._metadataCache,
         methods: [
@@ -90,16 +91,6 @@ export class SpreadsheetService extends GoogleService {
     if (this._dryRun) {
       this._logger.info('[DRY-RUN] SpreadsheetService initialized in dry-run mode.');
     }
-  }
-
-  _delegate(delegations) {
-    delegations.forEach(({ manager, methods }) => {
-      methods.forEach((method) => {
-        if (typeof manager[method] === 'function') {
-          this[method] = manager[method].bind(manager);
-        }
-      });
-    });
   }
 
   /**

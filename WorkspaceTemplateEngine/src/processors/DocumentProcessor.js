@@ -4,6 +4,7 @@
  * @version 2.0 - Refactored using Facade/Delegation pattern.
  */
 
+import { Delegation } from '@CoreUtilsLib';
 import { DocumentService, UtilitiesService } from '@GoogleApiWrapper';
 import { DocumentProcessorTagScanner } from '../internal/processors-managers/DocumentProcessorTagScanner.js';
 import { DocumentProcessorValueResolver } from '../internal/processors-managers/DocumentProcessorValueResolver.js';
@@ -38,7 +39,7 @@ class _DocumentProcessor {
     this._injector = new DocumentProcessorInjector(this);
 
     // Delegate methods
-    this._delegate([
+    Delegation.delegateMethods(this, [
       {
         manager: this._tagScanner,
         methods: [
@@ -71,16 +72,6 @@ class _DocumentProcessor {
         ]
       }
     ]);
-  }
-
-  _delegate(delegations) {
-    delegations.forEach(({ manager, methods }) => {
-      methods.forEach((method) => {
-        if (typeof manager[method] === 'function') {
-          this[method] = manager[method].bind(manager);
-        }
-      });
-    });
   }
 
   process(documentId, context) {

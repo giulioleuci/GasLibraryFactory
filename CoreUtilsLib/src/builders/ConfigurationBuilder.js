@@ -151,28 +151,4 @@ export class ConfigurationBuilder {
     return builder;
   }
 
-  // ===================================================================
-  // LEGACY PRIVATE METHODS (Delegated for backward compatibility)
-  // ===================================================================
-
-  /**
-   * @private
-   */
-  static _coerceType(value, type, key, context) {
-    return validator.coerceType(value, type, key, context);
-  }
-
-  /**
-   * @private
-   */
-  static _validateField(key, value, rule, context) {
-    return validator.validateField(key, value, rule, context);
-  }
-
-  /**
-   * @private
-   */
-  static _checkType(value, type) {
-    return validator.checkType(value, type);
-  }
 }

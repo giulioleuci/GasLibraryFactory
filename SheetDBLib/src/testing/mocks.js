@@ -4,6 +4,8 @@
  * @version 1.0.0
  */
 
+import { TableSearchEngine } from '../TableSearchEngine.js';
+
 /**
  * @class AdvancedQueryBuilderMock
  * @description High-fidelity Jest-based mock for AdvancedQueryBuilder.
@@ -63,6 +65,7 @@ export class TableServiceMock {
   constructor(name = 'TestTable') {
     this.name = name;
     this._data = [];
+    this.searchEngine = new TableSearchEngine(this);
 
     this.insertRow = jest.fn((row) => {
       const newRow = { ...row, id: row.id || `mock-id-${Math.random().toString(36).substr(2, 9)}` };

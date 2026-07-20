@@ -4,6 +4,7 @@
  * @version 2.0 - Refactored using Facade/Delegation pattern.
  */
 
+import { Delegation } from '@CoreUtilsLib';
 import { SpreadsheetService } from '@GoogleApiWrapper';
 import { TableService } from './TableService.js';
 import { AdvancedQueryBuilder } from './query/AdvancedQueryBuilder.js';
@@ -45,7 +46,7 @@ export class MyDatabaseService {
     this._metaDataHandler = new DatabaseMetaDataHandler(this);
 
     // Delegate methods
-    this._delegate([
+    Delegation.delegateMethods(this, [
       {
         manager: this._connectionManager,
         methods: [
@@ -76,16 +77,6 @@ export class MyDatabaseService {
     }
 
     this._initialize();
-  }
-
-  _delegate(delegations) {
-    delegations.forEach(({ manager, methods }) => {
-      methods.forEach((method) => {
-        if (typeof manager[method] === 'function') {
-          this[method] = manager[method].bind(manager);
-        }
-      });
-    });
   }
 
   select(fields = ['*']) {

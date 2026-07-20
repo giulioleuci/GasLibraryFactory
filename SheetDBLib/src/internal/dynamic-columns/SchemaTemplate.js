@@ -4,8 +4,23 @@
  * @version 1.0.0
  */
 
-import { ColumnFamily } from './ColumnFamily.js';
 import { cloneDeep } from '@CoreUtilsLib';
+import { SchemaValidator, z } from '@GasSchemaValidatorLib';
+
+const templateDefinitionSchema = z.object({
+  tableId: z.string(),
+  fixedColumns: z.array(z.object({}).passthrough()).optional(),
+  dynamicColumns: z.array(z.object({}).passthrough()).optional(),
+  metadata: z.record(z.string(), z.unknown()).optional()
+});
+
+function parseTemplateDefinition(definition) {
+  const result = templateDefinitionSchema.safeParse(definition);
+  if (!result.success) {
+    throw SchemaValidator.toValidationException(result.error, 'SchemaTemplate');
+  }
+  return result.data;
+}
 
 /**
  * @class SchemaTemplate
@@ -29,9 +44,7 @@ export class SchemaTemplate {
    * @throws {Error} If definition is invalid or tableId is missing/non-string.
    */
   constructor(definition) {
-    if (!definition || typeof definition !== 'object') {
-      throw new Error('SchemaTemplate definition is required');
-    }
+    definition = parseTemplateDefinition(definition);
 
     const { tableId, fixedColumns = [], dynamicColumns = [], metadata = {} } = definition;
 
