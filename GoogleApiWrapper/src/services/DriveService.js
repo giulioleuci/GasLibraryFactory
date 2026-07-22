@@ -93,7 +93,7 @@ export class DriveService extends GoogleService {
     });
 
     // Delegate DriveMetadataService methods
-    const metadataMethods = ['updateMetadata', 'getFiles', 'searchFiles'];
+    const metadataMethods = ['updateMetadata', 'getFiles', 'searchFiles', 'getFileOwnerEmail'];
     metadataMethods.forEach((m) => {
       this[m] = this.metadataService[m].bind(this.metadataService);
     });

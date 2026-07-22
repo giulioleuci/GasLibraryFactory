@@ -144,6 +144,19 @@ export class DriveMetadataService {
   }
 
   /**
+   * @description Returns the email address of a Drive file's owner, reusing `getFiles`'
+   * caching/retry behaviour (the `owners` field is already part of its default field set).
+   * @param {string} fileId Resource ID.
+   * @returns {string|null} Owner email, or null when no owner is present (e.g. a Shared Drive file).
+   * @throws {ServiceError} On execution failure.
+   */
+  getFileOwnerEmail(fileId) {
+    const metadata = this.getFiles(fileId);
+    const owners = metadata && metadata.owners;
+    return owners && owners.length > 0 ? owners[0].emailAddress : null;
+  }
+
+  /**
    * @description Performs paginated file search using Google Drive Query Language.
    * @param {string} query Search query string.
    * @param {Object} [options={}] Operation settings.

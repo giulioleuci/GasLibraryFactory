@@ -452,6 +452,56 @@ describe('DriveService - Comprehensive Test Suite', () => {
   });
 
   // ===================================================================
+  // getFileOwnerEmail() METHOD
+  // ===================================================================
+
+  describe('getFileOwnerEmail() Method', () => {
+    it('returns the first owner email when the file has an owner', () => {
+      global.Drive = {
+        Files: {
+          get: jest.fn().mockImplementation(() => ({
+            id: 'fileId1',
+            owners: [{ emailAddress: 'owner@school.it', displayName: 'Owner' }]
+          }))
+        }
+      };
+
+      const result = service.getFileOwnerEmail('fileId1');
+
+      expect(result).toBe('owner@school.it');
+    });
+
+    it('returns null when the file has no owners (e.g. a Shared Drive file)', () => {
+      global.Drive = {
+        Files: {
+          get: jest.fn().mockImplementation(() => ({ id: 'fileId1', owners: [] }))
+        }
+      };
+
+      const result = service.getFileOwnerEmail('fileId1');
+
+      expect(result).toBeNull();
+    });
+
+    it('goes through getFiles (caching + retry), not a separate Drive.Files.get call shape', () => {
+      global.Drive = {
+        Files: {
+          get: jest.fn().mockImplementation(() => ({
+            id: 'fileId1',
+            owners: [{ emailAddress: 'owner@school.it' }]
+          }))
+        }
+      };
+
+      service.getFileOwnerEmail('fileId1');
+
+      expect(global.Drive.Files.get).toHaveBeenCalledWith('fileId1', {
+        fields: 'id,name,mimeType,parents,modifiedTime,createdTime,webViewLink,size,owners'
+      });
+    });
+  });
+
+  // ===================================================================
   // searchFiles() METHOD
   // ===================================================================
 
