@@ -23,8 +23,6 @@ L'uso standard delle classi `App` (es. `DriveApp`) è lento perché ogni operazi
 - Aggiornamento di range non contigui in uno Sheet con una sola operazione (`SpreadsheetService.updateRanges`).
 - Condivisione silenziosa di file (senza email di notifica) tramite `PermissionService`.
 - Creazione di un Google Doc o Google Sheet **vuoto**, senza copiare un template esistente:
-  - `document.createDocument(name, options)` (`DocumentService`) — crea un Doc via Advanced Docs API (`Docs.Documents.create`); `options.destinationFolder` sposta il file nella cartella indicata (via `Drive.Files.update` con `addParents`, perché l'API Docs crea sempre in root). Ritorna `{ documentId, builder }`, con `builder` già pronto per popolare il contenuto (`document(documentId)`-style fluent API).
-  - `spreadsheet.createSpreadsheet(title, options)` (`SpreadsheetService`) — crea uno Sheet via Advanced Sheets API (`Sheets.Spreadsheets.create`); supporta `options.locale`, `options.timeZone`, `options.autoRecalc`, `options.sheets` (fogli multipli) e, come sopra, `options.destinationFolder` per posizionarlo senza un secondo giro di `moveFiles`.
   - Da preferire a `DriveService.copyFiles` quando non esiste (o non serve) un template Drive da clonare — es. generare un foglio di lavoro temporaneo o un Doc report ad hoc popolato interamente via API.
 - Inserimento di tabelle dati in un Google Doc tramite `DocumentService`:
   - `document(documentId).createTable(data, options).execute()` — builder fluente, accoda la tabella in fondo al corpo del documento (via `DocumentApp` standard API); `options` supporta `headerRow`, `alternatingRows`, `columnWidths`.
