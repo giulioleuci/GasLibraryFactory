@@ -95,6 +95,16 @@ class _SheetProcessor {
               context
             );
             batchRequests.push(...matrixRequests);
+          } else if (originalValue.includes('{{dynamic_rows')) {
+            this.logger.debug(`Found dynamic rows in ${cellA1}: ${originalValue}`);
+            const { valueRequests } = this._prepareDynamicRowRequests(
+              sheet.name,
+              row,
+              column,
+              originalValue,
+              context
+            );
+            batchRequests.push(...valueRequests);
           } else if (originalValue.includes('{{dynamic_columns')) {
             this.logger.debug(`Found dynamic columns in ${cellA1}: ${originalValue}`);
             const { valueRequests, protectionRequests, layout } =
@@ -338,6 +348,71 @@ class _SheetProcessor {
         ],
         protectionRequests: [],
         layout: null
+      };
+    }
+  }
+
+  /**
+   * @description Generates batch update requests for vertical (row-wise) array expansion.
+   * Parses `{{dynamic_rows[source=...,value=...]}}` syntax — the vertical mirror of
+   * `{{dynamic_columns[...]}}`: one row per source-array item, downward from the placeholder
+   * cell. Single-group only (no multi-group, no acl/scope) — deliberately smaller than
+   * dynamic_columns since no caller needs per-row protection or multiple sequential groups.
+   * @param {string} sheetName Target sheet name.
+   * @param {number} startRow Starting row index (1-based).
+   * @param {number} startColumn Starting column index (1-based).
+   * @param {string} placeholder Raw placeholder string.
+   * @param {Object} context Data context.
+   * @returns {{valueRequests: Object[]}} Batch value-update requests.
+   * @private
+   */
+  _prepareDynamicRowRequests(sheetName, startRow, startColumn, placeholder, context) {
+    try {
+      const match = placeholder.match(/{{dynamic_rows\[(.*?)\]}}/);
+      if (!match) {
+        this.logger.warn(`Invalid dynamic_rows placeholder: ${placeholder}`);
+        return { valueRequests: [] };
+      }
+
+      const params = this._parseDynamicColumnParams(match[1]);
+      if (!params.source) {
+        this.logger.warn(`Missing 'source' parameter in dynamic_rows: ${placeholder}`);
+        return { valueRequests: [] };
+      }
+
+      const sourceData = this.mustache.getValue(params.source, context);
+      if (!Array.isArray(sourceData)) {
+        this.logger.warn(`Data source '${params.source}' for dynamic_rows is not an array.`);
+        return { valueRequests: [] };
+      }
+
+      const valueRequests = [];
+      const quotedSheetName = `'${sheetName}'`;
+      const colLetter = this._columnToLetter(startColumn);
+
+      // Clear placeholder cell
+      const rangePlaceholder = this._rangeToA1(startRow, startColumn, startRow, startColumn);
+      valueRequests.push({ range: `${quotedSheetName}!${rangePlaceholder}`, values: [['']] });
+
+      sourceData.forEach((item, index) => {
+        const row = startRow + index;
+        const cellValue = params.value ? this.mustache.getValue(params.value, item) : '';
+        const resolvedValue = cellValue ?? '';
+        valueRequests.push({
+          range: `${quotedSheetName}!${colLetter}${row}`,
+          values: [[resolvedValue]]
+        });
+      });
+
+      this.logger.debug(`Prepared ${valueRequests.length} value updates for dynamic rows.`);
+      return { valueRequests };
+    } catch (e) {
+      this.logger.error(`Error preparing dynamic rows: ${e.message}`);
+      const errorCellA1 = this._rangeToA1(startRow, startColumn, startRow, startColumn);
+      return {
+        valueRequests: [
+          { range: `'${sheetName}'!${errorCellA1}`, values: [[`ERROR: ${e.message}`]] }
+        ]
       };
     }
   }

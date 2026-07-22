@@ -92,6 +92,26 @@ nel proprio valore di ritorno, che è cambiato da booleano a
 `layouts` vuoto, in caso di errore — stesso comportamento "swallow and log" di
 prima).
 
+## 📐 Placeholder `{{dynamic_rows[...]}}` (Google Sheets)
+
+Espande verticalmente, a partire dalla cella del placeholder, una riga per ciascun
+elemento di un array del context — il mirror verticale di `{{dynamic_columns[...]}}`.
+Gestito da `SheetProcessor._prepareDynamicRowRequests`. Solo sintassi a gruppo
+singolo: nessun multi-gruppo, nessun `acl`/`scope` (nessun caso d'uso li richiede
+oggi — YAGNI rispetto a `dynamic_columns`).
+
+```
+{{dynamic_rows[source=alunni,value=cognomeNome]}}
+```
+
+- `source` — percorso (risolto via `mustache.getValue`) di un array nel context.
+- `value` — espressione per-item (risolta contro il singolo elemento) usata come
+  testo della cella in quella riga.
+
+Se `source` non risolve a un array, il placeholder non produce alcuna richiesta
+(stesso comportamento "warn, nessuna pulizia della cella" di `dynamic_columns`).
+Un array vuoto pulisce solo la cella del placeholder.
+
 ---
 
 _Parte dello stack GasLibraryFactory_
