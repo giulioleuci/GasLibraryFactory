@@ -628,6 +628,85 @@ describe('DatabaseService - Comprehensive Test Suite', () => {
   });
 
   // ===================================================================
+  // TABLE VISIBILITY VERIFICATION (verifyTables option)
+  // ===================================================================
+  // Advanced Sheets API (Sheets.Spreadsheets.get, used by getSheetInfo) can lag
+  // behind a SpreadsheetApp structural write even after SpreadsheetApp.flush() —
+  // flush() only guarantees SpreadsheetApp-view consistency, not the separate
+  // REST-backed Advanced Service. Callers who just created/renamed a sheet and
+  // need it present immediately opt in via options.verifyTables.
+
+  describe('Table Visibility Verification (verifyTables option)', () => {
+    it('retries getSheetInfo until an expected table becomes visible', () => {
+      mocks.spreadsheetService.getSheetInfo
+        .mockReturnValueOnce([{ name: 'Sheet1' }])
+        .mockReturnValueOnce([{ name: 'MASTER' }]);
+      mocks.spreadsheetService.getRanges.mockReturnValue({
+        "'MASTER'!A:ZZ": [['ANNO_SCOLASTICO']]
+      });
+
+      const db = new DatabaseService(
+        'TEST_SHEET_ID',
+        mocks.logger,
+        mocks.utils,
+        mocks.cache,
+        null,
+        {
+          verifyTables: ['MASTER']
+        }
+      );
+
+      expect(db.tables['MASTER']).toBeDefined();
+      expect(mocks.spreadsheetService.getSheetInfo).toHaveBeenCalledTimes(2);
+      expect(mocks.utils.sleep).toHaveBeenCalledTimes(1);
+    });
+
+    it('does not retry when verifyTables is not provided', () => {
+      const db = new DatabaseService('TEST_SHEET_ID', mocks.logger, mocks.utils, mocks.cache);
+
+      expect(db).toBeDefined();
+      expect(mocks.spreadsheetService.getSheetInfo).toHaveBeenCalledTimes(1);
+      expect(mocks.utils.sleep).not.toHaveBeenCalled();
+    });
+
+    it('does not retry when every expected table is already visible on the first read', () => {
+      const db = new DatabaseService(
+        'TEST_SHEET_ID',
+        mocks.logger,
+        mocks.utils,
+        mocks.cache,
+        null,
+        {
+          verifyTables: ['Users']
+        }
+      );
+
+      expect(db.tables['Users']).toBeDefined();
+      expect(mocks.spreadsheetService.getSheetInfo).toHaveBeenCalledTimes(1);
+      expect(mocks.utils.sleep).not.toHaveBeenCalled();
+    });
+
+    it('gives up after the max attempts, warns, and proceeds with whatever it has', () => {
+      mocks.spreadsheetService.getSheetInfo.mockReturnValue([{ name: 'Sheet1' }]);
+
+      const db = new DatabaseService(
+        'TEST_SHEET_ID',
+        mocks.logger,
+        mocks.utils,
+        mocks.cache,
+        null,
+        {
+          verifyTables: ['MASTER']
+        }
+      );
+
+      expect(db.tables['MASTER']).toBeUndefined();
+      expect(mocks.logger.warn).toHaveBeenCalledWith(expect.stringContaining('MASTER'));
+      expect(mocks.spreadsheetService.getSheetInfo.mock.calls.length).toBeGreaterThan(1);
+    });
+  });
+
+  // ===================================================================
   // INITIALIZATION EDGE CASES
   // ===================================================================
 

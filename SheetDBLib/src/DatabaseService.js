@@ -38,6 +38,7 @@ export class MyDatabaseService {
     this._inTransaction = false;
     this._dryRun = options.dryRun || false;
     this._schemaValidator = options.schemaValidator || null;
+    this._verifyTables = options.verifyTables || null;
 
     // Initialize managers
     this._connectionManager = new DatabaseConnectionManager(this);
