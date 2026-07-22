@@ -889,6 +889,21 @@ describe('SpreadsheetService - Comprehensive Test Suite', () => {
         })
       );
     });
+
+    it('should move the created spreadsheet into destinationFolder via Drive API', () => {
+      const result = service.createSpreadsheet('Filed Sheet', { destinationFolder: 'folder-1' });
+
+      expect(global.Drive.Files.update).toHaveBeenCalledWith({}, 'newsheet123', null, {
+        addParents: 'folder-1'
+      });
+      expect(result.spreadsheetId).toBe('newsheet123');
+    });
+
+    it('should not touch Drive when destinationFolder is not provided', () => {
+      service.createSpreadsheet('Root Sheet');
+
+      expect(global.Drive.Files.update).not.toHaveBeenCalled();
+    });
   });
 
   // ===================================================================

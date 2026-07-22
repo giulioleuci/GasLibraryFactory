@@ -55,15 +55,21 @@ export class DocumentBatchUpdateHandler {
   }
 
   /**
-   * @description Initializes a new document via Advanced Docs API.
+   * @description Initializes a new blank document via Advanced Docs API (no template copy required).
    * @param {string} name Document title.
+   * @param {Object} [options={}] Creation options.
+   * @param {string} [options.destinationFolder] Target folder ID; moved there via Advanced Drive API after creation (Docs API always creates in Drive root).
    * @returns {Object} Result {documentId, builder}.
    */
-  createDocument(name) {
+  createDocument(name, options = {}) {
     try {
       const doc = Docs.Documents.create({ title: name });
       const documentId = doc.documentId;
       this._logger.info(`Created document: ${documentId} (${name})`);
+
+      if (options.destinationFolder) {
+        Drive.Files.update({}, documentId, null, { addParents: options.destinationFolder });
+      }
 
       return {
         documentId,

@@ -20,6 +20,7 @@ La libreria nasce per risolvere l'inconsistenza di alcune API native in GAS e pe
 ## 🛠️ Casi d'Uso comuni
 
 - Generazione di UUID v4 sicuri per chiavi primarie in Sheets.
+- Entropia sicura grezza tramite `UtilsService.getRandomValues(size)` (`IdGenerator`) — equivalente Web-Crypto di `crypto.getRandomValues`, per chi necessita di byte casuali (token, salt, nonce) invece di un ID già formattato; usa la stessa catena ambiente-aware degli altri generatori (`Utilities.getUuid()` + SHA-256 in GAS, `crypto.getRandomValues` fuori da GAS, fallback insicuro con warning solo in ultima istanza). **Non** chiamare `crypto.getRandomValues` direttamente in codice destinato a GAS: non è supportato dal runtime V8 di Apps Script (vedi scan pattern in `scripts/build-and-prepare.cjs`) — passare sempre da questo metodo.
 - Parsing di date da formati eterogenei (ISO, Excel Serial Numbers, Google Apps Script Date).
 - Creazione di logger "child" che aggiungono prefissi (es. `[AuthService]`) automaticamente a ogni riga di log.
 - Validazione del formato email tramite `UtilsService.isValidEmail(email)` — regex `user@domain.tld` di base (non verifica deliverability); pensata per essere il punto unico di validazione formato-email invece di farla riscrivere ad ogni chiamante (es. VO di dominio come `Email` nelle app che consumano la libreria).

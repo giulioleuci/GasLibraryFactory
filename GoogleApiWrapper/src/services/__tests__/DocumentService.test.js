@@ -156,6 +156,21 @@ describe('DocumentService - Comprehensive Test Suite', () => {
       expect(result.builder.documentId).toBe('doc123');
     });
 
+    it('should move the created document into destinationFolder via Drive API', () => {
+      const result = service.createDocument('Filed Report', { destinationFolder: 'folder-1' });
+
+      expect(global.Drive.Files.update).toHaveBeenCalledWith({}, 'doc123', null, {
+        addParents: 'folder-1'
+      });
+      expect(result.documentId).toBe('doc123');
+    });
+
+    it('should not touch Drive when destinationFolder is not provided', () => {
+      service.createDocument('Root Doc');
+
+      expect(global.Drive.Files.update).not.toHaveBeenCalled();
+    });
+
     it('should throw error on API failure', () => {
       mockDocs.Documents.create.mockImplementation(() => {
         throw new Error('API Error');

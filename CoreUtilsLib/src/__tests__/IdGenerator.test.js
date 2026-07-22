@@ -87,6 +87,30 @@ describe('IdGenerator', () => {
     });
   });
 
+  describe('getRandomValues', () => {
+    it('should return the requested number of bytes', () => {
+      global.Utilities = {
+        getUuid: jest.fn().mockReturnValue('seed'),
+        computeDigest: jest.fn().mockReturnValue([10, 20, 30, 40]),
+        DigestAlgorithm: { SHA_256: 'SHA_256' }
+      };
+
+      const bytes = generator.getRandomValues(4);
+      expect(bytes).toHaveLength(4);
+    });
+
+    it('should delegate to the secure random byte source (crypto.getRandomValues)', () => {
+      const mockBytes = new Uint8Array(8);
+      global.crypto = {
+        getRandomValues: jest.fn().mockReturnValue(mockBytes)
+      };
+
+      const result = generator.getRandomValues(8);
+      expect(result).toBe(mockBytes);
+      expect(global.crypto.getRandomValues).toHaveBeenCalled();
+    });
+  });
+
   describe('_getSecureRandomBytes', () => {
     it('should use crypto.getRandomValues if available', () => {
       const mockBytes = new Uint8Array(4);

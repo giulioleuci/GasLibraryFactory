@@ -26,6 +26,10 @@ export class SampleSpreadsheetBuilder {
   /**
    * @description Creates a new sheet with the given header row, dropping the
    * spreadsheet's auto-created placeholder sheet the first time this is called.
+   * Flushes afterwards so the new tab is immediately visible to callers reading
+   * the spreadsheet back through the Advanced Sheets Service (e.g. SheetDBLib's
+   * schema explorer), which — unlike `SpreadsheetApp` — does not see pending,
+   * unflushed `SpreadsheetApp` writes within the same execution.
    * @param {string} name Sheet name.
    * @param {string[]} headerRow Header cell values.
    */
@@ -39,12 +43,15 @@ export class SampleSpreadsheetBuilder {
       this.spreadsheet.deleteSheet(this.defaultSheet);
       this.defaultSheet = null;
     }
+    SpreadsheetApp.flush();
   }
 
   /**
    * @description Appends a row to a named sheet, matching values to that sheet's header order
    * (as declared via {@link addSheet} — tracked locally rather than re-read from the live sheet,
-   * to avoid an extra round-trip per row).
+   * to avoid an extra round-trip per row). Flushes afterwards for the same reason as
+   * {@link addSheet} — row data written via `SpreadsheetApp` must be committed before any
+   * Advanced-Sheets-Service-backed read (e.g. SheetDBLib) can see it.
    * @param {string} sheetName Target sheet name.
    * @param {Object<string, *>} row Values keyed by header name.
    * @throws {Error} If the named sheet does not exist.
@@ -61,6 +68,7 @@ export class SampleSpreadsheetBuilder {
       row[String(header)] !== undefined ? row[String(header)] : ''
     );
     sheet.appendRow(values);
+    SpreadsheetApp.flush();
   }
 
   /**

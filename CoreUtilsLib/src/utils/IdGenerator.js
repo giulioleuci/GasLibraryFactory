@@ -40,6 +40,18 @@ export class IdGenerator {
   }
 
   /**
+   * Returns cryptographically secure random bytes (Web-Crypto-style `getRandomValues`),
+   * for callers needing raw entropy rather than a formatted ID (tokens, salts, nonces).
+   * Uses the same environment-aware chain as {@link IdGenerator._getSecureRandomBytes}:
+   * `Utilities.getUuid()` + SHA-256 in GAS, `crypto.getRandomValues` outside it.
+   * @param {number} size Number of random bytes to generate.
+   * @returns {number[]|Uint8Array} Array of bytes (0-255).
+   */
+  getRandomValues(size) {
+    return IdGenerator._getSecureRandomBytes(size);
+  }
+
+  /**
    * Generates a short 8-character alphanumeric random identifier.
    * @returns {string} Random 8-char base-36 string.
    */

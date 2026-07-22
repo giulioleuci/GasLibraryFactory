@@ -786,7 +786,9 @@ global.SpreadsheetApp = {
   create: jest.fn((name) => ({
     getId: () => Utilities.getUuid(),
     getName: () => name
-  }))
+  })),
+
+  flush: jest.fn()
 };
 
 // ===================================================================
