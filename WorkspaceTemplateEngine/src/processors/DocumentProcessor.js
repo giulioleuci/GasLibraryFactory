@@ -89,6 +89,18 @@ class _DocumentProcessor {
     const executedStandardOps = structuralOps.filter(
       (op) => op.type === 'rowLoop' || op.type === 'columnLoop'
     );
+    // Tables a row/column loop already fully rendered (every cell template was
+    // run through mustache.render against its own data item). The rescan below
+    // reads the table back through the Advanced Docs API, which is not
+    // guaranteed to observe the native DocumentApp mutations that just ran
+    // (insertTableRow/deleteTableRow/updateTableCell) — if it doesn't, any
+    // still-`{{...}}`-looking cell text it (stale-)reports would otherwise be
+    // treated as an ordinary unresolved placeholder by the generic
+    // substitution pass below and blanked out (zero-width space), corrupting
+    // real, already-rendered content at whatever position those stale indices
+    // now land on. These tables are excluded from that pass entirely — there
+    // is nothing left in them for it to legitimately do.
+    const processedTableIndices = new Set(executedStandardOps.map((op) => op.tableIndex));
     if (executedStandardOps.length > 0) {
       executedStandardOps.sort((a, b) => b.index - a.index);
       for (const op of executedStandardOps) {
@@ -124,8 +136,11 @@ class _DocumentProcessor {
         }
       }
     }
-    batchOps.push(...this._analyzeListLoops(structure.textMatches, context));
-    batchOps.push(...this._analyzeTextSubstitutions(structure.textMatches, context));
+    const remainingTextMatches = structure.textMatches.filter(
+      (tm) => tm.type !== 'TABLE_TEXT' || !processedTableIndices.has(tm.tableIndex)
+    );
+    batchOps.push(...this._analyzeListLoops(remainingTextMatches, context));
+    batchOps.push(...this._analyzeTextSubstitutions(remainingTextMatches, context));
     batchOps.sort((a, b) => b.index - a.index);
 
     const batchRequests = [];

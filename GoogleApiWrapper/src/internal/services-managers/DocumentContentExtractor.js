@@ -243,6 +243,10 @@ export class DocumentContentExtractor {
       for (const pattern of textPatterns) {
         let iterationCount = 0;
         const MAX_ITERATIONS = 10000;
+        // Mirrors Phase 1's per-table ordinal (`result.tables[].index`) so callers
+        // can tell which table a TABLE_TEXT match belongs to (e.g. to skip cells
+        // already fully rendered by a row/column loop — see DocumentProcessor).
+        let tableOrdinal = -1;
 
         for (const element of structure.body.content) {
           if (++iterationCount > MAX_ITERATIONS) {
@@ -266,6 +270,7 @@ export class DocumentContentExtractor {
               seenTextIndices.add(elementIndex);
             }
           } else if (element.type === 'TABLE') {
+            tableOrdinal++;
             for (const tableRow of element.tableRows || []) {
               for (const cell of tableRow.cells) {
                 if (cell.text && cell.text.includes(pattern)) {
@@ -279,7 +284,8 @@ export class DocumentContentExtractor {
                     result.textMatches.push({
                       elementIndex: elementIndex,
                       text: textContent,
-                      type: 'TABLE_TEXT'
+                      type: 'TABLE_TEXT',
+                      tableIndex: tableOrdinal
                     });
                     seenTextIndices.add(elementIndex);
                   }

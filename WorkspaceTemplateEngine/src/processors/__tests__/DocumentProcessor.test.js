@@ -1069,5 +1069,59 @@ describe('DocumentProcessor - Core Functionality Tests (Reverse-Order Strategy)'
       // Text operations use batch update
       expect(mockDocumentService._executeBatchUpdate).toHaveBeenCalled();
     });
+
+    it("should not re-substitute a row-looped table's own cells even if the post-flush rescan is stale", () => {
+      // scanDocumentStructure returns the SAME snapshot on every call (default
+      // jest mockReturnValue behavior) — simulating the Advanced Docs API not
+      // yet observing the native DocumentApp row-loop mutations. The table's
+      // other cells (columns 1/2, never touched by _analyzeRowLoops itself)
+      // still read as unresolved `{{...}}` placeholders in that stale snapshot.
+      // Without the tableIndex-based exclusion, these would be picked up by
+      // the generic substitution pass, evaluated against the wrong (root)
+      // context, and blanked to a zero-width space — silently corrupting the
+      // real, already-rendered row-loop output.
+      mockDocumentService.scanDocumentStructure.mockReturnValue({
+        tables: [
+          {
+            index: 0,
+            rows: [
+              { index: 0, cells: [{ index: 0, text: 'Header' }] },
+              {
+                index: 1,
+                cells: [
+                  { index: 1000, text: '{{#tablerow_loop:items}}{{name}}' },
+                  { index: 1001, text: '{{score}}' }
+                ]
+              }
+            ]
+          }
+        ],
+        textMatches: [{ elementIndex: 1001, text: '{{score}}', type: 'TABLE_TEXT', tableIndex: 0 }]
+      });
+
+      mockMustache._lookupValue.mockReturnValue([{ name: 'Alice', score: '95' }]);
+      mockDocumentService.getTableRow.mockReturnValue({
+        rowIndex: 1,
+        cells: ['{{#tablerow_loop:items}}{{name}}', '{{score}}']
+      });
+      // Real Mustache resolves an unknown path to '' (not the literal
+      // template text) — reproduce that so a leaked TABLE_TEXT match against
+      // the root context (which has no top-level `score`) actually triggers
+      // the blanking bug this test guards against, instead of being a no-op
+      // because the naive default mock leaves unresolved placeholders as-is.
+      mockMustache.render.mockImplementation((template, data) =>
+        template.replace(/{{(\w+)}}/g, (match, key) =>
+          data && Object.prototype.hasOwnProperty.call(data, key) ? data[key] : ''
+        )
+      );
+
+      processor.process('doc123', { items: [{ name: 'Alice', score: '95' }] });
+
+      expect(mockDocumentService.insertTableRow).toHaveBeenCalled();
+      // The stale TABLE_TEXT match belongs to the already row-looped table
+      // (tableIndex 0) and must be excluded — no batch corruption request.
+      expect(mockDocumentService._executeBatchUpdate).not.toHaveBeenCalled();
+      expect(mockLogger.info).toHaveBeenCalledWith('No batch operations to execute');
+    });
   });
 });
