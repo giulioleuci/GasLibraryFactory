@@ -91,7 +91,8 @@ describe('DocumentService - Comprehensive Test Suite', () => {
       addFooter: jest.fn(() => ({
         clear: jest.fn().mockReturnThis(),
         appendParagraph: jest.fn().mockReturnThis()
-      }))
+      })),
+      saveAndClose: jest.fn()
     };
 
     global.DocumentApp = {
@@ -911,8 +912,29 @@ describe('DocumentService - Comprehensive Test Suite', () => {
         .createTable([['Table2-A', 'Table2-B', 'Table2-C']])
         .execute();
 
-      expect(global.DocumentApp.openById).toHaveBeenCalledTimes(2);
+      // 2 table creations + 1 flush (saveAndClose) so the native mutations
+      // are visible to a subsequent Advanced Docs API read.
+      expect(global.DocumentApp.openById).toHaveBeenCalledTimes(3);
       expect(result.tableResults).toHaveLength(2);
+    });
+
+    it('should flush (saveAndClose) native DocumentApp changes after creating a table via the standard API', () => {
+      // Without this, a caller that chains straight from execute() into
+      // Advanced-API-based reads (e.g. WorkspaceTemplateEngine's
+      // DocumentProcessor.process() -> Docs.Documents.get) would see none of
+      // what was just created — no error, just an invisible table.
+      builder.createTable([['A', 'B']]).execute();
+
+      // global.DocumentApp.openById always returns the same shared mock doc
+      // instance (see beforeEach), so this reaches the exact object the
+      // table creation and flush both operated on.
+      expect(global.DocumentApp.openById().saveAndClose).toHaveBeenCalledTimes(1);
+    });
+
+    it('should not call saveAndClose when no standard-API operation ran', () => {
+      builder.replaceText('{{x}}', 'y').execute();
+
+      expect(global.DocumentApp.openById().saveAndClose).not.toHaveBeenCalled();
     });
 
     it('should log debug message on successful table creation', () => {

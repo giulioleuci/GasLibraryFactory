@@ -130,9 +130,6 @@ export class DocumentBuilder {
       let batchResult = null;
       if (requests.length > 0) {
         batchResult = this.service._executeBatchUpdate(this.documentId, requests);
-
-        // DocumentApp has no flush(); changes are persisted automatically
-        // and saveAndClose() is performed by the higher-level injector when needed.
       }
 
       const standardResults = [];
@@ -146,6 +143,21 @@ export class DocumentBuilder {
           result = this.service._addFooterWithStandardAPI(this.documentId, op);
         }
         standardResults.push({ operation: op.type, result: result });
+      }
+
+      if (standardApiOps.length > 0) {
+        // Native DocumentApp mutations made just above (table/header/footer)
+        // are NOT guaranteed visible to a subsequent Advanced Docs API read
+        // (Docs.Documents.get, used by e.g. WorkspaceTemplateEngine's
+        // DocumentProcessor) within the same script execution unless the
+        // DocumentApp session is explicitly closed first — callers commonly
+        // chain straight from builder.execute() into placeholder/template
+        // processing that reads via the Advanced API and would otherwise
+        // silently see none of what was just created.
+        const doc = this.service.openStandard(this.documentId);
+        if (doc && typeof doc.saveAndClose === 'function') {
+          doc.saveAndClose();
+        }
       }
 
       const nonBatchResults = [];
