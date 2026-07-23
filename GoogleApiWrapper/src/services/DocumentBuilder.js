@@ -102,6 +102,16 @@ export class DocumentBuilder {
       const nonBatchOps = [];
       const standardApiOps = [];
 
+      // `insertText` requests within one batchUpdate apply sequentially against
+      // the *same* document state at submission time — a fixed index (e.g. the
+      // body start) would insert every subsequent paragraph before the previous
+      // one, reversing multi-paragraph order. This cursor starts at the current
+      // body end and advances by each inserted run's length, so queued
+      // `appendParagraph` calls land in call order regardless of how many share
+      // one batch. Only fetched when actually needed.
+      const hasAppendParagraph = this.operations.some((op) => op.type === 'appendParagraph');
+      const cursor = hasAppendParagraph ? { index: this._getBodyEndIndex() } : null;
+
       for (const op of this.operations) {
         if (op.type === 'exportPDF') {
           nonBatchOps.push(op);
@@ -112,7 +122,7 @@ export class DocumentBuilder {
         ) {
           standardApiOps.push(op);
         } else {
-          const docRequests = this._convertOperationToDocsRequests(op);
+          const docRequests = this._convertOperationToDocsRequests(op, cursor);
           requests.push(...docRequests);
         }
       }
@@ -166,10 +176,10 @@ export class DocumentBuilder {
    * @param {Object} op Builder operation metadata.
    * @returns {Object[]} Collection of API requests.
    */
-  _convertOperationToDocsRequests(op) {
+  _convertOperationToDocsRequests(op, cursor) {
     switch (op.type) {
       case 'appendParagraph':
-        return this._createAppendParagraphRequests(op);
+        return this._createAppendParagraphRequests(op, cursor);
       case 'setText':
         return this._createSetTextRequests(op);
       case 'createTable':
@@ -186,16 +196,18 @@ export class DocumentBuilder {
     }
   }
 
-  _createAppendParagraphRequests(op) {
+  _createAppendParagraphRequests(op, cursor) {
     const requests = [];
     const text = (op.text || '') + '\n';
+    const startIndex = cursor.index;
 
     requests.push({
       insertText: {
-        location: { index: 1 },
+        location: { index: startIndex },
         text: text
       }
     });
+    cursor.index += text.length;
 
     if (op.options.heading || op.options.alignment) {
       const paragraphStyle = {};
@@ -223,8 +235,8 @@ export class DocumentBuilder {
       requests.push({
         updateParagraphStyle: {
           range: {
-            startIndex: 1,
-            endIndex: 1 + text.length
+            startIndex: startIndex,
+            endIndex: startIndex + text.length
           },
           paragraphStyle: paragraphStyle,
           fields: Object.keys(paragraphStyle).join(',')
@@ -235,13 +247,23 @@ export class DocumentBuilder {
     return requests;
   }
 
+  /**
+   * @private
+   * @description Reads the document's current body end index (Docs API), used
+   * to anchor `insertText` requests so they land after existing content
+   * instead of at a fixed offset.
+   * @returns {number} The index immediately after the last body element.
+   */
+  _getBodyEndIndex() {
+    const doc = Docs.Documents.get(this.documentId);
+    return doc.body.content[doc.body.content.length - 1].endIndex - 1;
+  }
+
   _createSetTextRequests(op) {
     const requests = [];
     const text = op.text || '';
 
-    // Fetch document structure to find current body end index
-    const doc = Docs.Documents.get(this.documentId);
-    const bodyEndIndex = doc.body.content[doc.body.content.length - 1].endIndex - 1;
+    const bodyEndIndex = this._getBodyEndIndex();
 
     if (bodyEndIndex > 1) {
       requests.push({

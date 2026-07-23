@@ -386,6 +386,25 @@ describe('DocumentService - Comprehensive Test Suite', () => {
       expect(result.success).toBe(true);
       expect(result.batchResult).toBeDefined();
     });
+
+    it('should queue multiple appendParagraph calls at increasing indices, preserving call order', () => {
+      builder.appendParagraph('First paragraph');
+      builder.appendParagraph('Second paragraph');
+      builder.appendParagraph('Third paragraph');
+      builder.execute();
+
+      const requests = service._executeBatchUpdate.mock.calls[0][1];
+      const inserts = requests.filter((r) => r.insertText).map((r) => r.insertText);
+
+      expect(inserts).toHaveLength(3);
+      expect(inserts[0].text).toBe('First paragraph\n');
+      expect(inserts[1].text).toBe('Second paragraph\n');
+      expect(inserts[2].text).toBe('Third paragraph\n');
+      // Each insert must target a strictly increasing index — a shared fixed
+      // index would make batchUpdate apply them in reverse call order.
+      expect(inserts[1].location.index).toBe(inserts[0].location.index + inserts[0].text.length);
+      expect(inserts[2].location.index).toBe(inserts[1].location.index + inserts[1].text.length);
+    });
   });
 
   // ===================================================================
