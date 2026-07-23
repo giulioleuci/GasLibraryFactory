@@ -140,6 +140,62 @@ describe('HtmlSanitizer.escapeContextDeep', () => {
   });
 });
 
+describe('HtmlSanitizer.stripToPlainText', () => {
+  test('strips tags, leaving plain text', () => {
+    expect(HtmlSanitizer.stripToPlainText('<p>Ciao <b>Mario</b>!</p>')).toBe('Ciao Mario!');
+  });
+
+  test('converts block boundaries (br/p/div/li/tr) to line breaks before stripping tags', () => {
+    const html = '<p>Prima riga</p><p>Seconda riga</p><br>Terza riga';
+    expect(HtmlSanitizer.stripToPlainText(html)).toBe('Prima riga\nSeconda riga\nTerza riga');
+  });
+
+  test('converts list items to one line each', () => {
+    const html = '<ul><li>Uno</li><li>Due</li></ul>';
+    expect(HtmlSanitizer.stripToPlainText(html)).toBe('Uno\nDue');
+  });
+
+  test('decodes HTML entities produced by escapeHtml', () => {
+    expect(HtmlSanitizer.stripToPlainText('A &amp; B &lt;C&gt; &quot;D&quot; &#39;E&#39;')).toBe(
+      'A & B <C> "D" \'E\''
+    );
+  });
+
+  test('collapses runs of blank lines and trims', () => {
+    const html = '<p>Uno</p>\n\n\n<p></p><p>Due</p>   ';
+    expect(HtmlSanitizer.stripToPlainText(html)).toBe('Uno\nDue');
+  });
+
+  test('null-safe: null/undefined become empty string', () => {
+    expect(HtmlSanitizer.stripToPlainText(null)).toBe('');
+    expect(HtmlSanitizer.stripToPlainText(undefined)).toBe('');
+  });
+
+  test('default maxLength is 2000, truncationMode "marker" cuts and appends an ellipsis', () => {
+    const long = '<p>' + 'x'.repeat(2100) + '</p>';
+    const result = HtmlSanitizer.stripToPlainText(long);
+    expect(result.length).toBe(2000);
+    expect(result.endsWith('…')).toBe(true);
+    expect(result.slice(0, 1999)).toBe('x'.repeat(1999));
+  });
+
+  test('truncationMode "cut" truncates to maxLength with no marker', () => {
+    const long = 'x'.repeat(50);
+    const result = HtmlSanitizer.stripToPlainText(long, { maxLength: 10, truncationMode: 'cut' });
+    expect(result).toBe('x'.repeat(10));
+  });
+
+  test('truncationMode "none" never truncates regardless of maxLength', () => {
+    const long = 'x'.repeat(50);
+    const result = HtmlSanitizer.stripToPlainText(long, { maxLength: 10, truncationMode: 'none' });
+    expect(result).toBe('x'.repeat(50));
+  });
+
+  test('text shorter than maxLength is returned unchanged, no marker appended', () => {
+    expect(HtmlSanitizer.stripToPlainText('<p>short</p>')).toBe('short');
+  });
+});
+
 describe('HtmlSanitizer.safeUrl', () => {
   test('accepts http(s) URLs', () => {
     expect(HtmlSanitizer.safeUrl('https://drive.google.com/x')).toBe('https://drive.google.com/x');

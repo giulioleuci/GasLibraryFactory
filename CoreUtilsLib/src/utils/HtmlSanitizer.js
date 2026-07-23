@@ -1,4 +1,4 @@
-import { escapeHtmlText } from '../internal/HtmlEntityCodec.js';
+import { escapeHtmlText, decodeHtmlEntities } from '../internal/HtmlEntityCodec.js';
 
 /**
  * @file CoreUtilsLib/src/utils/HtmlSanitizer.js
@@ -89,5 +89,41 @@ export class HtmlSanitizer {
       return result;
     }
     return value;
+  }
+
+  /**
+   * Strips HTML markup down to plain text: block-level boundaries (`<br>`,
+   * `</p>`, `</div>`, `</li>`, `</tr>`) become line breaks BEFORE remaining
+   * tags are stripped (so paragraph/list/row structure survives as line
+   * breaks, not word-run-together text), HTML entities are decoded, blank-line
+   * runs collapse, and the result is trimmed. Null-safe.
+   * @param {*} value Raw HTML (coerced to string; `null`/`undefined` become `''`).
+   * @param {{maxLength?: number, truncationMode?: 'marker'|'cut'|'none'}} [options]
+   *   `maxLength` (default 2000) is the maximum returned length. `truncationMode`
+   *   (default `'marker'`) cuts to `maxLength - 1` chars and appends `'…'` (total
+   *   length ≤ `maxLength`); `'cut'` truncates to exactly `maxLength` with no
+   *   marker; `'none'` never truncates.
+   * @returns {string} Plain text, line-break-preserving, optionally truncated.
+   */
+  static stripToPlainText(value, options = {}) {
+    const { maxLength = 2000, truncationMode = 'marker' } = options;
+    const html = String(value ?? '');
+    const withBreaks = html.replace(/<br\s*\/?>|<\/(p|div|li|tr)>/gi, '\n');
+    const stripped = withBreaks.replace(/<[^>]*>/g, '');
+    const decoded = decodeHtmlEntities(stripped);
+    const collapsed = decoded
+      .split('\n')
+      .map((line) => line.trim())
+      .filter((line) => line.length > 0)
+      .join('\n')
+      .trim();
+
+    if (truncationMode === 'none' || collapsed.length <= maxLength) {
+      return collapsed;
+    }
+    if (truncationMode === 'cut') {
+      return collapsed.slice(0, maxLength);
+    }
+    return collapsed.slice(0, Math.max(0, maxLength - 1)) + '…';
   }
 }
