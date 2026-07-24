@@ -69,6 +69,7 @@ export class DocumentContentExtractor {
       if (element.paragraph) {
         pojo.type = 'PARAGRAPH';
         pojo.text = this._extractParagraphText(element.paragraph);
+        pojo.runs = this._extractParagraphRuns(element.paragraph);
         pojo.style = element.paragraph.paragraphStyle || {};
       } else if (element.table) {
         pojo.type = 'TABLE';
@@ -108,6 +109,35 @@ export class DocumentContentExtractor {
 
   /**
    * @private
+   * @description Extracts per-run text + style spans from a paragraph, with
+   * offsets relative to the paragraph's own flattened text (i.e. directly
+   * usable as offsets into `_extractParagraphText(paragraph)`'s output).
+   * @param {Object} paragraph Native Docs API paragraph object.
+   * @returns {Array<{text: string, start: number, end: number, style: Object}>}
+   */
+  _extractParagraphRuns(paragraph) {
+    if (!paragraph || !paragraph.elements) {
+      return [];
+    }
+    const runs = [];
+    let offset = 0;
+    for (const elem of paragraph.elements) {
+      if (elem.textRun && elem.textRun.content) {
+        const text = elem.textRun.content;
+        runs.push({
+          text,
+          start: offset,
+          end: offset + text.length,
+          style: elem.textRun.textStyle || {}
+        });
+        offset += text.length;
+      }
+    }
+    return runs;
+  }
+
+  /**
+   * @private
    * @description Maps native Docs API table rows and cells to a POJO collection.
    * @param {Object} table Native Docs API table object.
    * @returns {Object[]} Collection of row and cell POJOs.
@@ -123,6 +153,7 @@ export class DocumentContentExtractor {
           rowIndex: rowIndex,
           columnIndex: cellIndex,
           text: this._extractCellText(cell),
+          runs: this._extractCellRuns(cell),
           content: cell.content ? this._convertContentToPOJO(cell.content) : []
         };
       });
@@ -153,6 +184,32 @@ export class DocumentContentExtractor {
         return '';
       })
       .join('');
+  }
+
+  /**
+   * @private
+   * @description Extracts per-run text + style spans from a table cell,
+   * concatenating across the cell's paragraphs with cell-relative offsets
+   * (matching `_extractCellText`'s concatenation order exactly).
+   * @param {Object} cell Native Docs API table cell object.
+   * @returns {Array<{text: string, start: number, end: number, style: Object}>}
+   */
+  _extractCellRuns(cell) {
+    if (!cell || !cell.content) {
+      return [];
+    }
+    const runs = [];
+    let offset = 0;
+    for (const element of cell.content) {
+      if (element.paragraph) {
+        const paraRuns = this._extractParagraphRuns(element.paragraph);
+        for (const r of paraRuns) {
+          runs.push({ text: r.text, start: offset + r.start, end: offset + r.end, style: r.style });
+        }
+        offset += this._extractParagraphText(element.paragraph).length;
+      }
+    }
+    return runs;
   }
 
   /**
@@ -228,7 +285,8 @@ export class DocumentContentExtractor {
             for (const cell of tableRow.cells) {
               rowData.cells.push({
                 index: cell.rowIndex * 1000 + cell.columnIndex,
-                text: cell.text
+                text: cell.text,
+                runs: cell.runs || []
               });
             }
 
@@ -265,7 +323,8 @@ export class DocumentContentExtractor {
               result.textMatches.push({
                 elementIndex: elementIndex,
                 text: textContent,
-                type: 'TEXT'
+                type: 'TEXT',
+                runs: element.runs || []
               });
               seenTextIndices.add(elementIndex);
             }
@@ -285,7 +344,8 @@ export class DocumentContentExtractor {
                       elementIndex: elementIndex,
                       text: textContent,
                       type: 'TABLE_TEXT',
-                      tableIndex: tableOrdinal
+                      tableIndex: tableOrdinal,
+                      runs: cell.runs || []
                     });
                     seenTextIndices.add(elementIndex);
                   }

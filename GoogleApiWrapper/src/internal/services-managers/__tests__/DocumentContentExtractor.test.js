@@ -124,4 +124,114 @@ describe('DocumentContentExtractor', () => {
       );
     });
   });
+
+  describe('_extractParagraphRuns / run capture', () => {
+    it('extracts one run per textRun element, with paragraph-relative offsets', () => {
+      const paragraph = {
+        elements: [
+          { textRun: { content: 'Dear ', textStyle: {} } },
+          { textRun: { content: 'Alice', textStyle: { bold: true } } },
+          { textRun: { content: ',', textStyle: {} } }
+        ]
+      };
+      const runs = extractor._extractParagraphRuns(paragraph);
+      expect(runs).toEqual([
+        { text: 'Dear ', start: 0, end: 5, style: {} },
+        { text: 'Alice', start: 5, end: 10, style: { bold: true } },
+        { text: ',', start: 10, end: 11, style: {} }
+      ]);
+    });
+
+    it('returns an empty array for a paragraph with no elements', () => {
+      expect(extractor._extractParagraphRuns({})).toEqual([]);
+      expect(extractor._extractParagraphRuns(null)).toEqual([]);
+    });
+
+    it('threads runs into scanDocumentStructure TEXT matches', () => {
+      facade.getRawDocumentStructure.mockReturnValue({
+        body: {
+          content: [
+            {
+              type: 'PARAGRAPH',
+              startIndex: 1,
+              text: 'Hello {{name}}',
+              runs: [
+                { text: 'Hello ', start: 0, end: 6, style: {} },
+                { text: '{{name}}', start: 6, end: 14, style: { italic: true } }
+              ]
+            }
+          ]
+        }
+      });
+      const result = extractor.scanDocumentStructure('doc-1', ['{{']);
+      expect(result.textMatches[0].runs).toEqual([
+        { text: 'Hello ', start: 0, end: 6, style: {} },
+        { text: '{{name}}', start: 6, end: 14, style: { italic: true } }
+      ]);
+    });
+
+    it('threads per-cell runs into table cells (Phase 1 tables[]) and TABLE_TEXT matches', () => {
+      facade.getRawDocumentStructure.mockReturnValue({
+        body: {
+          content: [
+            {
+              type: 'TABLE',
+              startIndex: 1,
+              tableRows: [
+                {
+                  rowIndex: 0,
+                  cells: [
+                    {
+                      rowIndex: 0,
+                      columnIndex: 0,
+                      text: '{{score}}',
+                      runs: [{ text: '{{score}}', start: 0, end: 9, style: { bold: true } }],
+                      content: [{ startIndex: 2, paragraph: {} }]
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
+        }
+      });
+      const result = extractor.scanDocumentStructure('doc-1', ['{{']);
+      expect(result.tables[0].rows[0].cells[0].runs).toEqual([
+        { text: '{{score}}', start: 0, end: 9, style: { bold: true } }
+      ]);
+      expect(result.textMatches[0].type).toBe('TABLE_TEXT');
+      expect(result.textMatches[0].runs).toEqual([
+        { text: '{{score}}', start: 0, end: 9, style: { bold: true } }
+      ]);
+    });
+  });
+
+  describe('_extractCellRuns', () => {
+    it('concatenates runs across multiple paragraphs in one cell, with cell-relative offsets', () => {
+      const cell = {
+        content: [
+          {
+            paragraph: {
+              elements: [{ textRun: { content: 'Line1', textStyle: {} } }]
+            }
+          },
+          {
+            paragraph: {
+              elements: [{ textRun: { content: 'Line2', textStyle: { bold: true } } }]
+            }
+          }
+        ]
+      };
+      const runs = extractor._extractCellRuns(cell);
+      expect(runs).toEqual([
+        { text: 'Line1', start: 0, end: 5, style: {} },
+        { text: 'Line2', start: 5, end: 10, style: { bold: true } }
+      ]);
+    });
+
+    it('returns an empty array when the cell has no content', () => {
+      expect(extractor._extractCellRuns({})).toEqual([]);
+      expect(extractor._extractCellRuns(null)).toEqual([]);
+    });
+  });
 });
