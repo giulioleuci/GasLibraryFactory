@@ -402,11 +402,23 @@ export class DocumentProcessorInjector {
       }
       const templateChildIndex = body.getChildIndex(templateParagraph);
       const sourceRuns = op.sourceRuns || [];
+      // Body.insertParagraph() only accepts an actual Paragraph — a real
+      // bullet/number list marker (body.appendListItem()) copies as a
+      // ListItem, and passing that to insertParagraph() throws "parameters
+      // (number,DocumentApp.ListItem) don't match the method signature".
+      // ListItem has its own insertListItem() for this.
+      const isListItem =
+        typeof templateParagraph.getType === 'function' &&
+        templateParagraph.getType().toString() === 'LIST_ITEM';
 
       for (let i = op.dataArray.length - 1; i >= 0; i--) {
         const dataItem = op.dataArray[i];
         const copiedParagraph = templateParagraph.copy();
-        body.insertParagraph(templateChildIndex + 1, copiedParagraph);
+        if (isListItem) {
+          body.insertListItem(templateChildIndex + 1, copiedParagraph);
+        } else {
+          body.insertParagraph(templateChildIndex + 1, copiedParagraph);
+        }
         const insertedParagraph = body.getChild(templateChildIndex + 1);
         const segments = this._buildStyledSegments(op.itemTemplate, dataItem, sourceRuns);
         this._retextParagraph(insertedParagraph, segments);
