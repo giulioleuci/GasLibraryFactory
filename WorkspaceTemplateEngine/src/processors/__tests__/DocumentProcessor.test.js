@@ -49,6 +49,45 @@ describe('DocumentProcessor - Core Functionality Tests (Reverse-Order Strategy)'
       _lookupValue: jest.fn((token, context) => {
         const path = token[1];
         return mockMustache.getValue(path, context.view);
+      }),
+      renderSegments: jest.fn((template, data) => {
+        const segments = [];
+        const regex = /{{(\w+)}}/g;
+        let lastIndex = 0;
+        let match;
+        while ((match = regex.exec(template)) !== null) {
+          if (match.index > lastIndex) {
+            const raw = template.slice(lastIndex, match.index);
+            segments.push({
+              type: 'text',
+              raw,
+              rendered: raw,
+              rawStart: lastIndex,
+              rawEnd: match.index
+            });
+          }
+          const key = match[1];
+          const rendered = data && data[key] != null ? String(data[key]) : '';
+          segments.push({
+            type: 'value',
+            raw: match[0],
+            rendered,
+            rawStart: match.index,
+            rawEnd: match.index + match[0].length
+          });
+          lastIndex = match.index + match[0].length;
+        }
+        if (lastIndex < template.length) {
+          const raw = template.slice(lastIndex);
+          segments.push({
+            type: 'text',
+            raw,
+            rendered: raw,
+            rawStart: lastIndex,
+            rawEnd: template.length
+          });
+        }
+        return segments;
       })
     };
 
@@ -74,6 +113,13 @@ describe('DocumentProcessor - Core Functionality Tests (Reverse-Order Strategy)'
         ]
       })),
       insertTableRow: jest.fn(() => ({ success: true })),
+      copyTableRow: jest.fn((docId, tableIndex, sourceRowIndex, targetRowIndex) => ({
+        success: true,
+        tableIndex,
+        sourceRowIndex,
+        insertedRowIndex: targetRowIndex
+      })),
+      setCellRunStyles: jest.fn(() => ({ success: true })),
       deleteTableRow: jest.fn(() => ({ success: true })),
       updateTableCell: jest.fn(() => ({ success: true })),
       // Column manipulation methods
@@ -712,8 +758,9 @@ describe('DocumentProcessor - Core Functionality Tests (Reverse-Order Strategy)'
       // Should get template row
       expect(mockDocumentService.getTableRow).toHaveBeenCalledWith('doc123', 0, 1);
 
-      // Should insert rows in reverse order (2 items)
-      expect(mockDocumentService.insertTableRow).toHaveBeenCalledTimes(2);
+      // Should copy the template row in reverse order (2 items), not insert blank rows
+      expect(mockDocumentService.copyTableRow).toHaveBeenCalledTimes(2);
+      expect(mockDocumentService.insertTableRow).not.toHaveBeenCalled();
 
       // Should delete template row
       expect(mockDocumentService.deleteTableRow).toHaveBeenCalledWith('doc123', 0, 1);
@@ -784,13 +831,89 @@ describe('DocumentProcessor - Core Functionality Tests (Reverse-Order Strategy)'
 
       processor._executeRowLoopOperation('doc123', operation);
 
-      // First cell template should have control marker removed
-      expect(mockDocumentService.insertTableRow).toHaveBeenCalledWith(
+      // First cell template should have its control marker stripped before
+      // being rendered (verified against the copied row, not a blank insert)
+      expect(mockMustache.renderSegments).toHaveBeenCalledWith(
+        '{{id}}',
+        expect.objectContaining({ id: '1' })
+      );
+      expect(mockDocumentService.copyTableRow).toHaveBeenCalledWith(
         'doc123',
         0,
-        2, // rowIndex + 1
-        expect.any(Array)
+        1,
+        2 // rowIndex + 1
       );
+    });
+
+    it('copies the template row instead of inserting a blank one, preserving cell formatting', () => {
+      const operation = {
+        type: 'rowLoop',
+        tableIndex: 0,
+        rowIndex: 1,
+        dataArray: [{ name: 'Alice', value: '100' }],
+        sourceRuns: [
+          [{ text: '{{name}}', start: 0, end: 8, style: {} }],
+          [{ text: '{{value}}', start: 0, end: 9, style: { bold: true } }]
+        ]
+      };
+
+      processor._executeRowLoopOperation('doc123', operation);
+
+      expect(mockDocumentService.copyTableRow).toHaveBeenCalledWith('doc123', 0, 1, 2);
+      expect(mockDocumentService.insertTableRow).not.toHaveBeenCalled();
+      expect(mockDocumentService.deleteTableRow).toHaveBeenCalledWith('doc123', 0, 1);
+    });
+
+    it("applies setCellRunStyles once per cell of each inserted row, with the source run's style", () => {
+      mockDocumentService.getTableRow.mockReturnValue({
+        rowIndex: 1,
+        cells: ['{{#tablerow_loop:items}}{{name}}', '{{value}}']
+      });
+
+      const operation = {
+        type: 'rowLoop',
+        tableIndex: 0,
+        rowIndex: 1,
+        dataArray: [{ name: 'Alice', value: '100' }],
+        sourceRuns: [
+          [{ text: '{{name}}', start: 0, end: 8, style: { italic: true } }],
+          [{ text: '{{value}}', start: 0, end: 9, style: { bold: true } }]
+        ]
+      };
+
+      mockMustache.render.mockImplementation((template, data) =>
+        template.replace('{{name}}', data.name).replace('{{value}}', data.value)
+      );
+
+      processor._executeRowLoopOperation('doc123', operation);
+
+      expect(mockDocumentService.setCellRunStyles).toHaveBeenCalledTimes(2);
+      expect(mockDocumentService.setCellRunStyles).toHaveBeenCalledWith(
+        'doc123',
+        0,
+        2,
+        0,
+        expect.arrayContaining([expect.objectContaining({ style: { italic: true } })])
+      );
+      expect(mockDocumentService.setCellRunStyles).toHaveBeenCalledWith(
+        'doc123',
+        0,
+        2,
+        1,
+        expect.arrayContaining([expect.objectContaining({ style: { bold: true } })])
+      );
+    });
+
+    it('falls back to empty sourceRuns (no style applied) when the op carries none', () => {
+      const operation = {
+        type: 'rowLoop',
+        tableIndex: 0,
+        rowIndex: 1,
+        dataArray: [{ name: 'Alice', value: '100' }]
+      };
+
+      expect(() => processor._executeRowLoopOperation('doc123', operation)).not.toThrow();
+      expect(mockDocumentService.setCellRunStyles).toHaveBeenCalled();
     });
   });
 
@@ -999,7 +1122,7 @@ describe('DocumentProcessor - Core Functionality Tests (Reverse-Order Strategy)'
 
       // Row loop should use Standard API methods
       expect(mockDocumentService.getTableRow).toHaveBeenCalled();
-      expect(mockDocumentService.insertTableRow).toHaveBeenCalled();
+      expect(mockDocumentService.copyTableRow).toHaveBeenCalled();
       expect(mockDocumentService.deleteTableRow).toHaveBeenCalled();
 
       // No batch update for table operations (they're executed immediately)
@@ -1117,7 +1240,7 @@ describe('DocumentProcessor - Core Functionality Tests (Reverse-Order Strategy)'
 
       processor.process('doc123', { items: [{ name: 'Alice', score: '95' }] });
 
-      expect(mockDocumentService.insertTableRow).toHaveBeenCalled();
+      expect(mockDocumentService.copyTableRow).toHaveBeenCalled();
       // The stale TABLE_TEXT match belongs to the already row-looped table
       // (tableIndex 0) and must be excluded — no batch corruption request.
       expect(mockDocumentService._executeBatchUpdate).not.toHaveBeenCalled();

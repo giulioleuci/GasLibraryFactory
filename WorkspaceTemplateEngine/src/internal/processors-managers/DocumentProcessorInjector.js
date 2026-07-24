@@ -8,6 +8,44 @@ export class DocumentProcessorInjector {
     this.facade = facade;
   }
 
+  /**
+   * @description Renders a cell/paragraph template into styled segments, using
+   * MyMustache.renderSegments() to map each rendered span back to the original
+   * template offset, then looking up which captured source run (if any)
+   * overlapped that offset to carry its style forward. Shared by row-loop,
+   * column-loop, and list-loop retext paths (Tasks 5/6/8); text substitution
+   * (Task 7) uses the same _styleAt lookup directly against Advanced-API
+   * updateTextStyle requests instead of native setAttributes.
+   * @param {string} template Cell/paragraph template string (may contain no `{{`).
+   * @param {Object} data Data item to render against.
+   * @param {Array<{start:number, end:number, style:Object}>} [sourceRuns=[]] Captured source runs, template-relative offsets.
+   * @returns {Array<{rendered: string, style: Object}>}
+   * @private
+   */
+  _buildStyledSegments(template, data, sourceRuns = []) {
+    if (!template || !template.includes('{{')) {
+      return [{ rendered: template || '', style: this._styleAt(0, sourceRuns) }];
+    }
+    const segments = this.facade.mustache.renderSegments(template, data);
+    return segments.map((seg) => ({
+      rendered: seg.rendered != null ? String(seg.rendered) : '',
+      style: this._styleAt(seg.rawStart, sourceRuns)
+    }));
+  }
+
+  /**
+   * @description Finds the captured source run whose [start,end) span contains
+   * `offset` and returns its style, or {} if none overlaps.
+   * @param {number} offset Template-relative character offset.
+   * @param {Array<{start:number, end:number, style:Object}>} sourceRuns Captured source runs.
+   * @returns {Object} Advanced-API TextStyle POJO (possibly empty).
+   * @private
+   */
+  _styleAt(offset, sourceRuns) {
+    const run = sourceRuns.find((r) => offset >= r.start && offset < r.end);
+    return run ? run.style : {};
+  }
+
   _executeRowLoopOperation(documentId, op) {
     try {
       this.facade.logger.info(
@@ -32,21 +70,31 @@ export class DocumentProcessorInjector {
         }
         return cellText;
       });
+      const sourceRuns = op.sourceRuns || [];
 
       for (let i = op.dataArray.length - 1; i >= 0; i--) {
         const dataItem = op.dataArray[i];
-        const renderedCells = cellTemplates.map((template) => {
-          if (template && template.includes('{{')) {
-            return this.facade.mustache.render(template, dataItem);
-          }
-          return template || '';
-        });
-        this.facade.documentService.insertTableRow(
+        const targetRowIndex = op.rowIndex + 1;
+        this.facade.documentService.copyTableRow(
           documentId,
           op.tableIndex,
-          op.rowIndex + 1,
-          renderedCells
+          op.rowIndex,
+          targetRowIndex
         );
+        cellTemplates.forEach((template, cellIndex) => {
+          const segments = this._buildStyledSegments(
+            template,
+            dataItem,
+            sourceRuns[cellIndex] || []
+          );
+          this.facade.documentService.setCellRunStyles(
+            documentId,
+            op.tableIndex,
+            targetRowIndex,
+            cellIndex,
+            segments
+          );
+        });
       }
       this.facade.documentService.deleteTableRow(documentId, op.tableIndex, op.rowIndex);
       this.facade.logger.debug(`Row loop completed: inserted ${op.dataArray.length} rows`);

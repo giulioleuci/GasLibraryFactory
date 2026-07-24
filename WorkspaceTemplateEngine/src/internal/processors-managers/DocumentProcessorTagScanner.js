@@ -99,7 +99,8 @@ export class DocumentProcessorTagScanner {
           tableIndex: table.index,
           rowIndex: rowIndex,
           dataArray: dataArray,
-          controlText: match[0]
+          controlText: match[0],
+          sourceRuns: row.cells.map((c) => c.runs || [])
         });
       }
     }
