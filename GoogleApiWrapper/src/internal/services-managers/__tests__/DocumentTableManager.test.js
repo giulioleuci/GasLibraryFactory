@@ -229,4 +229,101 @@ describe('DocumentTableManager', () => {
       expect(row1.getCell(0).backgroundColor).toBe('#f3f3f3');
     });
   });
+
+  describe('copyTableColumn()', () => {
+    let mockCell, mockCopiedCell, mockRow, mockTable2, mockBody2, mockDoc2;
+
+    beforeEach(() => {
+      global.DocumentApp = { Attribute: { BOLD: 'BOLD' } };
+      mockCopiedCell = { __copied: true };
+      mockCell = { copy: jest.fn(() => mockCopiedCell) };
+      mockRow = {
+        getCell: jest.fn(() => mockCell),
+        insertTableCell: jest.fn()
+      };
+      mockTable2 = {
+        getNumRows: jest.fn(() => 3),
+        getRow: jest.fn(() => mockRow)
+      };
+      mockBody2 = { getTables: jest.fn(() => [mockTable2]) };
+      mockDoc2 = { getBody: jest.fn(() => mockBody2) };
+      facade.openStandard = jest.fn(() => mockDoc2);
+    });
+
+    it("copies each row's source cell and inserts it at the target column", () => {
+      const result = manager.copyTableColumn('doc123', 0, 0, 2);
+
+      expect(mockTable2.getRow).toHaveBeenCalledTimes(3);
+      expect(mockRow.getCell).toHaveBeenCalledWith(0);
+      expect(mockCell.copy).toHaveBeenCalledTimes(3);
+      expect(mockRow.insertTableCell).toHaveBeenCalledWith(2, mockCopiedCell);
+      expect(mockRow.insertTableCell).toHaveBeenCalledTimes(3);
+      expect(result).toEqual({
+        success: true,
+        tableIndex: 0,
+        sourceColumnIndex: 0,
+        insertedColumnIndex: 2,
+        numRows: 3
+      });
+    });
+
+    it('throws for an out-of-bounds table index', () => {
+      expect(() => manager.copyTableColumn('doc123', 5, 0, 1)).toThrow(
+        'Table index 5 out of bounds'
+      );
+    });
+  });
+
+  describe('setCellRunStyles()', () => {
+    let mockTextElement, mockCell, mockRow, mockTable2, mockBody2, mockDoc2;
+
+    beforeEach(() => {
+      global.DocumentApp = { Attribute: { BOLD: 'BOLD', FONT_SIZE: 'FONT_SIZE' } };
+      mockTextElement = {
+        appendText: jest.fn(),
+        setAttributes: jest.fn()
+      };
+      mockCell = {
+        clear: jest.fn(),
+        editAsText: jest.fn(() => mockTextElement)
+      };
+      mockRow = { getNumCells: jest.fn(() => 2), getCell: jest.fn(() => mockCell) };
+      mockTable2 = { getNumRows: jest.fn(() => 1), getRow: jest.fn(() => mockRow) };
+      mockBody2 = { getTables: jest.fn(() => [mockTable2]) };
+      mockDoc2 = { getBody: jest.fn(() => mockBody2) };
+      facade.openStandard = jest.fn(() => mockDoc2);
+    });
+
+    it("clears the cell, appends each segment's text, and applies its native style", () => {
+      const segments = [
+        { rendered: 'Mario ', style: {} },
+        { rendered: 'Rossi', style: { bold: true } }
+      ];
+
+      const result = manager.setCellRunStyles('doc123', 0, 0, 0, segments);
+
+      expect(mockCell.clear).toHaveBeenCalled();
+      expect(mockTextElement.appendText).toHaveBeenCalledWith('Mario ');
+      expect(mockTextElement.appendText).toHaveBeenCalledWith('Rossi');
+      expect(mockTextElement.setAttributes).toHaveBeenCalledWith(6, 10, { BOLD: true });
+      expect(result).toEqual({
+        success: true,
+        tableIndex: 0,
+        rowIndex: 0,
+        columnIndex: 0,
+        runsApplied: 2
+      });
+    });
+
+    it('skips setAttributes for a segment whose style maps to no attributes', () => {
+      manager.setCellRunStyles('doc123', 0, 0, 0, [{ rendered: 'plain', style: {} }]);
+      expect(mockTextElement.setAttributes).not.toHaveBeenCalled();
+    });
+
+    it('skips appendText/setAttributes entirely for an empty rendered segment', () => {
+      manager.setCellRunStyles('doc123', 0, 0, 0, [{ rendered: '', style: { bold: true } }]);
+      expect(mockTextElement.appendText).not.toHaveBeenCalled();
+      expect(mockTextElement.setAttributes).not.toHaveBeenCalled();
+    });
+  });
 });

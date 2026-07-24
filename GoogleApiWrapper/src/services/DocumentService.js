@@ -57,6 +57,8 @@ export class DocumentService extends GoogleService {
             'updateTableRow',
             'updateTableColumn',
             'copyTableRow',
+            'copyTableColumn',
+            'setCellRunStyles',
             'deleteTableColumn',
             'insertTableColumn',
             'appendTableColumn',

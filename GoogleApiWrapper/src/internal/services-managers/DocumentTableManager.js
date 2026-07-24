@@ -4,6 +4,8 @@
  * Handles both Advanced API and Standard DocumentApp API operations.
  */
 
+import { TextStyleMapper } from './TextStyleMapper.js';
+
 export class DocumentTableManager {
   /**
    * Creates a new DocumentTableManager instance.
@@ -463,6 +465,118 @@ export class DocumentTableManager {
       };
     } catch (error) {
       this._logger.error(`Failed to copy table row: ${error.message}`);
+      throw error;
+    }
+  }
+
+  /**
+   * @description Copies a table column's cells (preserving native formatting via
+   * TableCell.copy()) from sourceColumnIndex into a new column at targetColumnIndex,
+   * one row at a time. Mirrors copyTableRow's shape for columns.
+   * @param {string} documentId Target document identifier.
+   * @param {number} tableIndex Table ordinal.
+   * @param {number} sourceColumnIndex Column to copy from.
+   * @param {number} targetColumnIndex Column position to insert the copy at.
+   * @returns {Object} {success, tableIndex, sourceColumnIndex, insertedColumnIndex, numRows}.
+   * @throws {Error} If tableIndex is out of bounds.
+   */
+  copyTableColumn(documentId, tableIndex, sourceColumnIndex, targetColumnIndex) {
+    try {
+      const doc = this.facade.openStandard(documentId);
+      const body = doc.getBody();
+      const tables = body.getTables();
+
+      if (tableIndex >= tables.length) {
+        throw new Error(`Table index ${tableIndex} out of bounds`);
+      }
+
+      const table = tables[tableIndex];
+      const numRows = table.getNumRows();
+
+      for (let rowIndex = 0; rowIndex < numRows; rowIndex++) {
+        const row = table.getRow(rowIndex);
+        const copiedCell = row.getCell(sourceColumnIndex).copy();
+        row.insertTableCell(targetColumnIndex, copiedCell);
+      }
+
+      this._logger.debug(
+        `Copied column ${sourceColumnIndex} to position ${targetColumnIndex} in table ${tableIndex}`
+      );
+
+      return {
+        success: true,
+        tableIndex,
+        sourceColumnIndex,
+        insertedColumnIndex: targetColumnIndex,
+        numRows
+      };
+    } catch (error) {
+      this._logger.error(`Failed to copy table column: ${error.message}`);
+      throw error;
+    }
+  }
+
+  /**
+   * @description Replaces one table cell's text content with a sequence of styled
+   * segments, clearing the cell first and re-applying each segment's captured
+   * Advanced-API TextStyle via native Text.setAttributes(). Used after a
+   * formatting-preserving structural clone (copyTableRow/copyTableColumn) to
+   * retext the clone without discarding its cell-level (border/shading/padding)
+   * attributes, which clear()/setText() do not touch.
+   *
+   * Offset convention: `setAttributes` is called with an inclusive end offset
+   * (`offset + rendered.length - 1`) for each segment, per Apps Script's
+   * `Text.setAttributes(startOffset, endOffsetInclusive, attrs)` contract.
+   * @param {string} documentId Target document identifier.
+   * @param {number} tableIndex Table ordinal.
+   * @param {number} rowIndex Row index of the cell to retext.
+   * @param {number} columnIndex Column index of the cell to retext.
+   * @param {Array<{rendered: string, style: Object}>} segments Ordered text+style segments.
+   * @returns {Object} {success, tableIndex, rowIndex, columnIndex, runsApplied}.
+   * @throws {Error} If tableIndex/rowIndex/columnIndex is out of bounds.
+   */
+  setCellRunStyles(documentId, tableIndex, rowIndex, columnIndex, segments) {
+    try {
+      const doc = this.facade.openStandard(documentId);
+      const body = doc.getBody();
+      const tables = body.getTables();
+
+      if (tableIndex >= tables.length) {
+        throw new Error(`Table index ${tableIndex} out of bounds`);
+      }
+      const table = tables[tableIndex];
+      if (rowIndex >= table.getNumRows()) {
+        throw new Error(`Row index ${rowIndex} out of bounds`);
+      }
+      const row = table.getRow(rowIndex);
+      if (columnIndex >= row.getNumCells()) {
+        throw new Error(`Column index ${columnIndex} out of bounds`);
+      }
+
+      const cell = row.getCell(columnIndex);
+      cell.clear();
+      const textElement = cell.editAsText();
+      let offset = 0;
+      for (const segment of segments) {
+        const rendered = segment.rendered || '';
+        if (rendered.length === 0) {
+          continue;
+        }
+        textElement.appendText(rendered);
+        const attrs = TextStyleMapper.toNativeAttributes(segment.style);
+        if (Object.keys(attrs).length > 0) {
+          textElement.setAttributes(offset, offset + rendered.length - 1, attrs);
+        }
+        offset += rendered.length;
+      }
+
+      this._logger.debug(
+        `Applied ${segments.length} styled run(s) to cell [${rowIndex}, ${columnIndex}] in table ${tableIndex}`
+      );
+
+      return { success: true, tableIndex, rowIndex, columnIndex, runsApplied: segments.length };
+    } catch (error) {
+      this._logger.error(`Failed to set cell run styles: ${error.message}`);
       throw error;
     }
   }

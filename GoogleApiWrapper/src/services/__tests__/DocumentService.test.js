@@ -1551,6 +1551,30 @@ describe('DocumentService - Comprehensive Test Suite', () => {
       });
     });
 
+    describe('copyTableColumn() delegation', () => {
+      it('delegates to the table manager', () => {
+        const mockCopiedCell = { __copied: true };
+        mockTableCell.copy = jest.fn(() => mockCopiedCell);
+
+        const result = service.copyTableColumn('doc123', 0, 0, 2);
+
+        expect(mockTableRow.getCell).toHaveBeenCalledWith(0);
+        expect(result.success).toBe(true);
+      });
+    });
+
+    describe('setCellRunStyles() delegation', () => {
+      it('delegates to the table manager', () => {
+        mockTableCell.editAsText = jest.fn(() => ({
+          appendText: jest.fn(),
+          setAttributes: jest.fn()
+        }));
+
+        const result = service.setCellRunStyles('doc123', 0, 0, 0, [{ rendered: 'x', style: {} }]);
+        expect(result.success).toBe(true);
+      });
+    });
+
     describe('deleteTableColumn()', () => {
       it('should delete column from all rows', () => {
         const result = service.deleteTableColumn('doc123', 0, 1);
