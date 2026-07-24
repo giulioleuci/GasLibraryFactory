@@ -198,12 +198,33 @@ export class TestContext {
     const doc = this.getDocument();
     this._trackApiCall();
     try {
-      const body = doc.getBody();
-      body.clear();
+      this._clearBodySafely(doc.getBody());
     } catch (_e) {
       // If still fails (e.g. Document is closed), reopen and try again
       this._document = DocumentApp.openById(doc.getId());
-      this._document.getBody().clear();
+      this._clearBodySafely(this._document.getBody());
+    }
+  }
+
+  /**
+   * @description Body.clear() can throw "Can't remove the last paragraph in a
+   * document section" when the body's last child isn't a plain Paragraph -
+   * e.g. a ListItem left behind by a prior test's native list-loop expansion
+   * (Paragraph.copy()/insertListItem() on this persistent, reused test doc).
+   * Append a fresh empty paragraph first so clear() always has a real
+   * Paragraph to collapse the body down to, then retry.
+   * @param {GoogleAppsScript.Document.Body} body
+   * @private
+   */
+  _clearBodySafely(body) {
+    try {
+      body.clear();
+    } catch (e) {
+      if (!/last paragraph/.test(e.message)) {
+        throw e;
+      }
+      body.appendParagraph('');
+      body.clear();
     }
   }
 

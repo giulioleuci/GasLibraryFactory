@@ -126,6 +126,60 @@ describe('TestContext.getOrCreateNamedSpreadsheet', () => {
   });
 });
 
+describe('TestContext.resetDocument', () => {
+  test('clears the body directly when clear() succeeds', () => {
+    const ctx = new TestContext();
+    const body = { clear: jest.fn(), appendParagraph: jest.fn() };
+    const doc = { getId: () => 'doc-1', getBody: () => body };
+    jest.spyOn(ctx, 'getDocument').mockReturnValue(doc);
+
+    ctx.resetDocument();
+
+    expect(body.clear).toHaveBeenCalledTimes(1);
+    expect(body.appendParagraph).not.toHaveBeenCalled();
+  });
+
+  test("appends a fresh paragraph and retries when clear() fails because the body's last child is not a Paragraph (online-test regression: a ListItem left by a prior list-loop expansion)", () => {
+    const ctx = new TestContext();
+    const body = {
+      clear: jest
+        .fn()
+        .mockImplementationOnce(() => {
+          throw new Error("Can't remove the last paragraph in a document section.");
+        })
+        .mockImplementationOnce(() => {}),
+      appendParagraph: jest.fn()
+    };
+    const doc = { getId: () => 'doc-1', getBody: () => body };
+    jest.spyOn(ctx, 'getDocument').mockReturnValue(doc);
+
+    ctx.resetDocument();
+
+    expect(body.appendParagraph).toHaveBeenCalledWith('');
+    expect(body.clear).toHaveBeenCalledTimes(2);
+  });
+
+  test('reopens the document and retries when the initial getBody()/clear() call fails for an unrelated reason (e.g. document closed)', () => {
+    const ctx = new TestContext();
+    const staleBody = {
+      clear: jest.fn(() => {
+        throw new Error('Document is closed');
+      }),
+      appendParagraph: jest.fn()
+    };
+    const freshBody = { clear: jest.fn(), appendParagraph: jest.fn() };
+    const staleDoc = { getId: () => 'doc-1', getBody: () => staleBody };
+    const freshDoc = { getId: () => 'doc-1', getBody: () => freshBody };
+    jest.spyOn(ctx, 'getDocument').mockReturnValue(staleDoc);
+    global.DocumentApp = { openById: jest.fn(() => freshDoc) };
+
+    ctx.resetDocument();
+
+    expect(global.DocumentApp.openById).toHaveBeenCalledWith('doc-1');
+    expect(freshBody.clear).toHaveBeenCalledTimes(1);
+  });
+});
+
 describe('TestContext.buildSampleSpreadsheet', () => {
   test('returns a SampleSpreadsheetBuilder wrapping the reused-or-created spreadsheet', () => {
     const ctx = new TestContext();
