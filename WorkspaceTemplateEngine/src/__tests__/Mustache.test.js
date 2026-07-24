@@ -824,14 +824,47 @@ describe('Mustache - Comprehensive Test Suite', () => {
     });
 
     it('falls back to a single opaque value segment for a section token', () => {
-      const segments = mustache.renderSegments('{{#items}}x{{/items}}', { items: [1] });
+      const template = '{{#items}}x{{/items}}';
+      const segments = mustache.renderSegments(template, { items: [1] });
       expect(segments).toHaveLength(1);
       expect(segments[0].type).toBe('value');
       expect(segments[0].rendered).toBe('x');
+      // Regression: rawEnd must extend past the closing "{{/items}}" tag (to the
+      // end of the template), not stop right after the section body ("x").
+      expect(segments[0].raw).toBe(template);
+      expect(segments[0].rawEnd).toBe(template.length);
+      expect(segments[0].rawEnd).toBe(21);
     });
 
     it('returns an empty array for an empty template', () => {
       expect(mustache.renderSegments('', {})).toEqual([]);
+    });
+
+    it('degrades gracefully instead of throwing for an unclosed section, mirroring render()', () => {
+      const template = '{{#unclosed}}';
+      expect(() => mustache.renderSegments(template, {})).not.toThrow();
+      const segments = mustache.renderSegments(template, {});
+      expect(segments).toHaveLength(1);
+      expect(segments[0]).toEqual({
+        type: 'value',
+        raw: template,
+        rendered: mustache.render(template, {}),
+        rawStart: 0,
+        rawEnd: template.length
+      });
+      expect(segments[0].rendered).toContain('[RENDER ERROR:');
+    });
+
+    it('degrades gracefully instead of throwing for an unclosed tag', () => {
+      const template = '{{unclosed';
+      expect(() => mustache.renderSegments(template, {})).not.toThrow();
+      const segments = mustache.renderSegments(template, {});
+      expect(segments).toHaveLength(1);
+      expect(segments[0].type).toBe('value');
+      expect(segments[0].raw).toBe(template);
+      expect(segments[0].rendered).toBe(mustache.render(template, {}));
+      expect(segments[0].rawStart).toBe(0);
+      expect(segments[0].rawEnd).toBe(template.length);
     });
   });
 });
