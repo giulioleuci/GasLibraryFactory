@@ -145,6 +145,139 @@ function initWorkspaceTemplateEngineTests() {
     }
   });
 
+  runner.register(`${NS}/Document/Formatting_SimpleSubstitution`, () => {
+    testContext.resetDocument();
+    const doc = testContext.getDocument();
+
+    const body = doc.getBody();
+    const paragraph = body.appendParagraph('Dear {{name}}, welcome.');
+    const text = paragraph.editAsText();
+    const nameStart = paragraph.getText().indexOf('{{name}}');
+    text.setBold(nameStart, nameStart + '{{name}}'.length - 1, true);
+    doc.saveAndClose();
+
+    const logger = new LoggerService();
+    const mustache = new Mustache({ logger });
+    const placeholderService = new PlaceholderService({ logger, mustache });
+    const docProcessor = new DocumentProcessor(placeholderService);
+
+    docProcessor.process(doc.getId(), { name: 'Alice' });
+
+    const updatedDoc = DocumentApp.openById(doc.getId());
+    const updatedParagraph = updatedDoc.getBody().getParagraphs()[0];
+    const updatedText = updatedParagraph.editAsText();
+    const fullText = updatedParagraph.getText();
+    SmartAssert.isTrue(fullText.includes('Dear Alice, welcome.'), 'Text should be substituted');
+
+    const aliceStart = fullText.indexOf('Alice');
+    SmartAssert.isTrue(updatedText.isBold(aliceStart), 'Substituted name should keep its bold formatting');
+    SmartAssert.isFalse(
+      updatedText.isBold(fullText.indexOf('Dear')),
+      'Surrounding plain text should stay non-bold'
+    );
+  });
+
+  runner.register(`${NS}/Document/Formatting_TableRowLoop`, () => {
+    testContext.resetDocument();
+    const doc = testContext.getDocument();
+
+    const body = doc.getBody();
+    const table = body.appendTable([
+      ['Name', 'Score'],
+      ['{{#tablerow_loop:students}}{{name}}', '{{score}}']
+    ]);
+    table.setBorderWidth(2);
+    const templateRow = table.getRow(1);
+    templateRow.getCell(1).setBackgroundColor('#ffff00');
+    doc.saveAndClose();
+
+    const logger = new LoggerService();
+    const mustache = new Mustache({ logger });
+    const placeholderService = new PlaceholderService({ logger, mustache });
+    const docProcessor = new DocumentProcessor(placeholderService);
+
+    docProcessor.process(doc.getId(), {
+      students: [
+        { name: 'Alice', score: 90 },
+        { name: 'Bob', score: 80 }
+      ]
+    });
+
+    const updatedDoc = DocumentApp.openById(doc.getId());
+    const updatedTable = updatedDoc.getBody().getTables()[0];
+    SmartAssert.equals(updatedTable.getNumRows(), 3, 'Header + 2 data rows');
+    SmartAssert.equals(updatedTable.getBorderWidth(), 2, 'Table border width should survive row expansion');
+    SmartAssert.equals(
+      updatedTable.getRow(1).getCell(1).getBackgroundColor(),
+      '#ffff00',
+      'Row 1 score cell background should be preserved from the template row'
+    );
+    SmartAssert.equals(
+      updatedTable.getRow(2).getCell(1).getBackgroundColor(),
+      '#ffff00',
+      'Row 2 score cell background should also be preserved (copied from template)'
+    );
+  });
+
+  runner.register(`${NS}/Document/Formatting_TableColLoop`, () => {
+    testContext.resetDocument();
+    const doc = testContext.getDocument();
+
+    const body = doc.getBody();
+    const table = body.appendTable([['{{#tablecol_loop:subjects}}{{label}}{{/tablecol_loop}}'], ['{{value}}']]);
+    table.getRow(0).getCell(0).setWidth(120);
+    doc.saveAndClose();
+
+    const logger = new LoggerService();
+    const mustache = new Mustache({ logger });
+    const placeholderService = new PlaceholderService({ logger, mustache });
+    const docProcessor = new DocumentProcessor(placeholderService);
+
+    docProcessor.process(doc.getId(), {
+      subjects: [
+        { label: 'Math', value: 'A' },
+        { label: 'Science', value: 'B' }
+      ]
+    });
+
+    const updatedDoc = DocumentApp.openById(doc.getId());
+    const updatedTable = updatedDoc.getBody().getTables()[0];
+    SmartAssert.equals(updatedTable.getRow(0).getNumCells(), 2, 'Should have 2 columns after expansion');
+    SmartAssert.equals(
+      updatedTable.getRow(0).getCell(1).getWidth(),
+      120,
+      'Newly inserted column should copy the original column width'
+    );
+  });
+
+  runner.register(`${NS}/Document/Formatting_BulletList`, () => {
+    testContext.resetDocument();
+    const doc = testContext.getDocument();
+
+    const body = doc.getBody();
+    const listItem = body.appendListItem('{{#bullet_list:names}}{{nome}}{{/bullet_list}}');
+    listItem.setGlyphType(DocumentApp.GlyphType.BULLET);
+    doc.saveAndClose();
+
+    const logger = new LoggerService();
+    const mustache = new Mustache({ logger });
+    const placeholderService = new PlaceholderService({ logger, mustache });
+    const docProcessor = new DocumentProcessor(placeholderService);
+
+    docProcessor.process(doc.getId(), { names: [{ nome: 'Alice' }, { nome: 'Bob' }] });
+
+    const updatedDoc = DocumentApp.openById(doc.getId());
+    const listItems = updatedDoc.getBody().getListItems();
+    SmartAssert.equals(listItems.length, 2, 'Should have one list item per data entry');
+    SmartAssert.equals(listItems[0].getText(), 'Alice', 'First item should render Alice');
+    SmartAssert.equals(listItems[1].getText(), 'Bob', 'Second item should render Bob');
+    SmartAssert.equals(
+      listItems[0].getGlyphType().toString(),
+      DocumentApp.GlyphType.BULLET.toString(),
+      'Copied list items should keep the original glyph type, not a hardcoded preset'
+    );
+  });
+
   // Same as Table_Iteration_NestedFields, but the template is *provisioned*
   // through DocumentService.createDocument()/DocumentBuilder (appendParagraph
   // x N + createTable + one execute() call) — the exact stack ALDO's
