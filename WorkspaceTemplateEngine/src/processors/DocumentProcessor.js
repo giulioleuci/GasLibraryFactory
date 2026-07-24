@@ -128,15 +128,6 @@ class _DocumentProcessor {
       structure = this.documentService.scanDocumentStructure(documentId, ['{{']);
     }
 
-    const batchOps = [];
-    for (const table of structure.tables) {
-      const rowOps = this._analyzeRowLoops(table, context);
-      for (const op of rowOps) {
-        if (op.type === 'deleteRow') {
-          batchOps.push(op);
-        }
-      }
-    }
     const remainingTextMatches = structure.textMatches.filter(
       (tm) => tm.type !== 'TABLE_TEXT' || !processedTableIndices.has(tm.tableIndex)
     );
@@ -148,6 +139,29 @@ class _DocumentProcessor {
       }
       if (this._flushDocumentChanges(documentId)) {
         structure = this.documentService.scanDocumentStructure(documentId, ['{{']);
+      }
+    }
+
+    // `deleteRow` ops (built by _analyzeRowLoops for a table whose row-loop
+    // data source isn't an array) are keyed by the table's character-offset
+    // tableIndex, and only converted to Advanced-API deleteContentRange
+    // requests later, in the final _executeBatchUpdate call below. They are
+    // deliberately (re)computed HERE — from `structure` as it stands AFTER
+    // the list-loop native-mutation-then-rescan block above, not from the
+    // structure snapshotted before it — so that if a bullet_list/number_list
+    // paragraph sits earlier in the document than this table, the native
+    // list-loop mutation's effect on the document's real character layout is
+    // reflected in this deleteRow op's offset rather than executing against
+    // a stale pre-mutation snapshot. When no list-loop ops ran, `structure`
+    // here is the same reference as before this block, so this is not an
+    // extra rescan and behavior for that case is unchanged.
+    const batchOps = [];
+    for (const table of structure.tables) {
+      const rowOps = this._analyzeRowLoops(table, context);
+      for (const op of rowOps) {
+        if (op.type === 'deleteRow') {
+          batchOps.push(op);
+        }
       }
     }
     const finalTextMatches = structure.textMatches.filter(

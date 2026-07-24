@@ -378,7 +378,7 @@ export class DocumentProcessorInjector {
       const doc = this.facade.documentService.openStandard(documentId);
       const body = doc.getBody();
 
-      const rangeElement = body.findText(op.fullMatch);
+      const rangeElement = body.findText(this._escapeForFindText(op.fullMatch));
       if (!rangeElement) {
         this.facade.logger.warn(`Could not find template paragraph for list loop marker`);
         return;
@@ -407,6 +407,24 @@ export class DocumentProcessorInjector {
       this.facade.logger.error(`Failed to execute list loop: ${error.message}`);
       throw error;
     }
+  }
+
+  /**
+   * @description Escapes JS regex metacharacters in `text` so it is safe to pass
+   * to Google Docs' `Body.findText()`, which treats its argument as a regular
+   * expression. `op.fullMatch` (the caller of this helper) is the entire raw
+   * `{{#bullet_list:...}}...{{/bullet_list}}` block INCLUDING arbitrary
+   * end-user-authored prose between the markers (and the markers' own `{`/`}`
+   * are themselves regex metacharacters) — real template content can plausibly
+   * contain parentheses, brackets, or `+`/`*`/`?` that would otherwise throw a
+   * regex SyntaxError from findText and crash processing of an
+   * otherwise-valid template.
+   * @param {string} text Literal text to search for.
+   * @returns {string} Regex-escaped text, safe to pass to `findText()`.
+   * @private
+   */
+  _escapeForFindText(text) {
+    return text.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
   }
 
   /**

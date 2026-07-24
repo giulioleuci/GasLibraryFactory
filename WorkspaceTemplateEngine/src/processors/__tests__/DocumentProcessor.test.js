@@ -1608,9 +1608,45 @@ describe('DocumentProcessor - Core Functionality Tests (Reverse-Order Strategy)'
 
       processor._executeListLoopOperation('doc123', op);
 
-      expect(mockBody.findText).toHaveBeenCalledWith(op.fullMatch);
+      // findText() treats its argument as a regex — op.fullMatch's own `{{`/`}}`
+      // markers are regex metacharacters, so the implementation must escape
+      // them before calling findText (Finding 2 fix); assert the escaped form.
+      expect(mockBody.findText).toHaveBeenCalledWith(
+        '\\{\\{#bullet_list:items\\}\\}\\{\\{nome\\}\\}\\{\\{/bullet_list\\}\\}'
+      );
       expect(mockTemplateParagraph.copy).toHaveBeenCalledTimes(1);
       expect(mockBody.insertParagraph).toHaveBeenCalledWith(4, mockCopiedParagraph);
+      expect(mockBody.removeChild).toHaveBeenCalledWith(mockTemplateParagraph);
+    });
+
+    it('escapes regex metacharacters in fullMatch before calling findText, avoiding a findText SyntaxError crash (Finding 2 regression)', () => {
+      // Realistic Italian-document prose containing an unbalanced parenthesis
+      // (a plausible typo/edit artifact) — passed unescaped to `new RegExp()`,
+      // this specific fullMatch throws "Unterminated group". If
+      // _executeListLoopOperation passed op.fullMatch to findText raw, the
+      // exact same SyntaxError would be thrown by Google Docs' findText().
+      const fullMatch = '{{#bullet_list:items}}Nota (vedi allegato {{nome}}{{/bullet_list}}';
+      expect(() => new RegExp(fullMatch)).toThrow(/Unterminated group/);
+
+      const op = {
+        type: 'listLoop',
+        paragraphIndex: 42,
+        listType: 'bullet',
+        dataArray: [{ nome: 'Alice' }],
+        itemTemplate: 'Nota (vedi allegato {{nome}}',
+        fullMatch,
+        sourceRuns: []
+      };
+
+      expect(() => processor._executeListLoopOperation('doc123', op)).not.toThrow();
+
+      const calledWith = mockBody.findText.mock.calls[0][0];
+      expect(calledWith).not.toBe(fullMatch);
+      // The escaped string must itself be a valid regex (no metacharacters
+      // left unescaped) — reproduces the exact crash-risk check findText()
+      // performs internally.
+      expect(() => new RegExp(calledWith)).not.toThrow();
+      expect(mockTemplateParagraph.copy).toHaveBeenCalledTimes(1);
       expect(mockBody.removeChild).toHaveBeenCalledWith(mockTemplateParagraph);
     });
 
@@ -1820,6 +1856,93 @@ describe('DocumentProcessor - Core Functionality Tests (Reverse-Order Strategy)'
       // (tableIndex 0) and must be excluded — no batch corruption request.
       expect(mockDocumentService._executeBatchUpdate).not.toHaveBeenCalled();
       expect(mockLogger.info).toHaveBeenCalledWith('No batch operations to execute');
+    });
+
+    it('recomputes deleteRow ops against the POST-list-loop-mutation document layout, not a stale pre-mutation snapshot (Finding 1 regression)', () => {
+      // A bullet_list paragraph sits earlier in the document than a table
+      // whose tablerow_loop data source isn't an array (triggering a
+      // deleteRow op). The list loop's native paragraph insert+remove shifts
+      // the document's real character layout, and the post-flush rescan
+      // reports the table at a new (larger) tableIndex — simulating that
+      // shift. Without the fix, the deleteRow op would be captured from the
+      // FIRST (pre-mutation) scan, keyed to the stale tableIndex (100)
+      // instead of the real post-mutation one (150).
+      const initialStructure = {
+        tables: [
+          {
+            index: 100,
+            rows: [
+              {
+                index: 110,
+                cells: [{ index: 115, text: '{{#tablerow_loop:notAnArray}}' }]
+              }
+            ]
+          }
+        ],
+        textMatches: [
+          {
+            elementIndex: 10,
+            text: '{{#bullet_list:items}}{{nome}}{{/bullet_list}}',
+            type: 'TEXT',
+            runs: []
+          }
+        ]
+      };
+      const postMutationStructure = {
+        tables: [
+          {
+            index: 150,
+            rows: [
+              {
+                index: 160,
+                cells: [{ index: 165, text: '{{#tablerow_loop:notAnArray}}' }]
+              }
+            ]
+          }
+        ],
+        textMatches: []
+      };
+      mockDocumentService.scanDocumentStructure
+        .mockReturnValueOnce(initialStructure)
+        .mockReturnValueOnce(postMutationStructure);
+
+      // tablerow_loop:notAnArray resolves to a non-array -> deleteRow op.
+      mockMustache._lookupValue.mockReturnValue('not an array');
+      // bullet_list:items resolves to an array -> listLoop executes natively.
+      mockMustache.getValue.mockReturnValue([{ nome: 'Alice' }]);
+
+      const mockTextElement = { appendText: jest.fn(), setAttributes: jest.fn() };
+      const mockInsertedParagraph = {
+        editAsText: jest.fn(() => mockTextElement),
+        clear: jest.fn()
+      };
+      const mockCopiedParagraph = { __copy: true };
+      const mockTemplateParagraph = {
+        copy: jest.fn(() => mockCopiedParagraph),
+        getParent: jest.fn(() => mockBody)
+      };
+      const mockBody = {
+        findText: jest.fn(() => ({ getElement: () => mockTemplateParagraph })),
+        getChildIndex: jest.fn(() => 3),
+        insertParagraph: jest.fn(() => mockInsertedParagraph),
+        getChild: jest.fn(() => mockInsertedParagraph),
+        removeChild: jest.fn()
+      };
+      // saveAndClose present -> _flushDocumentChanges returns true -> rescan.
+      const mockDoc = { getBody: jest.fn(() => mockBody), saveAndClose: jest.fn() };
+      mockDocumentService.openStandard.mockReturnValue(mockDoc);
+      global.DocumentApp = { Attribute: { BOLD: 'BOLD' } };
+
+      processor.process('doc123', { notAnArray: 'x', items: [{ nome: 'Alice' }] });
+
+      expect(mockDocumentService.scanDocumentStructure).toHaveBeenCalledTimes(2);
+      expect(mockDocumentService._executeBatchUpdate).toHaveBeenCalled();
+      const [, requests] = mockDocumentService._executeBatchUpdate.mock.calls[0];
+      const deleteRowRequest = requests.find((r) => r.deleteTableRow);
+      expect(deleteRowRequest).toBeDefined();
+      // Must reflect the POST-list-loop-mutation tableIndex (150), not the
+      // stale pre-mutation one (100) captured before the list loop ran.
+      expect(deleteRowRequest.deleteTableRow.tableCellLocation.tableStartLocation.index).toBe(150);
     });
   });
 });
