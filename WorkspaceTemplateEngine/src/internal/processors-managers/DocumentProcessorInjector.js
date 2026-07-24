@@ -298,9 +298,29 @@ export class DocumentProcessorInjector {
     ];
 
     if (op.segments && op.segments.length > 0 && newText !== '\u200B') {
+      // op.segments/op.sourceRuns were captured by the scanner against the
+      // UNTRIMMED op.originalText/op.newText (renderSegments over the raw
+      // template), so their rendered lengths can sum to one character more
+      // than what actually gets inserted above whenever the trailing-\n trim
+      // fired (originalText ended in \n and newText did too). Clamp the walk
+      // to `newText.length` - the length of what insertText actually inserts
+      // - so no updateTextStyle request's range extends past the real content
+      // boundary onto the preserved paragraph-terminating \n. When no trim
+      // happened (or newText didn't itself end in \n, so nothing was
+      // trimmed), newText.length already equals the segments' total rendered
+      // length and this clamp is a no-op.
+      const insertedLength = newText.length;
       let cursor = op.index;
+      let consumed = 0;
       for (const segment of op.segments) {
-        const rendered = segment.rendered != null ? String(segment.rendered) : '';
+        if (consumed >= insertedLength) {
+          break;
+        }
+        let rendered = segment.rendered != null ? String(segment.rendered) : '';
+        const remaining = insertedLength - consumed;
+        if (rendered.length > remaining) {
+          rendered = rendered.slice(0, remaining);
+        }
         if (rendered.length > 0) {
           const style = this._styleAt(segment.rawStart, op.sourceRuns || []);
           const fields = Object.keys(style);
@@ -315,6 +335,7 @@ export class DocumentProcessorInjector {
           }
         }
         cursor += rendered.length;
+        consumed += rendered.length;
       }
     }
     return requests;

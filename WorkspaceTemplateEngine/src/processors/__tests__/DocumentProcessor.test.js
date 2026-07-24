@@ -614,6 +614,88 @@ describe('DocumentProcessor - Core Functionality Tests (Reverse-Order Strategy)'
         { insertText: { location: { index: 100 }, text: 'Hi Bob' } }
       ]);
     });
+
+    it('does not let a trailing styled segment extend past the preserved paragraph newline (originalText and newText both end in \\n)', () => {
+      // Reviewer repro: 'Dear {{name}},\n' -> 'Dear Alice,\n'. The existing
+      // trailing-\n trim (top of _createTextSubstitutionRequests) drops the
+      // final \n from BOTH originalText and newText before building the
+      // delete/insert requests, so the actually-inserted text is 'Dear Alice,'
+      // (11 chars, op.index=100 -> 111). op.segments/op.sourceRuns, however,
+      // were captured by the scanner against the UNTRIMMED originalText/newText
+      // (still 12 chars, ending in \n) - here modeled by a source run that
+      // covers the tag AND the trailing ',\n' (as it would if that whole run
+      // shared one style in the source document), so the last segment
+      // (',\n') also carries a style and its updateTextStyle request must be
+      // clamped to the real inserted length, not the untrimmed segment length.
+      const op = {
+        type: 'textSubstitution',
+        index: 100,
+        originalText: 'Dear {{name}},\n',
+        newText: 'Dear Alice,\n',
+        segments: [
+          { type: 'text', raw: 'Dear ', rendered: 'Dear ', rawStart: 0, rawEnd: 5 },
+          { type: 'value', raw: '{{name}}', rendered: 'Alice', rawStart: 5, rawEnd: 13 },
+          { type: 'text', raw: ',\n', rendered: ',\n', rawStart: 13, rawEnd: 15 }
+        ],
+        sourceRuns: [{ text: '{{name}},\n', start: 5, end: 15, style: { bold: true } }]
+      };
+
+      const requests = processor._createTextSubstitutionRequests(op);
+
+      expect(requests).toEqual([
+        { deleteContentRange: { range: { startIndex: 100, endIndex: 114 } } },
+        { insertText: { location: { index: 100 }, text: 'Dear Alice,' } },
+        {
+          updateTextStyle: {
+            range: { startIndex: 105, endIndex: 110 },
+            textStyle: { bold: true },
+            fields: 'bold'
+          }
+        },
+        {
+          updateTextStyle: {
+            range: { startIndex: 110, endIndex: 111 },
+            textStyle: { bold: true },
+            fields: 'bold'
+          }
+        }
+      ]);
+
+      const styleRequests = requests.filter((r) => r.updateTextStyle);
+      const insertedEnd = 100 + 'Dear Alice,'.length; // 111 - the real content boundary
+      for (const r of styleRequests) {
+        expect(r.updateTextStyle.range.endIndex).toBeLessThanOrEqual(insertedEnd);
+      }
+    });
+
+    it('does not clamp the segment walk when newText does not itself end in \\n (originalText ends in \\n but the rendered value does not)', () => {
+      // When originalText ends in \n but the rendered newText does NOT (e.g. the
+      // trailing \n was only rendered inside a section that was not taken), the
+      // existing trim logic leaves newText untouched - the full untrimmed
+      // newText is what actually gets inserted, so the segment walk must NOT
+      // be truncated in this case.
+      const op = {
+        type: 'textSubstitution',
+        index: 100,
+        originalText: 'Dear {{name}}\n',
+        newText: 'Dear Alice',
+        segments: [
+          { type: 'text', raw: 'Dear ', rendered: 'Dear ', rawStart: 0, rawEnd: 5 },
+          { type: 'value', raw: '{{name}}', rendered: 'Alice', rawStart: 5, rawEnd: 13 }
+        ],
+        sourceRuns: [{ text: '{{name}}', start: 5, end: 13, style: { bold: true } }]
+      };
+
+      const requests = processor._createTextSubstitutionRequests(op);
+
+      const styleRequests = requests.filter((r) => r.updateTextStyle);
+      expect(styleRequests).toHaveLength(1);
+      expect(styleRequests[0].updateTextStyle).toEqual({
+        range: { startIndex: 105, endIndex: 110 },
+        textStyle: { bold: true },
+        fields: 'bold'
+      });
+    });
   });
 
   // ===================================================================
