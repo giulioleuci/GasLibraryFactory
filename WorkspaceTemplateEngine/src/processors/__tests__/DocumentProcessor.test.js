@@ -1685,26 +1685,33 @@ describe('DocumentProcessor - Core Functionality Tests (Reverse-Order Strategy)'
 
       expect(mockInsertedParagraph.clear).toHaveBeenCalled();
       expect(mockTextElement.appendText).toHaveBeenCalledWith('Alice');
+      expect(mockTextElement.setAttributes).toHaveBeenCalledWith(0, 5, { BOLD: true });
     });
 
-    it('uses Body.insertListItem() (not insertParagraph()) when the template element is a real ListItem (online-test regression: body.appendListItem() marker paragraphs copy() as ListItem, and Body.insertParagraph() throws "parameters (number,DocumentApp.ListItem) don\'t match the method signature")', () => {
-      mockTemplateParagraph.getType = jest.fn(() => 'LIST_ITEM');
-      mockBody.insertListItem = jest.fn(() => mockInsertedParagraph);
-      const op = {
-        type: 'listLoop',
-        paragraphIndex: 42,
-        listType: 'bullet',
-        dataArray: [{ nome: 'Alice' }],
-        itemTemplate: '{{nome}}',
-        fullMatch: '{{#bullet_list:items}}{{nome}}{{/bullet_list}}',
-        sourceRuns: []
-      };
+    it.each([
+      ['bullet', '{{#bullet_list:items}}{{nome}}{{/bullet_list}}'],
+      ['number', '{{#number_list:items}}{{nome}}{{/number_list}}']
+    ])(
+      'uses Body.insertListItem() for a real %s ListItem marker',
+      (listType, fullMatch) => {
+        mockTemplateParagraph.getType = jest.fn(() => 'LIST_ITEM');
+        mockBody.insertListItem = jest.fn(() => mockInsertedParagraph);
+        const op = {
+          type: 'listLoop',
+          paragraphIndex: 42,
+          listType,
+          dataArray: [{ nome: 'Alice' }],
+          itemTemplate: '{{nome}}',
+          fullMatch,
+          sourceRuns: []
+        };
 
-      processor._executeListLoopOperation('doc123', op);
+        processor._executeListLoopOperation('doc123', op);
 
-      expect(mockBody.insertListItem).toHaveBeenCalledWith(4, mockCopiedParagraph);
-      expect(mockBody.insertParagraph).not.toHaveBeenCalled();
-    });
+        expect(mockBody.insertListItem).toHaveBeenCalledWith(4, mockCopiedParagraph);
+        expect(mockBody.insertParagraph).not.toHaveBeenCalled();
+      }
+    );
 
     it('warns and returns without mutating when the template paragraph cannot be found', () => {
       mockBody.findText.mockReturnValue(null);
