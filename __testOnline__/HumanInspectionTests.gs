@@ -46,7 +46,12 @@ function initHumanInspectionTests() {
 
     // Section A
     tbody.appendParagraph('=== A: SIMPLE & COMPLEX PLACEHOLDERS ===');
-    tbody.appendParagraph('Title: {{title}}');
+    const titleParagraph = tbody.appendParagraph('Title: {{title}}');
+    const titleText = titleParagraph.editAsText();
+    const titleStart = titleParagraph.getText().indexOf('{{title}}');
+    titleText.setBold(titleStart, titleStart + '{{title}}'.length - 1, true);
+    titleText.setItalic(titleStart, titleStart + '{{title}}'.length - 1, true);
+    titleText.setForegroundColor(titleStart, titleStart + '{{title}}'.length - 1, '#3366ff');
     tbody.appendParagraph('Author: {{author.name}} ({{author.email}})');
     tbody.appendParagraph('Date: {{createdAt | date:dd/MM/yyyy}}');
     tbody.appendParagraph('Amount: {{amount | number}}');
@@ -60,7 +65,14 @@ function initHumanInspectionTests() {
       ['Name', 'Role', 'Department'],
       ['{{#tablerow_loop:employees}}{{name}}', '{{role}}', '{{dept}}']
     ];
-    tbody.appendTable(tableBData);
+    const templateTableB = tbody.appendTable(tableBData);
+    templateTableB.setBorderWidth(2);
+    templateTableB.getRow(1).getCell(1).setBackgroundColor('#fff2cc');
+    templateTableB
+      .getRow(1)
+      .getCell(0)
+      .editAsText()
+      .setBold(0, templateTableB.getRow(1).getCell(0).getText().length - 1, true);
 
     // Section C — tablecol_loop
     tbody.appendParagraph('=== C: TABLECOL_LOOP ===');
@@ -68,14 +80,29 @@ function initHumanInspectionTests() {
       ['Fixed', '{{#tablecol_loop:months}}{{label}}{{/tablecol_loop}}'],
       ['Monthly total', '{{value}}']
     ];
-    tbody.appendTable(tableCData);
+    const templateTableC = tbody.appendTable(tableCData);
+    templateTableC.getRow(0).getCell(1).setWidth(120);
+    templateTableC
+      .getRow(0)
+      .getCell(1)
+      .editAsText()
+      .setBold(0, templateTableC.getRow(0).getCell(1).getText().length - 1, true);
 
     // Section D — bullet_list
     tbody.appendParagraph('=== D: BULLET_LIST ===');
     tbody.appendParagraph('Project tasks:');
-    tbody.appendListItem(
+    const bulletMarker = tbody.appendListItem(
       '{{#bullet_list:tasks}}{{label}} [priority: {{priority}}]{{/bullet_list}}'
     );
+    bulletMarker.setGlyphType(DocumentApp.GlyphType.BULLET);
+    bulletMarker.editAsText().setBold(0, bulletMarker.getText().length - 1, true);
+
+    tbody.appendParagraph('Approval sequence:');
+    const numberMarker = tbody.appendListItem(
+      '{{#number_list:approvals}}{{label}}{{/number_list}}'
+    );
+    numberMarker.setGlyphType(DocumentApp.GlyphType.NUMBER);
+    numberMarker.editAsText().setBold(0, numberMarker.getText().length - 1, true);
 
     // Section E — imported table placeholder text
     tbody.appendParagraph('=== E: IMPORTED TABLE ===');
@@ -118,6 +145,7 @@ function initHumanInspectionTests() {
         { label: 'Frontend development', priority: 'medium' },
         { label: 'Testing', priority: 'low' }
       ],
+      approvals: [{ label: 'Draft' }, { label: 'Review' }, { label: 'Approval' }],
       reportTitle: 'Q4 2025',
       grandTotal: 11900
     };
@@ -208,12 +236,34 @@ function initHumanInspectionTests() {
     SmartAssert.isTrue(text.includes('FINANCE'), 'A: filter uppercase');
     SmartAssert.isTrue(text.includes('alpha, beta, gamma'), 'A: filter join');
     SmartAssert.isTrue(text.includes('Approved'), 'A: filter capitalize');
+    const titleOutput = body
+      .getParagraphs()
+      .find((paragraph) => paragraph.getText().includes('Title: Annual Report 2025'));
+    const titleOutputText = titleOutput.editAsText();
+    const renderedTitleStart = titleOutput.getText().indexOf('Annual Report 2025');
+    SmartAssert.isTrue(titleOutputText.isBold(renderedTitleStart), 'A: title stays bold');
+    SmartAssert.isTrue(titleOutputText.isItalic(renderedTitleStart), 'A: title stays italic');
+    SmartAssert.equals(
+      titleOutputText.getForegroundColor(renderedTitleStart),
+      '#3366ff',
+      'A: title keeps color'
+    );
 
     // Section B
     const tableB = body.getTables()[0];
     SmartAssert.equals(tableB.getNumRows(), 4, 'B: 1 header + 3 data rows');
     SmartAssert.equals(tableB.getRow(1).getCell(0).getText(), 'Alice Bianchi', 'B: row 1 name');
     SmartAssert.equals(tableB.getRow(3).getCell(1).getText(), 'Manager', 'B: row 3 role');
+    SmartAssert.equals(tableB.getBorderWidth(), 2, 'B: border preserved');
+    SmartAssert.equals(
+      tableB.getRow(1).getCell(1).getBackgroundColor(),
+      '#fff2cc',
+      'B: cell background preserved'
+    );
+    SmartAssert.isTrue(
+      tableB.getRow(1).getCell(0).editAsText().isBold(0),
+      'B: row placeholder text stays bold'
+    );
 
     // Section C
     const tableC = body.getTables()[1];
@@ -221,17 +271,35 @@ function initHumanInspectionTests() {
     SmartAssert.equals(tableC.getRow(0).getCell(1).getText(), 'Jan', 'C: col header 1');
     SmartAssert.equals(tableC.getRow(0).getCell(3).getText(), 'Mar', 'C: col header 3');
     SmartAssert.equals(Number(tableC.getRow(1).getCell(2).getText()), 1200, 'C: col 2 value');
+    SmartAssert.equals(tableC.getRow(0).getCell(1).getWidth(), 120, 'C: width preserved');
+    SmartAssert.isTrue(
+      tableC.getRow(0).getCell(1).editAsText().isBold(0),
+      'C: column header stays bold'
+    );
 
     // Section D
     SmartAssert.isTrue(text.includes('Requirements analysis'), 'D: bullet item 1');
     SmartAssert.isTrue(text.includes('priority: high'), 'D: interpolation inside bullet');
     SmartAssert.isTrue(text.includes('Testing'), 'D: bullet item 4');
     SmartAssert.isFalse(text.includes('bullet_list'), 'D: placeholder removed');
-    let listItemCount = 0;
-    for (let i = 0; i < body.getNumChildren(); i++) {
-      if (body.getChild(i).getType() === DocumentApp.ElementType.LIST_ITEM) listItemCount++;
+    const renderedListItems = body.getListItems();
+    SmartAssert.equals(renderedListItems.length, 7, 'D: 4 bullets + 3 numbered items');
+    for (let i = 0; i < 4; i++) {
+      SmartAssert.equals(
+        renderedListItems[i].getGlyphType().toString(),
+        DocumentApp.GlyphType.BULLET.toString(),
+        `D: bullet ${i + 1} keeps bullet glyph`
+      );
     }
-    SmartAssert.equals(listItemCount, 4, 'D: 4 list items total');
+    for (let i = 4; i < 7; i++) {
+      SmartAssert.equals(
+        renderedListItems[i].getGlyphType().toString(),
+        DocumentApp.GlyphType.NUMBER.toString(),
+        `D: numbered item ${i - 3} keeps number glyph`
+      );
+    }
+    SmartAssert.isTrue(renderedListItems[0].editAsText().isBold(0), 'D: bullet text stays bold');
+    SmartAssert.isTrue(renderedListItems[4].editAsText().isBold(0), 'D: numbered text stays bold');
 
     // Section E
     const tableE = body.getTables()[2];
