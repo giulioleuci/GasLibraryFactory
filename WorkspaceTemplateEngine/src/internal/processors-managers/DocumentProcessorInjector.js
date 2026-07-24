@@ -471,7 +471,7 @@ export class DocumentProcessorInjector {
       textElement.appendText(rendered);
       const attrs = TextStyleMapper.toNativeAttributes(segment.style);
       if (Object.keys(attrs).length > 0) {
-        textElement.setAttributes(offset, offset + rendered.length, attrs);
+        textElement.setAttributes(offset, offset + rendered.length - 1, attrs);
       }
       offset += rendered.length;
     }

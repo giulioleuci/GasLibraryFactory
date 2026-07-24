@@ -1685,7 +1685,33 @@ describe('DocumentProcessor - Core Functionality Tests (Reverse-Order Strategy)'
 
       expect(mockInsertedParagraph.clear).toHaveBeenCalled();
       expect(mockTextElement.appendText).toHaveBeenCalledWith('Alice');
-      expect(mockTextElement.setAttributes).toHaveBeenCalledWith(0, 5, { BOLD: true });
+      expect(mockTextElement.setAttributes).toHaveBeenCalledWith(0, 4, { BOLD: true });
+    });
+
+    it('keeps native text style ranges within the inclusive bounds of rendered list text', () => {
+      let renderedText = '';
+      mockTextElement.appendText.mockImplementation((text) => {
+        renderedText += text;
+      });
+      mockTextElement.setAttributes.mockImplementation((startOffset, endOffset) => {
+        if (startOffset < 0 || endOffset >= renderedText.length) {
+          throw new RangeError(
+            `Index (${endOffset}) must be less than the content length (${renderedText.length}).`
+          );
+        }
+      });
+      const op = {
+        type: 'listLoop',
+        paragraphIndex: 42,
+        listType: 'bullet',
+        dataArray: [{ nome: 'Bob' }],
+        itemTemplate: '{{nome}}',
+        fullMatch: '{{#bullet_list:items}}{{nome}}{{/bullet_list}}',
+        sourceRuns: [{ text: '{{nome}}', start: 0, end: 8, style: { bold: true } }]
+      };
+      mockMustache.render.mockImplementation((tpl, data) => tpl.replace('{{nome}}', data.nome));
+
+      expect(() => processor._executeListLoopOperation('doc123', op)).not.toThrow();
     });
 
     it.each([
