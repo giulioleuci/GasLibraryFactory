@@ -1435,10 +1435,20 @@ export class DocumentTableManager {
       // Walk up from the matched text run to the top-level child of `body`
       // (native DocumentApp elements expose getParent(); a nested Text run's
       // ancestor chain typically resolves to its containing Paragraph/ListItem,
-      // which IS the direct child of body).
+      // which IS the direct child of body). Elements obtained via separate
+      // calls (e.g. this walked-up parent vs. the `body` captured above) are
+      // not guaranteed to be reference-equal even when they represent the
+      // same underlying Body, so `!== body` can fail to ever match, walking
+      // one hop too far onto the Body's own getParent() (which returns null)
+      // and crashing on the next iteration. Compare by type instead
+      // (stringified, avoiding a direct DocumentApp.ElementType reference).
       let element = rangeElement.getElement();
-      while (typeof element.getParent === 'function' && element.getParent() !== body) {
-        element = element.getParent();
+      while (typeof element.getParent === 'function') {
+        const parent = element.getParent();
+        if (!parent || parent.getType().toString() === 'BODY_SECTION') {
+          break;
+        }
+        element = parent;
       }
 
       const childIndex = body.getChildIndex(element);

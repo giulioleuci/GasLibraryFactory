@@ -93,7 +93,7 @@ describe('DocumentTableManager', () => {
 
   describe('insertTableAtMarker()', () => {
     it('inserts the table immediately after the marker (not at document end)', () => {
-      const paragraphElement = { getParent: jest.fn() };
+      const paragraphElement = { getParent: jest.fn(), getType: jest.fn(() => 'PARAGRAPH') };
       const foundElement = {
         getParent: jest.fn(() => paragraphElement)
       };
@@ -104,7 +104,8 @@ describe('DocumentTableManager', () => {
         findText: jest.fn(() => rangeElement),
         getChildIndex: jest.fn(() => 4),
         insertTable: jest.fn(() => insertedTableResult),
-        appendTable: jest.fn()
+        appendTable: jest.fn(),
+        getType: jest.fn(() => 'BODY_SECTION')
       };
       // Marker text run's containing paragraph IS the top-level child of body.
       paragraphElement.getParent.mockReturnValue(body);
@@ -144,7 +145,10 @@ describe('DocumentTableManager', () => {
     });
 
     it('applies header-row bold styling on the positional path', () => {
-      const paragraphElement = { getParent: jest.fn(() => 'BODY_MARKER') };
+      const paragraphElement = {
+        getParent: jest.fn(() => 'BODY_MARKER'),
+        getType: jest.fn(() => 'PARAGRAPH')
+      };
       const foundElement = { getParent: jest.fn(() => paragraphElement) };
       const rangeElement = { getElement: jest.fn(() => foundElement) };
 
@@ -158,7 +162,8 @@ describe('DocumentTableManager', () => {
         findText: jest.fn(() => rangeElement),
         getChildIndex: jest.fn(() => 0),
         insertTable: jest.fn(() => insertedTableResult),
-        appendTable: jest.fn()
+        appendTable: jest.fn(),
+        getType: jest.fn(() => 'BODY_SECTION')
       };
       paragraphElement.getParent.mockReturnValue(body);
 

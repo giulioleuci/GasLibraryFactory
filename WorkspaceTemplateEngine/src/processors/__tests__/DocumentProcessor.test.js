@@ -1584,7 +1584,8 @@ describe('DocumentProcessor - Core Functionality Tests (Reverse-Order Strategy)'
         getChildIndex: jest.fn(() => 3),
         insertParagraph: jest.fn(() => mockInsertedParagraph),
         getChild: jest.fn(() => mockInsertedParagraph),
-        removeChild: jest.fn()
+        removeChild: jest.fn(),
+        getType: jest.fn(() => 'BODY_SECTION')
       };
       mockDoc = { getBody: jest.fn(() => mockBody) };
       mockDocumentService.openStandard.mockReturnValue(mockDoc);
@@ -1704,6 +1705,39 @@ describe('DocumentProcessor - Core Functionality Tests (Reverse-Order Strategy)'
         expect.stringContaining('Could not find template paragraph')
       );
       expect(mockBody.removeChild).not.toHaveBeenCalled();
+    });
+
+    it('walks up multiple ancestor levels and does not crash when the top-level parent is not reference-equal to `body` (online-test regression: real DocumentApp elements obtained via separate getParent()/getBody() calls are not guaranteed to be the same object instance)', () => {
+      // Text -> Paragraph -> "BodyPrime" (structurally the body, but a
+      // different object instance than the `body` captured via doc.getBody()
+      // inside _executeListLoopOperation) -> null. The old `!== body`
+      // reference check would never match BodyPrime, walk one hop too far
+      // onto BodyPrime.getParent() (null), and crash on the next iteration's
+      // `typeof templateParagraph.getParent` access.
+      const bodyPrime = { getType: jest.fn(() => 'BODY_SECTION'), getParent: jest.fn(() => null) };
+      const realParagraph = {
+        getParent: jest.fn(() => bodyPrime),
+        getType: jest.fn(() => 'PARAGRAPH'),
+        copy: jest.fn(() => mockCopiedParagraph)
+      };
+      const textLeaf = { getParent: jest.fn(() => realParagraph) };
+      mockBody.findText.mockReturnValue({ getElement: () => textLeaf });
+
+      const op = {
+        type: 'listLoop',
+        paragraphIndex: 42,
+        listType: 'bullet',
+        dataArray: [{ nome: 'Alice' }],
+        itemTemplate: '{{nome}}',
+        fullMatch: '{{#bullet_list:items}}{{nome}}{{/bullet_list}}',
+        sourceRuns: []
+      };
+
+      expect(() => processor._executeListLoopOperation('doc123', op)).not.toThrow();
+
+      // Resolved to the real Paragraph (not the leaf Text, not BodyPrime).
+      expect(mockBody.getChildIndex).toHaveBeenCalledWith(realParagraph);
+      expect(mockBody.removeChild).toHaveBeenCalledWith(realParagraph);
     });
   });
 
@@ -1926,7 +1960,8 @@ describe('DocumentProcessor - Core Functionality Tests (Reverse-Order Strategy)'
         getChildIndex: jest.fn(() => 3),
         insertParagraph: jest.fn(() => mockInsertedParagraph),
         getChild: jest.fn(() => mockInsertedParagraph),
-        removeChild: jest.fn()
+        removeChild: jest.fn(),
+        getType: jest.fn(() => 'BODY_SECTION')
       };
       // saveAndClose present -> _flushDocumentChanges returns true -> rescan.
       const mockDoc = { getBody: jest.fn(() => mockBody), saveAndClose: jest.fn() };
@@ -2016,7 +2051,8 @@ describe('DocumentProcessor - Core Functionality Tests (Reverse-Order Strategy)'
         getChildIndex: jest.fn(() => 3),
         insertParagraph: jest.fn(() => mockInsertedParagraph),
         getChild: jest.fn(() => mockInsertedParagraph),
-        removeChild: jest.fn()
+        removeChild: jest.fn(),
+        getType: jest.fn(() => 'BODY_SECTION')
       };
       const mockDoc = { getBody: jest.fn(() => mockBody), saveAndClose: jest.fn() };
       mockDocumentService.openStandard.mockReturnValue(mockDoc);

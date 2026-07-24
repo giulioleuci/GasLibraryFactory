@@ -384,11 +384,21 @@ export class DocumentProcessorInjector {
         return;
       }
       let templateParagraph = rangeElement.getElement();
-      while (
-        typeof templateParagraph.getParent === 'function' &&
-        templateParagraph.getParent() !== body
-      ) {
-        templateParagraph = templateParagraph.getParent();
+      while (typeof templateParagraph.getParent === 'function') {
+        const parent = templateParagraph.getParent();
+        // Native DocumentApp elements obtained via separate calls (e.g. this
+        // walked-up `parent` vs. the `body` captured above) are not
+        // guaranteed to be reference-equal even when they represent the same
+        // underlying Body — comparing via `!== body` can therefore fail to
+        // ever match, walking one hop too far onto the Body's own
+        // getParent() (which returns null) and crashing. Compare by type
+        // instead (stringified, so this file never needs to touch the
+        // `DocumentApp` global directly), which is reliable, and stop
+        // climbing once `parent` is the Body itself.
+        if (!parent || parent.getType().toString() === 'BODY_SECTION') {
+          break;
+        }
+        templateParagraph = parent;
       }
       const templateChildIndex = body.getChildIndex(templateParagraph);
       const sourceRuns = op.sourceRuns || [];
