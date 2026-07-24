@@ -154,6 +154,8 @@ function initWorkspaceTemplateEngineTests() {
     const text = paragraph.editAsText();
     const nameStart = paragraph.getText().indexOf('{{name}}');
     text.setBold(nameStart, nameStart + '{{name}}'.length - 1, true);
+    text.setItalic(nameStart, nameStart + '{{name}}'.length - 1, true);
+    text.setForegroundColor(nameStart, nameStart + '{{name}}'.length - 1, '#3366ff');
     doc.saveAndClose();
 
     const logger = new LoggerService();
@@ -177,7 +179,16 @@ function initWorkspaceTemplateEngineTests() {
     SmartAssert.isTrue(fullText.includes('Dear Alice, welcome.'), 'Text should be substituted');
 
     const aliceStart = fullText.indexOf('Alice');
-    SmartAssert.isTrue(updatedText.isBold(aliceStart), 'Substituted name should keep its bold formatting');
+    SmartAssert.isTrue(updatedText.isItalic(aliceStart), 'Substituted name should keep italic');
+    SmartAssert.equals(
+      updatedText.getForegroundColor(aliceStart),
+      '#3366ff',
+      'Substituted name should keep foreground color'
+    );
+    SmartAssert.isTrue(
+      updatedText.isBold(aliceStart),
+      'Substituted name should keep its bold formatting'
+    );
     SmartAssert.isFalse(
       updatedText.isBold(fullText.indexOf('Dear')),
       'Surrounding plain text should stay non-bold'
@@ -196,6 +207,8 @@ function initWorkspaceTemplateEngineTests() {
     table.setBorderWidth(2);
     const templateRow = table.getRow(1);
     templateRow.getCell(1).setBackgroundColor('#ffff00');
+    const nameCellText = templateRow.getCell(0).editAsText();
+    nameCellText.setBold(0, templateRow.getCell(0).getText().length - 1, true);
     doc.saveAndClose();
 
     const logger = new LoggerService();
@@ -213,7 +226,15 @@ function initWorkspaceTemplateEngineTests() {
     const updatedDoc = DocumentApp.openById(doc.getId());
     const updatedTable = updatedDoc.getBody().getTables()[0];
     SmartAssert.equals(updatedTable.getNumRows(), 3, 'Header + 2 data rows');
-    SmartAssert.equals(updatedTable.getBorderWidth(), 2, 'Table border width should survive row expansion');
+    SmartAssert.equals(
+      updatedTable.getBorderWidth(),
+      2,
+      'Table border width should survive row expansion'
+    );
+    SmartAssert.isTrue(
+      updatedTable.getRow(1).getCell(0).editAsText().isBold(0),
+      'Copied row placeholder text should stay bold'
+    );
     SmartAssert.equals(
       updatedTable.getRow(1).getCell(1).getBackgroundColor(),
       '#ffff00',
@@ -231,8 +252,13 @@ function initWorkspaceTemplateEngineTests() {
     const doc = testContext.getDocument();
 
     const body = doc.getBody();
-    const table = body.appendTable([['{{#tablecol_loop:subjects}}{{label}}{{/tablecol_loop}}'], ['{{value}}']]);
+    const table = body.appendTable([
+      ['{{#tablecol_loop:subjects}}{{label}}{{/tablecol_loop}}'],
+      ['{{value}}']
+    ]);
     table.getRow(0).getCell(0).setWidth(120);
+    const headerText = table.getRow(0).getCell(0).editAsText();
+    headerText.setBold(0, table.getRow(0).getCell(0).getText().length - 1, true);
     doc.saveAndClose();
 
     const logger = new LoggerService();
@@ -249,7 +275,15 @@ function initWorkspaceTemplateEngineTests() {
 
     const updatedDoc = DocumentApp.openById(doc.getId());
     const updatedTable = updatedDoc.getBody().getTables()[0];
-    SmartAssert.equals(updatedTable.getRow(0).getNumCells(), 2, 'Should have 2 columns after expansion');
+    SmartAssert.equals(
+      updatedTable.getRow(0).getNumCells(),
+      2,
+      'Should have 2 columns after expansion'
+    );
+    SmartAssert.isTrue(
+      updatedTable.getRow(0).getCell(1).editAsText().isBold(0),
+      'Copied column header should stay bold'
+    );
     SmartAssert.equals(
       updatedTable.getRow(0).getCell(1).getWidth(),
       120,
@@ -264,6 +298,7 @@ function initWorkspaceTemplateEngineTests() {
     const body = doc.getBody();
     const listItem = body.appendListItem('{{#bullet_list:names}}{{nome}}{{/bullet_list}}');
     listItem.setGlyphType(DocumentApp.GlyphType.BULLET);
+    listItem.editAsText().setBold(0, listItem.getText().length - 1, true);
     doc.saveAndClose();
 
     const logger = new LoggerService();
@@ -283,6 +318,43 @@ function initWorkspaceTemplateEngineTests() {
       DocumentApp.GlyphType.BULLET.toString(),
       'Copied list items should keep the original glyph type, not a hardcoded preset'
     );
+    SmartAssert.isTrue(listItems[0].editAsText().isBold(0), 'Bullet text should stay bold');
+    SmartAssert.equals(
+      listItems[1].getGlyphType().toString(),
+      DocumentApp.GlyphType.BULLET.toString(),
+      'Every rendered bullet item should retain bullet glyph'
+    );
+  });
+
+  runner.register(`${NS}/Document/Formatting_NumberList`, () => {
+    testContext.resetDocument();
+    const doc = testContext.getDocument();
+    const listItem = doc.getBody().appendListItem('{{#number_list:names}}{{nome}}{{/number_list}}');
+    listItem.setGlyphType(DocumentApp.GlyphType.NUMBER);
+    listItem.editAsText().setBold(0, listItem.getText().length - 1, true);
+    doc.saveAndClose();
+
+    const logger = new LoggerService();
+    const mustache = new Mustache({ logger });
+    const placeholderService = new PlaceholderService({ logger, mustache });
+    const docProcessor = new DocumentProcessor(placeholderService);
+    docProcessor.process(doc.getId(), { names: [{ nome: 'Alice' }, { nome: 'Bob' }] });
+
+    const rendered = DocumentApp.openById(doc.getId()).getBody().getListItems();
+    SmartAssert.equals(rendered.length, 2, 'Should have one numbered item per entry');
+    SmartAssert.equals(rendered[0].getText(), 'Alice', 'First numbered item text');
+    SmartAssert.equals(rendered[1].getText(), 'Bob', 'Second numbered item text');
+    SmartAssert.equals(
+      rendered[0].getGlyphType().toString(),
+      DocumentApp.GlyphType.NUMBER.toString(),
+      'Numbered list must not flatten into plain paragraphs'
+    );
+    SmartAssert.equals(
+      rendered[1].getGlyphType().toString(),
+      DocumentApp.GlyphType.NUMBER.toString(),
+      'Every rendered item should retain numbered glyph'
+    );
+    SmartAssert.isTrue(rendered[0].editAsText().isBold(0), 'Numbered text should stay bold');
   });
 
   // Same as Table_Iteration_NestedFields, but the template is *provisioned*
@@ -294,7 +366,12 @@ function initWorkspaceTemplateEngineTests() {
   // the marker row, as opposed to the GENERATION path already covered above.
   runner.register(`${NS}/Document/Table_Iteration_ViaDocumentBuilder`, () => {
     const deps = createGoogleApiWrapperDeps();
-    const docService = new DocumentService(deps.logger, deps.cache, deps.utils, deps.exceptionService);
+    const docService = new DocumentService(
+      deps.logger,
+      deps.cache,
+      deps.utils,
+      deps.exceptionService
+    );
 
     const docName = 'RiepilogoBuilderTest_' + deps.utils.generateUuid().substring(0, 8);
     const { documentId, builder } = docService.createDocument(docName);
