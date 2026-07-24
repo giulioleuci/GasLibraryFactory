@@ -24,7 +24,7 @@ export class DocumentProcessorTagScanner {
       const match = cellText.match(/^{{#tablecol_loop:([^}]+)}}(.*)/s);
 
       if (match) {
-        const [, fullExpression, templateContent] = match;
+        const [fullMatchText, fullExpression, templateContent] = match;
         const { path, filters } = this.facade._parseExpression(fullExpression.trim());
         const dummyToken = ['name', path];
         const mustacheContext = new _MustacheContext(context);
@@ -38,6 +38,29 @@ export class DocumentProcessorTagScanner {
         }
 
         dataArray = this.facade._applyFilters(dataArray, filters);
+        // cell.runs is captured relative to the RAW cell text (including the
+        // `{{#tablecol_loop:...}}` marker prefix), but templateContent above
+        // is already marker-stripped — rebase runs onto templateContent's
+        // own offsets before storing, so downstream consumers
+        // (_buildStyledSegments/_styleAt in DocumentProcessorInjector) compare
+        // like-for-like. Any further offset introduced by `.trim()`-ing
+        // templateContent down to the final template is rebased separately,
+        // at the point that template is finalized (see
+        // _executeColumnLoopOperation).
+        const markerPrefixLength = fullMatchText.length - templateContent.length;
+        const rawSourceRuns = cell.runs || [];
+        const sourceRuns =
+          markerPrefixLength > 0
+            ? rawSourceRuns
+                .filter((r) => r.end > markerPrefixLength)
+                .map((r) => ({
+                  text: r.text,
+                  start: Math.max(r.start, markerPrefixLength) - markerPrefixLength,
+                  end: r.end - markerPrefixLength,
+                  style: r.style
+                }))
+            : rawSourceRuns;
+
         operations.push({
           type: 'columnLoop',
           index: cell.index,
@@ -45,7 +68,7 @@ export class DocumentProcessorTagScanner {
           cellIndex: cellIndex,
           dataArray: dataArray,
           templateContent: templateContent,
-          sourceRuns: cell.runs || []
+          sourceRuns: sourceRuns
         });
       }
     }

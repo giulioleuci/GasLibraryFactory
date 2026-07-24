@@ -46,6 +46,35 @@ export class DocumentProcessorInjector {
     return run ? run.style : {};
   }
 
+  /**
+   * @description Rebases a set of captured source runs onto a new coordinate
+   * origin, dropping/truncating any run that falls entirely before the shift
+   * point. Used to correct `sourceRuns` (captured relative to a raw,
+   * marker-included cell/paragraph text) so they line up with a
+   * marker-stripped (and possibly further trimmed) template string before
+   * being handed to `_buildStyledSegments`/`_styleAt` — otherwise offsets
+   * captured against the raw text would be compared against the shorter
+   * stripped template and misattribute styles. Same technique as the
+   * list-loop `sourceRuns` rebase (filter overlap, subtract shift, clamp).
+   * @param {Array<{start:number, end:number, style:Object}>} runs Source runs, relative to the pre-shift text.
+   * @param {number} shift Number of leading characters removed between the pre-shift text and the target template.
+   * @returns {Array<{start:number, end:number, style:Object}>} Runs re-based to the target template's own offsets.
+   * @private
+   */
+  _rebaseSourceRuns(runs, shift) {
+    if (!shift || shift <= 0) {
+      return runs || [];
+    }
+    return (runs || [])
+      .filter((r) => r.end > shift)
+      .map((r) => ({
+        text: r.text,
+        start: Math.max(r.start, shift) - shift,
+        end: r.end - shift,
+        style: r.style
+      }));
+  }
+
   _executeRowLoopOperation(documentId, op) {
     try {
       this.facade.logger.info(
@@ -63,14 +92,25 @@ export class DocumentProcessorInjector {
         return;
       }
 
+      let firstCellMarkerLength = 0;
       const cellTemplates = templateRow.cells.map((cellText, index) => {
         if (index === 0) {
           const markerMatch = cellText.match(/^{{#tablerow_loop:[^}]+}}/);
-          return markerMatch ? cellText.substring(markerMatch[0].length) : cellText;
+          if (markerMatch) {
+            firstCellMarkerLength = markerMatch[0].length;
+            return cellText.substring(markerMatch[0].length);
+          }
+          return cellText;
         }
         return cellText;
       });
-      const sourceRuns = op.sourceRuns || [];
+      // op.sourceRuns[0] (if present) is captured relative to the RAW first
+      // cell text, i.e. including the `{{#tablerow_loop:...}}` marker prefix
+      // just stripped above — rebase it onto cellTemplates[0]'s own offsets
+      // so _buildStyledSegments/_styleAt compare like-for-like.
+      const sourceRuns = (op.sourceRuns || []).map((runs, index) =>
+        index === 0 ? this._rebaseSourceRuns(runs, firstCellMarkerLength) : runs
+      );
 
       for (let i = op.dataArray.length - 1; i >= 0; i--) {
         const dataItem = op.dataArray[i];
@@ -118,7 +158,16 @@ export class DocumentProcessorInjector {
       const trimmedContent = (op.templateContent || '').replace(/\s+$/, '');
       const templateMatch = trimmedContent.match(/^(.*?){{\/tablecol_loop}}$/s);
       const template = templateMatch ? templateMatch[1].trim() : trimmedContent;
-      const headerSourceRuns = op.sourceRuns || [];
+      // op.sourceRuns is captured relative to op.templateContent (the
+      // scanner already strips the `{{#tablecol_loop:...}}` marker prefix
+      // before storing it — see _analyzeColumnLoops). `template` above may
+      // be further offset from templateContent's start by leading
+      // whitespace that `.trim()` removed (e.g. the marker and its
+      // placeholder on separate lines) — rebase by that additional amount
+      // so _buildStyledSegments/_styleAt compare like-for-like.
+      const templateBase = templateMatch ? templateMatch[1] : trimmedContent;
+      const trimShift = templateMatch ? templateBase.length - templateBase.trimStart().length : 0;
+      const headerSourceRuns = this._rebaseSourceRuns(op.sourceRuns, trimShift);
 
       if (op.dataArray.length === 0) {
         this.facade.documentService.updateTableCell(documentId, op.tableIndex, 0, op.cellIndex, '');

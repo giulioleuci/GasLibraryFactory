@@ -874,9 +874,14 @@ describe('DocumentProcessor - Core Functionality Tests (Reverse-Order Strategy)'
     });
 
     it("applies setCellRunStyles once per cell of each inserted row, with the source run's style", () => {
+      // sourceRuns are captured relative to the RAW cell text (matching
+      // DocumentContentExtractor._extractCellRuns), so cell 0's run for
+      // '{{name}}' is offset by the marker prefix's own length, not 0-based.
+      const markerText = '{{#tablerow_loop:items}}';
+      const nameText = '{{name}}';
       mockDocumentService.getTableRow.mockReturnValue({
         rowIndex: 1,
-        cells: ['{{#tablerow_loop:items}}{{name}}', '{{value}}']
+        cells: [markerText + nameText, '{{value}}']
       });
 
       const operation = {
@@ -885,7 +890,14 @@ describe('DocumentProcessor - Core Functionality Tests (Reverse-Order Strategy)'
         rowIndex: 1,
         dataArray: [{ name: 'Alice', value: '100' }],
         sourceRuns: [
-          [{ text: '{{name}}', start: 0, end: 8, style: { italic: true } }],
+          [
+            {
+              text: nameText,
+              start: markerText.length,
+              end: markerText.length + nameText.length,
+              style: { italic: true }
+            }
+          ],
           [{ text: '{{value}}', start: 0, end: 9, style: { bold: true } }]
         ]
       };
@@ -923,6 +935,55 @@ describe('DocumentProcessor - Core Functionality Tests (Reverse-Order Strategy)'
 
       expect(() => processor._executeRowLoopOperation('doc123', operation)).not.toThrow();
       expect(mockDocumentService.setCellRunStyles).toHaveBeenCalled();
+    });
+
+    it('rebases cell-0 sourceRuns past the stripped marker prefix so its style does not leak onto the placeholder (regression)', () => {
+      // Regression for the offset bug: cell.runs are captured relative to the
+      // RAW cell text (marker included), but cellTemplates[0] is built by
+      // stripping the marker off before rendering. Without rebasing,
+      // offset 0 into the stripped '{{name}}' template would incorrectly
+      // resolve to the marker's own (different) captured style.
+      const markerText = '{{#tablerow_loop:items}}';
+      const nameText = '{{name}}';
+      mockDocumentService.getTableRow.mockReturnValue({
+        rowIndex: 1,
+        cells: [markerText + nameText, '{{value}}']
+      });
+
+      const operation = {
+        type: 'rowLoop',
+        tableIndex: 0,
+        rowIndex: 1,
+        dataArray: [{ name: 'Alice', value: '100' }],
+        sourceRuns: [
+          [
+            { text: markerText, start: 0, end: markerText.length, style: {} },
+            {
+              text: nameText,
+              start: markerText.length,
+              end: markerText.length + nameText.length,
+              style: { bold: true }
+            }
+          ],
+          [{ text: '{{value}}', start: 0, end: 9, style: {} }]
+        ]
+      };
+
+      mockMustache.render.mockImplementation((template, data) =>
+        template.replace('{{name}}', data.name).replace('{{value}}', data.value)
+      );
+
+      processor._executeRowLoopOperation('doc123', operation);
+
+      expect(mockDocumentService.setCellRunStyles).toHaveBeenCalledWith(
+        'doc123',
+        0,
+        2,
+        0,
+        expect.arrayContaining([
+          expect.objectContaining({ rendered: 'Alice', style: { bold: true } })
+        ])
+      );
     });
   });
 
@@ -1206,6 +1267,127 @@ describe('DocumentProcessor - Core Functionality Tests (Reverse-Order Strategy)'
         dataArray: [{ label: 'A' }],
         templateContent: '{{label}}{{/tablecol_loop}}',
         sourceRuns: [{ text: '{{label}}', start: 0, end: 9, style: { bold: true } }]
+      };
+
+      processor._executeColumnLoopOperation('doc123', operation);
+
+      expect(mockDocumentService.setCellRunStyles).toHaveBeenCalledWith(
+        'doc123',
+        0,
+        0,
+        0,
+        expect.arrayContaining([expect.objectContaining({ style: { bold: true } })])
+      );
+    });
+
+    it('rebases header sourceRuns past the stripped marker prefix so its style does not leak onto the placeholder (regression, full scan+execute pipeline)', () => {
+      // Regression for the offset bug: cell.runs are captured relative to the
+      // RAW header cell text (marker included), while the header template
+      // rendered here is marker-stripped. Exercise the real pipeline
+      // (_analyzeColumnLoops -> _executeColumnLoopOperation) so both the
+      // scanner's marker-prefix rebase and the injector's own trim rebase
+      // are covered end to end.
+      const markerText = '{{#tablecol_loop:items}}';
+      const placeholderText = '{{name}}';
+      const closeText = '{{/tablecol_loop}}';
+      const cellText = markerText + placeholderText + closeText;
+
+      const mockTable = {
+        index: 0,
+        rows: [
+          {
+            index: 0,
+            cells: [
+              {
+                index: 0,
+                text: cellText,
+                runs: [
+                  { text: markerText, start: 0, end: markerText.length, style: {} },
+                  {
+                    text: placeholderText,
+                    start: markerText.length,
+                    end: markerText.length + placeholderText.length,
+                    style: { bold: true }
+                  },
+                  {
+                    text: closeText,
+                    start: markerText.length + placeholderText.length,
+                    end: cellText.length,
+                    style: {}
+                  }
+                ]
+              }
+            ]
+          }
+        ]
+      };
+
+      mockMustache._lookupValue.mockReturnValue([{ name: 'Test' }]);
+
+      const ops = processor._analyzeColumnLoops(mockTable, { items: [{ name: 'Test' }] });
+      expect(ops).toHaveLength(1);
+
+      mockDocumentService.getTableData.mockReturnValue({
+        tableIndex: 0,
+        numRows: 1,
+        numColumns: 1,
+        data: [[cellText]]
+      });
+
+      processor._executeColumnLoopOperation('doc123', ops[0]);
+
+      expect(mockDocumentService.setCellRunStyles).toHaveBeenCalledWith(
+        'doc123',
+        0,
+        0,
+        0,
+        expect.arrayContaining([
+          expect.objectContaining({ rendered: 'Test', style: { bold: true } })
+        ])
+      );
+    });
+
+    it('rebases header sourceRuns past leading whitespace that .trim() strips from the header template (regression, trim-induced offset)', () => {
+      // Regression for the "additional trim-induced offset beyond just the
+      // marker-prefix length" case: templateContent (already marker-stripped
+      // by the scanner) puts the placeholder after some leading whitespace
+      // (e.g. marker and placeholder on separate lines), which
+      // _executeColumnLoopOperation's own `.trim()` then strips when
+      // building `template` — sourceRuns must be rebased by that additional
+      // amount too, not just the marker-prefix length.
+      const leadingWs = '  ';
+      const placeholderText = '{{label}}';
+      const closeText = '{{/tablecol_loop}}';
+      const templateContent = leadingWs + placeholderText + closeText;
+
+      mockDocumentService.getTableData.mockReturnValue({
+        tableIndex: 0,
+        numRows: 1,
+        numColumns: 1,
+        data: [['{{label}}']]
+      });
+
+      const operation = {
+        type: 'columnLoop',
+        tableIndex: 0,
+        cellIndex: 0,
+        dataArray: [{ label: 'A' }],
+        templateContent,
+        sourceRuns: [
+          { text: leadingWs, start: 0, end: leadingWs.length, style: {} },
+          {
+            text: placeholderText,
+            start: leadingWs.length,
+            end: leadingWs.length + placeholderText.length,
+            style: { bold: true }
+          },
+          {
+            text: closeText,
+            start: leadingWs.length + placeholderText.length,
+            end: templateContent.length,
+            style: {}
+          }
+        ]
       };
 
       processor._executeColumnLoopOperation('doc123', operation);
