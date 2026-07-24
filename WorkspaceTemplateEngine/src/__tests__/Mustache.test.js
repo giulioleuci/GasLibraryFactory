@@ -786,4 +786,52 @@ describe('Mustache - Comprehensive Test Suite', () => {
       expect(instance.render('{{> footer}}')).toBe('F H');
     });
   });
+
+  describe('renderSegments', () => {
+    it('splits plain text and a single variable into two segments with correct raw offsets', () => {
+      const segments = mustache.renderSegments('Hello {{name}}!', { name: 'World' });
+      expect(segments).toEqual([
+        { type: 'text', raw: 'Hello ', rendered: 'Hello ', rawStart: 0, rawEnd: 6 },
+        { type: 'value', raw: '{{name}}', rendered: 'World', rawStart: 6, rawEnd: 14 },
+        { type: 'text', raw: '!', rendered: '!', rawStart: 14, rawEnd: 15 }
+      ]);
+    });
+
+    it('renders multiple adjacent variables as separate segments', () => {
+      const segments = mustache.renderSegments('{{first}} {{last}}', {
+        first: 'John',
+        last: 'Doe'
+      });
+      expect(segments.filter((s) => s.type === 'value').map((s) => s.rendered)).toEqual([
+        'John',
+        'Doe'
+      ]);
+    });
+
+    it("joining all segments' rendered text reproduces render()'s output", () => {
+      const template = 'Dear {{name}}, your total is {{total}}.';
+      const data = { name: 'Alice', total: 42 };
+      const segments = mustache.renderSegments(template, data);
+      const joined = segments.map((s) => s.rendered).join('');
+      expect(joined).toBe(mustache.render(template, data));
+    });
+
+    it('applies pipe filters within a value segment', () => {
+      const segments = mustache.renderSegments('{{name | uppercase}}', { name: 'test' });
+      expect(segments).toEqual([
+        { type: 'value', raw: '{{name | uppercase}}', rendered: 'TEST', rawStart: 0, rawEnd: 20 }
+      ]);
+    });
+
+    it('falls back to a single opaque value segment for a section token', () => {
+      const segments = mustache.renderSegments('{{#items}}x{{/items}}', { items: [1] });
+      expect(segments).toHaveLength(1);
+      expect(segments[0].type).toBe('value');
+      expect(segments[0].rendered).toBe('x');
+    });
+
+    it('returns an empty array for an empty template', () => {
+      expect(mustache.renderSegments('', {})).toEqual([]);
+    });
+  });
 });

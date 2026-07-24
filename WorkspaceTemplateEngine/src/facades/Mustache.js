@@ -515,6 +515,98 @@ export class MyMustache {
   }
 
   /**
+   * @description Renders a template into an ordered list of segments, each carrying
+   * its resolved text plus its raw start/end offset in the original template string.
+   * Unlike render(), this does not collapse the output into one string — it exposes
+   * segment boundaries so a caller can map a rendered span back to the original
+   * template offset it came from (e.g. to re-apply the original run's formatting).
+   * Only supports top-level tokens; a section/inverted/partial token is rendered as
+   * one opaque 'value' segment via the existing render machinery, not sub-divided.
+   * Comment ('!') and set-delimiter ('=') tokens produce no segment, matching the
+   * fact that render() also produces no output for them.
+   * @param {string} template Mustache template string.
+   * @param {Object} [data={}] View model data.
+   * @param {Object} [additionalPartials={}] Render-specific partial overrides.
+   * @returns {Array<{type: 'text'|'value', raw: string, rendered: string, rawStart: number, rawEnd: number}>}
+   */
+  renderSegments(template, data = {}, additionalPartials = {}) {
+    if (typeof template !== 'string') {
+      throw new TypeError('template must be a string');
+    }
+    if (template === '') {
+      return [];
+    }
+
+    const tokens = this._parse(template);
+    const context = new _MustacheContext(data);
+    const partials = { ...this.partials, ...additionalPartials };
+    const state = { depth: 0, partialStack: [] };
+    const segments = [];
+
+    for (const token of tokens) {
+      const symbol = token[MyMustache.TOKEN_TYPE];
+      const rawStart = token[MyMustache.TOKEN_START];
+
+      if (symbol === MyMustache.TAG_TEXT) {
+        const raw = token[MyMustache.TOKEN_VALUE];
+        const rawEnd = token[MyMustache.TOKEN_END];
+        segments.push({ type: 'text', raw, rendered: raw, rawStart, rawEnd });
+        continue;
+      }
+
+      if (symbol === MyMustache.TAG_VARIABLE || symbol === MyMustache.TAG_UNESCAPED) {
+        const rawEnd = token[MyMustache.TOKEN_END];
+        const raw = template.slice(rawStart, rawEnd);
+        const rendered =
+          symbol === MyMustache.TAG_UNESCAPED
+            ? this._unescapedValue(token, context)
+            : this._escapedValue(token, context);
+        segments.push({
+          type: 'value',
+          raw,
+          rendered: rendered !== undefined ? rendered : '',
+          rawStart,
+          rawEnd
+        });
+        continue;
+      }
+
+      if (
+        symbol === MyMustache.TAG_SECTION ||
+        symbol === MyMustache.TAG_INVERTED ||
+        symbol === MyMustache.TAG_PARTIAL
+      ) {
+        let rawEnd = token[MyMustache.TOKEN_END];
+        if (symbol === MyMustache.TAG_SECTION || symbol === MyMustache.TAG_INVERTED) {
+          // _nestTokens stores the closing tag's *opening*-delimiter offset in
+          // TOKEN_INDEX (`section[TOKEN_INDEX] = closeToken[TOKEN_START]`), not the
+          // closing tag's end. Extend past the closing delimiter so `raw` covers the
+          // whole section, not just up to where "{{/tag" begins.
+          const closeStart = token[MyMustache.TOKEN_INDEX];
+          if (typeof closeStart === 'number') {
+            const closeDelimIndex = template.indexOf(this.tags[1], closeStart);
+            rawEnd = closeDelimIndex === -1 ? closeStart : closeDelimIndex + this.tags[1].length;
+          }
+        }
+        const raw = template.slice(rawStart, rawEnd);
+        let rendered = '';
+        if (symbol === MyMustache.TAG_SECTION) {
+          rendered = this._renderSection(token, context, partials, template, state) || '';
+        } else if (symbol === MyMustache.TAG_INVERTED) {
+          rendered = this._renderInverted(token, context, partials, template, state) || '';
+        } else {
+          rendered = this._renderPartial(token, context, partials, state) || '';
+        }
+        segments.push({ type: 'value', raw, rendered, rawStart, rawEnd });
+        continue;
+      }
+
+      // Comment ('!') and set-delimiter ('=') tokens: no segment, matching render().
+    }
+    return segments;
+  }
+
+  /**
    * @description Escapes characters for use in a literal regular expression.
    * @param {string} string Input string.
    * @returns {string} Regex-safe escaped string.
