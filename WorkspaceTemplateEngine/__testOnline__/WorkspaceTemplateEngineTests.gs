@@ -164,7 +164,14 @@ function initWorkspaceTemplateEngineTests() {
     docProcessor.process(doc.getId(), { name: 'Alice' });
 
     const updatedDoc = DocumentApp.openById(doc.getId());
-    const updatedParagraph = updatedDoc.getBody().getParagraphs()[0];
+    // resetDocument() clears the body via Body.clear(), but a Docs body can
+    // never have zero paragraphs — clear() always leaves one empty paragraph
+    // behind, and appendParagraph() above added ours right after it. So the
+    // target paragraph is the LAST one, not [0] (which is that leftover
+    // empty paragraph — reading it made this assertion fail deterministically
+    // regardless of whether the substitution actually worked).
+    const updatedParagraphs = updatedDoc.getBody().getParagraphs();
+    const updatedParagraph = updatedParagraphs[updatedParagraphs.length - 1];
     const updatedText = updatedParagraph.editAsText();
     const fullText = updatedParagraph.getText();
     SmartAssert.isTrue(fullText.includes('Dear Alice, welcome.'), 'Text should be substituted');
