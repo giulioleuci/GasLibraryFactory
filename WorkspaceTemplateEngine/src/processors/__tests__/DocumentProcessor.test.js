@@ -547,6 +547,76 @@ describe('DocumentProcessor - Core Functionality Tests (Reverse-Order Strategy)'
   });
 
   // ===================================================================
+  // _createTextSubstitutionRequests() — run-style preservation Tests
+  // ===================================================================
+  describe('_createTextSubstitutionRequests() — run-style preservation', () => {
+    it('emits an updateTextStyle request for a segment whose source run had a style', () => {
+      const op = {
+        type: 'textSubstitution',
+        index: 100,
+        originalText: 'Dear {{name}},',
+        newText: 'Dear Alice,',
+        segments: [
+          { type: 'text', raw: 'Dear ', rendered: 'Dear ', rawStart: 0, rawEnd: 5 },
+          { type: 'value', raw: '{{name}}', rendered: 'Alice', rawStart: 5, rawEnd: 13 },
+          { type: 'text', raw: ',', rendered: ',', rawStart: 13, rawEnd: 14 }
+        ],
+        sourceRuns: [{ text: '{{name}}', start: 5, end: 13, style: { bold: true } }]
+      };
+
+      const requests = processor._createTextSubstitutionRequests(op);
+
+      const styleRequests = requests.filter((r) => r.updateTextStyle);
+      expect(styleRequests).toHaveLength(1);
+      expect(styleRequests[0].updateTextStyle).toEqual({
+        range: { startIndex: 105, endIndex: 110 },
+        textStyle: { bold: true },
+        fields: 'bold'
+      });
+    });
+
+    it('emits no updateTextStyle request when no segment overlaps a styled source run', () => {
+      const op = {
+        type: 'textSubstitution',
+        index: 100,
+        originalText: 'Hi {{name}}',
+        newText: 'Hi Bob',
+        segments: [
+          { type: 'text', raw: 'Hi ', rendered: 'Hi ', rawStart: 0, rawEnd: 3 },
+          { type: 'value', raw: '{{name}}', rendered: 'Bob', rawStart: 3, rawEnd: 11 }
+        ],
+        sourceRuns: []
+      };
+
+      const requests = processor._createTextSubstitutionRequests(op);
+      expect(requests.some((r) => r.updateTextStyle)).toBe(false);
+    });
+
+    it('does not attempt style requests when the whole substitution collapsed to a zero-width space', () => {
+      const op = {
+        type: 'textSubstitution',
+        index: 100,
+        originalText: '{{missing}}',
+        newText: '​',
+        segments: [{ type: 'value', raw: '{{missing}}', rendered: '', rawStart: 0, rawEnd: 11 }],
+        sourceRuns: [{ text: '{{missing}}', start: 0, end: 11, style: { italic: true } }]
+      };
+
+      const requests = processor._createTextSubstitutionRequests(op);
+      expect(requests.some((r) => r.updateTextStyle)).toBe(false);
+    });
+
+    it('preserves existing behavior when the op carries no segments (backward compatibility)', () => {
+      const op = { type: 'textSubstitution', index: 100, originalText: 'Hi {{name}}', newText: 'Hi Bob' };
+      const requests = processor._createTextSubstitutionRequests(op);
+      expect(requests).toEqual([
+        { deleteContentRange: { range: { startIndex: 100, endIndex: 111 } } },
+        { insertText: { location: { index: 100 }, text: 'Hi Bob' } }
+      ]);
+    });
+  });
+
+  // ===================================================================
   // _parseExpression() Helper Tests
   // ===================================================================
   describe('_parseExpression() Helper', () => {

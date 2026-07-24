@@ -199,11 +199,14 @@ export class DocumentProcessorTagScanner {
         if (originalText.includes('{{')) {
           const newText = this.facade.mustache.render(originalText, context);
           if (originalText !== newText) {
+            const segments = this.facade.mustache.renderSegments(originalText, context);
             operations.push({
               type: 'textSubstitution',
               index: textMatch.elementIndex,
               originalText: originalText,
-              newText: newText === '' ? '\u200B' : newText
+              newText: newText === '' ? '\u200B' : newText,
+              segments: segments,
+              sourceRuns: textMatch.runs || []
             });
           }
         }

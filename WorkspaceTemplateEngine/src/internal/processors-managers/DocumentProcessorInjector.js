@@ -287,7 +287,8 @@ export class DocumentProcessorInjector {
     if (newText === '') {
       newText = '\u200B';
     }
-    return [
+
+    const requests = [
       {
         deleteContentRange: {
           range: { startIndex: op.index, endIndex: op.index + originalText.length }
@@ -295,6 +296,28 @@ export class DocumentProcessorInjector {
       },
       { insertText: { location: { index: op.index }, text: newText } }
     ];
+
+    if (op.segments && op.segments.length > 0 && newText !== '\u200B') {
+      let cursor = op.index;
+      for (const segment of op.segments) {
+        const rendered = segment.rendered != null ? String(segment.rendered) : '';
+        if (rendered.length > 0) {
+          const style = this._styleAt(segment.rawStart, op.sourceRuns || []);
+          const fields = Object.keys(style);
+          if (fields.length > 0) {
+            requests.push({
+              updateTextStyle: {
+                range: { startIndex: cursor, endIndex: cursor + rendered.length },
+                textStyle: style,
+                fields: fields.join(',')
+              }
+            });
+          }
+        }
+        cursor += rendered.length;
+      }
+    }
+    return requests;
   }
 
   _createDeleteRowRequests(op) {

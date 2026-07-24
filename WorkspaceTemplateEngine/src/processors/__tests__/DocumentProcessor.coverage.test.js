@@ -50,6 +50,45 @@ describe('DocumentProcessor - Coverage Enhancement Tests (Reverse-Order Strategy
       _lookupValue: jest.fn((token, context) => {
         const path = token[1];
         return mockMustache.getValue(path, context.view);
+      }),
+      renderSegments: jest.fn((template, context) => {
+        const segments = [];
+        const regex = /{{(\w+)}}/g;
+        let lastIndex = 0;
+        let match;
+        while ((match = regex.exec(template)) !== null) {
+          if (match.index > lastIndex) {
+            const raw = template.slice(lastIndex, match.index);
+            segments.push({
+              type: 'text',
+              raw,
+              rendered: raw,
+              rawStart: lastIndex,
+              rawEnd: match.index
+            });
+          }
+          const key = match[1];
+          const rendered = context && context[key] != null ? String(context[key]) : '';
+          segments.push({
+            type: 'value',
+            raw: match[0],
+            rendered,
+            rawStart: match.index,
+            rawEnd: match.index + match[0].length
+          });
+          lastIndex = match.index + match[0].length;
+        }
+        if (lastIndex < template.length) {
+          const raw = template.slice(lastIndex);
+          segments.push({
+            type: 'text',
+            raw,
+            rendered: raw,
+            rawStart: lastIndex,
+            rawEnd: template.length
+          });
+        }
+        return segments;
       })
     };
 
