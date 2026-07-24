@@ -1717,27 +1717,24 @@ describe('DocumentProcessor - Core Functionality Tests (Reverse-Order Strategy)'
     it.each([
       ['bullet', '{{#bullet_list:items}}{{nome}}{{/bullet_list}}'],
       ['number', '{{#number_list:items}}{{nome}}{{/number_list}}']
-    ])(
-      'uses Body.insertListItem() for a real %s ListItem marker',
-      (listType, fullMatch) => {
-        mockTemplateParagraph.getType = jest.fn(() => 'LIST_ITEM');
-        mockBody.insertListItem = jest.fn(() => mockInsertedParagraph);
-        const op = {
-          type: 'listLoop',
-          paragraphIndex: 42,
-          listType,
-          dataArray: [{ nome: 'Alice' }],
-          itemTemplate: '{{nome}}',
-          fullMatch,
-          sourceRuns: []
-        };
+    ])('uses Body.insertListItem() for a real %s ListItem marker', (listType, fullMatch) => {
+      mockTemplateParagraph.getType = jest.fn(() => 'LIST_ITEM');
+      mockBody.insertListItem = jest.fn(() => mockInsertedParagraph);
+      const op = {
+        type: 'listLoop',
+        paragraphIndex: 42,
+        listType,
+        dataArray: [{ nome: 'Alice' }],
+        itemTemplate: '{{nome}}',
+        fullMatch,
+        sourceRuns: []
+      };
 
-        processor._executeListLoopOperation('doc123', op);
+      processor._executeListLoopOperation('doc123', op);
 
-        expect(mockBody.insertListItem).toHaveBeenCalledWith(4, mockCopiedParagraph);
-        expect(mockBody.insertParagraph).not.toHaveBeenCalled();
-      }
-    );
+      expect(mockBody.insertListItem).toHaveBeenCalledWith(4, mockCopiedParagraph);
+      expect(mockBody.insertParagraph).not.toHaveBeenCalled();
+    });
 
     it('warns and returns without mutating when the template paragraph cannot be found', () => {
       mockBody.findText.mockReturnValue(null);
