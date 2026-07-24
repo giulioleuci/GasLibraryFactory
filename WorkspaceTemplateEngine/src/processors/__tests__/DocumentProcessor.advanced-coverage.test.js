@@ -52,6 +52,45 @@ describe('DocumentProcessor - Advanced Coverage Tests (Reverse-Order Strategy)',
       _lookupValue: jest.fn((token, context) => {
         const path = token[1];
         return mockMustache.getValue(path, context.view);
+      }),
+      renderSegments: jest.fn((template, data) => {
+        const segments = [];
+        const regex = /{{(\w+)}}/g;
+        let lastIndex = 0;
+        let match;
+        while ((match = regex.exec(template)) !== null) {
+          if (match.index > lastIndex) {
+            const raw = template.slice(lastIndex, match.index);
+            segments.push({
+              type: 'text',
+              raw,
+              rendered: raw,
+              rawStart: lastIndex,
+              rawEnd: match.index
+            });
+          }
+          const key = match[1];
+          const rendered = data && data[key] != null ? String(data[key]) : '';
+          segments.push({
+            type: 'value',
+            raw: match[0],
+            rendered,
+            rawStart: match.index,
+            rawEnd: match.index + match[0].length
+          });
+          lastIndex = match.index + match[0].length;
+        }
+        if (lastIndex < template.length) {
+          const raw = template.slice(lastIndex);
+          segments.push({
+            type: 'text',
+            raw,
+            rendered: raw,
+            rawStart: lastIndex,
+            rawEnd: template.length
+          });
+        }
+        return segments;
       })
     };
 
@@ -90,8 +129,13 @@ describe('DocumentProcessor - Advanced Coverage Tests (Reverse-Order Strategy)',
         ]
       })),
       insertTableRow: jest.fn(() => ({ success: true })),
+      copyTableRow: jest.fn(() => ({ success: true })),
       deleteTableRow: jest.fn(() => ({ success: true })),
-      updateTableCell: jest.fn(() => ({ success: true }))
+      updateTableCell: jest.fn(() => ({ success: true })),
+      setCellRunStyles: jest.fn(() => ({ success: true })),
+      copyTableColumn: jest.fn(() => ({ success: true })),
+      getColumnWidth: jest.fn(() => ({ widthPoints: 150 })),
+      setColumnWidth: jest.fn(() => ({ success: true }))
     };
 
     // Mock PlaceholderService

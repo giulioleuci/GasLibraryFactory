@@ -118,48 +118,83 @@ export class DocumentProcessorInjector {
       const trimmedContent = (op.templateContent || '').replace(/\s+$/, '');
       const templateMatch = trimmedContent.match(/^(.*?){{\/tablecol_loop}}$/s);
       const template = templateMatch ? templateMatch[1].trim() : trimmedContent;
+      const headerSourceRuns = op.sourceRuns || [];
 
       if (op.dataArray.length === 0) {
         this.facade.documentService.updateTableCell(documentId, op.tableIndex, 0, op.cellIndex, '');
         return;
       }
 
-      // The whole column is the loop unit: row 0 carries the loop marker's inner
-      // template ({{label}}); every other row keeps its own cell template
-      // ({{value}}). Each data item must render the full column, not just the header.
+      // Row 0 uses the extracted header template (with its captured source
+      // runs, if any); every other row keeps its own existing cell template,
+      // with no source runs (disclosed scope boundary — see plan Task 6).
       const cellTemplates = [];
+      const cellSourceRuns = [];
       for (let rowIdx = 0; rowIdx < tableData.numRows; rowIdx++) {
         if (rowIdx === 0) {
           cellTemplates.push(template);
+          cellSourceRuns.push(headerSourceRuns);
         } else {
           const rowData = tableData.data[rowIdx] || [];
           const cellText = rowData[op.cellIndex];
           cellTemplates.push(cellText == null ? '' : cellText);
+          cellSourceRuns.push([]);
         }
       }
 
-      const renderCell = (tpl, item) =>
-        tpl && tpl.includes('{{') ? this.facade.mustache.render(tpl, item) : tpl || '';
+      const buildSegments = (tpl, item, sourceRuns) =>
+        this._buildStyledSegments(tpl, item, sourceRuns);
 
       // First data item populates the original column in place, row by row.
       for (let rowIdx = 0; rowIdx < tableData.numRows; rowIdx++) {
-        this.facade.documentService.updateTableCell(
+        const segments = buildSegments(
+          cellTemplates[rowIdx],
+          op.dataArray[0],
+          cellSourceRuns[rowIdx]
+        );
+        this.facade.documentService.setCellRunStyles(
           documentId,
           op.tableIndex,
           rowIdx,
           op.cellIndex,
-          renderCell(cellTemplates[rowIdx], op.dataArray[0])
+          segments
         );
       }
 
       if (op.dataArray.length > 1) {
+        const originalWidth = this.facade.documentService.getColumnWidth(
+          documentId,
+          op.tableIndex,
+          op.cellIndex
+        ).widthPoints;
+
         for (let i = 1; i < op.dataArray.length; i++) {
-          const cellValues = cellTemplates.map((tpl) => renderCell(tpl, op.dataArray[i]));
-          this.facade.documentService.insertTableColumn(
+          const targetColumnIndex = op.cellIndex + i;
+          this.facade.documentService.copyTableColumn(
             documentId,
             op.tableIndex,
-            op.cellIndex + i,
-            cellValues
+            op.cellIndex,
+            targetColumnIndex
+          );
+          for (let rowIdx = 0; rowIdx < tableData.numRows; rowIdx++) {
+            const segments = buildSegments(
+              cellTemplates[rowIdx],
+              op.dataArray[i],
+              cellSourceRuns[rowIdx]
+            );
+            this.facade.documentService.setCellRunStyles(
+              documentId,
+              op.tableIndex,
+              rowIdx,
+              targetColumnIndex,
+              segments
+            );
+          }
+          this.facade.documentService.setColumnWidth(
+            documentId,
+            op.tableIndex,
+            targetColumnIndex,
+            originalWidth
           );
         }
         this.facade.logger.debug(`Inserted ${op.dataArray.length - 1} additional columns`);

@@ -44,7 +44,8 @@ export class DocumentProcessorTagScanner {
           tableIndex: table.index,
           cellIndex: cellIndex,
           dataArray: dataArray,
-          templateContent: templateContent
+          templateContent: templateContent,
+          sourceRuns: cell.runs || []
         });
       }
     }

@@ -124,6 +124,15 @@ describe('DocumentProcessor - Core Functionality Tests (Reverse-Order Strategy)'
       updateTableCell: jest.fn(() => ({ success: true })),
       // Column manipulation methods
       insertTableColumn: jest.fn(() => ({ success: true, affectedRows: 2 })),
+      copyTableColumn: jest.fn((docId, tableIndex, sourceColumnIndex, targetColumnIndex) => ({
+        success: true,
+        tableIndex,
+        sourceColumnIndex,
+        insertedColumnIndex: targetColumnIndex,
+        numRows: 2
+      })),
+      getColumnWidth: jest.fn(() => ({ widthPoints: 150 })),
+      setColumnWidth: jest.fn(() => ({ success: true })),
       deleteTableColumn: jest.fn(() => ({ success: true, affectedRows: 2 })),
       appendTableColumn: jest.fn(() => ({ success: true, affectedRows: 2 }))
     };
@@ -930,20 +939,19 @@ describe('DocumentProcessor - Core Functionality Tests (Reverse-Order Strategy)'
         templateContent: '{{name}}{{/tablecol_loop}}'
       };
 
-      mockMustache.render.mockReturnValue('January');
-
       processor._executeColumnLoopOperation('doc123', operation);
 
       // Should get table data
       expect(mockDocumentService.getTableData).toHaveBeenCalledWith('doc123', 0);
 
-      // Should update the header cell with first item
-      expect(mockDocumentService.updateTableCell).toHaveBeenCalledWith(
+      // Should restyle the header cell with first item (via setCellRunStyles,
+      // not a plain updateTableCell, so captured formatting survives)
+      expect(mockDocumentService.setCellRunStyles).toHaveBeenCalledWith(
         'doc123',
         0,
         0,
         1,
-        'January'
+        expect.arrayContaining([expect.objectContaining({ rendered: 'January' })])
       );
 
       expect(mockLogger.info).toHaveBeenCalledWith(
@@ -974,36 +982,40 @@ describe('DocumentProcessor - Core Functionality Tests (Reverse-Order Strategy)'
         templateContent: '{{name}}{{/tablecol_loop}}'
       };
 
-      mockMustache.render.mockReturnValue('Rendered');
-
       processor._executeColumnLoopOperation('doc123', operation);
 
-      // Should update the first cell
-      expect(mockDocumentService.updateTableCell).toHaveBeenCalledWith(
+      // Should restyle the first (original) cell in place
+      expect(mockDocumentService.setCellRunStyles).toHaveBeenCalledWith(
         'doc123',
         0,
         0,
         1,
-        'Rendered'
+        expect.arrayContaining([expect.objectContaining({ rendered: 'Jan' })])
       );
 
-      // Should insert 2 additional columns (for Feb and Mar)
-      expect(mockDocumentService.insertTableColumn).toHaveBeenCalledTimes(2);
+      // Should copy the source column for the 2 additional items (Feb and Mar),
+      // never insertTableColumn (formatting-preserving path)
+      expect(mockDocumentService.copyTableColumn).toHaveBeenCalledTimes(2);
+      expect(mockDocumentService.insertTableColumn).not.toHaveBeenCalled();
 
-      // First insertion at column 2 (cellIndex + 1)
-      expect(mockDocumentService.insertTableColumn).toHaveBeenCalledWith(
+      // First copy targets column 2 (cellIndex + 1)
+      expect(mockDocumentService.copyTableColumn).toHaveBeenCalledWith('doc123', 0, 1, 2);
+      expect(mockDocumentService.setCellRunStyles).toHaveBeenCalledWith(
         'doc123',
+        0,
         0,
         2,
-        expect.any(Array)
+        expect.arrayContaining([expect.objectContaining({ rendered: 'Feb' })])
       );
 
-      // Second insertion at column 3 (cellIndex + 2)
-      expect(mockDocumentService.insertTableColumn).toHaveBeenCalledWith(
+      // Second copy targets column 3 (cellIndex + 2)
+      expect(mockDocumentService.copyTableColumn).toHaveBeenCalledWith('doc123', 0, 1, 3);
+      expect(mockDocumentService.setCellRunStyles).toHaveBeenCalledWith(
         'doc123',
         0,
+        0,
         3,
-        expect.any(Array)
+        expect.arrayContaining([expect.objectContaining({ rendered: 'Mar' })])
       );
 
       expect(mockLogger.debug).toHaveBeenCalledWith(
@@ -1022,9 +1034,6 @@ describe('DocumentProcessor - Core Functionality Tests (Reverse-Order Strategy)'
           ['Monthly total', '{{value}}']
         ]
       });
-      mockMustache.render.mockImplementation((tpl, item) =>
-        tpl.replace('{{label}}', item.label).replace('{{value}}', String(item.value))
-      );
 
       const operation = {
         type: 'columnLoop',
@@ -1040,19 +1049,54 @@ describe('DocumentProcessor - Core Functionality Tests (Reverse-Order Strategy)'
 
       processor._executeColumnLoopOperation('doc123', operation);
 
-      // Original column: header row + value row both rendered for the first item.
-      expect(mockDocumentService.updateTableCell).toHaveBeenCalledWith('doc123', 0, 0, 1, 'Jan');
-      expect(mockDocumentService.updateTableCell).toHaveBeenCalledWith('doc123', 0, 1, 1, '1000');
+      // Original column: header row + value row both restyled for the first item.
+      expect(mockDocumentService.setCellRunStyles).toHaveBeenCalledWith(
+        'doc123',
+        0,
+        0,
+        1,
+        expect.arrayContaining([expect.objectContaining({ rendered: 'Jan' })])
+      );
+      expect(mockDocumentService.setCellRunStyles).toHaveBeenCalledWith(
+        'doc123',
+        0,
+        1,
+        1,
+        expect.arrayContaining([expect.objectContaining({ rendered: '1000' })])
+      );
 
-      // Inserted columns carry the value row, not an empty string.
-      expect(mockDocumentService.insertTableColumn).toHaveBeenCalledWith('doc123', 0, 2, [
-        'Feb',
-        '1200'
-      ]);
-      expect(mockDocumentService.insertTableColumn).toHaveBeenCalledWith('doc123', 0, 3, [
-        'Mar',
-        '900'
-      ]);
+      // Copied columns carry the value row too, not an empty string.
+      expect(mockDocumentService.copyTableColumn).toHaveBeenCalledWith('doc123', 0, 1, 2);
+      expect(mockDocumentService.setCellRunStyles).toHaveBeenCalledWith(
+        'doc123',
+        0,
+        0,
+        2,
+        expect.arrayContaining([expect.objectContaining({ rendered: 'Feb' })])
+      );
+      expect(mockDocumentService.setCellRunStyles).toHaveBeenCalledWith(
+        'doc123',
+        0,
+        1,
+        2,
+        expect.arrayContaining([expect.objectContaining({ rendered: '1200' })])
+      );
+
+      expect(mockDocumentService.copyTableColumn).toHaveBeenCalledWith('doc123', 0, 1, 3);
+      expect(mockDocumentService.setCellRunStyles).toHaveBeenCalledWith(
+        'doc123',
+        0,
+        0,
+        3,
+        expect.arrayContaining([expect.objectContaining({ rendered: 'Mar' })])
+      );
+      expect(mockDocumentService.setCellRunStyles).toHaveBeenCalledWith(
+        'doc123',
+        0,
+        1,
+        3,
+        expect.arrayContaining([expect.objectContaining({ rendered: '900' })])
+      );
     });
 
     it('should warn if table data cannot be retrieved', () => {
@@ -1092,6 +1136,86 @@ describe('DocumentProcessor - Core Functionality Tests (Reverse-Order Strategy)'
 
       expect(mockLogger.error).toHaveBeenCalledWith(
         expect.stringContaining('Failed to execute column loop')
+      );
+    });
+
+    it('copies the source column instead of inserting a blank one for each additional data item', () => {
+      mockDocumentService.getTableData.mockReturnValue({
+        tableIndex: 0,
+        numRows: 2,
+        numColumns: 2,
+        data: [
+          ['Header', 'ignored'],
+          ['{{value}}', 'ignored']
+        ]
+      });
+
+      const operation = {
+        type: 'columnLoop',
+        tableIndex: 0,
+        cellIndex: 0,
+        dataArray: [
+          { label: 'A', value: 1 },
+          { label: 'B', value: 2 }
+        ],
+        templateContent: '{{label}}{{/tablecol_loop}}',
+        sourceRuns: [{ text: '{{label}}', start: 0, end: 9, style: { bold: true } }]
+      };
+
+      processor._executeColumnLoopOperation('doc123', operation);
+
+      expect(mockDocumentService.copyTableColumn).toHaveBeenCalledWith('doc123', 0, 0, 1);
+      expect(mockDocumentService.insertTableColumn).not.toHaveBeenCalled();
+    });
+
+    it('preserves column width by copying getColumnWidth onto each newly inserted column', () => {
+      mockDocumentService.getTableData.mockReturnValue({
+        tableIndex: 0,
+        numRows: 1,
+        numColumns: 2,
+        data: [['{{label}}', 'ignored']]
+      });
+
+      const operation = {
+        type: 'columnLoop',
+        tableIndex: 0,
+        cellIndex: 0,
+        dataArray: [{ label: 'A' }, { label: 'B' }],
+        templateContent: '{{label}}{{/tablecol_loop}}',
+        sourceRuns: []
+      };
+
+      processor._executeColumnLoopOperation('doc123', operation);
+
+      expect(mockDocumentService.getColumnWidth).toHaveBeenCalledWith('doc123', 0, 0);
+      expect(mockDocumentService.setColumnWidth).toHaveBeenCalledWith('doc123', 0, 1, 150);
+    });
+
+    it("applies the header segment's source style via setCellRunStyles for row 0", () => {
+      mockDocumentService.getTableData.mockReturnValue({
+        tableIndex: 0,
+        numRows: 1,
+        numColumns: 1,
+        data: [['{{label}}']]
+      });
+
+      const operation = {
+        type: 'columnLoop',
+        tableIndex: 0,
+        cellIndex: 0,
+        dataArray: [{ label: 'A' }],
+        templateContent: '{{label}}{{/tablecol_loop}}',
+        sourceRuns: [{ text: '{{label}}', start: 0, end: 9, style: { bold: true } }]
+      };
+
+      processor._executeColumnLoopOperation('doc123', operation);
+
+      expect(mockDocumentService.setCellRunStyles).toHaveBeenCalledWith(
+        'doc123',
+        0,
+        0,
+        0,
+        expect.arrayContaining([expect.objectContaining({ style: { bold: true } })])
       );
     });
   });
@@ -1156,7 +1280,7 @@ describe('DocumentProcessor - Core Functionality Tests (Reverse-Order Strategy)'
 
       // Column loop should use Standard API methods
       expect(mockDocumentService.getTableData).toHaveBeenCalled();
-      expect(mockDocumentService.updateTableCell).toHaveBeenCalled();
+      expect(mockDocumentService.setCellRunStyles).toHaveBeenCalled();
     });
 
     it('should handle mixed operations (table + text)', () => {
