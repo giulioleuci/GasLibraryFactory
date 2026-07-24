@@ -478,7 +478,9 @@ export class DocumentTableManager {
    * @param {number} sourceColumnIndex Column to copy from.
    * @param {number} targetColumnIndex Column position to insert the copy at.
    * @returns {Object} {success, tableIndex, sourceColumnIndex, insertedColumnIndex, numRows}.
-   * @throws {Error} If tableIndex is out of bounds.
+   * @throws {Error} If tableIndex is out of bounds, the table has no rows, sourceColumnIndex
+   * is out of bounds, or targetColumnIndex is out of bounds (targetColumnIndex may equal the
+   * first row's cell count, to insert the copy as a new last column).
    */
   copyTableColumn(documentId, tableIndex, sourceColumnIndex, targetColumnIndex) {
     try {
@@ -492,6 +494,20 @@ export class DocumentTableManager {
 
       const table = tables[tableIndex];
       const numRows = table.getNumRows();
+      if (numRows === 0) {
+        throw new Error('Table has no rows');
+      }
+
+      const firstRow = table.getRow(0);
+      const numCells = firstRow.getNumCells();
+      if (sourceColumnIndex >= numCells) {
+        throw new Error(`Source column index ${sourceColumnIndex} out of bounds`);
+      }
+      if (targetColumnIndex > numCells) {
+        throw new Error(
+          `Target column index ${targetColumnIndex} out of bounds (max: ${numCells})`
+        );
+      }
 
       for (let rowIndex = 0; rowIndex < numRows; rowIndex++) {
         const row = table.getRow(rowIndex);

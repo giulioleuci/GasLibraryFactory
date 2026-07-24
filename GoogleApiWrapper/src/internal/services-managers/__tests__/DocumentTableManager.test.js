@@ -239,6 +239,7 @@ describe('DocumentTableManager', () => {
       mockCell = { copy: jest.fn(() => mockCopiedCell) };
       mockRow = {
         getCell: jest.fn(() => mockCell),
+        getNumCells: jest.fn(() => 3),
         insertTableCell: jest.fn()
       };
       mockTable2 = {
@@ -253,7 +254,8 @@ describe('DocumentTableManager', () => {
     it("copies each row's source cell and inserts it at the target column", () => {
       const result = manager.copyTableColumn('doc123', 0, 0, 2);
 
-      expect(mockTable2.getRow).toHaveBeenCalledTimes(3);
+      // 1 call for the upfront firstRow bounds check + 3 calls in the copy loop.
+      expect(mockTable2.getRow).toHaveBeenCalledTimes(4);
       expect(mockRow.getCell).toHaveBeenCalledWith(0);
       expect(mockCell.copy).toHaveBeenCalledTimes(3);
       expect(mockRow.insertTableCell).toHaveBeenCalledWith(2, mockCopiedCell);
@@ -271,6 +273,38 @@ describe('DocumentTableManager', () => {
       expect(() => manager.copyTableColumn('doc123', 5, 0, 1)).toThrow(
         'Table index 5 out of bounds'
       );
+    });
+
+    it('throws for an out-of-bounds sourceColumnIndex without touching any row', () => {
+      // mockRow.getNumCells() === 3, so index 3 is already past the last valid cell (0-2).
+      expect(() => manager.copyTableColumn('doc123', 0, 3, 1)).toThrow(
+        'Source column index 3 out of bounds'
+      );
+      expect(mockCell.copy).not.toHaveBeenCalled();
+      expect(mockRow.insertTableCell).not.toHaveBeenCalled();
+    });
+
+    it('throws for an out-of-bounds targetColumnIndex', () => {
+      // numCells === 3, so 4 is out of bounds, but 3 (append-at-end) is allowed.
+      expect(() => manager.copyTableColumn('doc123', 0, 0, 4)).toThrow(
+        'Target column index 4 out of bounds (max: 3)'
+      );
+      expect(mockCell.copy).not.toHaveBeenCalled();
+      expect(mockRow.insertTableCell).not.toHaveBeenCalled();
+    });
+
+    it('allows targetColumnIndex equal to the cell count (append as new last column)', () => {
+      const result = manager.copyTableColumn('doc123', 0, 0, 3);
+
+      expect(mockRow.insertTableCell).toHaveBeenCalledWith(3, mockCopiedCell);
+      expect(result.insertedColumnIndex).toBe(3);
+    });
+
+    it('throws a clean error when the table has no rows', () => {
+      mockTable2.getNumRows = jest.fn(() => 0);
+
+      expect(() => manager.copyTableColumn('doc123', 0, 0, 0)).toThrow('Table has no rows');
+      expect(mockTable2.getRow).not.toHaveBeenCalled();
     });
   });
 
