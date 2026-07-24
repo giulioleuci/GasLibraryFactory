@@ -63,10 +63,11 @@ class _DocumentProcessor {
         methods: [
           '_executeRowLoopOperation',
           '_executeColumnLoopOperation',
+          '_executeListLoopOperation',
+          '_retextParagraph',
           '_convertOperationToRequests',
           '_createTextSubstitutionRequests',
           '_createDeleteRowRequests',
-          '_createListLoopRequests',
           '_executeTableInsertOperation',
           '_flushDocumentChanges'
         ]
@@ -139,8 +140,20 @@ class _DocumentProcessor {
     const remainingTextMatches = structure.textMatches.filter(
       (tm) => tm.type !== 'TABLE_TEXT' || !processedTableIndices.has(tm.tableIndex)
     );
-    batchOps.push(...this._analyzeListLoops(remainingTextMatches, context));
-    batchOps.push(...this._analyzeTextSubstitutions(remainingTextMatches, context));
+    const listLoopOps = this._analyzeListLoops(remainingTextMatches, context);
+    if (listLoopOps.length > 0) {
+      listLoopOps.sort((a, b) => b.index - a.index);
+      for (const op of listLoopOps) {
+        this._executeListLoopOperation(documentId, op);
+      }
+      if (this._flushDocumentChanges(documentId)) {
+        structure = this.documentService.scanDocumentStructure(documentId, ['{{']);
+      }
+    }
+    const finalTextMatches = structure.textMatches.filter(
+      (tm) => tm.type !== 'TABLE_TEXT' || !processedTableIndices.has(tm.tableIndex)
+    );
+    batchOps.push(...this._analyzeTextSubstitutions(finalTextMatches, context));
     batchOps.sort((a, b) => b.index - a.index);
 
     const batchRequests = [];

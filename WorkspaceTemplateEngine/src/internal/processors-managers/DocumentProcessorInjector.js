@@ -3,6 +3,8 @@
  * @description Manager for executing structural modifications and building batch requests.
  */
 
+import { TextStyleMapper } from '@GoogleApiWrapper';
+
 export class DocumentProcessorInjector {
   constructor(facade) {
     this.facade = facade;
@@ -266,7 +268,7 @@ export class DocumentProcessorInjector {
       case 'deleteRow':
         return this.facade._createDeleteRowRequests(op);
       case 'listLoop':
-        return this.facade._createListLoopRequests(op);
+        return []; // Handled via Standard API
       case 'columnLoop':
         return []; // Handled via Standard API
       default:
@@ -355,30 +357,84 @@ export class DocumentProcessorInjector {
     ];
   }
 
-  _createListLoopRequests(op) {
-    const requests = [];
-    requests.push({
-      deleteContentRange: {
-        range: { startIndex: op.index, endIndex: op.index + op.fullMatch.length }
+  /**
+   * @description Executes a bullet_list/number_list expansion natively: locates
+   * the template paragraph via body.findText() (same traversal technique
+   * DocumentTableManager.insertTableAtMarker already uses), copies it once per
+   * data item via native Paragraph.copy() — which preserves the original's
+   * bullet/number-list membership and nesting level with no preset-guessing —
+   * retexts each copy with the rendered item (preserving captured run styles),
+   * then removes the template paragraph. Reverse iteration at the same fixed
+   * insertion position mirrors the row-loop/column-loop "Reverse-Order
+   * Strategy" already established for this pipeline.
+   * @param {string} documentId Target document identifier.
+   * @param {Object} op {paragraphIndex, listType, dataArray, itemTemplate, fullMatch, sourceRuns}.
+   */
+  _executeListLoopOperation(documentId, op) {
+    try {
+      this.facade.logger.info(
+        `Executing list loop: ${op.dataArray.length} items at paragraph ${op.paragraphIndex}`
+      );
+      const doc = this.facade.documentService.openStandard(documentId);
+      const body = doc.getBody();
+
+      const rangeElement = body.findText(op.fullMatch);
+      if (!rangeElement) {
+        this.facade.logger.warn(`Could not find template paragraph for list loop marker`);
+        return;
       }
-    });
-    for (let i = op.dataArray.length - 1; i >= 0; i--) {
-      const item = op.dataArray[i];
-      const itemText = this.facade.mustache.render(op.itemTemplate, item);
-      const isLastItem = i === op.dataArray.length - 1;
-      requests.push({
-        insertText: { location: { index: op.index }, text: isLastItem ? itemText : itemText + '\n' }
-      });
-      if (op.listType === 'bullet') {
-        requests.push({
-          createParagraphBullets: {
-            range: { startIndex: op.index, endIndex: op.index + itemText.length + 1 },
-            bulletPreset: 'BULLET_DISC_CIRCLE_SQUARE'
-          }
-        });
+      let templateParagraph = rangeElement.getElement();
+      while (
+        typeof templateParagraph.getParent === 'function' &&
+        templateParagraph.getParent() !== body
+      ) {
+        templateParagraph = templateParagraph.getParent();
       }
+      const templateChildIndex = body.getChildIndex(templateParagraph);
+      const sourceRuns = op.sourceRuns || [];
+
+      for (let i = op.dataArray.length - 1; i >= 0; i--) {
+        const dataItem = op.dataArray[i];
+        const copiedParagraph = templateParagraph.copy();
+        body.insertParagraph(templateChildIndex + 1, copiedParagraph);
+        const insertedParagraph = body.getChild(templateChildIndex + 1);
+        const segments = this._buildStyledSegments(op.itemTemplate, dataItem, sourceRuns);
+        this._retextParagraph(insertedParagraph, segments);
+      }
+      body.removeChild(templateParagraph);
+      this.facade.logger.debug(`List loop completed: inserted ${op.dataArray.length} items`);
+    } catch (error) {
+      this.facade.logger.error(`Failed to execute list loop: ${error.message}`);
+      throw error;
     }
-    return requests;
+  }
+
+  /**
+   * @description Clears a paragraph's content and appends a sequence of styled
+   * segments, re-applying each segment's captured style natively. Shared retext
+   * primitive for the list-loop path (table cells use
+   * DocumentService.setCellRunStyles instead, since they're a different native
+   * element type).
+   * @param {Paragraph} paragraph Native DocumentApp Paragraph element.
+   * @param {Array<{rendered: string, style: Object}>} segments Ordered text+style segments.
+   * @private
+   */
+  _retextParagraph(paragraph, segments) {
+    paragraph.clear();
+    const textElement = paragraph.editAsText();
+    let offset = 0;
+    for (const segment of segments) {
+      const rendered = segment.rendered || '';
+      if (rendered.length === 0) {
+        continue;
+      }
+      textElement.appendText(rendered);
+      const attrs = TextStyleMapper.toNativeAttributes(segment.style);
+      if (Object.keys(attrs).length > 0) {
+        textElement.setAttributes(offset, offset + rendered.length, attrs);
+      }
+      offset += rendered.length;
+    }
   }
 
   /**

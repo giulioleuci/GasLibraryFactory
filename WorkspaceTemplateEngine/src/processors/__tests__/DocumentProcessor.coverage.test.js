@@ -332,7 +332,7 @@ describe('DocumentProcessor - Coverage Enhancement Tests (Reverse-Order Strategy
       expect(requests).toEqual([]);
     });
 
-    it('should create list loop requests', () => {
+    it('should return empty array for list loop operations (handled separately via native paragraph-copy)', () => {
       const op = {
         type: 'listLoop',
         index: 10,
@@ -342,12 +342,11 @@ describe('DocumentProcessor - Coverage Enhancement Tests (Reverse-Order Strategy
         itemTemplate: '{{name}}'
       };
 
-      mockMustache.render.mockReturnValueOnce('Item 1').mockReturnValueOnce('Item 2');
-
       const requests = processor._convertOperationToRequests(op);
 
-      expect(requests.length).toBeGreaterThan(0);
-      expect(requests[0]).toHaveProperty('deleteContentRange');
+      // List loops are now handled via _executeListLoopOperation() using
+      // native DocumentApp Paragraph.copy(), mirroring row/column loops.
+      expect(requests).toEqual([]);
     });
 
     it('should warn for unknown operation type', () => {

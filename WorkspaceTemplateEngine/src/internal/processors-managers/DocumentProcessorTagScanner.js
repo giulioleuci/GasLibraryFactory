@@ -160,6 +160,25 @@ export class DocumentProcessorTagScanner {
         const listType = command.startsWith('bullet') ? 'bullet' : 'number';
         const dataArray = this.facade.mustache.getValue(dataSource, context);
         if (Array.isArray(dataArray)) {
+          // textMatch.runs is captured relative to the RAW paragraph text
+          // (the whole `{{#bullet_list:...}}...{{/bullet_list}}` block,
+          // including the marker/closer), but only the item template's own
+          // sub-range is ever rendered per data item — rebase the runs onto
+          // itemTemplate's own offsets (not the whole fullMatch, not the
+          // whole paragraph) before storing, so downstream consumers
+          // (_buildStyledSegments/_styleAt in DocumentProcessorInjector)
+          // compare like-for-like.
+          const itemTemplateOffsetInMatch = fullMatch.indexOf(itemTemplate.trim());
+          const itemTemplateStart = match.index + itemTemplateOffsetInMatch;
+          const itemTemplateEnd = itemTemplateStart + itemTemplate.trim().length;
+          const sourceRuns = (textMatch.runs || [])
+            .filter((r) => r.end > itemTemplateStart && r.start < itemTemplateEnd)
+            .map((r) => ({
+              text: r.text,
+              start: Math.max(r.start, itemTemplateStart) - itemTemplateStart,
+              end: Math.min(r.end, itemTemplateEnd) - itemTemplateStart,
+              style: r.style
+            }));
           operations.push({
             type: 'listLoop',
             index: textMatch.elementIndex,
@@ -167,7 +186,8 @@ export class DocumentProcessorTagScanner {
             listType: listType,
             dataArray: dataArray,
             itemTemplate: itemTemplate.trim(),
-            fullMatch: fullMatch
+            fullMatch: fullMatch,
+            sourceRuns: sourceRuns
           });
         }
       }

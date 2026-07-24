@@ -93,6 +93,7 @@ describe('DocumentProcessor - Core Functionality Tests (Reverse-Order Strategy)'
 
     // Mock DocumentService
     mockDocumentService = {
+      openStandard: jest.fn(),
       scanDocumentStructure: jest.fn(() => ({
         tables: [],
         textMatches: []
@@ -607,7 +608,12 @@ describe('DocumentProcessor - Core Functionality Tests (Reverse-Order Strategy)'
     });
 
     it('preserves existing behavior when the op carries no segments (backward compatibility)', () => {
-      const op = { type: 'textSubstitution', index: 100, originalText: 'Hi {{name}}', newText: 'Hi Bob' };
+      const op = {
+        type: 'textSubstitution',
+        index: 100,
+        originalText: 'Hi {{name}}',
+        newText: 'Hi Bob'
+      };
       const requests = processor._createTextSubstitutionRequests(op);
       expect(requests).toEqual([
         { deleteContentRange: { range: { startIndex: 100, endIndex: 111 } } },
@@ -1551,6 +1557,117 @@ describe('DocumentProcessor - Core Functionality Tests (Reverse-Order Strategy)'
         0,
         expect.arrayContaining([expect.objectContaining({ style: { bold: true } })])
       );
+    });
+  });
+
+  // ===================================================================
+  // _executeListLoopOperation() Tests (Native paragraph-copy)
+  // ===================================================================
+  describe('_executeListLoopOperation()', () => {
+    let mockTemplateParagraph,
+      mockCopiedParagraph,
+      mockInsertedParagraph,
+      mockTextElement,
+      mockBody,
+      mockDoc;
+
+    beforeEach(() => {
+      mockTextElement = { appendText: jest.fn(), setAttributes: jest.fn() };
+      mockInsertedParagraph = { editAsText: jest.fn(() => mockTextElement), clear: jest.fn() };
+      mockCopiedParagraph = { __copy: true };
+      mockTemplateParagraph = {
+        copy: jest.fn(() => mockCopiedParagraph),
+        getParent: jest.fn(() => mockBody)
+      };
+      mockBody = {
+        findText: jest.fn(() => ({ getElement: () => mockTemplateParagraph })),
+        getChildIndex: jest.fn(() => 3),
+        insertParagraph: jest.fn(() => mockInsertedParagraph),
+        getChild: jest.fn(() => mockInsertedParagraph),
+        removeChild: jest.fn()
+      };
+      mockDoc = { getBody: jest.fn(() => mockBody) };
+      mockDocumentService.openStandard.mockReturnValue(mockDoc);
+      // TextStyleMapper.toNativeAttributes() reads DocumentApp.Attribute.* natively;
+      // the shared test/setup.js DocumentApp mock doesn't define Attribute (only
+      // ElementType/GlyphType), so provide it locally — same precedent as
+      // GoogleApiWrapper/.../DocumentTableManager.test.js's copyTableColumn() suite.
+      global.DocumentApp = { Attribute: { BOLD: 'BOLD' } };
+    });
+
+    it('locates the template paragraph via findText and removes it after expansion', () => {
+      const op = {
+        type: 'listLoop',
+        paragraphIndex: 42,
+        listType: 'bullet',
+        dataArray: [{ nome: 'Alice' }],
+        itemTemplate: '{{nome}}',
+        fullMatch: '{{#bullet_list:items}}{{nome}}{{/bullet_list}}',
+        sourceRuns: []
+      };
+
+      processor._executeListLoopOperation('doc123', op);
+
+      expect(mockBody.findText).toHaveBeenCalledWith(op.fullMatch);
+      expect(mockTemplateParagraph.copy).toHaveBeenCalledTimes(1);
+      expect(mockBody.insertParagraph).toHaveBeenCalledWith(4, mockCopiedParagraph);
+      expect(mockBody.removeChild).toHaveBeenCalledWith(mockTemplateParagraph);
+    });
+
+    it('inserts one copied paragraph per data item, in reverse order at the same fixed position', () => {
+      const op = {
+        type: 'listLoop',
+        paragraphIndex: 42,
+        listType: 'number',
+        dataArray: [{ nome: 'Alice' }, { nome: 'Bob' }],
+        itemTemplate: '{{nome}}',
+        fullMatch: '{{#number_list:items}}{{nome}}{{/number_list}}',
+        sourceRuns: []
+      };
+
+      processor._executeListLoopOperation('doc123', op);
+
+      expect(mockTemplateParagraph.copy).toHaveBeenCalledTimes(2);
+      expect(mockBody.insertParagraph).toHaveBeenNthCalledWith(1, 4, mockCopiedParagraph);
+      expect(mockBody.insertParagraph).toHaveBeenNthCalledWith(2, 4, mockCopiedParagraph);
+    });
+
+    it('retexts each inserted paragraph with the rendered item and applies source run styles', () => {
+      const op = {
+        type: 'listLoop',
+        paragraphIndex: 42,
+        listType: 'bullet',
+        dataArray: [{ nome: 'Alice' }],
+        itemTemplate: '{{nome}}',
+        fullMatch: '{{#bullet_list:items}}{{nome}}{{/bullet_list}}',
+        sourceRuns: [{ text: '{{nome}}', start: 0, end: 8, style: { bold: true } }]
+      };
+      mockMustache.render.mockImplementation((tpl, data) => tpl.replace('{{nome}}', data.nome));
+
+      processor._executeListLoopOperation('doc123', op);
+
+      expect(mockInsertedParagraph.clear).toHaveBeenCalled();
+      expect(mockTextElement.appendText).toHaveBeenCalledWith('Alice');
+    });
+
+    it('warns and returns without mutating when the template paragraph cannot be found', () => {
+      mockBody.findText.mockReturnValue(null);
+      const op = {
+        type: 'listLoop',
+        paragraphIndex: 42,
+        listType: 'bullet',
+        dataArray: [{ nome: 'Alice' }],
+        itemTemplate: '{{nome}}',
+        fullMatch: '{{#bullet_list:items}}{{nome}}{{/bullet_list}}',
+        sourceRuns: []
+      };
+
+      processor._executeListLoopOperation('doc123', op);
+
+      expect(mockLogger.warn).toHaveBeenCalledWith(
+        expect.stringContaining('Could not find template paragraph')
+      );
+      expect(mockBody.removeChild).not.toHaveBeenCalled();
     });
   });
 
