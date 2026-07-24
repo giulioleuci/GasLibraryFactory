@@ -214,6 +214,9 @@ export { MenuBuilder } from './src/builders/MenuBuilder';
 export { SidebarBuilder } from './src/builders/SidebarBuilder';
 export { DialogBuilder } from './src/builders/DialogBuilder';
 
+// Services-managers utilities
+export { TextStyleMapper } from './src/internal/services-managers/TextStyleMapper';
+
 // Core base classes
 export { GoogleService } from './src/internal/core/GoogleService';
 
