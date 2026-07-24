@@ -132,10 +132,21 @@ class _DocumentProcessor {
       (tm) => tm.type !== 'TABLE_TEXT' || !processedTableIndices.has(tm.tableIndex)
     );
     const listLoopOps = this._analyzeListLoops(remainingTextMatches, context);
+    // Paragraphs a list loop already natively rendered (Paragraph.copy() per
+    // data item + removeChild of the template paragraph). Mirrors
+    // `processedTableIndices` above for the same reason: the post-flush
+    // rescan reads back through the Advanced Docs API, which is not
+    // guaranteed to observe the native DocumentApp mutations that just ran —
+    // if it doesn't, a stale/leftover read at this same elementIndex would
+    // otherwise be treated as an ordinary unresolved placeholder by the
+    // generic substitution pass below and corrupted. Excluded from the final
+    // text-substitution pass the same way already-rendered table indices are.
+    const renderedElementIndices = new Set();
     if (listLoopOps.length > 0) {
       listLoopOps.sort((a, b) => b.index - a.index);
       for (const op of listLoopOps) {
         this._executeListLoopOperation(documentId, op);
+        renderedElementIndices.add(op.paragraphIndex);
       }
       if (this._flushDocumentChanges(documentId)) {
         structure = this.documentService.scanDocumentStructure(documentId, ['{{']);
@@ -165,7 +176,9 @@ class _DocumentProcessor {
       }
     }
     const finalTextMatches = structure.textMatches.filter(
-      (tm) => tm.type !== 'TABLE_TEXT' || !processedTableIndices.has(tm.tableIndex)
+      (tm) =>
+        (tm.type !== 'TABLE_TEXT' || !processedTableIndices.has(tm.tableIndex)) &&
+        !renderedElementIndices.has(tm.elementIndex)
     );
     batchOps.push(...this._analyzeTextSubstitutions(finalTextMatches, context));
     batchOps.sort((a, b) => b.index - a.index);

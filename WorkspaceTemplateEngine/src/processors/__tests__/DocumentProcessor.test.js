@@ -1945,4 +1945,94 @@ describe('DocumentProcessor - Core Functionality Tests (Reverse-Order Strategy)'
       expect(deleteRowRequest.deleteTableRow.tableCellLocation.tableStartLocation.index).toBe(150);
     });
   });
+
+  describe('process() — stale-rescan exclusion generalized to list loops', () => {
+    it('excludes an already-rendered list-loop paragraph from the final text-substitution pass', () => {
+      // First scan: one list-loop paragraph present.
+      mockDocumentService.scanDocumentStructure
+        .mockReturnValueOnce({
+          tables: [],
+          textMatches: [
+            {
+              elementIndex: 50,
+              type: 'TEXT',
+              text: '{{#bullet_list:items}}{{nome}}{{/bullet_list}}',
+              runs: []
+            }
+          ]
+        })
+        // Rescan after the list loop's native mutation: simulate a STALE read
+        // at the SAME elementIndex the list loop just natively rendered. Note
+        // this is deliberately NOT the original `{{#bullet_list:...}}` marker
+        // text: _analyzeTextSubstitutions already refuses to touch text
+        // containing that marker unconditionally (see its own
+        // `{{#bullet_list:`/`{{#number_list:` guard), so reusing the literal
+        // marker text here would pass even without the elementIndex-based
+        // exclusion this test targets, defeating the point of the test. This
+        // instead models the case the exclusion is actually for: a stale
+        // read exposing unresolved leftover mustache content (e.g. an
+        // inner-item-template fragment) at the just-rendered paragraph's
+        // index.
+        .mockReturnValueOnce({
+          tables: [],
+          textMatches: [
+            {
+              elementIndex: 50,
+              type: 'TEXT',
+              text: '{{nome}}',
+              runs: []
+            }
+          ]
+        });
+
+      // Real Mustache resolves an unknown path to '' (not the literal
+      // template text) — reproduce that so a leaked stale match against the
+      // root context (which has no top-level `nome`) actually triggers the
+      // blanking/corruption bug this test guards against, instead of being a
+      // no-op because the default mock leaves unresolved placeholders as-is.
+      mockMustache.render.mockImplementation((template, data) =>
+        template.replace(/{{(\w+)}}/g, (match, key) =>
+          data && Object.prototype.hasOwnProperty.call(data, key) ? data[key] : ''
+        )
+      );
+
+      // Mirrors the working native-mock shape from the "Finding 1" test above
+      // (a naive `getParent: () => null` mock crashes the template-paragraph
+      // walk-up loop in _executeListLoopOperation with an unrelated
+      // TypeError, rather than exercising the rescan-exclusion behavior this
+      // test targets).
+      const mockTextElement = { appendText: jest.fn(), setAttributes: jest.fn() };
+      const mockInsertedParagraph = {
+        editAsText: jest.fn(() => mockTextElement),
+        clear: jest.fn()
+      };
+      const mockCopiedParagraph = { __copy: true };
+      const mockTemplateParagraph = {
+        copy: jest.fn(() => mockCopiedParagraph),
+        getParent: jest.fn(() => mockBody)
+      };
+      const mockBody = {
+        findText: jest.fn(() => ({ getElement: () => mockTemplateParagraph })),
+        getChildIndex: jest.fn(() => 3),
+        insertParagraph: jest.fn(() => mockInsertedParagraph),
+        getChild: jest.fn(() => mockInsertedParagraph),
+        removeChild: jest.fn()
+      };
+      const mockDoc = { getBody: jest.fn(() => mockBody), saveAndClose: jest.fn() };
+      mockDocumentService.openStandard.mockReturnValue(mockDoc);
+      global.DocumentApp = { Attribute: { BOLD: 'BOLD' } };
+
+      processor.process('doc123', { items: [{ nome: 'Alice' }] });
+
+      // The stale-rescan text match at elementIndex 50 must NOT be picked up by
+      // _analyzeTextSubstitutions/batchUpdate — if it were, the already-rendered
+      // list content would be corrupted the same way §9.2 of GLF_FORMATTING.md
+      // describes for tables.
+      const batchUpdateCalls = mockDocumentService._executeBatchUpdate.mock.calls;
+      const deletedListMarkerRange = batchUpdateCalls.some(([, requests]) =>
+        requests.some((r) => r.deleteContentRange && r.deleteContentRange.range.startIndex === 50)
+      );
+      expect(deletedListMarkerRange).toBe(false);
+    });
+  });
 });
