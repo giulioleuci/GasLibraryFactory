@@ -1989,10 +1989,13 @@ describe('DocumentProcessor - Core Functionality Tests (Reverse-Order Strategy)'
         .mockReturnValueOnce(initialStructure)
         .mockReturnValueOnce(postMutationStructure);
 
-      // tablerow_loop:notAnArray resolves to a non-array -> deleteRow op.
-      mockMustache._lookupValue.mockReturnValue('not an array');
-      // bullet_list:items resolves to an array -> listLoop executes natively.
-      mockMustache.getValue.mockReturnValue([{ nome: 'Alice' }]);
+      // tablerow_loop:notAnArray resolves to a non-array -> deleteRow op,
+      // while bullet_list:items resolves to an array -> native list mutation
+      // and the post-flush structure rescan. List source lookup uses the same
+      // `_lookupValue` path as table row loops.
+      mockMustache._lookupValue.mockImplementation((token) =>
+        token[1] === 'items' ? [{ nome: 'Alice' }] : 'not an array'
+      );
 
       const mockTextElement = { appendText: jest.fn(), setAttributes: jest.fn() };
       const mockInsertedParagraph = {
