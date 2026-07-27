@@ -282,6 +282,23 @@ describe('DocumentService - Comprehensive Test Suite', () => {
       expect(builder.operations[0].text).toBe('First paragraph');
     });
 
+    it.each(['bullet', 'number'])('queues a native %s list item', (listType) => {
+      const result = builder.appendListItem('Marker', { listType });
+
+      expect(result).toBe(builder);
+      expect(builder.operations[0]).toEqual({
+        type: 'appendListItem',
+        text: 'Marker',
+        options: { listType }
+      });
+    });
+
+    it('rejects an unsupported list type before execution', () => {
+      expect(() => builder.appendListItem('Marker', { listType: 'roman-only' })).toThrow(
+        /Unsupported list type/
+      );
+    });
+
     it('should accumulate setText operation', () => {
       builder.setText('New content');
 
@@ -405,6 +422,27 @@ describe('DocumentService - Comprehensive Test Suite', () => {
       // index would make batchUpdate apply them in reverse call order.
       expect(inserts[1].location.index).toBe(inserts[0].location.index + inserts[0].text.length);
       expect(inserts[2].location.index).toBe(inserts[1].location.index + inserts[1].text.length);
+    });
+
+    it.each([
+      ['bullet', 'BULLET_DISC_CIRCLE_SQUARE'],
+      ['number', 'NUMBERED_DECIMAL_ALPHA_ROMAN']
+    ])('emits a native %s paragraph-bullets request', (listType, bulletPreset) => {
+      builder.appendListItem('Marker', { listType }).execute();
+
+      const requests = service._executeBatchUpdate.mock.calls[0][1];
+      const insert = requests.find((request) => request.insertText).insertText;
+      const bullets = requests.find(
+        (request) => request.createParagraphBullets
+      ).createParagraphBullets;
+      expect(insert.text).toBe('Marker\n');
+      expect(bullets).toEqual({
+        range: {
+          startIndex: insert.location.index,
+          endIndex: insert.location.index + insert.text.length
+        },
+        bulletPreset
+      });
     });
   });
 

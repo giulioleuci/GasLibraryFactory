@@ -30,6 +30,25 @@ export class DocumentBuilder {
   }
 
   /**
+   * @description Queues a native Google Docs list item append operation.
+   * @param {string} text List item content.
+   * @param {Object} [options={}] List metadata; `listType` is `bullet` or `number`.
+   * @returns {DocumentBuilder} Current instance for chaining.
+   */
+  appendListItem(text, options = {}) {
+    const listType = options.listType || 'bullet';
+    if (listType !== 'bullet' && listType !== 'number') {
+      throw new Error(`Unsupported list type: ${listType}`);
+    }
+    this.operations.push({
+      type: 'appendListItem',
+      text,
+      options: { ...options, listType }
+    });
+    return this;
+  }
+
+  /**
    * @description Queues a full body content override operation.
    * @param {string} text Document text content.
    * @returns {DocumentBuilder} Current instance for chaining.
@@ -109,8 +128,10 @@ export class DocumentBuilder {
       // body end and advances by each inserted run's length, so queued
       // `appendParagraph` calls land in call order regardless of how many share
       // one batch. Only fetched when actually needed.
-      const hasAppendParagraph = this.operations.some((op) => op.type === 'appendParagraph');
-      const cursor = hasAppendParagraph ? { index: this._getBodyEndIndex() } : null;
+      const hasAppendContent = this.operations.some(
+        (op) => op.type === 'appendParagraph' || op.type === 'appendListItem'
+      );
+      const cursor = hasAppendContent ? { index: this._getBodyEndIndex() } : null;
 
       for (const op of this.operations) {
         if (op.type === 'exportPDF') {
@@ -192,6 +213,8 @@ export class DocumentBuilder {
     switch (op.type) {
       case 'appendParagraph':
         return this._createAppendParagraphRequests(op, cursor);
+      case 'appendListItem':
+        return this._createAppendListItemRequests(op, cursor);
       case 'setText':
         return this._createSetTextRequests(op);
       case 'createTable':
@@ -256,6 +279,23 @@ export class DocumentBuilder {
       });
     }
 
+    return requests;
+  }
+
+  _createAppendListItemRequests(op, cursor) {
+    const startIndex = cursor.index;
+    const requests = this._createAppendParagraphRequests(op, cursor);
+    const bulletPreset =
+      op.options.listType === 'number'
+        ? 'NUMBERED_DECIMAL_ALPHA_ROMAN'
+        : 'BULLET_DISC_CIRCLE_SQUARE';
+
+    requests.push({
+      createParagraphBullets: {
+        range: { startIndex, endIndex: cursor.index },
+        bulletPreset
+      }
+    });
     return requests;
   }
 

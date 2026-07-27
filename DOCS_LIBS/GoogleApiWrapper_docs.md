@@ -24,6 +24,16 @@ L'uso standard delle classi `App` (es. `DriveApp`) è lento perché ogni operazi
 - Condivisione silenziosa di file (senza email di notifica) tramite `PermissionService`.
 - Inserimento di tabelle dati in un Google Doc tramite `DocumentService`:
   - `document(documentId).createTable(data, options).execute()` — builder fluente, accoda la tabella in fondo al corpo del documento (via `DocumentApp` standard API); `options` supporta `headerRow`, `alternatingRows`, `columnWidths`.
+  - `appendListItem(text, { listType })` — accoda un elemento di lista nativo di Google Docs nello stesso batch del builder. `listType` accetta `bullet` (predefinito) o `number`:
+
+    ```js
+    builder
+      .appendListItem('First bullet', { listType: 'bullet' })
+      .appendListItem('First numbered item', { listType: 'number' })
+      .execute();
+    ```
+
+    Il builder inserisce il testo come paragrafo e applica poi `createParagraphBullets` via Advanced Docs API: `bullet` usa `BULLET_DISC_CIRCLE_SQUARE`, mentre `number` usa `NUMBERED_DECIMAL_ALPHA_ROMAN`. Questo conserva la semantica di lista nativa del documento, anziché inserire manualmente prefissi testuali.
   - `insertTableAtMarker(documentId, markerText, data, options)` — inserisce la tabella subito dopo il paragrafo che contiene il testo letterale `markerText` (cercato con `body.findText`), invece che in fondo al documento; lancia un errore se il marker non viene trovato, e NON rimuove il testo del marker (va rimosso separatamente, es. con `replaceText`).
   - `scanDocumentStructure(documentId, textPatterns = ['{{'])` — scansiona la struttura del documento (via Advanced Docs API) e restituisce `{ tables, textMatches }`, utile per localizzare placeholder tipo `{{TABELLA:...}}` prima di un `insertTableAtMarker`.
   - Esempio d'uso reale (SGSA/ALDO, `DocumentTableFacade`): scan dei marker `{{TABELLA:<sheetFileId>}}` con `scanDocumentStructure`, poi `insertTableAtMarker` per posizionare la tabella e `document(fileId).replaceText(marker, '').execute()` per ripulire il marker.
