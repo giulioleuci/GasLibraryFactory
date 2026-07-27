@@ -26,13 +26,14 @@ Andare oltre il semplice "Replace Text". Questa libreria gestisce strutture dina
 ## 📋 Liste dinamiche (Google Docs)
 
 Le liste dinamiche usano i marker `bullet_list` e `number_list`. La loro sorgente
-accetta la stessa pipeline di filtri registrati delle espansioni tabella: il
-percorso viene risolto nel context, quindi i filtri vengono applicati prima del
-rendering di ogni elemento.
+può usare i filtri array supportati `sortBy`, `reverse`, `limit` e `filter`: il
+percorso viene risolto nel context, quindi il filtro viene applicato prima del
+rendering di ogni elemento. `filter` richiede il nome della proprietà e il valore
+atteso.
 
 ```
 {{#bullet_list:people | sortBy:'name'}}{{name}}{{/bullet_list}}
-{{#number_list:people | where:'active'}}{{name}}{{/number_list}}
+{{#number_list:people | filter:'active',true}}{{name}}{{/number_list}}
 ```
 
 Le liste rispettano inoltre lo stesso limite massimo di iterazioni delle table

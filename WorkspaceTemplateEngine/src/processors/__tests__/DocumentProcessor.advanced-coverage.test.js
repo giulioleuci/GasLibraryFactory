@@ -280,7 +280,7 @@ describe('DocumentProcessor - Advanced Coverage Tests (Reverse-Order Strategy)',
   describe('Filtered List Loops', () => {
     it.each([
       ['bullet', "{{#bullet_list:items | sortBy:'name'}}{{name}}{{/bullet_list}}"],
-      ['number', "{{#number_list:items | where:'active'}}{{name}}{{/number_list}}"]
+      ['number', "{{#number_list:items | filter:'active',true}}{{name}}{{/number_list}}"]
     ])('applies source filters to a %s list loop', (listType, template) => {
       const source = [
         { name: 'Beta', active: false },
@@ -292,7 +292,7 @@ describe('DocumentProcessor - Advanced Coverage Tests (Reverse-Order Strategy)',
         filters:
           listType === 'bullet'
             ? [{ name: 'sortBy', args: ['name'] }]
-            : [{ name: 'where', args: ['active'] }]
+            : [{ name: 'filter', args: ['active', true] }]
       }));
       processor._applyFilters = jest.fn((_items, filters) =>
         filters[0].name === 'sortBy' ? [source[1], source[0]] : [source[1]]
@@ -311,6 +311,26 @@ describe('DocumentProcessor - Advanced Coverage Tests (Reverse-Order Strategy)',
       expect(operations[0].dataArray).toEqual(
         listType === 'bullet' ? [source[1], source[0]] : [source[1]]
       );
+    });
+
+    it('filters a list source to active items through the expression pipeline', () => {
+      const source = [
+        { name: 'Beta', active: false },
+        { name: 'Alpha', active: true }
+      ];
+
+      const operations = processor._analyzeListLoops(
+        [
+          {
+            elementIndex: 10,
+            text: "{{#number_list:items | filter:'active',true}}{{name}}{{/number_list}}",
+            runs: []
+          }
+        ],
+        { items: source }
+      );
+
+      expect(operations[0].dataArray).toEqual([{ name: 'Alpha', active: true }]);
     });
 
     it('rejects a filtered list expansion above MAX_ITERATIONS', () => {
