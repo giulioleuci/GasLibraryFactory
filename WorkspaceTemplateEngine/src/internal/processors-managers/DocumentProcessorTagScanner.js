@@ -158,8 +158,20 @@ export class DocumentProcessorTagScanner {
       if (match) {
         const [fullMatch, command, dataSource, itemTemplate] = match;
         const listType = command.startsWith('bullet') ? 'bullet' : 'number';
-        const dataArray = this.facade.mustache.getValue(dataSource, context);
+        const fullExpression = dataSource.trim();
+        const { path, filters } = this.facade._parseExpression(fullExpression);
+        const dummyToken = ['name', path];
+        let dataArray = this.facade.mustache._lookupValue(
+          dummyToken,
+          new _MustacheContext(context)
+        );
         if (Array.isArray(dataArray)) {
+          dataArray = this.facade._applyFilters(dataArray, filters);
+          if (dataArray.length > this.facade.MAX_ITERATIONS) {
+            throw new Error(
+              `List expansion count (${dataArray.length}) exceeds maximum allowed (${this.facade.MAX_ITERATIONS})`
+            );
+          }
           // textMatch.runs is captured relative to the RAW paragraph text
           // (the whole `{{#bullet_list:...}}...{{/bullet_list}}` block,
           // including the marker/closer), but only the item template's own

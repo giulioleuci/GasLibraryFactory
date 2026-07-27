@@ -23,6 +23,22 @@ Andare oltre il semplice "Replace Text". Questa libreria gestisce strutture dina
 - Creazione di report finanziari (Google Sheets) con griglie di dati espanse dinamicamente.
 - Personalizzazione di email HTML con logica condizionale (sezioni visibili solo per certi utenti).
 
+## 📋 Liste dinamiche (Google Docs)
+
+Le liste dinamiche usano i marker `bullet_list` e `number_list`. La loro sorgente
+accetta la stessa pipeline di filtri registrati delle espansioni tabella: il
+percorso viene risolto nel context, quindi i filtri vengono applicati prima del
+rendering di ogni elemento.
+
+```
+{{#bullet_list:people | sortBy:'name'}}{{name}}{{/bullet_list}}
+{{#number_list:people | where:'active'}}{{name}}{{/number_list}}
+```
+
+Le liste rispettano inoltre lo stesso limite massimo di iterazioni delle table
+loops; un risultato filtrato che supera il limite interrompe l'espansione con un
+errore esplicito.
+
 ## 📐 Placeholder `{{dynamic_columns[...]}}` (Google Sheets)
 
 Espande orizzontalmente, a partire dalla cella del placeholder, una o più colonne

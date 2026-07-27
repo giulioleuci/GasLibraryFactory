@@ -275,6 +275,67 @@ describe('DocumentProcessor - Advanced Coverage Tests (Reverse-Order Strategy)',
   });
 
   // ===================================================================
+  // Filtered List Loop Tests
+  // ===================================================================
+  describe('Filtered List Loops', () => {
+    it.each([
+      ['bullet', "{{#bullet_list:items | sortBy:'name'}}{{name}}{{/bullet_list}}"],
+      ['number', "{{#number_list:items | where:'active'}}{{name}}{{/number_list}}"]
+    ])('applies source filters to a %s list loop', (listType, template) => {
+      const source = [
+        { name: 'Beta', active: false },
+        { name: 'Alpha', active: true }
+      ];
+      mockMustache._lookupValue.mockReturnValue(source);
+      processor._parseExpression = jest.fn(() => ({
+        path: 'items',
+        filters:
+          listType === 'bullet'
+            ? [{ name: 'sortBy', args: ['name'] }]
+            : [{ name: 'where', args: ['active'] }]
+      }));
+      processor._applyFilters = jest.fn((_items, filters) =>
+        filters[0].name === 'sortBy' ? [source[1], source[0]] : [source[1]]
+      );
+
+      const operations = processor._analyzeListLoops(
+        [{ elementIndex: 10, text: template, runs: [] }],
+        { items: source }
+      );
+
+      expect(mockMustache._lookupValue).toHaveBeenCalledWith(
+        ['name', 'items'],
+        expect.anything()
+      );
+      expect(processor._applyFilters).toHaveBeenCalled();
+      expect(operations[0].dataArray).toEqual(
+        listType === 'bullet' ? [source[1], source[0]] : [source[1]]
+      );
+    });
+
+    it('rejects a filtered list expansion above MAX_ITERATIONS', () => {
+      mockMustache._lookupValue.mockReturnValue([{ name: 'x' }]);
+      processor._parseExpression = jest.fn(() => ({ path: 'items', filters: [] }));
+      processor._applyFilters = jest.fn(() =>
+        Array.from({ length: processor.MAX_ITERATIONS + 1 }, () => ({ name: 'x' }))
+      );
+
+      expect(() =>
+        processor._analyzeListLoops(
+          [
+            {
+              elementIndex: 10,
+              text: '{{#bullet_list:items}}{{name}}{{/bullet_list}}',
+              runs: []
+            }
+          ],
+          { items: [{ name: 'x' }] }
+        )
+      ).toThrow(/exceeds maximum allowed/);
+    });
+  });
+
+  // ===================================================================
   // _sortByProperty Advanced Tests
   // ===================================================================
   describe('_sortByProperty Advanced Tests', () => {
