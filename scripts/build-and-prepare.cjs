@@ -265,6 +265,21 @@ let warningCount = 0;
   }
 }
 
+// Comment stripping can leave indentation on otherwise blank lines. Keep the
+// generated artifact free of whitespace-only lines so a vendored refresh is
+// clean under `git diff --check`, without touching whitespace that is part of
+// an emitted code line.
+{
+  const whitespaceOnlyLines = code.match(/^[ \t]+(?=\r?$)/gm);
+  if (whitespaceOnlyLines) {
+    code = code.replace(/^[ \t]+(?=\r?$)/gm, '');
+    patchCount += whitespaceOnlyLines.length;
+    ok(`Removed ${whitespaceOnlyLines.length} whitespace-only line indentation`);
+  } else {
+    ok('No whitespace-only line indentation found');
+  }
+}
+
 const scanPatterns = [
   {
     label: 'crypto.getRandomValues()',
