@@ -180,7 +180,7 @@ describe('effective-assignment value model', () => {
     ).toThrow(InconsistentAssignmentOverrideError);
   });
 
-  test('metadata preserves defensively immutable Date values', () => {
+  test('metadata normalizes Date values to immutable ISO timestamps', () => {
     const candidateDate = new Date('2026-01-10T00:00:00.000Z');
     const overrideDate = new Date('2026-01-11T00:00:00.000Z');
     const traceDate = new Date('2026-01-12T00:00:00.000Z');
@@ -221,11 +221,14 @@ describe('effective-assignment value model', () => {
     resultDate.setUTCFullYear(2027);
 
     [candidate.metadata, override.metadata, trace.entries[0].metadata, result.metadata].forEach(
-      (metadata) => expect(metadata.observedAt).toBeInstanceOf(Date)
+      (metadata) => {
+        expect(typeof metadata.observedAt).toBe('string');
+        expect(() => Date.prototype.setTime.call(metadata.observedAt, 0)).toThrow(TypeError);
+      }
     );
-    expect(candidate.metadata.observedAt.toISOString()).toBe('2026-01-10T00:00:00.000Z');
-    expect(override.metadata.observedAt.toISOString()).toBe('2026-01-11T00:00:00.000Z');
-    expect(trace.entries[0].metadata.observedAt.toISOString()).toBe('2026-01-12T00:00:00.000Z');
-    expect(result.metadata.observedAt.toISOString()).toBe('2026-01-13T00:00:00.000Z');
+    expect(candidate.metadata.observedAt).toBe('2026-01-10T00:00:00.000Z');
+    expect(override.metadata.observedAt).toBe('2026-01-11T00:00:00.000Z');
+    expect(trace.entries[0].metadata.observedAt).toBe('2026-01-12T00:00:00.000Z');
+    expect(result.metadata.observedAt).toBe('2026-01-13T00:00:00.000Z');
   });
 });
