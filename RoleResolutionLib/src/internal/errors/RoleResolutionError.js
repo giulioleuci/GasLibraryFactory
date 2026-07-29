@@ -173,3 +173,60 @@ export class RoleValidationError extends RoleResolutionError {
     this.validationErrors = errors;
   }
 }
+
+/** @class MalformedAssignmentSlotError @extends RoleResolutionError */
+export class MalformedAssignmentSlotError extends RoleResolutionError {
+  constructor(message, context = {}) {
+    super(message, context);
+    this.name = 'MalformedAssignmentSlotError';
+  }
+}
+
+/** @class DuplicateAssignmentSlotError @extends RoleResolutionError */
+export class DuplicateAssignmentSlotError extends RoleResolutionError {
+  constructor(slotKey, context = {}) {
+    super(`Duplicate assignment slot: ${slotKey}`, { ...context, slotKey });
+    this.name = 'DuplicateAssignmentSlotError';
+    this.slotKey = slotKey;
+  }
+}
+
+/** @class InconsistentAssignmentOverrideError @extends RoleResolutionError */
+export class InconsistentAssignmentOverrideError extends RoleResolutionError {
+  constructor(message, context = {}) {
+    super(message, context);
+    this.name = 'InconsistentAssignmentOverrideError';
+  }
+}
+
+/** @class AmbiguousAssignmentOverrideError @extends RoleResolutionError */
+export class AmbiguousAssignmentOverrideError extends RoleResolutionError {
+  constructor(candidateId, overrideIds = [], context = {}) {
+    super(`Ambiguous assignment overrides for candidate: ${candidateId}`, {
+      ...context,
+      candidateId,
+      overrideIds: [...overrideIds]
+    });
+    this.name = 'AmbiguousAssignmentOverrideError';
+    this.candidateId = candidateId;
+    this.overrideIds = Object.freeze([...overrideIds]);
+  }
+}
+
+/** @class AssignmentActorNotFoundError @extends RoleResolutionError */
+export class AssignmentActorNotFoundError extends RoleResolutionError {
+  constructor(actorId, context = {}) {
+    super(`Assignment actor not found: ${actorId}`, { ...context, actorId });
+    this.name = 'AssignmentActorNotFoundError';
+    this.actorId = actorId;
+  }
+}
+
+/** @class OverlappingDelegationError @extends RoleResolutionError */
+export class OverlappingDelegationError extends RoleResolutionError {
+  constructor(actorId, context = {}) {
+    super(`Overlapping delegation for actor: ${actorId}`, { ...context, actorId });
+    this.name = 'OverlappingDelegationError';
+    this.actorId = actorId;
+  }
+}

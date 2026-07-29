@@ -7,7 +7,13 @@ import {
   CircularDelegationError,
   InvalidScopeError,
   DelegationDepthExceededError,
-  RoleValidationError
+  RoleValidationError,
+  MalformedAssignmentSlotError,
+  DuplicateAssignmentSlotError,
+  InconsistentAssignmentOverrideError,
+  AmbiguousAssignmentOverrideError,
+  AssignmentActorNotFoundError,
+  OverlappingDelegationError
 } from '../../../internal/errors/RoleResolutionError.js';
 
 describe('RoleResolutionError classes', () => {
@@ -174,6 +180,26 @@ describe('RoleResolutionError classes', () => {
       expect(error.message).toBe('Validation failed');
       expect(error.validationErrors).toEqual([]);
       expect(error.context).toEqual({ validationErrors: [] });
+    });
+  });
+
+  describe('effective-assignment errors', () => {
+    it.each([
+      [new MalformedAssignmentSlotError('bad slot'), 'MalformedAssignmentSlotError'],
+      [new DuplicateAssignmentSlotError('slot-key'), 'DuplicateAssignmentSlotError'],
+      [
+        new InconsistentAssignmentOverrideError('bad override'),
+        'InconsistentAssignmentOverrideError'
+      ],
+      [
+        new AmbiguousAssignmentOverrideError('candidate-1', ['override-1']),
+        'AmbiguousAssignmentOverrideError'
+      ],
+      [new AssignmentActorNotFoundError('actor-1'), 'AssignmentActorNotFoundError'],
+      [new OverlappingDelegationError('actor-1'), 'OverlappingDelegationError']
+    ])('preserves the typed %s contract', (error, name) => {
+      expect(error).toBeInstanceOf(RoleResolutionError);
+      expect(error.name).toBe(name);
     });
   });
 });

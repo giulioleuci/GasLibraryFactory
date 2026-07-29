@@ -138,6 +138,10 @@ export { Actor } from './src/core/Actor.js';
 export { Role } from './src/core/Role.js';
 export { Assignment } from './src/core/Assignment.js';
 export { ResolutionResult } from './src/core/ResolutionResult.js';
+export { AssignmentSlot } from './src/core/AssignmentSlot.js';
+export { AssignmentCandidate } from './src/core/AssignmentCandidate.js';
+export { AssignmentOverride } from './src/core/AssignmentOverride.js';
+export { EffectiveAssignmentResult } from './src/core/EffectiveAssignmentResult.js';
 
 // Delegation classes
 export { Delegation } from './src/internal/delegation/Delegation.js';
@@ -162,6 +166,8 @@ export { DelegationSource, InMemoryDelegationSource } from './src/registry/Deleg
 // Resolution engine
 export { RoleResolver } from './src/internal/resolution/RoleResolver.js';
 export { PriorityChainResolver } from './src/internal/resolution/PriorityChainResolver.js';
+export { ResolutionPolicy } from './src/internal/resolution/ResolutionPolicy.js';
+export { ResolutionTrace } from './src/internal/resolution/ResolutionTrace.js';
 
 // Error classes
 export {
@@ -172,5 +178,11 @@ export {
   CircularDelegationError,
   InvalidScopeError,
   DelegationDepthExceededError,
-  RoleValidationError
+  RoleValidationError,
+  MalformedAssignmentSlotError,
+  DuplicateAssignmentSlotError,
+  InconsistentAssignmentOverrideError,
+  AmbiguousAssignmentOverrideError,
+  AssignmentActorNotFoundError,
+  OverlappingDelegationError
 } from './src/internal/errors/RoleResolutionError.js';
