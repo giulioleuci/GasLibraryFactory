@@ -162,12 +162,20 @@ export { RoutingResolver } from './src/internal/routing/RoutingResolver.js';
 export { RoleRegistry } from './src/registry/RoleRegistry.js';
 export { AssignmentSource, InMemoryAssignmentSource } from './src/registry/AssignmentSource.js';
 export { DelegationSource, InMemoryDelegationSource } from './src/registry/DelegationSource.js';
+export { ActorSource, OverrideSource } from './src/registry/EffectiveAssignmentSource.js';
+export {
+  WideRowAssignmentSource,
+  MappedOverrideSource,
+  MappedDelegationSource,
+  CompositeAssignmentSource
+} from './src/registry/MappedAssignmentSources.js';
 
 // Resolution engine
 export { RoleResolver } from './src/internal/resolution/RoleResolver.js';
 export { PriorityChainResolver } from './src/internal/resolution/PriorityChainResolver.js';
 export { ResolutionPolicy } from './src/internal/resolution/ResolutionPolicy.js';
 export { ResolutionTrace } from './src/internal/resolution/ResolutionTrace.js';
+export { EffectiveAssignmentResolver } from './src/internal/resolution/EffectiveAssignmentResolver.js';
 
 // Error classes
 export {
