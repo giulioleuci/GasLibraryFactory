@@ -41,9 +41,10 @@ export class CollectionProjectionInterceptor extends ContextInterceptor {
   }
 
   _shouldIntercept(name, _data, _context, options) {
+    const normalizedOptions = options || {};
     return (
       this._targetProviders.includes(name) &&
-      (this._optionFlag === null || options[this._optionFlag] === true)
+      (this._optionFlag === null || normalizedOptions[this._optionFlag] === true)
     );
   }
 

@@ -1,5 +1,6 @@
 import { CollectionProjectionInterceptor } from '../interceptors/CollectionProjectionInterceptor';
 import { CollectionProjector } from '../projection/CollectionProjector';
+import { CollectionProjectionError } from '../internal/errors/CollectionProjectionError';
 
 describe('CollectionProjectionInterceptor', () => {
   const logger = { debug: jest.fn(), info: jest.fn(), warn: jest.fn(), error: jest.fn() };
@@ -33,5 +34,46 @@ describe('CollectionProjectionInterceptor', () => {
     interceptor.intercept('assignments', context, context, { applyProjection: false });
 
     expect(projector.project).not.toHaveBeenCalled();
+  });
+
+  test('supports null options when an option flag is configured', () => {
+    const projector = { project: jest.fn(() => ({ value: [{ id: 1 }], trace: [] })) };
+    const interceptor = new CollectionProjectionInterceptor(logger, projector, {
+      targetProviders: ['assignments'],
+      targetPaths: ['focus.items'],
+      operations: [{ type: 'distinctBy', keys: ['id'] }],
+      optionFlag: 'applyProjection'
+    });
+    const context = { focus: { items: [{ id: 1 }] } };
+
+    expect(() => interceptor.intercept('assignments', context, context, null)).not.toThrow();
+    expect(projector.project).not.toHaveBeenCalled();
+  });
+
+  test('preserves projection error metadata through interceptor error handling', () => {
+    const projectionError = new CollectionProjectionError('Missing collection path', {
+      operationIndex: 2,
+      targetPath: 'focus.items'
+    });
+    const projector = {
+      project: jest.fn(() => {
+        throw projectionError;
+      })
+    };
+    const interceptor = new CollectionProjectionInterceptor(logger, projector, {
+      targetProviders: ['assignments'],
+      targetPaths: ['focus.items'],
+      operations: [{ type: 'distinctBy', keys: ['id'] }]
+    });
+    const context = { focus: { items: [{ id: 1 }] } };
+
+    let thrown;
+    try {
+      interceptor.intercept('assignments', context, context, {});
+    } catch (error) {
+      thrown = error;
+    }
+    expect(thrown).toBeInstanceOf(CollectionProjectionError);
+    expect(thrown.context).toMatchObject({ operationIndex: 2, targetPath: 'focus.items' });
   });
 });

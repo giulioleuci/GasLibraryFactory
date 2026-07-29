@@ -5,6 +5,7 @@
  */
 
 import { get } from '@CoreUtilsLib';
+import { CollectionProjectionError } from '../internal/errors/CollectionProjectionError';
 
 /**
  * Abstract base class for context middleware/interceptor patterns.
@@ -126,6 +127,9 @@ export class ContextInterceptor {
       return modifiedData;
     } catch (error) {
       this._logger.error(`[${name}] Interception failed: ${error.message}`);
+      if (error instanceof CollectionProjectionError) {
+        throw error;
+      }
       throw new Error(`Interceptor failed for '${name}': ${error.message}`);
     }
   }

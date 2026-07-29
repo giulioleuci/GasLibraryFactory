@@ -105,6 +105,43 @@ describe('CollectionProjector', () => {
     expect(result.value).toEqual([{ id: 1, active: true }]);
   });
 
+  test('keeps distinct and group keys separate when tuple values contain delimiters', () => {
+    const projector = new CollectionProjector({ logger });
+    const input = [
+      { first: 'a|string:b', second: 'c', id: 1 },
+      { first: 'a', second: 'b|string:c', id: 2 }
+    ];
+
+    const distinct = projector.project(input, [{ type: 'distinctBy', keys: ['first', 'second'] }]);
+    const grouped = projector.project(input, [
+      { type: 'groupBy', keys: ['first', 'second'], aggregates: { count: { type: 'count' } } }
+    ]);
+
+    expect(distinct.value.map((item) => item.id)).toEqual([1, 2]);
+    expect(grouped.value).toHaveLength(2);
+  });
+
+  test.each([false, 0, ''])(
+    'rejects invalid conditional value %p with projection context',
+    (when) => {
+      const projector = new CollectionProjector({
+        logger,
+        expressionEngine: { evaluate: jest.fn() }
+      });
+
+      let thrown;
+      try {
+        projector.project([{ id: 1 }], [{ type: 'append', value: { id: 2 }, when }], {
+          targetPath: 'focus.items'
+        });
+      } catch (error) {
+        thrown = error;
+      }
+      expect(thrown).toBeInstanceOf(CollectionProjectionError);
+      expect(thrown.context).toMatchObject({ operationIndex: 0, targetPath: 'focus.items' });
+    }
+  );
+
   test('reports operation index and target path for missing paths', () => {
     const projector = new CollectionProjector({ logger });
 

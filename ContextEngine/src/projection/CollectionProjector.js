@@ -21,12 +21,7 @@ function copy(value) {
 }
 
 function keyFor(values) {
-  return values
-    .map(
-      (value) =>
-        `${typeof value}:${value && typeof value === 'object' ? JSON.stringify(value) : String(value)}`
-    )
-    .join('|');
+  return JSON.stringify(values.map((value) => [typeof value, value]));
 }
 
 /**
@@ -327,8 +322,13 @@ export class CollectionProjector {
     if (!hasOwn(operation, 'value')) {
       throw this._error(`${operation.type}.value is required`, index, targetPath);
     }
-    if (operation.when && !this._evaluate(operation.when, runtime, index, targetPath)) {
-      return value.map(copy);
+    if (hasOwn(operation, 'when')) {
+      if (typeof operation.when !== 'string' || operation.when.trim() === '') {
+        throw this._error(`${operation.type}.when must be a non-empty string`, index, targetPath);
+      }
+      if (!this._evaluate(operation.when, runtime, index, targetPath)) {
+        return value.map(copy);
+      }
     }
     const inserted = copy(operation.value);
     return operation.type === 'prepend'
