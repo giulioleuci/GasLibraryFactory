@@ -92,7 +92,7 @@ export class EffectiveAssignmentResolver {
       candidate.actorId,
       'candidate loaded'
     );
-    const baseActor = this._getActor(candidate.actorId, candidate.id);
+    const baseActor = this._getActor(candidate.actorId, candidate.id, trace, 'BASE');
     trace = append(
       trace,
       'BASE',
@@ -116,7 +116,12 @@ export class EffectiveAssignmentResolver {
         'latest matching override applied',
         { overrideId: selectedOverride.id }
       );
-      permanentActor = this._getActor(selectedOverride.nextActorId, candidate.id);
+      permanentActor = this._getActor(
+        selectedOverride.nextActorId,
+        candidate.id,
+        trace,
+        'OVERRIDE'
+      );
     } else {
       trace = append(
         trace,
@@ -168,9 +173,30 @@ export class EffectiveAssignmentResolver {
       .filter((override) => asOfDate >= override.effectiveFrom)
       .forEach((override) => {
         if (!candidates.some((candidate) => override.matches(candidate, asOfDate))) {
-          throw new InconsistentAssignmentOverrideError(
-            'Applicable override does not match a base actor',
+          let trace = append(
+            new ResolutionTrace(),
+            'OVERRIDE',
+            'CONSIDERED',
+            null,
+            override.previousActorId,
+            'effective override validated',
             { overrideId: override.id }
+          );
+          trace = append(
+            trace,
+            'OVERRIDE',
+            'REJECTED',
+            null,
+            override.previousActorId,
+            'effective override does not match a base candidate',
+            { overrideId: override.id }
+          );
+          throw withTrace(
+            new InconsistentAssignmentOverrideError(
+              'Applicable override does not match a base actor',
+              { overrideId: override.id }
+            ),
+            trace
           );
         }
       });
@@ -317,7 +343,7 @@ export class EffectiveAssignmentResolver {
         );
       }
       chain = chain.extend(next);
-      current = this._getActor(next.delegateId, candidate.id);
+      current = this._getActor(next.delegateId, candidate.id, trace, 'DELEGATION');
       trace = append(
         trace,
         'DELEGATION',
@@ -340,7 +366,7 @@ export class EffectiveAssignmentResolver {
     return this._delegationSource.getActiveDelegationsForPrincipal(actorId, asOfDate);
   }
 
-  _getActor(actorId, candidateId) {
+  _getActor(actorId, candidateId, trace, stage) {
     const actor = this._actorSource.getActor(actorId);
     if (actor) {
       return actor;
@@ -348,6 +374,14 @@ export class EffectiveAssignmentResolver {
     if (this._policy.missingActorBehavior === 'NULL') {
       return null;
     }
-    throw new AssignmentActorNotFoundError(actorId, { candidateId });
+    const failureTrace = append(
+      trace || new ResolutionTrace(),
+      stage || 'BASE',
+      'REJECTED',
+      candidateId,
+      actorId,
+      'assignment actor not found'
+    );
+    throw withTrace(new AssignmentActorNotFoundError(actorId, { candidateId }), failureTrace);
   }
 }

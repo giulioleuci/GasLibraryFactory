@@ -143,6 +143,45 @@ describe('EffectiveAssignmentResolver', () => {
     ).toThrow(InconsistentAssignmentOverrideError);
   });
 
+  test('attaches immutable traces to pre-candidate override validation and missing actors', () => {
+    const unmatchedSlot = new AssignmentOverride({
+      id: 'wrong-slot',
+      previousActorId: 'old',
+      nextActorId: 'new',
+      effectiveFrom: '2026-01-10',
+      slotScope: { group: 'G2' }
+    });
+    let overrideError;
+    let actorError;
+    try {
+      createResolver({ overrides: [unmatchedSlot] }).resolve({
+        context: { group: 'G1', subject: 'S1' },
+        asOfDate: new Date('2026-01-12')
+      });
+    } catch (error) {
+      overrideError = error;
+    }
+    try {
+      createResolver({ overrides: [], actors: [] }).resolve({
+        context: {},
+        asOfDate: new Date('2026-01-12')
+      });
+    } catch (error) {
+      actorError = error;
+    }
+
+    expect(overrideError).toBeInstanceOf(InconsistentAssignmentOverrideError);
+    expect(overrideError.resolutionTrace.entries).toEqual(
+      expect.arrayContaining([expect.objectContaining({ stage: 'OVERRIDE', decision: 'REJECTED' })])
+    );
+    expect(actorError).toBeInstanceOf(AssignmentActorNotFoundError);
+    expect(actorError.resolutionTrace.entries).toEqual(
+      expect.arrayContaining([expect.objectContaining({ stage: 'BASE', decision: 'REJECTED' })])
+    );
+    expect(Object.isFrozen(overrideError.resolutionTrace)).toBe(true);
+    expect(Object.isFrozen(actorError.resolutionTrace)).toBe(true);
+  });
+
   test('consumes the existing InMemoryDelegationSource through its active-principal API', () => {
     const source = new InMemoryDelegationSource({
       delegations: [delegation('d1', 'old', 'new')]
