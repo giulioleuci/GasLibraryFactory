@@ -1,5 +1,6 @@
 import { parseDate } from '../internal/DateParsing.js';
 import { AssignmentCandidate } from './AssignmentCandidate.js';
+import { cloneAndFreeze } from '../internal/ImmutableValue.js';
 import { InconsistentAssignmentOverrideError } from '../internal/errors/RoleResolutionError.js';
 
 function requiredString(value, field) {
@@ -11,17 +12,13 @@ function requiredString(value, field) {
   return value;
 }
 
-function freezeCopy(value) {
-  if (!value || typeof value !== 'object') {
-    return value;
-  }
-  const copy = Array.isArray(value) ? value.map(freezeCopy) : {};
-  if (!Array.isArray(value)) {
-    Object.keys(value).forEach((key) => {
-      copy[key] = freezeCopy(value[key]);
-    });
-  }
-  return Object.freeze(copy);
+function isDimensionValue(value) {
+  return (
+    value === null ||
+    typeof value === 'string' ||
+    typeof value === 'boolean' ||
+    (typeof value === 'number' && Number.isFinite(value))
+  );
 }
 
 /** Immutable, dated actor replacement scoped by opaque assignment dimensions. */
@@ -47,7 +44,10 @@ export class AssignmentOverride {
       );
     }
     const scopeEntries = Object.entries(slotScope);
-    if (scopeEntries.length === 0 || scopeEntries.some(([name]) => !name.trim())) {
+    if (
+      scopeEntries.length === 0 ||
+      scopeEntries.some(([name, value]) => !name.trim() || !isDimensionValue(value))
+    ) {
       throw new InconsistentAssignmentOverrideError(
         'Assignment override slotScope must not be empty'
       );
@@ -65,7 +65,7 @@ export class AssignmentOverride {
         'Assignment override metadata must be an object'
       );
     }
-    this.metadata = freezeCopy(metadata);
+    this.metadata = cloneAndFreeze(metadata);
     Object.freeze(this);
   }
 

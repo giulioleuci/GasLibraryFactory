@@ -1,20 +1,8 @@
 import { RoleValidationError } from '../errors/RoleResolutionError.js';
+import { cloneAndFreeze } from '../ImmutableValue.js';
 
 const STAGES = Object.freeze(['BASE', 'OVERRIDE', 'DELEGATION', 'ROUTING']);
 const DECISIONS = Object.freeze(['CONSIDERED', 'REJECTED', 'SELECTED', 'APPLIED']);
-
-function freezeCopy(value) {
-  if (!value || typeof value !== 'object') {
-    return value;
-  }
-  const copy = Array.isArray(value) ? value.map(freezeCopy) : {};
-  if (!Array.isArray(value)) {
-    Object.keys(value).forEach((key) => {
-      copy[key] = freezeCopy(value[key]);
-    });
-  }
-  return Object.freeze(copy);
-}
 
 function normalizeEntry({
   stage,
@@ -41,7 +29,7 @@ function normalizeEntry({
   if (!metadata || typeof metadata !== 'object' || Array.isArray(metadata)) {
     throw new RoleValidationError('Resolution trace metadata must be an object');
   }
-  return freezeCopy({ stage, decision, candidateId, actorId, reason, metadata });
+  return cloneAndFreeze({ stage, decision, candidateId, actorId, reason, metadata });
 }
 
 /** Immutable sequence of explainable effective-assignment decisions. */

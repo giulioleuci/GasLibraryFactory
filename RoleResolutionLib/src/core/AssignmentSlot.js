@@ -1,7 +1,12 @@
 import { MalformedAssignmentSlotError } from '../internal/errors/RoleResolutionError.js';
 
 function isDimensionValue(value) {
-  return value === null || ['string', 'number', 'boolean'].includes(typeof value);
+  return (
+    value === null ||
+    typeof value === 'string' ||
+    typeof value === 'boolean' ||
+    (typeof value === 'number' && Number.isFinite(value))
+  );
 }
 
 /** Immutable, opaque set of dimensions identifying an assignment slot. */

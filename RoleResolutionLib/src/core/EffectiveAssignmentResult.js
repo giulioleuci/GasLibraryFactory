@@ -2,20 +2,8 @@ import { Actor } from './Actor.js';
 import { AssignmentSlot } from './AssignmentSlot.js';
 import { DelegationChain } from '../internal/delegation/DelegationChain.js';
 import { ResolutionTrace } from '../internal/resolution/ResolutionTrace.js';
+import { cloneAndFreeze } from '../internal/ImmutableValue.js';
 import { RoleValidationError } from '../internal/errors/RoleResolutionError.js';
-
-function freezeCopy(value) {
-  if (!value || typeof value !== 'object' || value instanceof Date) {
-    return value;
-  }
-  const copy = Array.isArray(value) ? value.map(freezeCopy) : {};
-  if (!Array.isArray(value)) {
-    Object.keys(value).forEach((key) => {
-      copy[key] = freezeCopy(value[key]);
-    });
-  }
-  return Object.freeze(copy);
-}
 
 function actorOrNull(value, field) {
   if (value !== null && !(value instanceof Actor)) {
@@ -65,9 +53,9 @@ export class EffectiveAssignmentResult {
     this.permanentActor = actorOrNull(permanentActor, 'permanentActor');
     this.effectiveActor = actorOrNull(effectiveActor, 'effectiveActor');
     this.delegationChain = delegationChain;
-    this.routing = freezeCopy(routing);
+    this.routing = routing === null ? null : cloneAndFreeze(routing);
     this.trace = trace;
-    this.metadata = freezeCopy(metadata);
+    this.metadata = cloneAndFreeze(metadata);
     Object.freeze(this);
   }
 

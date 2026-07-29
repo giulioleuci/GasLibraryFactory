@@ -21,7 +21,8 @@ export function parseDate(value) {
     return null;
   }
   if (value instanceof Date) {
-    return new Date(value.getTime());
+    const copy = new Date(value.getTime());
+    return isNaN(copy.getTime()) ? null : copy;
   }
   if (typeof value === 'string') {
     const parsed = new Date(value);

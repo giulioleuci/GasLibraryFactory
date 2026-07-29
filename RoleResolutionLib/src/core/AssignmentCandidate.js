@@ -1,5 +1,6 @@
 import { AssignmentSlot } from './AssignmentSlot.js';
 import { parseDate } from '../internal/DateParsing.js';
+import { cloneAndFreeze } from '../internal/ImmutableValue.js';
 import { RoleValidationError } from '../internal/errors/RoleResolutionError.js';
 
 function requiredString(value, field) {
@@ -15,19 +16,6 @@ function parseRequiredDate(value, field) {
     throw new RoleValidationError(`${field} must be a valid ISO-safe date`);
   }
   return parsed;
-}
-
-function freezeCopy(value) {
-  if (!value || typeof value !== 'object') {
-    return value;
-  }
-  const copy = Array.isArray(value) ? value.map(freezeCopy) : {};
-  if (!Array.isArray(value)) {
-    Object.keys(value).forEach((key) => {
-      copy[key] = freezeCopy(value[key]);
-    });
-  }
-  return Object.freeze(copy);
 }
 
 /** Immutable candidate assignment that can become effective at a point in time. */
@@ -58,7 +46,7 @@ export class AssignmentCandidate {
       throw new RoleValidationError('Assignment candidate metadata must be an object');
     }
     this.priority = priority;
-    this.metadata = freezeCopy(metadata);
+    this.metadata = cloneAndFreeze(metadata);
     Object.freeze(this);
   }
 

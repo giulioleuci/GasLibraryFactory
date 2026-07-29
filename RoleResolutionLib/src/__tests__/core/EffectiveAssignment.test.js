@@ -9,7 +9,8 @@ import { ResolutionTrace } from '../../internal/resolution/ResolutionTrace.js';
 import { RoutingPolicy } from '../../internal/routing/RoutingPolicy.js';
 import {
   MalformedAssignmentSlotError,
-  RoleValidationError
+  RoleValidationError,
+  InconsistentAssignmentOverrideError
 } from '../../internal/errors/RoleResolutionError.js';
 
 describe('effective-assignment value model', () => {
@@ -129,5 +130,102 @@ describe('effective-assignment value model', () => {
       () => new AssignmentCandidate({ id: 'c-1', actorId: ' ', slot: { dimensions: { x: 1 } } })
     ).toThrow(RoleValidationError);
     expect(() => new ResolutionPolicy({ tieBehavior: 'IGNORE' })).toThrow(RoleValidationError);
+  });
+
+  test.each([NaN, Infinity, -Infinity])('rejects non-finite slot dimensions: %p', (value) => {
+    expect(() => new AssignmentSlot({ dimensions: { sequence: value } })).toThrow(
+      MalformedAssignmentSlotError
+    );
+  });
+
+  test('rejects invalid Date objects with typed candidate and override errors', () => {
+    const slot = new AssignmentSlot({ dimensions: { kind: 'CUSTOM' } });
+
+    expect(
+      () => new AssignmentCandidate({ id: 'c-1', actorId: 'a-1', slot, validFrom: new Date(NaN) })
+    ).toThrow(RoleValidationError);
+    expect(
+      () =>
+        new AssignmentOverride({
+          id: 'o-1',
+          previousActorId: 'a-1',
+          nextActorId: 'a-2',
+          slotScope: { kind: 'CUSTOM' },
+          effectiveFrom: new Date(NaN)
+        })
+    ).toThrow(InconsistentAssignmentOverrideError);
+  });
+
+  test('override scopes accept only opaque scalar dimensions and are defensive copies', () => {
+    const scope = { kind: 'CUSTOM' };
+    const override = new AssignmentOverride({
+      id: 'o-1',
+      previousActorId: 'a-1',
+      nextActorId: 'a-2',
+      slotScope: scope,
+      effectiveFrom: '2026-01-10T00:00:00.000Z'
+    });
+    scope.kind = 'CHANGED';
+
+    expect(override.slotScope.kind).toBe('CUSTOM');
+    expect(
+      () =>
+        new AssignmentOverride({
+          id: 'o-2',
+          previousActorId: 'a-1',
+          nextActorId: 'a-2',
+          slotScope: { kind: { nested: true } },
+          effectiveFrom: '2026-01-10T00:00:00.000Z'
+        })
+    ).toThrow(InconsistentAssignmentOverrideError);
+  });
+
+  test('metadata preserves defensively immutable Date values', () => {
+    const candidateDate = new Date('2026-01-10T00:00:00.000Z');
+    const overrideDate = new Date('2026-01-11T00:00:00.000Z');
+    const traceDate = new Date('2026-01-12T00:00:00.000Z');
+    const resultDate = new Date('2026-01-13T00:00:00.000Z');
+    const slot = new AssignmentSlot({ dimensions: { kind: 'CUSTOM' } });
+    const candidate = new AssignmentCandidate({
+      id: 'c-1',
+      actorId: 'a-1',
+      slot,
+      metadata: { observedAt: candidateDate }
+    });
+    const override = new AssignmentOverride({
+      id: 'o-1',
+      previousActorId: 'a-1',
+      nextActorId: 'a-2',
+      slotScope: { kind: 'CUSTOM' },
+      effectiveFrom: '2026-01-10T00:00:00.000Z',
+      metadata: { observedAt: overrideDate }
+    });
+    const trace = new ResolutionTrace().append({
+      stage: 'BASE',
+      decision: 'SELECTED',
+      candidateId: 'c-1',
+      actorId: 'a-1',
+      reason: 'selected',
+      metadata: { observedAt: traceDate }
+    });
+    const result = new EffectiveAssignmentResult({
+      slot,
+      delegationChain: DelegationChain.empty(),
+      trace,
+      metadata: { observedAt: resultDate }
+    });
+
+    candidateDate.setUTCFullYear(2027);
+    overrideDate.setUTCFullYear(2027);
+    traceDate.setUTCFullYear(2027);
+    resultDate.setUTCFullYear(2027);
+
+    [candidate.metadata, override.metadata, trace.entries[0].metadata, result.metadata].forEach(
+      (metadata) => expect(metadata.observedAt).toBeInstanceOf(Date)
+    );
+    expect(candidate.metadata.observedAt.toISOString()).toBe('2026-01-10T00:00:00.000Z');
+    expect(override.metadata.observedAt.toISOString()).toBe('2026-01-11T00:00:00.000Z');
+    expect(trace.entries[0].metadata.observedAt.toISOString()).toBe('2026-01-12T00:00:00.000Z');
+    expect(result.metadata.observedAt.toISOString()).toBe('2026-01-13T00:00:00.000Z');
   });
 });
