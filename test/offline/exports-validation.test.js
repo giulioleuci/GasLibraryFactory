@@ -272,11 +272,16 @@ describe('Exports Validation', () => {
       'DataProvider',
       'ContextInterceptor',
       'InterceptorRegistry',
-      'SwapAndEnrichInterceptor'
+      'CollectionProjector',
+      'CollectionProjectionInterceptor'
     ];
 
     it.each(contextExports)('should export %s', (name) => {
       expect(global[name]).toBeDefined();
+    });
+
+    it('does not export the removed SwapAndEnrichInterceptor', () => {
+      expect(global.SwapAndEnrichInterceptor).toBeUndefined();
     });
   });
 
@@ -361,11 +366,17 @@ describe('Exports Validation', () => {
       'Assignment',
       'ScopeType',
       'ActorType',
-      'ResolutionStrategy'
+      'ResolutionStrategy',
+      'EffectiveAssignmentResolver',
+      'WideRowAssignmentSource'
     ];
 
     it.each(roleExports)('should export %s', (name) => {
       expect(global[name]).toBeDefined();
+    });
+
+    it('does not export the removed PriorityChainResolver', () => {
+      expect(global.PriorityChainResolver).toBeUndefined();
     });
   });
 

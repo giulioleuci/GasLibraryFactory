@@ -585,7 +585,6 @@ export { DataProvider } from './src/DataProvider';
 // Interceptor classes
 export { ContextInterceptor } from './src/interceptors/ContextInterceptor';
 export { InterceptorRegistry } from './src/interceptors/InterceptorRegistry';
-export { SwapAndEnrichInterceptor } from './src/interceptors/SwapAndEnrichInterceptor';
 export { CollectionProjectionInterceptor } from './src/interceptors/CollectionProjectionInterceptor';
 export { CollectionProjector } from './src/projection/CollectionProjector';
 export { ProjectionRegistry } from './src/projection/ProjectionRegistry';

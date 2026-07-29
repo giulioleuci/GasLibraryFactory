@@ -172,7 +172,6 @@ export {
 
 // Resolution engine
 export { RoleResolver } from './src/internal/resolution/RoleResolver.js';
-export { PriorityChainResolver } from './src/internal/resolution/PriorityChainResolver.js';
 export { ResolutionPolicy } from './src/internal/resolution/ResolutionPolicy.js';
 export { ResolutionTrace } from './src/internal/resolution/ResolutionTrace.js';
 export { EffectiveAssignmentResolver } from './src/internal/resolution/EffectiveAssignmentResolver.js';

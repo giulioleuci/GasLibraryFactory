@@ -338,18 +338,24 @@ try {
 
 ### Classes
 
-| Class                 | Description                                |
-| --------------------- | ------------------------------------------ |
-| `RoleResolver`        | Main resolution engine                     |
-| `Role`                | Role definition value object               |
-| `Actor`               | Actor value object (person, system, group) |
-| `Scope`               | Scope value object                         |
-| `Assignment`          | Role-to-actor assignment                   |
-| `Delegation`          | Delegation configuration                   |
-| `DelegationChain`     | Chain of delegations                       |
-| `DelegationValidator` | Validates delegations                      |
-| `RoleRegistry`        | Registry of role definitions               |
-| `RoutingResolver`     | Resolves routing based on delegation chain |
+| Class                         | Description                                                    |
+| ----------------------------- | -------------------------------------------------------------- |
+| `RoleResolver`                | Main resolution engine                                         |
+| `Role`                        | Role definition value object                                   |
+| `Actor`                       | Actor value object (person, system, group)                     |
+| `Scope`                       | Scope value object                                             |
+| `Assignment`                  | Role-to-actor assignment                                       |
+| `Delegation`                  | Delegation configuration                                       |
+| `DelegationChain`             | Chain of delegations                                           |
+| `DelegationValidator`         | Validates delegations                                          |
+| `RoleRegistry`                | Registry of role definitions                                   |
+| `RoutingResolver`             | Resolves routing based on delegation chain                     |
+| `AssignmentSlot`              | Immutable opaque dimensions identifying a slot                 |
+| `AssignmentCandidate`         | Dated base assignment candidate                                |
+| `AssignmentOverride`          | Dated actor replacement scoped by opaque dimensions            |
+| `EffectiveAssignmentResolver` | Resolves candidates through overrides, delegation, and routing |
+| `EffectiveAssignmentResult`   | Immutable resolved assignment outcome                          |
+| `WideRowAssignmentSource`     | Maps wide rows to opaque assignment candidates                 |
 
 ### Enums
 
@@ -366,6 +372,17 @@ try {
 | ------------------ | -------------------------------------------------- |
 | `AssignmentSource` | `findAssignments(roleId, scope, options)`          |
 | `DelegationSource` | `findDelegations(actorId, roleId, scope, options)` |
+
+### Effective assignment API
+
+`EffectiveAssignmentResolver` resolves generic `AssignmentCandidate` values through
+dated overrides, delegations, and routing. `AssignmentSlot` dimensions are opaque:
+the library only preserves and matches their key/value identity, so applications may
+use any domain-specific dimensions without introducing a new resolver type.
+
+`WideRowAssignmentSource` maps tabular rows into those candidates; applications pass
+an `ActorSource`, `OverrideSource`, and delegation source to the resolver rather than
+depending on a fixed school or organization schema.
 
 ## Version
 

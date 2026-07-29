@@ -18,7 +18,8 @@ ContextEngine/
 │   ├── RecipeParser.js         # Validation and normalization of JSON recipes
 │   ├── ContextInterceptor.js   # Middleware base for data transformation
 │   ├── InterceptorRegistry.js  # Registry for context-building middleware
-│   ├── SwapAndEnrichInterceptor.js # Implementation of entity-swapping logic
+│   ├── projection/             # Declarative collection projection strategies
+│   ├── interceptors/           # Context and collection-projection interceptors
 │   ├── PostProcessor.js        # Logic for field-level transformations
 │   ├── errors/                 # Framework-specific exceptions (Recipe, Dependency)
 │   └── __tests__/              # Unit and integration tests
@@ -27,7 +28,7 @@ ContextEngine/
 ## 🧩 Programming Patterns
 
 1.  **Dependency Injection (DI)**: The engine uses `ProviderRegistry` to inject required data sources into the `ContextAssembler` at runtime, ensuring loose coupling.
-2.  **Interceptor Pattern (Middleware)**: Interceptors allow for cross-cutting concerns (enrichment, substitution) to be applied to the data context transparently without modifying the original providers.
+2.  **Interceptor Pattern (Middleware)**: Interceptors apply cross-cutting collection projections without modifying the original provider implementation.
 3.  **Strategy Pattern**: `DataProvider` and its subclasses define interchangeable strategies for fetching data from different sources (APIs, Sheets, Databases).
 4.  **DAG (Directed Acyclic Graph)**: `DependencyResolver` uses graph-based algorithms to determine the optimal, non-circular execution order of providers based on their parameter dependencies.
 5.  **Builder Pattern / Assembler**: `ContextAssembler` orchestrates the construction of a complex result object (the Context) through a series of discrete, configurable steps.
@@ -45,7 +46,7 @@ A Recipe is a JSON configuration that describes _what_ data is needed, _where_ i
 - **Dependency Resolution**: Automatically resolves dependencies between data providers (e.g., Provider B needs output from Provider A).
   - Syntax: `@paramName` (External input)
   - Syntax: `$providerName.property` (Inter-provider dependency)
-- **Context Interceptors**: NEW! Middleware pattern for transparent data transformation, enrichment, and substitution (e.g., substitute teachers, acting managers).
+- **Context Interceptors**: Middleware pattern for declarative collection projections after selected providers.
 - **Conditional Execution**: Providers can execute conditionally based on dynamic expressions (requires `GasExpressionEngineLib`).
 - **Post-Processing**: Built-in pipeline for filtering, mapping, and renaming data after fetching.
 - **Resilience**: Integrates with `GasResilienceLib` to automatically retry failed data providers.
@@ -166,90 +167,41 @@ Transform data immediately after fetching.
 
 ## 🎯 Context Interceptors (Middleware)
 
-**NEW in v1.1.0**: ContextEngine now supports interceptors for transparent data transformation, enrichment, and substitution.
+ContextEngine supports interceptors for transparent, declarative collection projection.
 
 ### Overview
 
-Interceptors sit between DataProviders and the final context assembly, allowing you to:
+Interceptors sit between selected DataProviders and final context assembly. Use
+`CollectionProjectionInterceptor` with `CollectionProjector` to apply an ordered
+pipeline to one or more collection paths. Operations include filtering, mapping,
+grouping, distinctness, and `flatMap`; therefore a projection deliberately supports
+zero-to-many transformations without mutating the source collection.
 
-- **Swap entities** transparently (e.g., substitute teacher replacements)
-- **Enrich data** with metadata and computed fields
-- **Normalize data** across different providers
-- **Apply conditional overrides** based on runtime options
+`SwapAndEnrichInterceptor` has been removed from the public API. Model substitutions
+as an application-supplied projection strategy when they operate on collections.
 
-### Quick Example: Substitute Teacher
-
-```javascript
-import { SwapAndEnrichInterceptor, InterceptorRegistry } from '@ContextEngine';
-
-// Define substitution lookup function
-const substitutionLookup = (teacherData, context, options) => {
-  // Query your SUBSTITUTIONS table
-  const substitute = getActiveSubstitute(teacherData.id, options.date);
-  return substitute || null; // Return substitute or null
-};
-
-// Create interceptor
-const teacherInterceptor = new SwapAndEnrichInterceptor(logger, substitutionLookup, {
-  originalPropertyName: 'titular', // Where to preserve original
-  metadataFlags: { isSubstitute: true }, // Metadata to add
-  targetProviders: ['teacher'], // Which providers to intercept
-  optionFlag: 'applySubstitutions' // Activation flag
-});
-
-// Register interceptor
-const interceptorRegistry = new InterceptorRegistry(logger);
-interceptorRegistry.registerSingleton('SubstituteTeacher', teacherInterceptor);
-
-// Create assembler with interceptor registry
-const assembler = new ContextAssembler(
-  logger,
-  providerRegistry,
-  expressionEngine,
-  exceptionService,
-  interceptorRegistry // NEW parameter
-);
-
-// Assemble with options
-const context = assembler.assemble(recipe, params, {
-  applySubstitutions: true,
-  date: '2025-01-15'
-});
-
-// Result:
-// context.teacher = {
-//   id: 'S001',
-//   name: 'Prof. Doe',           // Substitute
-//   isSubstitute: true,
-//   titular: {
-//     id: 'T001',
-//     name: 'Prof. Smith'         // Original preserved
-//   }
-// }
-```
-
-### Built-in Interceptors
-
-#### SwapAndEnrichInterceptor
-
-Implements the **Swap & Enrich** pattern for entity substitution:
-
-**Use Cases:**
-
-- Substitute teachers
-- Acting managers/leaders
-- Temporary resource assignments
-- A/B testing variants
-
-**Configuration:**
+### Quick Example: Project a collection
 
 ```javascript
-{
-  originalPropertyName: 'original',  // Property name for original entity
-  metadataFlags: {},                 // Metadata fields to add
-  targetProviders: [],               // Provider names to intercept (null = all)
-  optionFlag: 'applyOverrides'       // Option key for activation
-}
+import {
+  CollectionProjector,
+  CollectionProjectionInterceptor,
+  InterceptorRegistry
+} from '@ContextEngine';
+
+const projector = new CollectionProjector({ logger });
+const interceptor = new CollectionProjectionInterceptor(logger, projector, {
+  targetProviders: ['assignments'],
+  targetPaths: ['focus.items'],
+  operations: [
+    { type: 'filter', expression: 'item.active === true' },
+    { type: 'flatMap', path: 'assignees', mergeParent: true },
+    { type: 'distinctBy', keys: ['id'] }
+  ]
+});
+
+const interceptors = new InterceptorRegistry(logger);
+interceptors.registerSingleton('ProjectAssignments', interceptor);
 ```
 
 ### Creating Custom Interceptors
@@ -294,7 +246,7 @@ Interceptors can be conditionally activated via runtime options:
 
 ```javascript
 const context = assembler.assemble(recipe, params, {
-  applySubstitutions: true, // Enable teacher substitutions
+  projectAssignments: true, // Enable configured collection projection
   environment: 'test', // Environment-specific overrides
   enableCaching: false // Runtime flags
 });
@@ -304,23 +256,11 @@ Each interceptor checks `_shouldIntercept()` to decide whether to activate.
 
 ### Benefits
 
-**Transparent Substitution**
+**Declarative Collection Projection**
 
-- Templates using `{{teacher.name}}` automatically show substitute
-- No template logic changes required
-- Consumer code doesn't need substitution awareness
-
-**Preserved History**
-
-- Original entity accessible via `{{teacher.titular.name}}`
-- Advanced templates can show both substitute and original
-- Audit trail maintained
-
-**Metadata Enrichment**
-
-- Templates can conditionally display notices
-- Logic can differentiate scenarios
-- Additional context available for processing
+- Recipes keep provider data collection-oriented and composable
+- Pipelines can filter, reshape, aggregate, or expand items from zero to many
+- The projector returns defensive copies, preserving provider-owned source data
 
 ## 🧪 Testing
 
