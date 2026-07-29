@@ -75,7 +75,8 @@ const LIBRARIES = [
   'GasDataImporter',
   'DomainRepositoryLib',
   'GasOnlineTestFramework',
-  'GasProcessMonitorLib'
+  'GasProcessMonitorLib',
+  'GasSchemaValidatorLib'
 ];
 
 const ROOT_DIR = path.resolve(__dirname, '..');
@@ -590,9 +591,16 @@ function main() {
   // Write output file
   fs.writeFileSync(OUTPUT_FILE, markdown, 'utf8');
 
+  // Also write one standalone document for every library.
+  for (const lib of libraries) {
+    const libraryOutput = path.join(outputDir, `${lib.name}.md`);
+    fs.writeFileSync(libraryOutput, generateMarkdown([lib]), 'utf8');
+  }
+
   console.log('');
   console.log('='.repeat(60));
   console.log(`Documentation generated: ${path.relative(ROOT_DIR, OUTPUT_FILE)}`);
+  console.log(`Individual library files generated: ${libraries.length}`);
   console.log(`Total libraries processed: ${libraries.length}`);
   console.log(
     `Total classes documented: ${libraries.reduce((sum, lib) => sum + (lib ? lib.classes.length : 0), 0)}`

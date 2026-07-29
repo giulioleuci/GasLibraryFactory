@@ -32,7 +32,8 @@ const LIBRARIES = [
   'WorkspaceTemplateEngine',
   'RoleResolutionLib',
   'ComposableContentLib',
-  'GasProcessMonitorLib'
+  'GasProcessMonitorLib',
+  'GasSchemaValidatorLib'
 ];
 
 // This script lives in scripts/; the monorepo root is its parent directory.
@@ -158,7 +159,9 @@ async function processLibrary(libName) {
 
   // 1. Find files using glob (handles .js and .gs recursively)
   // We explicitly search for .js and .gs
-  const files = globSync(`${libPath}/**/*.{js,gs}`);
+  const files = globSync(`${libPath}/**/*.{js,gs}`, {
+    ignore: ['**/__tests__/**', '**/__testOnline__/**']
+  });
 
   if (files.length === 0) {
     console.warn(`  [WARN] No .js or .gs files found in ${libName}`);
@@ -167,11 +170,7 @@ async function processLibrary(libName) {
 
   try {
     // 2. Parse with jsdoc-api
-    // We pass the files array directly so config patterns don't ignore .gs
-    const data = await jsdocApi.explain({
-      files: files,
-      cache: false // Disable cache to ensure fresh reads
-    });
+    const data = await jsdocApi.explain({ files, cache: false });
 
     // 3. Filter out junk (undocumented code if necessary, or internal package objects)
     // Keeping everything that has a 'kind' is usually safer.
