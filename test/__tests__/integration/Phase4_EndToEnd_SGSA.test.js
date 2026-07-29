@@ -31,12 +31,12 @@ import {
   Scope,
   Assignment,
   Delegation,
-  InMemoryAssignmentSource,
   InMemoryDelegationSource,
   ScopeType,
   ResolutionStrategy,
   RoutingPolicy
 } from '@RoleResolutionLib';
+import { InMemoryAssignmentSource } from '../../../RoleResolutionLib/src/registry/AssignmentSource.js';
 import {
   ContentComposer,
   BlockRegistry,

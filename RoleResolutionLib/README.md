@@ -25,9 +25,9 @@ RoleResolutionLib/
 
 1.  **Chain of Responsibility Pattern**: `DelegationChain` manages the sequence of actors where a role is passed from one to another. It ensures correct traversal and detects cycles.
 2.  **Strategy Pattern**: `RoutingPolicy` and `ResolutionStrategy` define interchangeable algorithms for how communications should be routed and how results are selected (First vs. All).
-3.  **Registry Pattern**: `RoleRegistry` and its corresponding sources (AssignmentSource, DelegationSource) centralize definitions and allow for dynamic, data-driven lookups.
+3.  **Registry Pattern**: `RoleRegistry` and effective-assignment sources centralize definitions and allow for dynamic, data-driven lookups.
 4.  **Value Object Pattern**: Actors, Scopes, and Roles are implemented as immutable value objects with specific equality and validation rules.
-5.  **Data Source Interface (Dependency Inversion)**: The library defines interfaces for `AssignmentSource` and `DelegationSource`, allowing it to resolve roles from memory, SheetDB, or any other source without knowing the implementation.
+5.  **Data Source Interface (Dependency Inversion)**: The effective-assignment API defines `AssignmentSource`, `OverrideSource`, and `ActorSource` contracts for SheetDB or any other persistence.
 
 ## Overview
 
@@ -163,7 +163,7 @@ import {
   Scope,
   Assignment,
   RoleRegistry,
-  InMemoryAssignmentSource,
+  WideRowAssignmentSource,
   InMemoryDelegationSource
 } from '@RoleResolutionLib';
 
@@ -176,15 +176,12 @@ roleRegistry.register(
   })
 );
 
-// Setup assignment source
-const assignmentSource = new InMemoryAssignmentSource();
-assignmentSource.add(
-  new Assignment({
-    roleId: 'project_manager',
-    actorId: 'john@example.com',
-    scope: Scope.project('alpha')
-  })
-);
+// Map a domain-specific table into opaque effective-assignment candidates.
+const assignmentSource = new WideRowAssignmentSource({
+  rows: [{ id: 'alpha', manager: 'john@example.com' }],
+  rowIdentityPath: 'id',
+  columns: [{ name: 'manager', slotDimensions: { role: 'project_manager' } }]
+});
 
 // Create resolver
 const resolver = new RoleResolver({
@@ -273,9 +270,13 @@ const result = resolver.resolve('approver', Scope.global());
 // routing.cc: ['alice@example.com', 'bob@example.com']
 ```
 
-## Custom Data Sources
+## Custom Effective-Assignment Sources
 
-Implement the `AssignmentSource` and `DelegationSource` interfaces to connect to your data:
+Implement the breaking public contracts used by `EffectiveAssignmentResolver`:
+`AssignmentSource.getAssignments(context, asOfDate)`,
+`OverrideSource.getOverrides(context, asOfDate)`, and
+`ActorSource.getActor(actorId)`. The generic row adapters avoid a custom source
+for most SheetDB-shaped data.
 
 ```javascript
 class SheetDBAssignmentSource {
@@ -368,10 +369,11 @@ try {
 
 ### Interfaces
 
-| Interface          | Methods                                            |
-| ------------------ | -------------------------------------------------- |
-| `AssignmentSource` | `findAssignments(roleId, scope, options)`          |
-| `DelegationSource` | `findDelegations(actorId, roleId, scope, options)` |
+| Interface          | Methods                             |
+| ------------------ | ----------------------------------- |
+| `AssignmentSource` | `getAssignments(context, asOfDate)` |
+| `OverrideSource`   | `getOverrides(context, asOfDate)`   |
+| `ActorSource`      | `getActor(actorId)`                 |
 
 ### Effective assignment API
 

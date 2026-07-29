@@ -39,12 +39,11 @@
  * - Delegation: Delegation, DelegationChain, DelegationValidator
  * - Routing: RoutingPolicy, RoutingResolver, RoutingResult
  * - Resolution: RoleResolver (main engine)
- * - Registry: RoleRegistry, AssignmentSource, DelegationSource
+ * - Registry: RoleRegistry, effective AssignmentSource, DelegationSource
  * - Errors: Specialized error classes
  *
  * **Data Source Abstraction:**
  * - AssignmentSource and DelegationSource are interfaces
- * - In-memory implementations provided for testing
  * - Implement with SheetDBLib or other persistence for production
  *
  * ## Dependencies
@@ -64,7 +63,7 @@
  *   Scope,
  *   Assignment,
  *   ScopeType,
- *   InMemoryAssignmentSource,
+ *   WideRowAssignmentSource,
  *   InMemoryDelegationSource
  * } from '@RoleResolutionLib';
  *
@@ -77,13 +76,10 @@
  *   allowsDelegation: true
  * }));
  *
- * const assignmentSource = new InMemoryAssignmentSource({
- *   actors: [Actor.person('user-123', 'john@example.com', 'John Doe')],
- *   assignments: [new Assignment({
- *     roleId: 'DEPT_MANAGER',
- *     actorId: 'user-123',
- *     scope: Scope.orgUnit('Sales')
- *   })]
+ * const assignmentSource = new WideRowAssignmentSource({
+ *   rows: [{ id: 'sales', manager: 'user-123' }],
+ *   rowIdentityPath: 'id',
+ *   columns: [{ name: 'manager', slotDimensions: { role: 'DEPT_MANAGER' } }]
  * });
  *
  * const delegationSource = new InMemoryDelegationSource();
@@ -160,9 +156,12 @@ export { RoutingResolver } from './src/internal/routing/RoutingResolver.js';
 
 // Registry and data sources
 export { RoleRegistry } from './src/registry/RoleRegistry.js';
-export { AssignmentSource, InMemoryAssignmentSource } from './src/registry/AssignmentSource.js';
 export { DelegationSource, InMemoryDelegationSource } from './src/registry/DelegationSource.js';
-export { ActorSource, OverrideSource } from './src/registry/EffectiveAssignmentSource.js';
+export {
+  AssignmentSource,
+  ActorSource,
+  OverrideSource
+} from './src/registry/EffectiveAssignmentSource.js';
 export {
   WideRowAssignmentSource,
   MappedOverrideSource,

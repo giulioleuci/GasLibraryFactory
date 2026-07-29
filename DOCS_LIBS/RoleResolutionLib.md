@@ -504,7 +504,9 @@ it imposes no school- or organization-specific slot schema.
 - `CompositeAssignmentSource` merges and deduplicates source results.
 
 `ActorSource`, `AssignmentSource`, and `OverrideSource` are the public persistence
-contracts used by the resolver.
+contracts used by the resolver. `AssignmentSource` exposes
+`getAssignments(context, asOfDate)`; the previous role-oriented source contract is
+not part of this breaking public API.
 
 ### RoleResolver
 

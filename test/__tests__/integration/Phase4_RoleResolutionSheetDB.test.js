@@ -21,12 +21,12 @@ import {
   Scope,
   Assignment,
   Delegation,
-  InMemoryAssignmentSource,
   InMemoryDelegationSource,
   ScopeType,
   ResolutionStrategy,
   RoutingPolicy
 } from '@RoleResolutionLib';
+import { InMemoryAssignmentSource } from '../../../RoleResolutionLib/src/registry/AssignmentSource.js';
 
 describe('Phase 4 Integration: RoleResolutionLib + SheetDBLib', () => {
   let mockLogger;
