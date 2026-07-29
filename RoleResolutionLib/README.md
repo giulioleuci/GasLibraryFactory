@@ -156,118 +156,39 @@ When a role has been delegated, how should communications be routed?
 ### Basic Resolution
 
 ```javascript
-import {
-  RoleResolver,
-  Role,
-  Actor,
-  Scope,
-  Assignment,
-  RoleRegistry,
-  WideRowAssignmentSource,
-  InMemoryDelegationSource
-} from '@RoleResolutionLib';
+import { Actor, WideRowAssignmentSource, EffectiveAssignmentResolver } from '@RoleResolutionLib';
 
-// Setup role registry
-const roleRegistry = new RoleRegistry();
-roleRegistry.register(
-  new Role({
-    id: 'project_manager',
-    name: 'Project Manager'
-  })
-);
+const actors = {
+  'john@example.com': Actor.person('john', 'john@example.com', 'John Doe')
+};
 
-// Map a domain-specific table into opaque effective-assignment candidates.
+// Map a domain-specific row into an opaque effective-assignment candidate.
 const assignmentSource = new WideRowAssignmentSource({
   rows: [{ id: 'alpha', manager: 'john@example.com' }],
   rowIdentityPath: 'id',
-  columns: [{ name: 'manager', slotDimensions: { role: 'project_manager' } }]
+  columns: [
+    {
+      name: 'manager',
+      slotDimensions: { role: 'project_manager' },
+      contextDimensions: { project: { from: 'id' } }
+    }
+  ]
 });
 
-// Create resolver
-const resolver = new RoleResolver({
-  roleRegistry,
+const resolver = new EffectiveAssignmentResolver({
+  actorSource: { getActor: (id) => actors[id] || null },
   assignmentSource,
-  delegationSource: new InMemoryDelegationSource()
+  overrideSource: { getOverrides: () => [] },
+  delegationSource: { getDelegations: () => [] }
 });
 
-// Resolve role
-const result = resolver.resolve('project_manager', Scope.project('alpha'));
-
-console.log(result.actors); // [Actor { id: 'john@example.com' }]
-console.log(result.routing.primary); // ['john@example.com']
-```
-
-### Resolution with Delegations
-
-```javascript
-// John delegates to Jane for June
-delegationSource.add(
-  new Delegation({
-    principalId: 'john@example.com',
-    delegateId: 'jane@example.com',
-    roleIds: '*',
-    scope: Scope.project('alpha'),
-    validFrom: new Date('2024-06-01'),
-    validUntil: new Date('2024-06-30'),
-    routingPolicy: RoutingPolicy.DELEGATE_PRIMARY_CC
-  })
-);
-
-// Resolve in June
-const juneResult = resolver.resolve('project_manager', Scope.project('alpha'), {
-  asOfDate: new Date('2024-06-15')
+const [result] = resolver.resolve({
+  context: { project: 'alpha' },
+  asOfDate: new Date('2026-01-10')
 });
 
-console.log(juneResult.routing.primary); // ['jane@example.com']
-console.log(juneResult.routing.cc); // ['john@example.com']
-```
-
-### Fallback Roles
-
-```javascript
-// Role with fallback
-roleRegistry.register(
-  new Role({
-    id: 'tech_lead',
-    name: 'Tech Lead',
-    fallbackRoles: ['engineering_manager', 'cto']
-  })
-);
-
-// No tech lead assigned
-const result = resolver.resolve('tech_lead', Scope.project('alpha'), {
-  useFallbacks: true
-});
-
-// Falls back to engineering_manager if tech_lead not assigned
-```
-
-### Chained Delegations
-
-```javascript
-// A → B → C delegation chain
-delegationSource.add(
-  new Delegation({
-    principalId: 'alice@example.com',
-    delegateId: 'bob@example.com',
-    roleIds: '*',
-    routingPolicy: RoutingPolicy.CHAIN_ALL
-  })
-);
-
-delegationSource.add(
-  new Delegation({
-    principalId: 'bob@example.com',
-    delegateId: 'charlie@example.com',
-    roleIds: '*',
-    routingPolicy: RoutingPolicy.CHAIN_ALL
-  })
-);
-
-// Result with CHAIN_ALL routes to entire chain
-const result = resolver.resolve('approver', Scope.global());
-// routing.primary: ['charlie@example.com']
-// routing.cc: ['alice@example.com', 'bob@example.com']
+console.log(result.effectiveActor.displayName); // John Doe
+console.log(result.slot.get('role')); // project_manager
 ```
 
 ## Custom Effective-Assignment Sources
@@ -279,33 +200,28 @@ Implement the breaking public contracts used by `EffectiveAssignmentResolver`:
 for most SheetDB-shaped data.
 
 ```javascript
+import { AssignmentCandidate, AssignmentSlot } from '@RoleResolutionLib';
+
 class SheetDBAssignmentSource {
   constructor(db) {
     this._db = db;
   }
 
-  findAssignments(roleId, scope, options = {}) {
-    const { asOfDate = new Date() } = options;
-
+  getAssignments(context, asOfDate) {
     return this._db
       .select()
       .from('RoleAssignments')
-      .where('role_id', '=', roleId)
-      .where('scope_type', '=', scope.type)
-      .where('scope_value', '=', scope.value)
+      .where('project_id', '=', context.project)
       .execute()
-      .filter((row) => {
-        const validFrom = row.valid_from ? new Date(row.valid_from) : null;
-        const validUntil = row.valid_until ? new Date(row.valid_until) : null;
-        return (!validFrom || validFrom <= asOfDate) && (!validUntil || validUntil >= asOfDate);
-      })
       .map(
         (row) =>
-          new Assignment({
-            roleId: row.role_id,
+          new AssignmentCandidate({
+            id: row.id,
             actorId: row.actor_id,
-            scope: new Scope(row.scope_type, row.scope_value),
-            priority: row.priority
+            slot: new AssignmentSlot({ dimensions: { role: row.role_id } }),
+            validFrom: row.valid_from || null,
+            validTo: row.valid_until || null,
+            metadata: { project: context.project, requestedAt: asOfDate.toISOString() }
           })
       );
   }
