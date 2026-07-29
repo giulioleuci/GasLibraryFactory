@@ -177,6 +177,10 @@ pipeline to one or more collection paths. Operations include filtering, mapping,
 grouping, distinctness, and `flatMap`; therefore a projection deliberately supports
 zero-to-many transformations without mutating the source collection.
 
+`groupBy` aggregates may use `$item` to collect each complete source item. Nested
+grouping keys retain a copied top-level source subtree, allowing later operations
+such as `sortBy` to read sibling metadata without application-side normalization.
+
 `SwapAndEnrichInterceptor` has been removed from the public API. Model substitutions
 as an application-supplied projection strategy when they operate on collections.
 

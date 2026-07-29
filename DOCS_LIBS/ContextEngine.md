@@ -172,6 +172,10 @@ new InterceptorRegistry(logger: Object)
 `CollectionProjector` runs synchronous, declarative operations on defensive copies
 of arrays. Its `flatMap` and strategy operations deliberately support zero-to-many
 transforms, while its trace reports the input and output count of each operation.
+In `groupBy` aggregates, the special path `$item` collects the complete current
+item. Grouping by a nested path (for example `actor.identity.id`) preserves a
+defensive copy of that path's top-level source subtree (`actor`), so following
+operations can read sibling metadata from the grouped result.
 
 **Initialization:**
 

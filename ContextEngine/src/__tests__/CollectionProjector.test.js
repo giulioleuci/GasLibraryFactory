@@ -34,6 +34,56 @@ describe('CollectionProjector', () => {
     ]);
   });
 
+  test('groupBy collects $item and preserves nested key roots for following operations', () => {
+    const registry = new ProjectionRegistry().register('summarizeGroups', (groups) =>
+      groups.map((group) => ({
+        id: group.routing.primary[0].id,
+        surname: group.routing.primary[0].metadata.cognome,
+        subjects: group.assignments.map((assignment) => assignment.subject)
+      }))
+    );
+    const projector = new CollectionProjector({ logger, registry });
+    const input = [
+      {
+        subject: 'SCI',
+        routing: { primary: [{ id: 'teacher-b', metadata: { cognome: 'Verdi' } }] },
+        titolare: { id: 'teacher-b' },
+        docenteEffettivo: { id: 'teacher-b' }
+      },
+      {
+        subject: 'MATH',
+        routing: { primary: [{ id: 'teacher-a', metadata: { cognome: 'Bianchi' } }] },
+        titolare: { id: 'teacher-a' },
+        docenteEffettivo: { id: 'teacher-a' }
+      },
+      {
+        subject: 'PHYS',
+        routing: { primary: [{ id: 'teacher-a', metadata: { cognome: 'Bianchi' } }] },
+        titolare: { id: 'teacher-a' },
+        docenteEffettivo: { id: 'teacher-a' }
+      }
+    ];
+
+    const result = projector.project(input, [
+      {
+        type: 'groupBy',
+        keys: ['routing.primary.0.id', 'titolare.id', 'docenteEffettivo.id'],
+        aggregates: { assignments: { type: 'collect', path: '$item' } }
+      },
+      {
+        type: 'sortBy',
+        keys: [{ path: 'routing.primary.0.metadata.cognome', direction: 'ASC' }]
+      },
+      { type: 'strategy', name: 'summarizeGroups' }
+    ]);
+
+    expect(result.value).toEqual([
+      { id: 'teacher-a', surname: 'Bianchi', subjects: ['MATH', 'PHYS'] },
+      { id: 'teacher-b', surname: 'Verdi', subjects: ['SCI'] }
+    ]);
+    expect(input[0].routing.primary[0].metadata.cognome).toBe('Verdi');
+  });
+
   test('projects mapped fields from nested paths without mutating input', () => {
     const projector = new CollectionProjector({ logger });
     const input = [{ person: { id: 7, name: 'Ada' } }];
