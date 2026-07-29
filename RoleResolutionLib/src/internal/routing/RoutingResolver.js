@@ -58,7 +58,7 @@ export class RoutingResolver {
 
     // If no delegation, just use principal
     if (!delegationChain || delegationChain.isEmpty()) {
-      return RoutingResult.singlePrimary(principalActor);
+      return principalActor ? RoutingResult.singlePrimary(principalActor) : RoutingResult.empty();
     }
 
     // Resolve based on policy

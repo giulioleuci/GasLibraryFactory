@@ -367,6 +367,9 @@ describe('Exports Validation', () => {
       'ScopeType',
       'ActorType',
       'ResolutionStrategy',
+      'AssignmentSource',
+      'InMemoryAssignmentSource',
+      'EffectiveAssignmentSource',
       'EffectiveAssignmentResolver',
       'WideRowAssignmentSource'
     ];

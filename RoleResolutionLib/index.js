@@ -39,11 +39,12 @@
  * - Delegation: Delegation, DelegationChain, DelegationValidator
  * - Routing: RoutingPolicy, RoutingResolver, RoutingResult
  * - Resolution: RoleResolver (main engine)
- * - Registry: RoleRegistry, effective AssignmentSource, DelegationSource
+ * - Registry: RoleRegistry, legacy/effective assignment sources, DelegationSource
  * - Errors: Specialized error classes
  *
  * **Data Source Abstraction:**
- * - AssignmentSource and DelegationSource are interfaces
+ * - AssignmentSource supports RoleResolver; EffectiveAssignmentSource supports
+ *   EffectiveAssignmentResolver; DelegationSource is shared
  * - Implement with SheetDBLib or other persistence for production
  *
  * ## Dependencies
@@ -63,7 +64,7 @@
  *   Scope,
  *   Assignment,
  *   ScopeType,
- *   WideRowAssignmentSource,
+ *   InMemoryAssignmentSource,
  *   InMemoryDelegationSource
  * } from '@RoleResolutionLib';
  *
@@ -76,10 +77,14 @@
  *   allowsDelegation: true
  * }));
  *
- * const assignmentSource = new WideRowAssignmentSource({
- *   rows: [{ id: 'sales', manager: 'user-123' }],
- *   rowIdentityPath: 'id',
- *   columns: [{ name: 'manager', slotDimensions: { role: 'DEPT_MANAGER' } }]
+ * const manager = Actor.person('user-123', 'manager@example.test', 'Department Manager');
+ * const assignmentSource = new InMemoryAssignmentSource({
+ *   actors: [manager],
+ *   assignments: [new Assignment({
+ *     roleId: 'DEPT_MANAGER',
+ *     actorId: manager.id,
+ *     scope: Scope.orgUnit('Sales')
+ *   })]
  * });
  *
  * const delegationSource = new InMemoryDelegationSource();
@@ -157,8 +162,9 @@ export { RoutingResolver } from './src/internal/routing/RoutingResolver.js';
 // Registry and data sources
 export { RoleRegistry } from './src/registry/RoleRegistry.js';
 export { DelegationSource, InMemoryDelegationSource } from './src/registry/DelegationSource.js';
+export { AssignmentSource, InMemoryAssignmentSource } from './src/registry/AssignmentSource.js';
 export {
-  AssignmentSource,
+  EffectiveAssignmentSource,
   ActorSource,
   OverrideSource
 } from './src/registry/EffectiveAssignmentSource.js';

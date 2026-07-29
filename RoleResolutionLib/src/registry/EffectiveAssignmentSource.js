@@ -1,7 +1,7 @@
 /** Generic persistence contracts for effective-assignment resolution. */
-export class AssignmentSource {
+export class EffectiveAssignmentSource {
   getAssignments(_context, _asOfDate) {
-    throw new Error('AssignmentSource.getAssignments() must be implemented');
+    throw new Error('EffectiveAssignmentSource.getAssignments() must be implemented');
   }
 }
 

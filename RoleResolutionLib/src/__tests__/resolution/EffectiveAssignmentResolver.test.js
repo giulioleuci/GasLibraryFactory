@@ -116,6 +116,30 @@ describe('EffectiveAssignmentResolver', () => {
     ).toThrow(AmbiguousAssignmentOverrideError);
   });
 
+  test('selects the first tied latest override when tieBehavior is FIRST', () => {
+    const resolver = createResolver({
+      overrides: [override('first', 'old', 'new'), override('second', 'old', 'middle')],
+      actors: ['old', 'new', 'middle'],
+      policy: new ResolutionPolicy({ tieBehavior: 'FIRST' })
+    });
+
+    const [result] = resolver.resolve({
+      context: { group: 'G1', subject: 'S1' },
+      asOfDate: new Date('2026-01-12')
+    });
+
+    expect(result.permanentActor.id).toBe('new');
+    expect(result.trace.entries).toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({
+          stage: 'OVERRIDE',
+          decision: 'REJECTED',
+          metadata: { overrideId: 'second' }
+        })
+      ])
+    );
+  });
+
   test('rejects a stale override and a missing replacement actor', () => {
     const stale = createResolver({ overrides: [override('stale', 'other', 'new')] });
     expect(() =>
@@ -227,6 +251,36 @@ describe('EffectiveAssignmentResolver', () => {
         .resolve({ context: {}, asOfDate: new Date('2026-01-01') })
         .map((item) => `${item.slot.get('kind')}:${item.baseActor.id}`)
     ).toEqual(['K1:new', 'K1:old', 'K2:new']);
+  });
+
+  test('deduplicates resolved results using the configured result identity', () => {
+    const resolver = createResolver({
+      candidates: [candidate('old-base', 'old'), candidate('new-base', 'new')],
+      overrides: [],
+      policy: new ResolutionPolicy({ resultIdentity: ['slot'] })
+    });
+
+    const results = resolver.resolve({ context: {}, asOfDate: new Date('2026-01-01') });
+
+    expect(results).toHaveLength(1);
+    expect(results[0].baseActor.id).toBe('new');
+  });
+
+  test('missingActorBehavior NULL returns empty routing without null recipients', () => {
+    const resolver = createResolver({
+      overrides: [],
+      actors: [],
+      policy: new ResolutionPolicy({ missingActorBehavior: 'NULL' })
+    });
+
+    const [result] = resolver.resolve({ context: {}, asOfDate: new Date('2026-01-01') });
+
+    expect(result.baseActor).toBeNull();
+    expect(result.permanentActor).toBeNull();
+    expect(result.effectiveActor).toBeNull();
+    expect(result.routing.primary).toEqual([]);
+    expect(result.routing.cc).toEqual([]);
+    expect(result.routing.bcc).toEqual([]);
   });
 
   test('follows a direct and transitive delegation chain, rejecting cycles and overlapping outgoing arcs', () => {

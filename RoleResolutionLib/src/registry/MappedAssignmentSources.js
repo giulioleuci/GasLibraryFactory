@@ -3,13 +3,17 @@ import { AssignmentOverride } from '../core/AssignmentOverride.js';
 import { AssignmentSlot } from '../core/AssignmentSlot.js';
 import { Delegation } from '../internal/delegation/Delegation.js';
 import {
-  AssignmentSource,
+  EffectiveAssignmentSource,
   OverrideSource,
   matchesContextDimensions,
   splitCsv
 } from './EffectiveAssignmentSource.js';
 
-export { AssignmentSource, OverrideSource, ActorSource } from './EffectiveAssignmentSource.js';
+export {
+  EffectiveAssignmentSource,
+  OverrideSource,
+  ActorSource
+} from './EffectiveAssignmentSource.js';
 
 function getPath(value, path) {
   if (typeof path !== 'string' || !path.trim()) {
@@ -58,7 +62,7 @@ function rowsFor(rows, context) {
 }
 
 /** Maps wide, tabular rows to opaque assignment candidates. */
-export class WideRowAssignmentSource extends AssignmentSource {
+export class WideRowAssignmentSource extends EffectiveAssignmentSource {
   constructor({ rows, rowIdentityPath, actorSource, columns, csv: useCsv = true } = {}) {
     super();
     this._rows = rows;
@@ -155,7 +159,7 @@ export class MappedDelegationSource {
 }
 
 /** Combines independent candidate sources with a deterministic identity. */
-export class CompositeAssignmentSource extends AssignmentSource {
+export class CompositeAssignmentSource extends EffectiveAssignmentSource {
   constructor({
     sources,
     identity = ['slot.key', 'actorId'],

@@ -1,5 +1,5 @@
 import {
-  AssignmentSource,
+  EffectiveAssignmentSource,
   ActorSource,
   OverrideSource,
   WideRowAssignmentSource,
@@ -17,7 +17,7 @@ const actorSource = { getActor: (id) => actors.get(id) || null };
 
 describe('mapped effective-assignment sources', () => {
   test('source interfaces require their lookup implementation', () => {
-    expect(() => new AssignmentSource().getAssignments({}, new Date())).toThrow(
+    expect(() => new EffectiveAssignmentSource().getAssignments({}, new Date())).toThrow(
       'must be implemented'
     );
     expect(() => new OverrideSource().getOverrides({}, new Date())).toThrow('must be implemented');

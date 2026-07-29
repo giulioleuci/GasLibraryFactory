@@ -496,6 +496,11 @@ it imposes no school- or organization-specific slot schema.
 
 - `resolve({ context, asOfDate, routingPolicy }): EffectiveAssignmentResult[]`
 
+`ResolutionPolicy.tieBehavior` supports `THROW` and deterministic source-ordered
+`FIRST`. `missingActorBehavior: NULL` produces null actor fields with empty routing
+buckets. `resultIdentity` deduplicates resolved results using `slot`,
+`principalActor`, or dotted result paths.
+
 ### Source adapters
 
 - `WideRowAssignmentSource` maps arrays or synchronous `rows(context)` callbacks into candidates.
@@ -503,10 +508,25 @@ it imposes no school- or organization-specific slot schema.
 - `MappedDelegationSource` maps generic context-scoped delegation rows.
 - `CompositeAssignmentSource` merges and deduplicates source results.
 
-`ActorSource`, `AssignmentSource`, and `OverrideSource` are the public persistence
-contracts used by the resolver. `AssignmentSource` exposes
-`getAssignments(context, asOfDate)`; the previous role-oriented source contract is
-not part of this breaking public API.
+`ActorSource`, `EffectiveAssignmentSource`, and `OverrideSource` are the public
+persistence contracts used by `EffectiveAssignmentResolver`.
+`EffectiveAssignmentSource` exposes `getAssignments(context, asOfDate)`.
+The distinct legacy `AssignmentSource` contract remains public for `RoleResolver`
+and exposes `getAssignmentsForRole`, `getAssignmentsForActor`, and `getActorById`.
+
+### EffectiveAssignmentSource
+
+Interface definition for effective-assignment candidate sources.
+
+**Initialization:**
+
+```javascript
+new EffectiveAssignmentSource();
+```
+
+**Methods:**
+
+- `getAssignments(context: Object, asOfDate: Date): AssignmentCandidate[]`
 
 ### RoleResolver
 

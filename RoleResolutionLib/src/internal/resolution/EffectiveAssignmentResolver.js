@@ -24,6 +24,24 @@ function withTrace(error, trace) {
   return error;
 }
 
+function getPath(value, path) {
+  return String(path)
+    .split('.')
+    .reduce((current, part) => (current == null ? undefined : current[part]), value);
+}
+
+function resultIdentityValue(result, field) {
+  if (field === 'slot') return result.slot.key;
+  if (field === 'principalActor') return result.permanentActor && result.permanentActor.id;
+  const value = getPath(result, field);
+  if (value && typeof value === 'object') {
+    if (typeof value.key === 'string') return value.key;
+    if (typeof value.id === 'string') return value.id;
+    return JSON.stringify(value);
+  }
+  return value;
+}
+
 /** Resolves generic candidates through temporal overrides, delegation, and routing. */
 export class EffectiveAssignmentResolver {
   constructor({
@@ -76,11 +94,21 @@ export class EffectiveAssignmentResolver {
       );
     const overrides = this._overrideSource.getOverrides(context, asOfDate);
     this._validateOverrides(candidates, overrides, asOfDate);
-    return candidates
+    const results = candidates
       .filter((candidate) => candidate.isValidAt(asOfDate))
       .map((candidate) =>
         this._resolveCandidate(candidate, context, asOfDate, overrides, routingPolicy)
       );
+    const byIdentity = new Map();
+    results.forEach((result) => {
+      const key = this._policy.resultIdentity
+        .map((field) => resultIdentityValue(result, field))
+        .join('\u0000');
+      if (!byIdentity.has(key)) {
+        byIdentity.set(key, result);
+      }
+    });
+    return [...byIdentity.values()];
   }
 
   _resolveCandidate(candidate, context, asOfDate, overrides, routingPolicy) {
@@ -233,7 +261,7 @@ export class EffectiveAssignmentResolver {
     }
     const latest = Math.max(...applicable.map((override) => override.effectiveFrom.getTime()));
     const finalists = applicable.filter((override) => override.effectiveFrom.getTime() === latest);
-    if (finalists.length > 1) {
+    if (finalists.length > 1 && this._policy.tieBehavior === 'THROW') {
       trace = append(
         trace,
         'OVERRIDE',
@@ -251,8 +279,9 @@ export class EffectiveAssignmentResolver {
         trace
       );
     }
+    const selected = finalists[0];
     applicable
-      .filter((override) => override !== finalists[0])
+      .filter((override) => override !== selected)
       .forEach((override) => {
         trace = append(
           trace,
@@ -264,7 +293,7 @@ export class EffectiveAssignmentResolver {
           { overrideId: override.id }
         );
       });
-    return { override: finalists[0], trace };
+    return { override: selected, trace };
   }
 
   _resolveDelegations(permanentActor, candidate, context, asOfDate, trace) {

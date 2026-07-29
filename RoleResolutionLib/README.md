@@ -27,7 +27,7 @@ RoleResolutionLib/
 2.  **Strategy Pattern**: `RoutingPolicy` and `ResolutionStrategy` define interchangeable algorithms for how communications should be routed and how results are selected (First vs. All).
 3.  **Registry Pattern**: `RoleRegistry` and effective-assignment sources centralize definitions and allow for dynamic, data-driven lookups.
 4.  **Value Object Pattern**: Actors, Scopes, and Roles are implemented as immutable value objects with specific equality and validation rules.
-5.  **Data Source Interface (Dependency Inversion)**: The effective-assignment API defines `AssignmentSource`, `OverrideSource`, and `ActorSource` contracts for SheetDB or any other persistence.
+5.  **Data Source Interface (Dependency Inversion)**: `AssignmentSource` is the legacy `RoleResolver` contract; the effective-assignment API defines the distinct `EffectiveAssignmentSource`, `OverrideSource`, and `ActorSource` contracts for SheetDB or any other persistence.
 
 ## Overview
 
@@ -35,7 +35,7 @@ RoleResolutionLib provides a flexible, data-source-agnostic system for mapping a
 
 - **Scoped Assignments**: Roles can be assigned at different scopes (global, org-unit, project, resource)
 - **Delegation Chains**: Support for A→B→C transitive delegations with cycle detection
-- **Routing Policies**: 6 different routing strategies for communications when delegations are active
+- **Routing Policies**: 7 routing strategies for communications when delegations are active
 - **Resolution Strategies**: Find first match, all matches, or priority-ordered matches
 
 ## Installation
@@ -136,14 +136,15 @@ const delegation = new Delegation({
 
 When a role has been delegated, how should communications be routed?
 
-| Policy                 | Primary      | CC           | Description                      |
-| ---------------------- | ------------ | ------------ | -------------------------------- |
-| `DELEGATE_ONLY`        | Delegate     | -            | Only delegate receives           |
-| `PRINCIPAL_ONLY`       | Principal    | -            | Only original holder receives    |
-| `BOTH_EQUAL`           | Both         | -            | Both receive as primary          |
-| `DELEGATE_PRIMARY_CC`  | Delegate     | Principal    | Delegate primary, principal CC'd |
-| `PRINCIPAL_PRIMARY_CC` | Principal    | Delegate     | Principal primary, delegate CC'd |
-| `CHAIN_ALL`            | End of chain | All in chain | All actors in delegation chain   |
+| Policy                          | Primary                       | CC           | Description                      |
+| ------------------------------- | ----------------------------- | ------------ | -------------------------------- |
+| `DELEGATE_ONLY`                 | Delegate                      | -            | Only delegate receives           |
+| `PRINCIPAL_ONLY`                | Principal                     | -            | Only original holder receives    |
+| `BOTH_EQUAL`                    | Both                          | -            | Both receive as primary          |
+| `DELEGATE_PRIMARY_PRINCIPAL_CC` | Delegate                      | Principal    | Delegate primary, principal CC'd |
+| `PRINCIPAL_PRIMARY_DELEGATE_CC` | Principal                     | Delegate     | Principal primary, delegate CC'd |
+| `CHAIN_ALL`                     | End of chain                  | All in chain | All actors in delegation chain   |
+| `DELEGATE_OR_PRINCIPAL`         | Delegate, otherwise principal | -            | Single resolved recipient        |
 
 ## Resolution Strategies
 
@@ -194,7 +195,7 @@ console.log(result.slot.get('role')); // project_manager
 ## Custom Effective-Assignment Sources
 
 Implement the breaking public contracts used by `EffectiveAssignmentResolver`:
-`AssignmentSource.getAssignments(context, asOfDate)`,
+`EffectiveAssignmentSource.getAssignments(context, asOfDate)`,
 `OverrideSource.getOverrides(context, asOfDate)`, and
 `ActorSource.getActor(actorId)`. The generic row adapters avoid a custom source
 for most SheetDB-shaped data.
@@ -232,21 +233,23 @@ class SheetDBAssignmentSource {
 
 ```javascript
 import {
-  RoleNotFoundError,
-  NoActorFoundError,
+  AssignmentActorNotFoundError,
   CircularDelegationError,
-  InvalidScopeError
+  AmbiguousAssignmentOverrideError
 } from '@RoleResolutionLib';
 
 try {
-  const result = resolver.resolve('unknown_role', Scope.global());
+  const results = resolver.resolve({
+    context: { project: 'alpha' },
+    asOfDate: new Date('2026-01-10')
+  });
 } catch (error) {
-  if (error instanceof RoleNotFoundError) {
-    console.log(`Role not found: ${error.roleId}`);
-  } else if (error instanceof NoActorFoundError) {
-    console.log(`No actor assigned for role ${error.roleId}`);
+  if (error instanceof AssignmentActorNotFoundError) {
+    console.log(`Assignment actor not found: ${error.actorId}`);
   } else if (error instanceof CircularDelegationError) {
-    console.log(`Circular delegation detected: ${error.chain.join(' → ')}`);
+    console.log('Circular delegation detected');
+  } else if (error instanceof AmbiguousAssignmentOverrideError) {
+    console.log('Tied latest overrides are ambiguous');
   }
 }
 ```
@@ -276,20 +279,21 @@ try {
 
 ### Enums
 
-| Enum                 | Values                                                                                          |
-| -------------------- | ----------------------------------------------------------------------------------------------- |
-| `ScopeType`          | GLOBAL, ORG_UNIT, PROJECT, RESOURCE, CUSTOM                                                     |
-| `ActorType`          | PERSON, SYSTEM, GROUP                                                                           |
-| `RoutingPolicy`      | DELEGATE_ONLY, PRINCIPAL_ONLY, BOTH_EQUAL, DELEGATE_PRIMARY_CC, PRINCIPAL_PRIMARY_CC, CHAIN_ALL |
-| `ResolutionStrategy` | FIRST, ALL, PRIORITY                                                                            |
+| Enum                 | Values                                                                                                                                    |
+| -------------------- | ----------------------------------------------------------------------------------------------------------------------------------------- |
+| `ScopeType`          | GLOBAL, ORG_UNIT, PROJECT, RESOURCE, CUSTOM                                                                                               |
+| `ActorType`          | PERSON, SYSTEM, GROUP                                                                                                                     |
+| `RoutingPolicy`      | DELEGATE_ONLY, PRINCIPAL_ONLY, BOTH_EQUAL, DELEGATE_PRIMARY_PRINCIPAL_CC, PRINCIPAL_PRIMARY_DELEGATE_CC, CHAIN_ALL, DELEGATE_OR_PRINCIPAL |
+| `ResolutionStrategy` | FIRST, ALL, PRIORITY                                                                                                                      |
 
 ### Interfaces
 
-| Interface          | Methods                             |
-| ------------------ | ----------------------------------- |
-| `AssignmentSource` | `getAssignments(context, asOfDate)` |
-| `OverrideSource`   | `getOverrides(context, asOfDate)`   |
-| `ActorSource`      | `getActor(actorId)`                 |
+| Interface                   | Methods                                                                                                                |
+| --------------------------- | ---------------------------------------------------------------------------------------------------------------------- |
+| `AssignmentSource`          | `getAssignmentsForRole(roleId, scope, asOfDate)`, `getAssignmentsForActor(actorId, asOfDate)`, `getActorById(actorId)` |
+| `EffectiveAssignmentSource` | `getAssignments(context, asOfDate)`                                                                                    |
+| `OverrideSource`            | `getOverrides(context, asOfDate)`                                                                                      |
+| `ActorSource`               | `getActor(actorId)`                                                                                                    |
 
 ### Effective assignment API
 
@@ -301,6 +305,13 @@ use any domain-specific dimensions without introducing a new resolver type.
 `WideRowAssignmentSource` maps tabular rows into those candidates; applications pass
 an `ActorSource`, `OverrideSource`, and delegation source to the resolver rather than
 depending on a fixed school or organization schema.
+
+`ResolutionPolicy` controls resolver edge cases. `tieBehavior: 'THROW'` rejects
+tied latest overrides while `'FIRST'` selects the first source-ordered finalist.
+`missingActorBehavior: 'NULL'` retains the result with null actor fields and empty
+routing buckets. `resultIdentity` deduplicates the deterministic resolved result
+stream; the aliases `slot` and `principalActor` mean the slot key and permanent
+actor id, and dotted result paths are also supported.
 
 ## Version
 
