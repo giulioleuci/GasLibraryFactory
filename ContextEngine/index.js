@@ -586,6 +586,9 @@ export { DataProvider } from './src/DataProvider';
 export { ContextInterceptor } from './src/interceptors/ContextInterceptor';
 export { InterceptorRegistry } from './src/interceptors/InterceptorRegistry';
 export { SwapAndEnrichInterceptor } from './src/interceptors/SwapAndEnrichInterceptor';
+export { CollectionProjectionInterceptor } from './src/interceptors/CollectionProjectionInterceptor';
+export { CollectionProjector } from './src/projection/CollectionProjector';
+export { ProjectionRegistry } from './src/projection/ProjectionRegistry';
 
 // Utility classes
 export { PostProcessor as ContextPostProcessor } from './src/PostProcessor';
@@ -596,6 +599,7 @@ export { RecipeValidationError } from './src/internal/errors/RecipeValidationErr
 export { DependencyResolutionError } from './src/internal/errors/DependencyResolutionError';
 export { ProviderNotFoundError } from './src/internal/errors/ProviderNotFoundError';
 export { ProviderExecutionError } from './src/internal/errors/ProviderExecutionError';
+export { CollectionProjectionError } from './src/internal/errors/CollectionProjectionError';
 
 // Testing Mocks (Standardized Testing SDK)
 export * as testing from './src/testing/mocks.js';

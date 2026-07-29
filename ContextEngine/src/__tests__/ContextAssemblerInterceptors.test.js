@@ -8,6 +8,8 @@ import { ProviderRegistry } from '../ProviderRegistry';
 import { InterceptorRegistry } from '../interceptors/InterceptorRegistry';
 import { ContextInterceptor } from '../interceptors/ContextInterceptor';
 import { SwapAndEnrichInterceptor } from '../interceptors/SwapAndEnrichInterceptor';
+import { CollectionProjectionInterceptor } from '../interceptors/CollectionProjectionInterceptor';
+import { CollectionProjector } from '../projection/CollectionProjector';
 import { DataProvider } from '../DataProvider';
 import { MockFactory } from '../../../test/fakes';
 import { testing as ContextEngineTesting } from '@ContextEngine';
@@ -509,6 +511,53 @@ describe('ContextAssembler - Interceptor Integration', () => {
         grade: 10
       });
       expect(context.student.isSubstitute).toBeUndefined();
+    });
+  });
+
+  describe('CollectionProjectionInterceptor integration', () => {
+    it('projects nested collections after the selected mutating provider', () => {
+      class AssignmentsProvider extends DataProvider {
+        _fetchData() {
+          return null;
+        }
+
+        provide(sharedTarget) {
+          sharedTarget.focus = { items: [{ id: 1 }, { id: 1 }, { id: 2 }] };
+        }
+      }
+
+      providerRegistry.registerSingleton(
+        'AssignmentsProvider',
+        new AssignmentsProvider(mocks.logger)
+      );
+      interceptorRegistry.registerSingleton(
+        'ProjectAssignments',
+        new CollectionProjectionInterceptor(
+          mocks.logger,
+          new CollectionProjector({ logger: mocks.logger }),
+          {
+            targetProviders: ['assignments'],
+            targetPaths: ['focus.items'],
+            operations: [{ type: 'distinctBy', keys: ['id'] }]
+          }
+        )
+      );
+      assembler = new ContextAssembler(
+        mocks.logger,
+        providerRegistry,
+        null,
+        null,
+        interceptorRegistry
+      );
+
+      const context = assembler.assembleInto(
+        {},
+        { providers: [{ name: 'assignments', type: 'AssignmentsProvider' }] },
+        {},
+        {}
+      );
+
+      expect(context.focus.items).toEqual([{ id: 1 }, { id: 2 }]);
     });
   });
 
