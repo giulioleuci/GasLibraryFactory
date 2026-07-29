@@ -4,6 +4,8 @@ import { AssignmentCandidate } from '../../core/AssignmentCandidate.js';
 import { AssignmentOverride } from '../../core/AssignmentOverride.js';
 import { AssignmentSlot } from '../../core/AssignmentSlot.js';
 import { Delegation } from '../../internal/delegation/Delegation.js';
+import { InMemoryDelegationSource } from '../../registry/DelegationSource.js';
+import { CompositeAssignmentSource } from '../../registry/MappedAssignmentSources.js';
 import { ResolutionPolicy } from '../../internal/resolution/ResolutionPolicy.js';
 import { RoutingPolicy } from '../../internal/routing/RoutingPolicy.js';
 import {
@@ -43,6 +45,7 @@ function createResolver({
   candidates = [candidate('base', 'old')],
   overrides = [override('change', 'old', 'new')],
   delegations = [],
+  delegationSource = null,
   policy = new ResolutionPolicy(),
   actors = ['old', 'new', 'substitute-2']
 } = {}) {
@@ -51,7 +54,7 @@ function createResolver({
     actorSource: { getActor: (id) => actorMap.get(id) || null },
     assignmentSource: { getAssignments: () => candidates },
     overrideSource: { getOverrides: () => overrides },
-    delegationSource: { getDelegations: () => delegations },
+    delegationSource: delegationSource || { getDelegations: () => delegations },
     policy
   });
 }
@@ -85,12 +88,25 @@ describe('EffectiveAssignmentResolver', () => {
       ],
       actors: ['old', 'middle', 'new']
     });
-    expect(
-      latest.resolve({
-        context: { group: 'G1', subject: 'S1' },
-        asOfDate: new Date('2026-01-12')
-      })[0].permanentActor.id
-    ).toBe('new');
+    const [latestResult] = latest.resolve({
+      context: { group: 'G1', subject: 'S1' },
+      asOfDate: new Date('2026-01-12')
+    });
+    expect(latestResult.permanentActor.id).toBe('new');
+    expect(latestResult.trace.entries).toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({
+          stage: 'OVERRIDE',
+          decision: 'REJECTED',
+          metadata: { overrideId: 'old' }
+        }),
+        expect.objectContaining({
+          stage: 'OVERRIDE',
+          decision: 'APPLIED',
+          metadata: { overrideId: 'latest' }
+        })
+      ])
+    );
     const tied = createResolver({
       overrides: [override('left', 'old', 'new'), override('right', 'old', 'middle')],
       actors: ['old', 'new', 'middle']
@@ -109,6 +125,53 @@ describe('EffectiveAssignmentResolver', () => {
     expect(() =>
       missing.resolve({ context: { group: 'G1', subject: 'S1' }, asOfDate: new Date('2026-01-12') })
     ).toThrow(AssignmentActorNotFoundError);
+  });
+
+  test('rejects an effective override whose scope has no matching base candidate', () => {
+    const unmatchedSlot = new AssignmentOverride({
+      id: 'wrong-slot',
+      previousActorId: 'old',
+      nextActorId: 'new',
+      effectiveFrom: '2026-01-10',
+      slotScope: { group: 'G2' }
+    });
+    expect(() =>
+      createResolver({ overrides: [unmatchedSlot] }).resolve({
+        context: { group: 'G1', subject: 'S1' },
+        asOfDate: new Date('2026-01-12')
+      })
+    ).toThrow(InconsistentAssignmentOverrideError);
+  });
+
+  test('consumes the existing InMemoryDelegationSource through its active-principal API', () => {
+    const source = new InMemoryDelegationSource({
+      delegations: [delegation('d1', 'old', 'new')]
+    });
+    const [result] = createResolver({
+      overrides: [],
+      delegationSource: source
+    }).resolve({ context: {}, asOfDate: new Date('2026-01-12') });
+
+    expect(result.effectiveActor.id).toBe('new');
+    expect(result.delegationChain.getDepth()).toBe(1);
+  });
+
+  test('resolves a deduplicated composite of AssignmentCandidate values', () => {
+    const composite = new CompositeAssignmentSource({
+      sources: [
+        { getAssignments: () => [candidate('left', 'old')] },
+        { getAssignments: () => [candidate('right', 'old')] }
+      ]
+    });
+    const actorMap = new Map([['old', actor('old')]]);
+    const resolver = new EffectiveAssignmentResolver({
+      actorSource: { getActor: (id) => actorMap.get(id) || null },
+      assignmentSource: composite,
+      overrideSource: { getOverrides: () => [] },
+      delegationSource: { getDelegations: () => [] }
+    });
+
+    expect(resolver.resolve({ context: {}, asOfDate: new Date('2026-01-12') })).toHaveLength(1);
   });
 
   test('keeps multiple base actors in the same slot and orders results by slot then actor id', () => {
@@ -150,6 +213,24 @@ describe('EffectiveAssignmentResolver', () => {
         overrides: []
       }).resolve({ context: {}, asOfDate: new Date('2026-01-12') })
     ).toThrow(CircularDelegationError);
+  });
+
+  test('attaches an explanatory immutable trace to resolution failures', () => {
+    let caught;
+    try {
+      createResolver({
+        delegations: [delegation('ab', 'old', 'new'), delegation('ac', 'old', 'substitute-2')],
+        overrides: []
+      }).resolve({ context: {}, asOfDate: new Date('2026-01-12') });
+    } catch (error) {
+      caught = error;
+    }
+    expect(caught).toBeInstanceOf(OverlappingDelegationError);
+    expect(caught.resolutionTrace.entries).toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({ stage: 'DELEGATION', decision: 'REJECTED' })
+      ])
+    );
   });
 
   test('supports an unbounded chain and rejects a configured depth overflow', () => {

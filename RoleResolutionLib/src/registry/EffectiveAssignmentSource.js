@@ -16,3 +16,24 @@ export class ActorSource {
     throw new Error('ActorSource.getActor() must be implemented');
   }
 }
+
+export function splitCsv(value) {
+  if (Array.isArray(value)) {
+    return value.flatMap(splitCsv);
+  }
+  if (typeof value !== 'string') {
+    return value == null ? [] : [String(value)];
+  }
+  return value
+    .split(',')
+    .map((item) => item.trim())
+    .filter(Boolean);
+}
+
+/** Matches opaque dimensions against literal, CSV, and wildcard values. */
+export function matchesContextDimensions(context, dimensions = {}) {
+  return Object.entries(dimensions).every(([name, expected]) => {
+    const values = splitCsv(expected);
+    return values.includes('*') || values.includes(String(context[name]));
+  });
+}

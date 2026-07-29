@@ -2,7 +2,12 @@ import { AssignmentCandidate } from '../core/AssignmentCandidate.js';
 import { AssignmentOverride } from '../core/AssignmentOverride.js';
 import { AssignmentSlot } from '../core/AssignmentSlot.js';
 import { Delegation } from '../internal/delegation/Delegation.js';
-import { AssignmentSource, OverrideSource } from './EffectiveAssignmentSource.js';
+import {
+  AssignmentSource,
+  OverrideSource,
+  matchesContextDimensions,
+  splitCsv
+} from './EffectiveAssignmentSource.js';
 
 export { AssignmentSource, OverrideSource, ActorSource } from './EffectiveAssignmentSource.js';
 
@@ -15,19 +20,6 @@ function getPath(value, path) {
     .reduce((current, part) => (current == null ? undefined : current[part]), value);
 }
 
-function csv(value) {
-  if (Array.isArray(value)) {
-    return value.flatMap(csv);
-  }
-  if (typeof value !== 'string') {
-    return value == null ? [] : [String(value)];
-  }
-  return value
-    .split(',')
-    .map((item) => item.trim())
-    .filter(Boolean);
-}
-
 function mapped(row, definition) {
   if (
     definition &&
@@ -36,7 +28,7 @@ function mapped(row, definition) {
     'from' in definition
   ) {
     const value = getPath(row, definition.from);
-    return definition.parse === 'csv' ? csv(value) : value;
+    return definition.parse === 'csv' ? splitCsv(value) : value;
   }
   return definition;
 }
@@ -58,13 +50,6 @@ function expandDimensions(dimensions) {
     },
     [{}]
   );
-}
-
-function matches(context, dimensions) {
-  return Object.entries(dimensions).every(([name, expected]) => {
-    const values = Array.isArray(expected) ? expected : csv(expected);
-    return values.includes('*') || values.includes(String(context[name]));
-  });
 }
 
 function rowsFor(rows, context) {
@@ -89,11 +74,11 @@ export class WideRowAssignmentSource extends AssignmentSource {
       const rowId = getPath(row, this._rowIdentityPath);
       this._columns.forEach((column) => {
         const contextDimensions = mapDimensions(row, column.contextDimensions);
-        if (!matches(context, contextDimensions)) {
+        if (!matchesContextDimensions(context, contextDimensions)) {
           return;
         }
         const ids = this._csv
-          ? csv(getPath(row, column.name))
+          ? splitCsv(getPath(row, column.name))
           : [getPath(row, column.name)].filter(Boolean);
         ids.forEach((actorId) => {
           candidates.push(
@@ -125,7 +110,7 @@ export class MappedOverrideSource extends OverrideSource {
         const slotScope = mapDimensions(row, this._mapping.scope);
         return expandDimensions(slotScope).map((scope) => ({ row, slotScope: scope }));
       })
-      .filter(({ slotScope }) => matches(context, slotScope))
+      .filter(({ slotScope }) => matchesContextDimensions(context, slotScope))
       .map(
         ({ row, slotScope }) =>
           new AssignmentOverride({
@@ -152,7 +137,7 @@ export class MappedDelegationSource {
         const scope = mapDimensions(row, this._mapping.scope);
         return { row, scope };
       })
-      .filter(({ scope }) => matches(context, scope))
+      .filter(({ scope }) => matchesContextDimensions(context, scope))
       .map(
         ({ row, scope }) =>
           new Delegation({
@@ -191,10 +176,13 @@ export class CompositeAssignmentSource extends AssignmentSource {
           byIdentity.set(key, candidate);
           return;
         }
-        byIdentity.set(key, {
-          ...existing,
-          metadata: this._mergeMetadata(existing.metadata || {}, candidate.metadata || {})
-        });
+        const metadata = this._mergeMetadata(existing.metadata || {}, candidate.metadata || {});
+        byIdentity.set(
+          key,
+          existing instanceof AssignmentCandidate
+            ? new AssignmentCandidate({ ...existing.toJSON(), metadata })
+            : { ...existing, metadata }
+        );
       })
     );
     return [...byIdentity.values()];
