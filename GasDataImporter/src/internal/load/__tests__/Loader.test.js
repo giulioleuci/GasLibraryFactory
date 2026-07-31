@@ -673,6 +673,121 @@ describe('Loader - Comprehensive Test Suite', () => {
   });
 
   // ===================================================================
+  // loadChunk() Method - Resumable/Checkpointed Loading
+  // ===================================================================
+  describe('loadChunk() Method', () => {
+    /**
+     * Builds a stateful table fake (unlike the module-level `mockTable`,
+     * which is a stateless jest.fn() mock) so idempotency and OVERWRITE
+     * purge-gating can be observed across successive loadChunk() calls,
+     * the way a real SheetDBLib table would behave across a resumed run.
+     */
+    function createStatefulTable() {
+      let rows = [];
+      let nextId = 1;
+      return {
+        _keyField: 'ID',
+        getAllRows: jest.fn(() => rows.slice()),
+        insertRows: jest.fn((newRows) => {
+          newRows.forEach((row) => {
+            rows.push({ ID: String(nextId++), ...row });
+          });
+        }),
+        updateRowById: jest.fn((id, data) => {
+          const idx = rows.findIndex((r) => r.ID === id);
+          if (idx >= 0) {
+            rows[idx] = { ...rows[idx], ...data };
+          }
+        }),
+        deleteRowById: jest.fn((id) => {
+          rows = rows.filter((r) => r.ID !== id);
+        })
+      };
+    }
+
+    it('re-applies the same UPSERT chunk without duplicating rows (idempotent resume)', () => {
+      const table = createStatefulTable();
+      mockDb.tables.Users = table;
+      const loadConfig = {
+        targetTable: 'Users',
+        conflictResolution: 'UPSERT',
+        conflictKey: 'email'
+      };
+      const data = [{ email: 'a@x.it', name: 'A' }];
+
+      const first = loader.loadChunk(data, loadConfig, { isFirstChunk: true });
+      const second = loader.loadChunk(data, loadConfig, { isFirstChunk: false }); // simulated resume re-run
+
+      expect(first.inserted).toBe(1);
+      expect(second.inserted).toBe(0);
+      expect(second.updated).toBe(1); // second pass sees it as existing, updates in place — never duplicates
+      expect(table.getAllRows()).toHaveLength(1);
+    });
+
+    it('only purges the table on the first chunk of an OVERWRITE run', () => {
+      const table = createStatefulTable();
+      mockDb.tables.Users = table;
+      table.insertRows([{ email: 'old@x.it' }]);
+      const loadConfig = {
+        targetTable: 'Users',
+        conflictResolution: 'OVERWRITE',
+        conflictKey: 'email'
+      };
+
+      loader.loadChunk([{ email: 'new1@x.it' }], loadConfig, { isFirstChunk: true });
+      loader.loadChunk([{ email: 'new2@x.it' }], loadConfig, { isFirstChunk: false });
+
+      const rows = table.getAllRows();
+      expect(rows.map((r) => r.email).sort()).toEqual(['new1@x.it', 'new2@x.it']); // old@x.it purged once, both new rows kept
+    });
+
+    it('calls save() after every chunk', () => {
+      const config = {
+        targetTable: 'Users',
+        conflictResolution: 'INSERT_ONLY',
+        conflictKey: 'email'
+      };
+
+      loader.loadChunk([{ email: 'new@example.com' }], config, { isFirstChunk: true });
+
+      expect(mockDb.save).toHaveBeenCalled();
+    });
+
+    it('throws LoadError for non-array data', () => {
+      const config = {
+        targetTable: 'Users',
+        conflictResolution: 'UPSERT',
+        conflictKey: 'email'
+      };
+
+      expect(() => {
+        loader.loadChunk('not an array', config, { isFirstChunk: true });
+      }).toThrow(LoadError);
+    });
+
+    it('returns an empty-result shape for an empty chunk without touching the table', () => {
+      const config = {
+        targetTable: 'Users',
+        conflictResolution: 'UPSERT',
+        conflictKey: 'email'
+      };
+
+      const result = loader.loadChunk([], config, { isFirstChunk: true });
+
+      expect(result).toEqual({
+        success: true,
+        inserted: 0,
+        updated: 0,
+        skipped: 0,
+        deleted: 0,
+        total: 0
+      });
+      expect(mockTable.insertRows).not.toHaveBeenCalled();
+      expect(mockDb.save).toHaveBeenCalled();
+    });
+  });
+
+  // ===================================================================
   // Integration Tests
   // ===================================================================
   describe('Integration Tests', () => {

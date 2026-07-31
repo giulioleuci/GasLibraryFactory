@@ -60,6 +60,86 @@ class SheetByIdStrategy extends SourceStrategy {
   }
 
   /**
+   * Indicates that this strategy can paginate extraction via `extractChunk`.
+   * @returns {boolean} Always true for `SheetByIdStrategy`.
+   */
+  supportsCursor() {
+    return true;
+  }
+
+  /**
+   * Extracts a single bounded window of rows from the sheet, starting at
+   * `cursor.rowOffset` data rows past the header (if any), for incremental
+   * import runs that must checkpoint mid-recipe. Shares tab/header
+   * resolution semantics with `_resolveValues`/`_extractData`, but issues a
+   * narrower `getRanges` call per chunk instead of reading the whole sheet.
+   * @param {Object} config Extraction parameters (see `_extractData`).
+   * @param {Object} cursor Opaque cursor from a previous `extractChunk` call,
+   *   or `{ rowOffset: 0, headers: null }` to start from the beginning.
+   * @param {number} cursor.rowOffset Number of data rows already consumed.
+   * @param {Array<string>|null} cursor.headers Header row, cached after the
+   *   first chunk so subsequent chunks don't re-fetch it.
+   * @param {number} maxRows Maximum number of data rows to extract in this chunk.
+   * @returns {{rows: Array<Object>, nextCursor: Object, exhausted: boolean}} Chunk result.
+   * @throws {SourceError} If document is inaccessible, has no sheets, or target tab is missing.
+   */
+  extractChunk(config, cursor, maxRows) {
+    this._validateConfig(config, ['sheetId']);
+    const hasHeaders = config.hasHeaders !== false;
+    const sheetId = config.sheetId;
+    const sheets = this._spreadsheetService.getSheetInfo(sheetId);
+    if (!sheets || sheets.length === 0) {
+      throw new SourceError('Spreadsheet has no sheets', 'NO_SHEETS_FOUND', { sheetId });
+    }
+    const targetSheet = config.tabName
+      ? sheets.find((s) => s.name === config.tabName)
+      : sheets[0];
+    if (!targetSheet) {
+      throw new SourceError(`Sheet tab "${config.tabName}" not found in spreadsheet`, 'TAB_NOT_FOUND', {
+        sheetId,
+        tabName: config.tabName
+      });
+    }
+
+    const lastRow = targetSheet.gridProperties?.rowCount ?? targetSheet.rowCount;
+    const lastCol = targetSheet.gridProperties?.columnCount ?? targetSheet.columnCount;
+    const headerOffset = hasHeaders ? 1 : 0;
+    const startRow = headerOffset + cursor.rowOffset + 1;
+
+    if (lastRow === 0 || startRow > lastRow) {
+      return { rows: [], nextCursor: { ...cursor }, exhausted: true };
+    }
+
+    const endRow = Math.min(startRow + maxRows - 1, lastRow);
+    const range = `${targetSheet.name}!A${startRow}:${this._columnToLetter(lastCol)}${endRow}`;
+    const values = this._spreadsheetService.getRanges(sheetId, range) || [];
+
+    let headers = cursor.headers;
+    if (!headers) {
+      if (hasHeaders) {
+        const headerRange = `${targetSheet.name}!A1:${this._columnToLetter(lastCol)}1`;
+        headers = (this._spreadsheetService.getRanges(sheetId, headerRange) || [[]])[0];
+      } else {
+        headers = Array.from({ length: lastCol }, (_, i) => `Col_${i}`);
+      }
+    }
+
+    const rows = values.map((row) => {
+      const obj = {};
+      headers.forEach((header, index) => {
+        obj[header] = this._coerceValue(row[index] !== undefined ? row[index] : null);
+      });
+      return obj;
+    });
+
+    const consumedRows = endRow - startRow + 1;
+    const newRowOffset = cursor.rowOffset + consumedRows;
+    const exhausted = endRow >= lastRow;
+
+    return { rows, nextCursor: { rowOffset: newRowOffset, headers }, exhausted };
+  }
+
+  /**
    * Resolves the target tab/range and fetches the raw grid via
    * SpreadsheetService, shared by `_extractData` (import recipes) and
    * `extractRaw` (raw grid consumers).

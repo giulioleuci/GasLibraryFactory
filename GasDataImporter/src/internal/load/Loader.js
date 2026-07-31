@@ -127,6 +127,104 @@ class Loader {
   }
 
   /**
+   * Executes a single load chunk for a resumable/checkpointed import run.
+   * Reuses the exact same conflict-resolution strategies as {@link Loader#load}
+   * (INSERT_ONLY/UPDATE_ONLY/UPSERT are naturally idempotent if the same chunk
+   * is re-applied after a resume), except OVERWRITE, whose destructive purge
+   * only runs on `isFirstChunk` — subsequent chunks within the same run append
+   * via INSERT_ONLY instead of re-purging the table. Always commits via
+   * `this._db.save()` at the end, which is the durable checkpoint boundary a
+   * resumed run picks up from.
+   * @param {Array<Object>} data Transformed row collection for this chunk only.
+   * @param {Object} loadConfig persistence parameters (see {@link Loader#load}).
+   * @param {Object} state Chunk-position metadata.
+   * @param {boolean} state.isFirstChunk True for the first LOAD chunk of a run.
+   * @returns {Object} Operational statistics for this chunk.
+   * @throws {LoadError} If database is inaccessible or strategy execution fails.
+   */
+  loadChunk(data, loadConfig, { isFirstChunk }) {
+    if (!Array.isArray(data)) {
+      throw new LoadError('Data must be an array', 'INVALID_DATA', { dataType: typeof data });
+    }
+
+    this._validateLoadConfig(loadConfig);
+
+    const targetTable = loadConfig.targetTable;
+    const conflictResolution = loadConfig.conflictResolution;
+    const conflictKey = loadConfig.conflictKey;
+    const updateIfNewer = loadConfig.updateIfNewer || {};
+
+    this.logger.info(
+      `[Loader] Loading chunk of ${data.length} rows into table "${targetTable}" using strategy "${conflictResolution}" (isFirstChunk=${isFirstChunk})`
+    );
+
+    try {
+      if (!this._db.tables[targetTable]) {
+        throw new LoadError(
+          `Target table "${targetTable}" not found in database`,
+          'TABLE_NOT_FOUND',
+          { targetTable, availableTables: Object.keys(this._db.tables) }
+        );
+      }
+
+      const table = this._db.tables[targetTable];
+
+      let result;
+      if (data.length === 0) {
+        result = { success: true, inserted: 0, updated: 0, skipped: 0, deleted: 0, total: 0 };
+      } else {
+        switch (conflictResolution) {
+          case 'INSERT_ONLY':
+            result = this._insertOnly(table, data, conflictKey);
+            break;
+
+          case 'UPDATE_ONLY':
+            result = this._updateOnly(table, data, conflictKey, updateIfNewer);
+            break;
+
+          case 'UPSERT':
+            result = this._upsert(table, data, conflictKey, updateIfNewer);
+            break;
+
+          case 'OVERWRITE':
+            // Purge only happens once per run, on the first chunk; later
+            // chunks in the same run append instead of wiping prior chunks.
+            result = isFirstChunk
+              ? this._overwrite(table, data, conflictKey)
+              : this._insertOnly(table, data, conflictKey);
+            break;
+
+          default:
+            throw new LoadError(
+              `Unknown conflict resolution strategy: ${conflictResolution}`,
+              'UNKNOWN_STRATEGY',
+              { conflictResolution }
+            );
+        }
+      }
+
+      // Commit boundary: flush after every chunk so a resumed run picks up
+      // from durable state.
+      this.logger.info('[Loader] Saving chunk to database...');
+      this._db.save();
+
+      this.logger.info(`[Loader] Chunk load complete: ${JSON.stringify(result)}`);
+      return result;
+    } catch (error) {
+      if (error instanceof LoadError) {
+        throw error;
+      }
+
+      this.logger.error(`[Loader] Chunk load failed: ${error.message}`);
+      throw new LoadError(`Failed to load data chunk: ${error.message}`, 'LOAD_FAILED', {
+        targetTable,
+        conflictResolution,
+        originalError: error.message
+      });
+    }
+  }
+
+  /**
    * Strategy to exclusively add new records while ignoring existing collisions.
    * @private
    * @param {Object} table target persistence table.

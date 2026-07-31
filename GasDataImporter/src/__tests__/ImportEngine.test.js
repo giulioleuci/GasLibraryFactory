@@ -590,6 +590,148 @@ describe('ImportEngine - Comprehensive Test Suite', () => {
   });
 
   // ===================================================================
+  // startImport() / runImportChunk() - Resumable/Chunked Imports
+  // ===================================================================
+  describe('startImport() / runImportChunk()', () => {
+    it('startImport returns an initial checkpoint without touching extract/transform/load', () => {
+      const recipe = { name: 'Test Import', source: {}, transform: {}, load: {} };
+      const mockConfig = { getName: jest.fn().mockReturnValue('Test Import') };
+      ImportConfiguration.mockImplementation(() => mockConfig);
+
+      const checkpoint = engine.startImport(recipe);
+
+      expect(checkpoint.stage).toBe('EXTRACT');
+      expect(checkpoint.recipeName).toBe('Test Import');
+      expect(checkpoint.done).toBe(false);
+      expect(mockSourceFactory.createStrategy).not.toHaveBeenCalled();
+      expect(mockLoader.load).not.toHaveBeenCalled();
+    });
+
+    it('drives a cursor-aware SheetById recipe to completion across multiple chunks', () => {
+      const recipe = {
+        name: 'Chunked Import',
+        source: { type: 'SheetById', config: { sheetId: 'abc123' } },
+        transform: { mapping: { Name: 'NAME' } },
+        load: { targetTable: 'Users', conflictResolution: 'UPSERT', conflictKey: 'EMAIL' }
+      };
+
+      const mockConfig = {
+        getName: jest.fn().mockReturnValue('Chunked Import'),
+        getSource: jest.fn().mockReturnValue(recipe.source),
+        getTransform: jest.fn().mockReturnValue(recipe.transform),
+        getLoad: jest.fn().mockReturnValue(recipe.load)
+      };
+      ImportConfiguration.mockImplementation(() => mockConfig);
+
+      // Three-row sheet, chunked one row at a time via extractChunk.
+      const allRows = [{ NAME: 'Alice' }, { NAME: 'Bob' }, { NAME: 'Carol' }];
+      let cursorPos = 0;
+      const mockStrategy = {
+        supportsCursor: jest.fn().mockReturnValue(true),
+        extractChunk: jest.fn((_config, cursor, maxRows) => {
+          const offset = cursor.rowOffset;
+          const rows = allRows.slice(offset, offset + maxRows);
+          cursorPos = offset + rows.length;
+          return {
+            rows,
+            nextCursor: { rowOffset: cursorPos, headers: ['NAME'] },
+            exhausted: cursorPos >= allRows.length
+          };
+        })
+      };
+      mockSourceFactory.createStrategy.mockReturnValue(mockStrategy);
+
+      mockTransformer.transform.mockImplementation((rows) => rows);
+      mockLoader.loadChunk = jest.fn().mockReturnValue({
+        success: true,
+        inserted: 3,
+        updated: 0,
+        skipped: 0,
+        deleted: 0,
+        total: 3
+      });
+
+      let checkpoint = engine.startImport(recipe);
+      expect(checkpoint.stage).toBe('EXTRACT');
+
+      let done = false;
+      let iterations = 0;
+      while (!done && iterations < 10) {
+        const step = engine.runImportChunk(recipe, checkpoint, { maxRows: 1 });
+        checkpoint = step.checkpoint;
+        done = step.done;
+        iterations++;
+      }
+
+      expect(done).toBe(true);
+      expect(checkpoint.stage).toBe('DONE');
+      expect(checkpoint.counters.extracted).toBe(3);
+      expect(checkpoint.counters.inserted).toBe(3);
+      expect(iterations).toBeGreaterThan(1); // proves it actually chunked, not one shot
+      expect(mockStrategy.extractChunk).toHaveBeenCalledTimes(3);
+      expect(mockLoader.loadChunk).toHaveBeenCalledWith(
+        [{ NAME: 'Alice' }, { NAME: 'Bob' }, { NAME: 'Carol' }],
+        recipe.load,
+        { isFirstChunk: true }
+      );
+    });
+
+    it('runImportChunk on a non-cursor-aware source strategy completes extraction in one chunk (compatibility path)', () => {
+      const recipe = {
+        name: 'Custom Source Import',
+        source: { type: 'CustomSource', config: {} },
+        transform: { mapping: {} },
+        load: { targetTable: 'Users', conflictResolution: 'UPSERT', conflictKey: 'EMAIL' }
+      };
+
+      const mockConfig = {
+        getName: jest.fn().mockReturnValue('Custom Source Import'),
+        getSource: jest.fn().mockReturnValue(recipe.source),
+        getTransform: jest.fn().mockReturnValue(recipe.transform),
+        getLoad: jest.fn().mockReturnValue(recipe.load)
+      };
+      ImportConfiguration.mockImplementation(() => mockConfig);
+
+      const mockStrategy = {
+        // No supportsCursor() override -> falls back to SourceStrategy's default false,
+        // but this fake mimics that with an explicit jest.fn() for clarity.
+        supportsCursor: jest.fn().mockReturnValue(false),
+        extract: jest.fn().mockReturnValue([{ Name: 'Alice' }])
+      };
+      mockSourceFactory.createStrategy.mockReturnValue(mockStrategy);
+
+      const checkpoint = engine.startImport(recipe);
+      const step = engine.runImportChunk(recipe, checkpoint, { maxRows: 1 });
+
+      expect(step.done).toBe(false); // extract done, but TRANSFORM/LOAD still remain
+      expect(step.checkpoint.stage).toBe('TRANSFORM');
+      expect(mockStrategy.extract).toHaveBeenCalledTimes(1); // whole extract happened in this one chunk
+      expect(step.checkpoint.counters.extracted).toBe(1);
+    });
+
+    it('rejects resuming a checkpoint with a mismatched recipe', () => {
+      const recipe = {
+        name: 'Import A',
+        source: { type: 'SheetById', config: {} },
+        transform: {},
+        load: {}
+      };
+      const otherRecipe = { name: 'Import B', source: {}, transform: {}, load: {} };
+
+      const mockConfig = { getName: jest.fn().mockReturnValue('Import A') };
+      ImportConfiguration.mockImplementation(() => mockConfig);
+      const checkpoint = engine.startImport(recipe);
+
+      const mockConfigB = { getName: jest.fn().mockReturnValue('Import B') };
+      ImportConfiguration.mockImplementation(() => mockConfigB);
+
+      expect(() => {
+        engine.runImportChunk(otherRecipe, checkpoint, { maxRows: 1 });
+      }).toThrow(/recipeName/);
+    });
+  });
+
+  // ===================================================================
   // Integration Tests
   // ===================================================================
   describe('Integration Tests', () => {

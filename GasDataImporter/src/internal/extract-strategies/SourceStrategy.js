@@ -74,6 +74,31 @@ class SourceStrategy {
   }
 
   /**
+   * Indicates whether this strategy can extract data incrementally via
+   * `extractChunk` instead of loading the entire source in one `extract()`
+   * call. Strategies that don't override this fall back to the
+   * "compatibility path" in `ImportPipelineExecutor.runImportChunk`: the
+   * first (and only) extraction chunk pulls everything at once.
+   * @returns {boolean} True if `extractChunk` is implemented.
+   */
+  supportsCursor() {
+    return false;
+  }
+
+  /**
+   * Extracts a single bounded chunk of rows starting from `cursor`, for
+   * strategies that support incremental extraction (see `supportsCursor`).
+   * @param {Object} _config Source-specific parameters.
+   * @param {*} _cursor Opaque cursor produced by a previous `extractChunk` call.
+   * @param {number} _maxRows Maximum number of rows to extract in this chunk.
+   * @returns {{rows: Array<Object>, nextCursor: *, exhausted: boolean}} Chunk result.
+   * @throws {Error} Always, unless overridden by a cursor-aware subclass.
+   */
+  extractChunk(_config, _cursor, _maxRows) {
+    throw new Error(`extractChunk not supported by ${this.constructor.name}`);
+  }
+
+  /**
    * Normalizes 2D grid data into an array of objects, optionally using the first row as property keys.
    * @protected
    * @param {Array<Array>} data 2D data grid.

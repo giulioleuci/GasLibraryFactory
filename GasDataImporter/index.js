@@ -88,6 +88,9 @@
  * ### Configuration
  * - **ImportConfiguration** - Recipe validator and value object
  *
+ * ### Resumable/Chunked Imports
+ * - **ImportCheckpoint** - Serializable checkpoint contract for `ImportEngine.startImport`/`runImportChunk`
+ *
  * ### Extract Phase (4 components)
  * - **SourceStrategy** - Abstract base class for source strategies
  * - **SheetByIdStrategy** - Import from specific sheet by ID
@@ -476,6 +479,9 @@ export { ImportEngine } from './src/ImportEngine.js';
 
 // Configuration
 export { ImportConfiguration } from './src/ImportConfiguration.js';
+
+// Resumable/chunked imports
+export { ImportCheckpoint } from './src/ImportCheckpoint.js';
 
 // Extract phase
 export { SourceStrategy } from './src/internal/extract-strategies/SourceStrategy.js';

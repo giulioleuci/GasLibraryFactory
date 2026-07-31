@@ -499,6 +499,38 @@ describe('SheetByIdStrategy - Comprehensive Test Suite', () => {
   });
 
   // ===================================================================
+  // extractChunk() / supportsCursor() Method Tests
+  // ===================================================================
+  describe('extractChunk() Method', () => {
+    it('extractChunk paginates by row offset and reports exhaustion', () => {
+      const chunkedSpreadsheetService = {
+        getSheetInfo: () => [{ name: 'Sheet1', gridProperties: { rowCount: 3, columnCount: 2 } }],
+        getRanges: (sheetId, range) => {
+          if (range === 'Sheet1!A1:B1') return [['A', 'B']];
+          if (range === 'Sheet1!A2:B2') return [['1', '2']];
+          if (range === 'Sheet1!A3:B3') return [['3', '4']];
+          throw new Error(`unexpected range ${range}`);
+        }
+      };
+      const chunkedStrategy = new SheetByIdStrategy(console, chunkedSpreadsheetService);
+      expect(chunkedStrategy.supportsCursor()).toBe(true);
+
+      const chunk1 = chunkedStrategy.extractChunk(
+        { sheetId: 's1' },
+        { rowOffset: 0, headers: null },
+        1
+      );
+      expect(chunk1.rows).toEqual([{ A: 1, B: 2 }]);
+      expect(chunk1.exhausted).toBe(false);
+      expect(chunk1.nextCursor.rowOffset).toBe(1);
+
+      const chunk2 = chunkedStrategy.extractChunk({ sheetId: 's1' }, chunk1.nextCursor, 1);
+      expect(chunk2.rows).toEqual([{ A: 3, B: 4 }]);
+      expect(chunk2.exhausted).toBe(true);
+    });
+  });
+
+  // ===================================================================
   // extractRaw() Method Tests (ref REPORT_GLF.md B6)
   // ===================================================================
   describe('extractRaw() Method', () => {

@@ -1,9 +1,148 @@
 import { ImportConfiguration } from '../ImportConfiguration.js';
 import { ImportError } from '../internal/errors/ImportError.js';
+import { ImportCheckpoint } from '../ImportCheckpoint.js';
 
 export class ImportPipelineExecutor {
   constructor(facade) {
     this.facade = facade;
+  }
+
+  /**
+   * Creates the initial checkpoint for a resumable/checkpointed import run,
+   * without executing any pipeline phase yet. Pair with `runImportChunk` in
+   * a loop (persisting the checkpoint to `PropertiesService` between GAS
+   * execution windows via `JobRunnerLib`) to drive the recipe to completion
+   * across multiple bounded chunks instead of one synchronous `runImport`.
+   * @param {Object} recipe Import configuration (see ImportConfiguration).
+   * @param {Object} [_options={}] Reserved for future use.
+   * @returns {ImportCheckpoint} Initial checkpoint at the EXTRACT stage.
+   * @throws {ConfigurationError} If the recipe fails validation.
+   */
+  startImport(recipe, _options = {}) {
+    const config = new ImportConfiguration(recipe, this.facade.logger);
+    this.facade.logger.info(`[ImportEngine] startImport: ${config.getName()}`);
+    return ImportCheckpoint.initial(config.getName());
+  }
+
+  /**
+   * Advances a checkpoint by one bounded unit of work: a single extraction
+   * window (for cursor-aware source strategies) or a whole-stage step
+   * (TRANSFORM, LOAD) for stages that aren't chunked. The recipe must be
+   * re-passed on every call — it is intentionally not part of the
+   * serializable checkpoint, to keep checkpoints small (`PropertiesService`
+   * has per-key size limits) and because the recipe is normally already
+   * available to the caller (e.g. `JobHandlerParams` in ALDO's `JobRunnerLib`
+   * integration).
+   *
+   * Extract-phase behavior depends on `SourceStrategy.supportsCursor()`:
+   * cursor-aware strategies (currently only `SheetByIdStrategy`) extract one
+   * bounded window per call via `extractChunk`. Strategies that don't
+   * support cursors fall back to a compatibility path: the entire source is
+   * extracted in a single call via `extract()`, reported as immediately
+   * exhausted.
+   * @param {Object} recipe Import configuration — must match `checkpoint.recipeName`.
+   * @param {ImportCheckpoint} checkpoint Checkpoint to resume from.
+   * @param {Object} [budget={}] Per-call work limits.
+   * @param {number} [budget.maxRows=500] Maximum rows to extract in this call.
+   * @returns {{checkpoint: ImportCheckpoint, done: boolean}} Advanced checkpoint and completion flag.
+   * @throws {ConfigurationError} If the recipe fails validation.
+   * @throws {Error} If `checkpoint.recipeName` doesn't match the recipe being resumed.
+   */
+  runImportChunk(recipe, checkpoint, budget = {}) {
+    const maxRows = budget.maxRows || 500;
+    const config = new ImportConfiguration(recipe, this.facade.logger);
+    ImportCheckpoint.assertMatches(checkpoint, config.getName());
+
+    if (checkpoint.stage === 'EXTRACT') {
+      const sourceConfig = config.getSource();
+      const strategy = this.facade._sourceFactory.createStrategy(sourceConfig.type);
+      let rows;
+      let cursor = checkpoint.sourceCursor;
+      let exhausted;
+      if (strategy.supportsCursor()) {
+        const result = strategy.extractChunk(
+          sourceConfig.config,
+          cursor ?? { rowOffset: 0, headers: null },
+          maxRows
+        );
+        rows = result.rows;
+        cursor = result.nextCursor;
+        exhausted = result.exhausted;
+      } else {
+        rows = strategy.extract(sourceConfig.config);
+        exhausted = true;
+      }
+      const buffer = (checkpoint.buffer || []).concat(rows);
+      const counters = {
+        ...checkpoint.counters,
+        extracted: checkpoint.counters.extracted + rows.length
+      };
+      const nextStage = exhausted ? 'TRANSFORM' : 'EXTRACT';
+      return {
+        checkpoint: new ImportCheckpoint(
+          checkpoint.recipeName,
+          nextStage,
+          cursor,
+          checkpoint.rowOffset,
+          checkpoint.loadOffset,
+          counters,
+          buffer,
+          false
+        ),
+        done: false
+      };
+    }
+
+    if (checkpoint.stage === 'TRANSFORM') {
+      const transformConfig = config.getTransform();
+      const transformed = this.facade._transformer.transform(
+        checkpoint.buffer || [],
+        transformConfig
+      );
+      const counters = { ...checkpoint.counters, transformed: transformed.length };
+      return {
+        checkpoint: new ImportCheckpoint(
+          checkpoint.recipeName,
+          'LOAD',
+          checkpoint.sourceCursor,
+          checkpoint.rowOffset,
+          checkpoint.loadOffset,
+          counters,
+          transformed,
+          false
+        ),
+        done: false
+      };
+    }
+
+    if (checkpoint.stage === 'LOAD') {
+      const loadConfig = config.getLoad();
+      const isFirstChunk = checkpoint.loadOffset === 0;
+      const result = this.facade._loader.loadChunk(checkpoint.buffer || [], loadConfig, {
+        isFirstChunk
+      });
+      const counters = {
+        ...checkpoint.counters,
+        inserted: checkpoint.counters.inserted + result.inserted,
+        updated: checkpoint.counters.updated + result.updated,
+        skipped: checkpoint.counters.skipped + result.skipped,
+        deleted: checkpoint.counters.deleted + result.deleted
+      };
+      const doneCheckpoint = new ImportCheckpoint(
+        checkpoint.recipeName,
+        'DONE',
+        checkpoint.sourceCursor,
+        checkpoint.rowOffset,
+        checkpoint.loadOffset + 1,
+        counters,
+        null,
+        true
+      );
+      return { checkpoint: doneCheckpoint, done: true };
+    }
+
+    // Already DONE (or an unrecognized stage on a foreign checkpoint) — nothing left to do.
+    return { checkpoint, done: true };
   }
 
   runImport(recipe, options = {}) {

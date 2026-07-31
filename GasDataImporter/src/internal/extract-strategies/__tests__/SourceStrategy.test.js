@@ -371,6 +371,23 @@ describe('SourceStrategy - Abstract Base Class Test Suite', () => {
   });
 
   // ===================================================================
+  // supportsCursor() / extractChunk() Default Contract Tests
+  // ===================================================================
+  describe('supportsCursor() / extractChunk() Default Contract', () => {
+    it('should default supportsCursor to false', () => {
+      const strategy = new TestSourceStrategy(mockLogger);
+      expect(strategy.supportsCursor()).toBe(false);
+    });
+
+    it('should throw from extractChunk unless overridden by a cursor-aware subclass', () => {
+      const strategy = new TestSourceStrategy(mockLogger);
+      expect(() => strategy.extractChunk({}, null, 100)).toThrow(
+        'extractChunk not supported by TestSourceStrategy'
+      );
+    });
+  });
+
+  // ===================================================================
   // _validateConfig() Helper Method Tests
   // ===================================================================
   describe('_validateConfig() Helper Method', () => {

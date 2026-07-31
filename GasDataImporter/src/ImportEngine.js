@@ -64,7 +64,9 @@ class ImportEngine {
       '_executeExtract',
       '_executeTransform',
       '_executeLoad',
-      '_generateDryRunLoadResult'
+      '_generateDryRunLoadResult',
+      'startImport',
+      'runImportChunk'
     ];
     pipelineMethods.forEach((m) => {
       this[m] = this._pipelineExecutor[m].bind(this._pipelineExecutor);
