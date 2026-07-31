@@ -90,7 +90,9 @@ Plain, JSON-serializable object — safe to round-trip through
   recipeName: string,
   sourceCursor: unknown,   // opaque, owned by the extract strategy
   rowOffset: number,       // 0/1 flag: 1 once EXTRACT reports the source exhausted
-  loadOffset: number,      // number of LOAD chunks already committed (increments every LOAD call)
+  loadOffset: number,      // number of *non-empty* LOAD chunks already committed
+                            // (an empty chunk does not increment this, so it can't
+                            // consume the "first chunk" slot OVERWRITE relies on)
   counters: {
     extracted: number,
     transformed: number,
@@ -160,9 +162,20 @@ duplicated.
 **only once per run**, on the first chunk (`isFirstChunk: true`) — otherwise
 every chunk would wipe out the rows inserted by prior chunks of the *same*
 run. `loadChunk` gates this automatically: subsequent chunks
-(`isFirstChunk: false`) fall back to an `INSERT_ONLY`-style append instead of
-re-purging the table. `runImportChunk` derives `isFirstChunk` from
-`checkpoint.loadOffset === 0`.
+(`isFirstChunk: false`) append **unconditionally** — every row in the chunk is
+inserted with no conflict-key dedupe — matching `load()`'s own single-shot
+OVERWRITE semantics exactly (a one-shot `OVERWRITE` via `load()` also inserts
+every row unconditionally). This is deliberately **not** routed through
+`INSERT_ONLY`'s dedupe-by-conflict-key logic: doing so would silently drop
+rows whose conflict-key value collides with (or is blank/missing like)
+another row from an earlier chunk of the *same* run — a divergence from
+`load()`'s behavior that a resumable OVERWRITE must not introduce.
+`runImportChunk` derives `isFirstChunk` from `checkpoint.loadOffset === 0`,
+where `loadOffset` only advances past a chunk that actually carried at least
+one load-ready row (see `ImportCheckpoint` shape above) — a chunk with zero
+rows (e.g. a leading block of rows that all failed transform validation)
+never consumes the "first chunk" slot, so the table still gets purged exactly
+once, on the first chunk that has real data.
 
 `loadChunk` always calls `db.save()` at the end of the chunk — this is the
 durable commit boundary a resumed run picks up from after a GAS execution

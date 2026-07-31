@@ -741,6 +741,65 @@ describe('Loader - Comprehensive Test Suite', () => {
       expect(rows.map((r) => r.email).sort()).toEqual(['new1@x.it', 'new2@x.it']); // old@x.it purged once, both new rows kept
     });
 
+    it('appends unconditionally (no conflict-key dedupe) on non-first OVERWRITE chunks, even when conflict-key values repeat or are blank across chunks', () => {
+      // Regression test for review round-2 finding "Bug B": routing
+      // non-first OVERWRITE chunks through _insertOnly's dedupe-by-key
+      // logic silently drops rows whose conflict-key value collides with
+      // (or is blank/missing like) a row already committed by an earlier
+      // chunk of the SAME run — a divergence from load()'s single-shot
+      // _overwrite, which inserts everything unconditionally with no
+      // dedupe. Uses the REAL Loader/stateful table double (not a
+      // hand-written fake) so it actually exercises _insertOnly vs the
+      // fixed unconditional-append path.
+      const table = createStatefulTable();
+      mockDb.tables.Users = table;
+      const loadConfig = {
+        targetTable: 'Users',
+        conflictResolution: 'OVERWRITE',
+        conflictKey: 'email'
+      };
+
+      // First chunk: purges the (empty) table, inserts a row with a
+      // conflict-key value that the second chunk will repeat, plus a row
+      // with a blank conflict-key value.
+      loader.loadChunk(
+        [
+          { email: 'dup@x.it', name: 'First' },
+          { email: '', name: 'Blank-1' }
+        ],
+        loadConfig,
+        { isFirstChunk: true }
+      );
+
+      // Second chunk: repeats 'dup@x.it' and another blank-key row. A
+      // dedupe-by-conflictKey loader (the old _insertOnly routing) would
+      // see both keys as "already existing" from chunk 1 and skip them —
+      // an unconditional-append loader must insert them anyway, matching
+      // what a single-shot OVERWRITE via load() would have done.
+      const secondChunkResult = loader.loadChunk(
+        [
+          { email: 'dup@x.it', name: 'Second-same-key' },
+          { email: '', name: 'Blank-2' }
+        ],
+        loadConfig,
+        { isFirstChunk: false }
+      );
+
+      const rows = table.getAllRows();
+      // All 4 rows across both chunks must be present.
+      expect(rows).toHaveLength(4);
+      expect(rows.map((r) => r.name).sort()).toEqual([
+        'Blank-1',
+        'Blank-2',
+        'First',
+        'Second-same-key'
+      ]);
+      // The second chunk's result must report both rows inserted, none
+      // skipped — proving no conflict-key dedupe ran on this chunk.
+      expect(secondChunkResult.inserted).toBe(2);
+      expect(secondChunkResult.skipped).toBe(0);
+    });
+
     it('calls save() after every chunk', () => {
       const config = {
         targetTable: 'Users',

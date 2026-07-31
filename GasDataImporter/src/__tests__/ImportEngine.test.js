@@ -839,6 +839,106 @@ describe('ImportEngine - Comprehensive Test Suite', () => {
       expect(fakeTable).toEqual([{ NAME: 'Alice' }, { NAME: 'Bob' }, { NAME: 'Carol' }]);
     });
 
+    it('still purges exactly once, on the first chunk that actually has data, when a leading chunk yields zero load-ready rows (OVERWRITE)', () => {
+      // Regression test for review round-2 finding "Bug A": if
+      // ImportPipelineExecutor advanced checkpoint.loadOffset on every LOAD
+      // call (even for an empty buffer), a leading chunk that transform
+      // rejects down to zero rows (e.g. a block of blank/invalid rows before
+      // real data in the sheet) would permanently consume the "first chunk"
+      // slot — isFirstChunk would be false for every later chunk and
+      // OVERWRITE's purge would never run at all this run, even though the
+      // later chunk is genuinely the first one with real data.
+      const recipe = {
+        name: 'Overwrite With Leading Empty Chunk',
+        source: { type: 'SheetById', config: { sheetId: 'abc123' } },
+        transform: { mapping: {} },
+        load: { targetTable: 'Users', conflictResolution: 'OVERWRITE', conflictKey: 'EMAIL' }
+      };
+
+      const mockConfig = {
+        getName: jest.fn().mockReturnValue('Overwrite With Leading Empty Chunk'),
+        getSource: jest.fn().mockReturnValue(recipe.source),
+        getTransform: jest.fn().mockReturnValue(recipe.transform),
+        getLoad: jest.fn().mockReturnValue(recipe.load)
+      };
+      ImportConfiguration.mockImplementation(() => mockConfig);
+
+      // Three rows extracted one at a time; "Alice" simulates a row that
+      // fails transform validation (transform yields nothing for it), so
+      // the FIRST extract+transform chunk is genuinely empty even though
+      // real data (Bob, Carol) follows.
+      const allRows = [{ NAME: 'Alice' }, { NAME: 'Bob' }, { NAME: 'Carol' }];
+      const mockStrategy = {
+        supportsCursor: jest.fn().mockReturnValue(true),
+        extractChunk: jest.fn((_config, cursor, maxRows) => {
+          const offset = cursor.rowOffset;
+          const rows = allRows.slice(offset, offset + maxRows);
+          const newOffset = offset + rows.length;
+          return {
+            rows,
+            nextCursor: { rowOffset: newOffset, headers: ['NAME'] },
+            exhausted: newOffset >= allRows.length
+          };
+        })
+      };
+      mockSourceFactory.createStrategy.mockReturnValue(mockStrategy);
+      mockTransformer.transform.mockImplementation((rows) =>
+        rows.filter((r) => r.NAME !== 'Alice')
+      );
+
+      // Fake table seeded with a stale row from a PRIOR run, mirroring
+      // Loader.loadChunk's real OVERWRITE semantics: purge-then-insert only
+      // on isFirstChunk, append after. If the bug is present, isFirstChunk
+      // never comes back true after the leading empty chunk, so the stale
+      // row is never purged this run.
+      let fakeTable = [{ NAME: 'OldStale' }];
+      mockLoader.loadChunk = jest.fn((data, _loadConfig, { isFirstChunk }) => {
+        if (isFirstChunk) {
+          fakeTable = [];
+        }
+        fakeTable.push(...data);
+        return {
+          success: true,
+          inserted: data.length,
+          updated: 0,
+          skipped: 0,
+          deleted: 0,
+          total: data.length
+        };
+      });
+
+      let checkpoint = engine.startImport(recipe);
+      let done = false;
+      let iterations = 0;
+      while (!done && iterations < 20) {
+        const step = engine.runImportChunk(recipe, checkpoint, { maxRows: 1 });
+        checkpoint = step.checkpoint;
+        done = step.done;
+        iterations++;
+      }
+
+      expect(done).toBe(true);
+      // LOAD is called once per EXTRACT chunk, including the empty one:
+      // (Alice -> []), (Bob -> [Bob]), (Carol -> [Carol]).
+      expect(mockLoader.loadChunk).toHaveBeenCalledTimes(3);
+      expect(mockLoader.loadChunk).toHaveBeenNthCalledWith(1, [], recipe.load, {
+        isFirstChunk: true
+      });
+      // The critical assertion: the chunk carrying the first REAL data
+      // (Bob) must still be treated as isFirstChunk:true, because the
+      // empty chunk before it must not have consumed the slot.
+      expect(mockLoader.loadChunk).toHaveBeenNthCalledWith(2, [{ NAME: 'Bob' }], recipe.load, {
+        isFirstChunk: true
+      });
+      expect(mockLoader.loadChunk).toHaveBeenNthCalledWith(3, [{ NAME: 'Carol' }], recipe.load, {
+        isFirstChunk: false
+      });
+      // The stale pre-existing row must be gone — proving the table was
+      // actually purged once, on the first chunk with real data — and both
+      // real rows survived.
+      expect(fakeTable).toEqual([{ NAME: 'Bob' }, { NAME: 'Carol' }]);
+    });
+
     it('runImportChunk on a non-cursor-aware source strategy completes extraction in one chunk (compatibility path)', () => {
       const recipe = {
         name: 'Custom Source Import',

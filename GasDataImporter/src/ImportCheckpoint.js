@@ -23,7 +23,12 @@ class ImportCheckpoint {
    *   rows to pull), 0 while more remains. Consulted by the `LOAD` stage to
    *   decide whether the next call goes back to `EXTRACT` or on to `DONE`,
    *   without re-extracting to find out.
-   * @param {number} loadOffset Number of load chunks already committed.
+   * @param {number} loadOffset Number of *non-empty* load chunks already
+   *   committed (an empty chunk — e.g. one that had zero load-ready rows
+   *   after transform validation — does not increment this). Used by
+   *   `ImportPipelineExecutor.runImportChunk`'s `LOAD` stage to derive
+   *   `isFirstChunk` (`loadOffset === 0`), which gates OVERWRITE's one-time
+   *   purge-then-insert.
    * @param {Object} counters Running totals across all pipeline phases.
    * @param {Array<Object>|null} buffer Rows carried between stages (extracted
    *   rows awaiting transform, or transformed rows awaiting load).

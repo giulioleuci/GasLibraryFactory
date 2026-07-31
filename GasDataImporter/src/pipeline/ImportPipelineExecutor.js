@@ -55,8 +55,15 @@ export class ImportPipelineExecutor {
    *   the buffer via `Loader.loadChunk` (already handles arbitrary-size
    *   input, since it's already one bounded chunk) and clears the buffer.
    *   `isFirstChunk` is true only on the very first `LOAD` call of the
-   *   entire run (`checkpoint.loadOffset === 0`); `loadOffset` increments on
-   *   every `LOAD` call from here on (not pinned at 0/1 as before). If
+   *   entire run that actually carries a non-empty buffer
+   *   (`checkpoint.loadOffset === 0`); `loadOffset` only increments when the
+   *   chunk being loaded is non-empty — an empty chunk (e.g. a leading block
+   *   of rows that were all rejected by transform validation, or a genuinely
+   *   empty extracted window) does NOT consume the "first chunk" slot,
+   *   because `Loader.loadChunk` short-circuits on `data.length === 0`
+   *   before OVERWRITE's purge-then-insert logic ever runs — if `loadOffset`
+   *   advanced anyway, the table would never get purged for a run whose
+   *   first real data happened to arrive after an empty chunk. If
    *   extraction was already exhausted, moves to `DONE`; otherwise moves
    *   back to `EXTRACT` to pull the next bounded chunk.
    * - **`TRANSFORM`**: kept only for backward compatibility with a
@@ -159,8 +166,9 @@ export class ImportPipelineExecutor {
 
     if (checkpoint.stage === 'LOAD') {
       const loadConfig = config.getLoad();
+      const buffer = checkpoint.buffer || [];
       const isFirstChunk = checkpoint.loadOffset === 0;
-      const result = this.facade._loader.loadChunk(checkpoint.buffer || [], loadConfig, {
+      const result = this.facade._loader.loadChunk(buffer, loadConfig, {
         isFirstChunk
       });
       const counters = {
@@ -170,7 +178,11 @@ export class ImportPipelineExecutor {
         skipped: checkpoint.counters.skipped + result.skipped,
         deleted: checkpoint.counters.deleted + result.deleted
       };
-      const newLoadOffset = checkpoint.loadOffset + 1;
+      // Only a chunk that actually carried load-ready rows consumes the
+      // "first chunk" slot (see method doc) — an empty chunk leaves
+      // loadOffset untouched so the next chunk with real data is still
+      // treated as the first one, and OVERWRITE still purges exactly once.
+      const newLoadOffset = buffer.length > 0 ? checkpoint.loadOffset + 1 : checkpoint.loadOffset;
       const extractionExhausted = checkpoint.rowOffset === 1;
 
       if (extractionExhausted) {

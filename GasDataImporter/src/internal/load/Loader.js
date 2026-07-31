@@ -132,9 +132,14 @@ class Loader {
    * (INSERT_ONLY/UPDATE_ONLY/UPSERT are naturally idempotent if the same chunk
    * is re-applied after a resume), except OVERWRITE, whose destructive purge
    * only runs on `isFirstChunk` — subsequent chunks within the same run append
-   * via INSERT_ONLY instead of re-purging the table. Always commits via
-   * `this._db.save()` at the end, which is the durable checkpoint boundary a
-   * resumed run picks up from.
+   * **unconditionally** (no conflict-key dedupe), matching {@link
+   * Loader#_overwrite}'s single-shot semantics exactly: `load()` with
+   * OVERWRITE inserts every row unconditionally in one call, so a chunked
+   * OVERWRITE run must insert every row across all its chunks unconditionally
+   * too, not silently drop rows that share (or omit) a conflict-key value
+   * with a row from an earlier chunk. Always commits via `this._db.save()`
+   * at the end, which is the durable checkpoint boundary a resumed run picks
+   * up from.
    * @param {Array<Object>} data Transformed row collection for this chunk only.
    * @param {Object} loadConfig persistence parameters (see {@link Loader#load}).
    * @param {Object} state Chunk-position metadata.
@@ -189,9 +194,15 @@ class Loader {
           case 'OVERWRITE':
             // Purge only happens once per run, on the first chunk; later
             // chunks in the same run append instead of wiping prior chunks.
+            // Non-first chunks append UNCONDITIONALLY (not via _insertOnly's
+            // conflict-key dedupe) to match _overwrite's own semantics — a
+            // single-shot OVERWRITE via load() inserts every row with no
+            // dedupe, so a chunked OVERWRITE must too, or rows sharing (or
+            // missing) a conflict-key value across chunks would be silently
+            // dropped as "skipped" instead of inserted.
             result = isFirstChunk
               ? this._overwrite(table, data, conflictKey)
-              : this._insertOnly(table, data, conflictKey);
+              : this._appendAll(table, data);
             break;
 
           default:
@@ -462,6 +473,51 @@ class Loader {
     } catch (error) {
       this.logger.error(`[Loader] Failed to overwrite rows: ${error.message}`);
       throw new LoadError(`Failed to overwrite rows: ${error.message}`, 'OVERWRITE_FAILED', {
+        originalError: error.message
+      });
+    }
+  }
+
+  /**
+   * Unconditional bulk-insert with no conflict-key dedupe and no purge —
+   * used exclusively for chunks 2+ of a chunked OVERWRITE run (see
+   * {@link Loader#loadChunk}). Chunk 1 already purged the table via
+   * {@link Loader#_overwrite}; later chunks must simply append every row
+   * they carry, the same way `_overwrite` itself inserts everything
+   * unconditionally in a single-shot `load()` call. Unlike
+   * {@link Loader#_insertOnly}, this never skips a row because its
+   * conflict-key value collides with (or is blank/missing like) another
+   * row already in the table — that dedupe behavior is correct for
+   * INSERT_ONLY's own semantics but wrong here, since it would silently
+   * drop legitimate OVERWRITE rows that a single-shot `load()` call would
+   * have inserted without question.
+   * @private
+   * @param {Object} table target persistence table.
+   * @param {Array<Object>} data Records to insert unconditionally.
+   * @returns {Object} statistics.
+   */
+  _appendAll(table, data) {
+    try {
+      let inserted = 0;
+      if (data.length > 0) {
+        table.insertRows(data);
+        inserted = data.length;
+        this.logger.info(
+          `[Loader] Bulk appended ${inserted} rows unconditionally (chunked OVERWRITE, non-first chunk)`
+        );
+      }
+
+      return {
+        success: true,
+        inserted,
+        updated: 0,
+        skipped: 0,
+        deleted: 0,
+        total: data.length
+      };
+    } catch (error) {
+      this.logger.error(`[Loader] Failed to append rows: ${error.message}`);
+      throw new LoadError(`Failed to append rows: ${error.message}`, 'APPEND_FAILED', {
         originalError: error.message
       });
     }
