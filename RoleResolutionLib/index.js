@@ -196,5 +196,7 @@ export {
   InconsistentAssignmentOverrideError,
   AmbiguousAssignmentOverrideError,
   AssignmentActorNotFoundError,
-  OverlappingDelegationError
+  OverlappingDelegationError,
+  CircularAssignmentOverrideError,
+  OverrideChainDepthExceededError
 } from './src/internal/errors/RoleResolutionError.js';

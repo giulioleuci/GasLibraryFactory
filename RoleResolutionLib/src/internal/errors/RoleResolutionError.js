@@ -230,3 +230,52 @@ export class OverlappingDelegationError extends RoleResolutionError {
     this.actorId = actorId;
   }
 }
+
+/**
+ * @class CircularAssignmentOverrideError
+ * @extends RoleResolutionError
+ * @description Thrown when a loop is detected while walking an override chain.
+ */
+export class CircularAssignmentOverrideError extends RoleResolutionError {
+  /**
+   * @constructor
+   * @param {string} actorId - Actor causing the cycle.
+   * @param {string[]} [chain=[]] - Visited actor ids forming the cycle.
+   * @param {Object} [context={}] - Additional metadata.
+   */
+  constructor(actorId, chain = [], context = {}) {
+    const chainStr = chain.length > 0 ? ` (chain: ${chain.join(' -> ')})` : '';
+    super(`Circular assignment override detected for actor: ${actorId}${chainStr}`, {
+      ...context,
+      actorId,
+      chain
+    });
+    this.name = 'CircularAssignmentOverrideError';
+    this.actorId = actorId;
+    this.chain = chain;
+  }
+}
+
+/**
+ * @class OverrideChainDepthExceededError
+ * @extends RoleResolutionError
+ * @description Thrown when an override chain exceeds the configured maximum depth.
+ */
+export class OverrideChainDepthExceededError extends RoleResolutionError {
+  /**
+   * @constructor
+   * @param {number} actualDepth - Chain length detected.
+   * @param {number} maxDepth - Allowed threshold.
+   * @param {Object} [context={}] - Additional metadata.
+   */
+  constructor(actualDepth, maxDepth, context = {}) {
+    super(`Override chain depth (${actualDepth}) exceeds maximum (${maxDepth})`, {
+      ...context,
+      actualDepth,
+      maxDepth
+    });
+    this.name = 'OverrideChainDepthExceededError';
+    this.actualDepth = actualDepth;
+    this.maxDepth = maxDepth;
+  }
+}

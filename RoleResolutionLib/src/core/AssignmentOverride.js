@@ -69,15 +69,28 @@ export class AssignmentOverride {
     Object.freeze(this);
   }
 
+  appliesAtDate(date) {
+    const asOf = parseDate(date);
+    return asOf !== null && asOf >= this.effectiveFrom;
+  }
+
+  matchesActor(actorId) {
+    return actorId === this.previousActorId;
+  }
+
+  matchesSlot(slot) {
+    return Boolean(slot) && slot.matches(this.slotScope);
+  }
+
   matches(candidate, date = new Date()) {
     const asOf = parseDate(date);
     return (
       candidate instanceof AssignmentCandidate &&
       asOf !== null &&
-      asOf >= this.effectiveFrom &&
-      candidate.actorId === this.previousActorId &&
+      this.appliesAtDate(asOf) &&
+      this.matchesActor(candidate.actorId) &&
       candidate.isValidAt(asOf) &&
-      candidate.slot.matches(this.slotScope)
+      this.matchesSlot(candidate.slot)
     );
   }
 

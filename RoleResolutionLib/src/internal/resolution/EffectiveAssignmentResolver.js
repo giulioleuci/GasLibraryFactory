@@ -8,10 +8,12 @@ import { matchesContextDimensions } from '../../registry/EffectiveAssignmentSour
 import {
   AmbiguousAssignmentOverrideError,
   AssignmentActorNotFoundError,
+  CircularAssignmentOverrideError,
   CircularDelegationError,
   DelegationDepthExceededError,
   InconsistentAssignmentOverrideError,
   OverlappingDelegationError,
+  OverrideChainDepthExceededError,
   RoleValidationError
 } from '../errors/RoleResolutionError.js';
 
@@ -31,12 +33,20 @@ function getPath(value, path) {
 }
 
 function resultIdentityValue(result, field) {
-  if (field === 'slot') return result.slot.key;
-  if (field === 'principalActor') return result.permanentActor && result.permanentActor.id;
+  if (field === 'slot') {
+    return result.slot.key;
+  }
+  if (field === 'principalActor') {
+    return result.permanentActor && result.permanentActor.id;
+  }
   const value = getPath(result, field);
   if (value && typeof value === 'object') {
-    if (typeof value.key === 'string') return value.key;
-    if (typeof value.id === 'string') return value.id;
+    if (typeof value.key === 'string') {
+      return value.key;
+    }
+    if (typeof value.id === 'string') {
+      return value.id;
+    }
     return JSON.stringify(value);
   }
   return value;
@@ -130,26 +140,22 @@ export class EffectiveAssignmentResolver {
       'valid base candidate selected'
     );
 
-    const overrideSelection = this._selectOverride(candidate, overrides, asOfDate, trace);
-    trace = overrideSelection.trace;
-    const selectedOverride = overrideSelection.override;
+    const chainSelection = this._selectOverrideChain(candidate, overrides, asOfDate, trace);
+    trace = chainSelection.trace;
     let permanentActor = baseActor;
-    if (selectedOverride) {
-      trace = append(
-        trace,
-        'OVERRIDE',
-        'APPLIED',
-        candidate.id,
-        selectedOverride.nextActorId,
-        'latest matching override applied',
-        { overrideId: selectedOverride.id }
-      );
-      permanentActor = this._getActor(
-        selectedOverride.nextActorId,
-        candidate.id,
-        trace,
-        'OVERRIDE'
-      );
+    if (chainSelection.chain.length > 0) {
+      chainSelection.chain.forEach((selectedOverride) => {
+        trace = append(
+          trace,
+          'OVERRIDE',
+          'APPLIED',
+          candidate.id,
+          selectedOverride.nextActorId,
+          'latest matching override applied',
+          { overrideId: selectedOverride.id }
+        );
+      });
+      permanentActor = this._getActor(chainSelection.finalActorId, candidate.id, trace, 'OVERRIDE');
     } else {
       trace = append(
         trace,
@@ -198,9 +204,9 @@ export class EffectiveAssignmentResolver {
 
   _validateOverrides(candidates, overrides, asOfDate) {
     overrides
-      .filter((override) => asOfDate >= override.effectiveFrom)
+      .filter((override) => override.appliesAtDate(asOfDate))
       .forEach((override) => {
-        if (!candidates.some((candidate) => override.matches(candidate, asOfDate))) {
+        if (!candidates.some((candidate) => override.matchesSlot(candidate.slot))) {
           let trace = append(
             new ResolutionTrace(),
             'OVERRIDE',
@@ -230,25 +236,87 @@ export class EffectiveAssignmentResolver {
       });
   }
 
-  _selectOverride(candidate, overrides, asOfDate, trace) {
-    const applicable = [];
-    overrides.forEach((override) => {
-      trace = append(
-        trace,
-        'OVERRIDE',
-        'CONSIDERED',
-        candidate.id,
-        candidate.actorId,
-        'override evaluated',
-        { overrideId: override.id }
+  _selectOverrideChain(candidate, overrides, asOfDate, trace) {
+    const visited = [candidate.actorId];
+    const applied = [];
+    let current = candidate.actorId;
+    for (;;) {
+      const selection = this._selectOverrideForActor(
+        candidate,
+        current,
+        overrides,
+        asOfDate,
+        trace
       );
-      if (!override.matches(candidate, asOfDate)) {
+      trace = selection.trace;
+      if (!selection.override) {
+        break;
+      }
+      const selected = selection.override;
+      if (visited.includes(selected.nextActorId)) {
         trace = append(
           trace,
           'OVERRIDE',
           'REJECTED',
           candidate.id,
-          candidate.actorId,
+          selected.nextActorId,
+          'override chain cycle detected',
+          { overrideId: selected.id }
+        );
+        throw withTrace(
+          new CircularAssignmentOverrideError(selected.nextActorId, [
+            ...visited,
+            selected.nextActorId
+          ]),
+          trace
+        );
+      }
+      if (
+        this._policy.maxOverrideChainDepth !== null &&
+        applied.length + 1 > this._policy.maxOverrideChainDepth
+      ) {
+        trace = append(
+          trace,
+          'OVERRIDE',
+          'REJECTED',
+          candidate.id,
+          current,
+          'override chain depth exceeds configured maximum',
+          { overrideId: selected.id }
+        );
+        throw withTrace(
+          new OverrideChainDepthExceededError(
+            applied.length + 1,
+            this._policy.maxOverrideChainDepth
+          ),
+          trace
+        );
+      }
+      applied.push(selected);
+      visited.push(selected.nextActorId);
+      current = selected.nextActorId;
+    }
+    return { chain: applied, finalActorId: current, trace };
+  }
+
+  _selectOverrideForActor(candidate, actorId, overrides, asOfDate, trace) {
+    const applicable = [];
+    overrides.forEach((override) => {
+      trace = append(trace, 'OVERRIDE', 'CONSIDERED', candidate.id, actorId, 'override evaluated', {
+        overrideId: override.id
+      });
+      if (
+        !override.appliesAtDate(asOfDate) ||
+        !override.matchesActor(actorId) ||
+        !override.matchesSlot(candidate.slot) ||
+        !candidate.isValidAt(asOfDate)
+      ) {
+        trace = append(
+          trace,
+          'OVERRIDE',
+          'REJECTED',
+          candidate.id,
+          actorId,
           'override does not match candidate',
           { overrideId: override.id }
         );
@@ -267,7 +335,7 @@ export class EffectiveAssignmentResolver {
         'OVERRIDE',
         'REJECTED',
         candidate.id,
-        candidate.actorId,
+        actorId,
         'ambiguous latest overrides',
         { overrideIds: finalists.map((override) => override.id) }
       );
@@ -288,7 +356,7 @@ export class EffectiveAssignmentResolver {
           'OVERRIDE',
           'REJECTED',
           candidate.id,
-          candidate.actorId,
+          actorId,
           'superseded by a later override',
           { overrideId: override.id }
         );

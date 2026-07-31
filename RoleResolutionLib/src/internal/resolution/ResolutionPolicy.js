@@ -10,6 +10,7 @@ export class ResolutionPolicy {
     tieBehavior = 'THROW',
     missingActorBehavior = 'THROW',
     maxDelegationDepth = null,
+    maxOverrideChainDepth = null,
     routingPolicy = RoutingPolicy.DELEGATE_OR_PRINCIPAL,
     resultIdentity = ['slot', 'principalActor']
   } = {}) {
@@ -24,6 +25,12 @@ export class ResolutionPolicy {
       (!Number.isInteger(maxDelegationDepth) || maxDelegationDepth < 1)
     ) {
       throw new RoleValidationError('maxDelegationDepth must be null or a positive integer');
+    }
+    if (
+      maxOverrideChainDepth !== null &&
+      (!Number.isInteger(maxOverrideChainDepth) || maxOverrideChainDepth < 1)
+    ) {
+      throw new RoleValidationError('maxOverrideChainDepth must be null or a positive integer');
     }
     if (!isValidRoutingPolicy(routingPolicy)) {
       throw new RoleValidationError(`Invalid routing policy: ${routingPolicy}`);
@@ -41,6 +48,7 @@ export class ResolutionPolicy {
     this.tieBehavior = tieBehavior;
     this.missingActorBehavior = missingActorBehavior;
     this.maxDelegationDepth = maxDelegationDepth;
+    this.maxOverrideChainDepth = maxOverrideChainDepth;
     this.routingPolicy = routingPolicy;
     this.resultIdentity = Object.freeze([...resultIdentity]);
     Object.freeze(this);
@@ -51,6 +59,7 @@ export class ResolutionPolicy {
       tieBehavior: this.tieBehavior,
       missingActorBehavior: this.missingActorBehavior,
       maxDelegationDepth: this.maxDelegationDepth,
+      maxOverrideChainDepth: this.maxOverrideChainDepth,
       routingPolicy: this.routingPolicy,
       resultIdentity: [...this.resultIdentity]
     };

@@ -14,7 +14,9 @@ import {
   InconsistentAssignmentOverrideError,
   OverlappingDelegationError,
   CircularDelegationError,
-  DelegationDepthExceededError
+  DelegationDepthExceededError,
+  CircularAssignmentOverrideError,
+  OverrideChainDepthExceededError
 } from '../../internal/errors/RoleResolutionError.js';
 
 const actor = (id) => Actor.person(id, `${id}@example.test`, id);
@@ -140,11 +142,19 @@ describe('EffectiveAssignmentResolver', () => {
     );
   });
 
-  test('rejects a stale override and a missing replacement actor', () => {
-    const stale = createResolver({ overrides: [override('stale', 'other', 'new')] });
-    expect(() =>
-      stale.resolve({ context: { group: 'G1', subject: 'S1' }, asOfDate: new Date('2026-01-12') })
-    ).toThrow(InconsistentAssignmentOverrideError);
+  test('an override whose previousActorId matches nothing in the chain is inert, not an error', () => {
+    const unrelated = createResolver({
+      overrides: [override('unrelated', 'other', 'new')],
+      actors: ['old', 'other', 'new']
+    });
+    const [result] = unrelated.resolve({
+      context: { group: 'G1', subject: 'S1' },
+      asOfDate: new Date('2026-01-12')
+    });
+    expect(result.permanentActor.id).toBe('old');
+  });
+
+  test('rejects a missing replacement actor', () => {
     const missing = createResolver({ overrides: [override('missing', 'old', 'absent')] });
     expect(() =>
       missing.resolve({ context: { group: 'G1', subject: 'S1' }, asOfDate: new Date('2026-01-12') })
@@ -347,6 +357,112 @@ describe('EffectiveAssignmentResolver', () => {
         policy: new ResolutionPolicy({ maxDelegationDepth: 2 })
       }).resolve({ context: {}, asOfDate: new Date('2026-01-12') })
     ).toThrow(DelegationDepthExceededError);
+  });
+
+  test('walks a 2-hop override chain to the final actor and traces both hops as APPLIED', () => {
+    const resolver = createResolver({
+      overrides: [
+        override('hop1', 'old', 'middle', '2026-01-05'),
+        override('hop2', 'middle', 'new', '2026-01-10')
+      ],
+      actors: ['old', 'middle', 'new']
+    });
+    const [result] = resolver.resolve({
+      context: { group: 'G1', subject: 'S1' },
+      asOfDate: new Date('2026-01-12')
+    });
+    expect(result.permanentActor.id).toBe('new');
+    expect(
+      result.trace.entries.filter(
+        (entry) => entry.stage === 'OVERRIDE' && entry.decision === 'APPLIED'
+      )
+    ).toEqual([
+      expect.objectContaining({ metadata: { overrideId: 'hop1' } }),
+      expect.objectContaining({ metadata: { overrideId: 'hop2' } })
+    ]);
+  });
+
+  test('walks a 3-hop override chain to the final actor', () => {
+    const resolver = createResolver({
+      overrides: [
+        override('hop1', 'old', 'a', '2026-01-02'),
+        override('hop2', 'a', 'b', '2026-01-05'),
+        override('hop3', 'b', 'new', '2026-01-10')
+      ],
+      actors: ['old', 'a', 'b', 'new']
+    });
+    const [result] = resolver.resolve({
+      context: { group: 'G1', subject: 'S1' },
+      asOfDate: new Date('2026-01-12')
+    });
+    expect(result.permanentActor.id).toBe('new');
+    expect(
+      result.trace.entries.filter(
+        (entry) => entry.stage === 'OVERRIDE' && entry.decision === 'APPLIED'
+      )
+    ).toHaveLength(3);
+  });
+
+  test('chain stops at the final holder when no further override applies', () => {
+    const resolver = createResolver({
+      overrides: [override('hop1', 'old', 'middle', '2026-01-05')],
+      actors: ['old', 'middle']
+    });
+    const [result] = resolver.resolve({
+      context: { group: 'G1', subject: 'S1' },
+      asOfDate: new Date('2026-01-12')
+    });
+    expect(result.permanentActor.id).toBe('middle');
+  });
+
+  test('throws CircularAssignmentOverrideError when a chain loops back to a visited actor', () => {
+    const resolver = createResolver({
+      overrides: [
+        override('hop1', 'old', 'middle', '2026-01-05'),
+        override('hop2', 'middle', 'old', '2026-01-10')
+      ],
+      actors: ['old', 'middle']
+    });
+    expect(() =>
+      resolver.resolve({
+        context: { group: 'G1', subject: 'S1' },
+        asOfDate: new Date('2026-01-12')
+      })
+    ).toThrow(CircularAssignmentOverrideError);
+  });
+
+  test('throws OverrideChainDepthExceededError when maxOverrideChainDepth is exceeded', () => {
+    const resolver = createResolver({
+      overrides: [
+        override('hop1', 'old', 'a', '2026-01-01'),
+        override('hop2', 'a', 'b', '2026-01-02'),
+        override('hop3', 'b', 'new', '2026-01-03')
+      ],
+      actors: ['old', 'a', 'b', 'new'],
+      policy: new ResolutionPolicy({ maxOverrideChainDepth: 2 })
+    });
+    expect(() =>
+      resolver.resolve({
+        context: { group: 'G1', subject: 'S1' },
+        asOfDate: new Date('2026-01-12')
+      })
+    ).toThrow(OverrideChainDepthExceededError);
+  });
+
+  test('validates effective overrides by slot only, allowing a legitimate second-hop previousActorId', () => {
+    const resolver = createResolver({
+      overrides: [
+        override('hop1', 'old', 'middle', '2026-01-05'),
+        override('hop2', 'middle', 'new', '2026-01-10')
+      ],
+      actors: ['old', 'middle', 'new']
+    });
+    expect(() =>
+      resolver.resolve({
+        context: { group: 'G1', subject: 'S1' },
+        asOfDate: new Date('2026-01-12')
+      })
+    ).not.toThrow();
   });
 
   test.each(Object.values(RoutingPolicy))(
