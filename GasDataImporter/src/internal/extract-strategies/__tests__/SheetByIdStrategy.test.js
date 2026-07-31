@@ -528,6 +528,88 @@ describe('SheetByIdStrategy - Comprehensive Test Suite', () => {
       expect(chunk2.rows).toEqual([{ A: 3, B: 4 }]);
       expect(chunk2.exhausted).toBe(true);
     });
+
+    it('honors an explicit config.range, returning the same rows as whole extraction (extract())', () => {
+      // Generic fake spreadsheet backing store: getRanges parses any A1
+      // range string and slices a real 2D grid, so both extract() (via
+      // _resolveValues) and extractChunk() are exercised against the same
+      // ground truth instead of a hand-picked per-call mock.
+      const colToNum = (letters) => {
+        let n = 0;
+        for (const ch of letters.toUpperCase()) {
+          n = n * 26 + (ch.charCodeAt(0) - 64);
+        }
+        return n;
+      };
+      const grid = [
+        ['noise', 'noise', 'noise'], // row1 - outside the configured range
+        ['noise', 'noise', 'noise'], // row2
+        ['noise', 'noise', 'noise'], // row3
+        ['noise', 'noise', 'noise'], // row4
+        ['Name', 'Age', 'Email'], // row5 - range start / header row
+        ['A', 1, 'a@x.com'], // row6
+        ['B', 2, 'b@x.com'], // row7
+        ['C', 3, 'c@x.com'], // row8
+        ['D', 4, 'd@x.com'], // row9
+        ['E', 5, 'e@x.com'], // row10 - range end
+        ['noise', 'noise', 'noise'] // row11 - outside the configured range
+      ];
+      const rangedSpreadsheetService = {
+        getSheetInfo: () => [
+          { name: 'Sheet1', gridProperties: { rowCount: grid.length, columnCount: grid[0].length } }
+        ],
+        getRanges: (sheetId, rangeStr) => {
+          const bare = rangeStr.includes('!') ? rangeStr.split('!')[1] : rangeStr;
+          const match = /^([A-Za-z]+)(\d+):([A-Za-z]+)(\d+)$/.exec(bare);
+          if (!match) {
+            throw new Error(`unexpected range ${rangeStr}`);
+          }
+          const startCol = colToNum(match[1]);
+          const startRow = parseInt(match[2], 10);
+          const endCol = colToNum(match[3]);
+          const endRow = parseInt(match[4], 10);
+          const rows = [];
+          for (let r = startRow; r <= endRow; r++) {
+            const rowData = grid[r - 1] || [];
+            const rowSlice = [];
+            for (let c = startCol; c <= endCol; c++) {
+              rowSlice.push(rowData[c - 1] !== undefined ? rowData[c - 1] : null);
+            }
+            rows.push(rowSlice);
+          }
+          return rows;
+        }
+      };
+      const rangedStrategy = new SheetByIdStrategy(console, rangedSpreadsheetService);
+      const config = { sheetId: 's1', range: 'A5:C10', hasHeaders: true };
+
+      // Whole extraction — the pre-existing, already-correct behavior.
+      const whole = rangedStrategy.extract(config);
+      expect(whole).toEqual([
+        { Name: 'A', Age: 1, Email: 'a@x.com' },
+        { Name: 'B', Age: 2, Email: 'b@x.com' },
+        { Name: 'C', Age: 3, Email: 'c@x.com' },
+        { Name: 'D', Age: 4, Email: 'd@x.com' },
+        { Name: 'E', Age: 5, Email: 'e@x.com' }
+      ]);
+
+      // Chunked extraction, 2 rows at a time — must clamp to the same
+      // [A5:C10] window instead of paginating the whole 11-row grid.
+      let cursor = { rowOffset: 0, headers: null };
+      let chunked = [];
+      let exhausted = false;
+      let iterations = 0;
+      while (!exhausted && iterations < 10) {
+        const result = rangedStrategy.extractChunk(config, cursor, 2);
+        chunked = chunked.concat(result.rows);
+        cursor = result.nextCursor;
+        exhausted = result.exhausted;
+        iterations++;
+      }
+
+      expect(chunked).toEqual(whole);
+      expect(iterations).toBeGreaterThan(1); // proves it actually chunked, not one shot
+    });
   });
 
   // ===================================================================

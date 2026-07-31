@@ -91,36 +91,48 @@ class SheetByIdStrategy extends SourceStrategy {
     if (!sheets || sheets.length === 0) {
       throw new SourceError('Spreadsheet has no sheets', 'NO_SHEETS_FOUND', { sheetId });
     }
-    const targetSheet = config.tabName
-      ? sheets.find((s) => s.name === config.tabName)
-      : sheets[0];
+    const targetSheet = config.tabName ? sheets.find((s) => s.name === config.tabName) : sheets[0];
     if (!targetSheet) {
-      throw new SourceError(`Sheet tab "${config.tabName}" not found in spreadsheet`, 'TAB_NOT_FOUND', {
-        sheetId,
-        tabName: config.tabName
-      });
+      throw new SourceError(
+        `Sheet tab "${config.tabName}" not found in spreadsheet`,
+        'TAB_NOT_FOUND',
+        {
+          sheetId,
+          tabName: config.tabName
+        }
+      );
     }
 
-    const lastRow = targetSheet.gridProperties?.rowCount ?? targetSheet.rowCount;
-    const lastCol = targetSheet.gridProperties?.columnCount ?? targetSheet.columnCount;
-    const headerOffset = hasHeaders ? 1 : 0;
-    const startRow = headerOffset + cursor.rowOffset + 1;
+    const gridLastRow = targetSheet.gridProperties?.rowCount ?? targetSheet.rowCount;
+    const gridLastCol = targetSheet.gridProperties?.columnCount ?? targetSheet.columnCount;
 
-    if (lastRow === 0 || startRow > lastRow) {
+    // Honor an explicit config.range the same way _resolveValues does, instead
+    // of always paginating the whole grid — otherwise a recipe with a range
+    // would import different data via runImportChunk than via runImport.
+    const rangeBounds = config.range ? this._parseRangeBounds(config.range) : null;
+    const windowStartRow = rangeBounds ? rangeBounds.startRow : 1;
+    const windowEndRow = rangeBounds ? Math.min(rangeBounds.endRow, gridLastRow) : gridLastRow;
+    const startCol = rangeBounds ? rangeBounds.startCol : 1;
+    const lastCol = rangeBounds ? rangeBounds.endCol : gridLastCol;
+
+    const headerOffset = hasHeaders ? 1 : 0;
+    const startRow = windowStartRow + headerOffset + cursor.rowOffset;
+
+    if (windowEndRow === 0 || windowStartRow > windowEndRow || startRow > windowEndRow) {
       return { rows: [], nextCursor: { ...cursor }, exhausted: true };
     }
 
-    const endRow = Math.min(startRow + maxRows - 1, lastRow);
-    const range = `${targetSheet.name}!A${startRow}:${this._columnToLetter(lastCol)}${endRow}`;
+    const endRow = Math.min(startRow + maxRows - 1, windowEndRow);
+    const range = `${targetSheet.name}!${this._columnToLetter(startCol)}${startRow}:${this._columnToLetter(lastCol)}${endRow}`;
     const values = this._spreadsheetService.getRanges(sheetId, range) || [];
 
     let headers = cursor.headers;
     if (!headers) {
       if (hasHeaders) {
-        const headerRange = `${targetSheet.name}!A1:${this._columnToLetter(lastCol)}1`;
+        const headerRange = `${targetSheet.name}!${this._columnToLetter(startCol)}${windowStartRow}:${this._columnToLetter(lastCol)}${windowStartRow}`;
         headers = (this._spreadsheetService.getRanges(sheetId, headerRange) || [[]])[0];
       } else {
-        headers = Array.from({ length: lastCol }, (_, i) => `Col_${i}`);
+        headers = Array.from({ length: lastCol - startCol + 1 }, (_, i) => `Col_${i}`);
       }
     }
 
@@ -134,9 +146,50 @@ class SheetByIdStrategy extends SourceStrategy {
 
     const consumedRows = endRow - startRow + 1;
     const newRowOffset = cursor.rowOffset + consumedRows;
-    const exhausted = endRow >= lastRow;
+    const exhausted = endRow >= windowEndRow;
 
     return { rows, nextCursor: { rowOffset: newRowOffset, headers }, exhausted };
+  }
+
+  /**
+   * Parses an explicit A1-notation range's row/column bounds so
+   * `extractChunk` can clamp its pagination window to the same rectangle
+   * `_resolveValues` would fetch for the same `config.range`, instead of
+   * always paginating the whole sheet grid.
+   * @private
+   * @param {string} range A1 notation, with or without a leading `Sheet!` prefix.
+   * @returns {{startCol: number, startRow: number, endCol: number, endRow: number}|null}
+   *   Parsed 1-based bounds, or `null` if the range isn't a full `A1:B2`-style
+   *   rectangle (falls back to full-grid pagination in that case).
+   */
+  _parseRangeBounds(range) {
+    const bare = range.includes('!') ? range.slice(range.indexOf('!') + 1) : range;
+    const match = /^([A-Za-z]+)(\d+):([A-Za-z]+)(\d+)$/.exec(bare);
+    if (!match) {
+      return null;
+    }
+    return {
+      startCol: this._letterToColumn(match[1]),
+      startRow: parseInt(match[2], 10),
+      endCol: this._letterToColumn(match[3]),
+      endRow: parseInt(match[4], 10)
+    };
+  }
+
+  /**
+   * Converts an A1-notation column letter (or letters) into its 1-based
+   * column index ('A' -> 1, 'AA' -> 27). Inverse of `_columnToLetter`.
+   * @private
+   * @param {string} letters Column letter(s).
+   * @returns {number} 1-based column index.
+   */
+  _letterToColumn(letters) {
+    let column = 0;
+    const upper = letters.toUpperCase();
+    for (let i = 0; i < upper.length; i++) {
+      column = column * 26 + (upper.charCodeAt(i) - 64);
+    }
+    return column;
   }
 
   /**

@@ -642,14 +642,17 @@ describe('ImportEngine - Comprehensive Test Suite', () => {
       mockSourceFactory.createStrategy.mockReturnValue(mockStrategy);
 
       mockTransformer.transform.mockImplementation((rows) => rows);
-      mockLoader.loadChunk = jest.fn().mockReturnValue({
+      // Returns per-call counts (data.length) rather than a fixed total, since
+      // LOAD is now chunked too: loadChunk is called once per bounded chunk,
+      // not once with the whole dataset.
+      mockLoader.loadChunk = jest.fn((data) => ({
         success: true,
-        inserted: 3,
+        inserted: data.length,
         updated: 0,
         skipped: 0,
         deleted: 0,
-        total: 3
-      });
+        total: data.length
+      }));
 
       let checkpoint = engine.startImport(recipe);
       expect(checkpoint.stage).toBe('EXTRACT');
@@ -669,11 +672,171 @@ describe('ImportEngine - Comprehensive Test Suite', () => {
       expect(checkpoint.counters.inserted).toBe(3);
       expect(iterations).toBeGreaterThan(1); // proves it actually chunked, not one shot
       expect(mockStrategy.extractChunk).toHaveBeenCalledTimes(3);
-      expect(mockLoader.loadChunk).toHaveBeenCalledWith(
-        [{ NAME: 'Alice' }, { NAME: 'Bob' }, { NAME: 'Carol' }],
-        recipe.load,
-        { isFirstChunk: true }
-      );
+      // LOAD is now bounded/interleaved with EXTRACT too: one loadChunk call
+      // per bounded chunk (1 row each here), not one call with all 3 rows.
+      expect(mockLoader.loadChunk).toHaveBeenCalledTimes(3);
+      expect(mockLoader.loadChunk).toHaveBeenNthCalledWith(1, [{ NAME: 'Alice' }], recipe.load, {
+        isFirstChunk: true
+      });
+      expect(mockLoader.loadChunk).toHaveBeenNthCalledWith(2, [{ NAME: 'Bob' }], recipe.load, {
+        isFirstChunk: false
+      });
+      expect(mockLoader.loadChunk).toHaveBeenNthCalledWith(3, [{ NAME: 'Carol' }], recipe.load, {
+        isFirstChunk: false
+      });
+    });
+
+    it('never buffers more than budget.maxRows items at rest in checkpoint.buffer for a multi-row SheetById recipe', () => {
+      const recipe = {
+        name: 'Bounded Buffer Import',
+        source: { type: 'SheetById', config: { sheetId: 'abc123' } },
+        transform: { mapping: { Name: 'NAME' } },
+        load: { targetTable: 'Users', conflictResolution: 'UPSERT', conflictKey: 'EMAIL' }
+      };
+
+      const mockConfig = {
+        getName: jest.fn().mockReturnValue('Bounded Buffer Import'),
+        getSource: jest.fn().mockReturnValue(recipe.source),
+        getTransform: jest.fn().mockReturnValue(recipe.transform),
+        getLoad: jest.fn().mockReturnValue(recipe.load)
+      };
+      ImportConfiguration.mockImplementation(() => mockConfig);
+
+      // Six-row sheet, chunked two rows at a time via extractChunk.
+      const allRows = [
+        { NAME: 'R1' },
+        { NAME: 'R2' },
+        { NAME: 'R3' },
+        { NAME: 'R4' },
+        { NAME: 'R5' },
+        { NAME: 'R6' }
+      ];
+      const mockStrategy = {
+        supportsCursor: jest.fn().mockReturnValue(true),
+        extractChunk: jest.fn((_config, cursor, maxRows) => {
+          const offset = cursor.rowOffset;
+          const rows = allRows.slice(offset, offset + maxRows);
+          const newOffset = offset + rows.length;
+          return {
+            rows,
+            nextCursor: { rowOffset: newOffset, headers: ['NAME'] },
+            exhausted: newOffset >= allRows.length
+          };
+        })
+      };
+      mockSourceFactory.createStrategy.mockReturnValue(mockStrategy);
+
+      mockTransformer.transform.mockImplementation((rows) => rows);
+      mockLoader.loadChunk = jest.fn((data) => ({
+        success: true,
+        inserted: data.length,
+        updated: 0,
+        skipped: 0,
+        deleted: 0,
+        total: data.length
+      }));
+
+      let checkpoint = engine.startImport(recipe);
+      let done = false;
+      let iterations = 0;
+      const observedBufferLengths = [];
+      while (!done && iterations < 50) {
+        const step = engine.runImportChunk(recipe, checkpoint, { maxRows: 2 });
+        checkpoint = step.checkpoint;
+        done = step.done;
+        observedBufferLengths.push(checkpoint.buffer ? checkpoint.buffer.length : 0);
+        iterations++;
+      }
+
+      expect(done).toBe(true);
+      expect(checkpoint.counters.extracted).toBe(6);
+      expect(checkpoint.counters.transformed).toBe(6);
+      expect(checkpoint.counters.inserted).toBe(6);
+      // The bounded-buffer guarantee: checkpoint.buffer never exceeds maxRows
+      // items at any yielded/returned point, for the whole run.
+      expect(observedBufferLengths.every((len) => len <= 2)).toBe(true);
+      expect(Math.max(...observedBufferLengths)).toBeGreaterThan(0); // sanity: buffer was actually populated at some point
+    });
+
+    it('reaches isFirstChunk:false on a real second LOAD call end-to-end, without re-purging prior chunks (OVERWRITE)', () => {
+      const recipe = {
+        name: 'Overwrite Import',
+        source: { type: 'SheetById', config: { sheetId: 'abc123' } },
+        transform: { mapping: {} },
+        load: { targetTable: 'Users', conflictResolution: 'OVERWRITE', conflictKey: 'EMAIL' }
+      };
+
+      const mockConfig = {
+        getName: jest.fn().mockReturnValue('Overwrite Import'),
+        getSource: jest.fn().mockReturnValue(recipe.source),
+        getTransform: jest.fn().mockReturnValue(recipe.transform),
+        getLoad: jest.fn().mockReturnValue(recipe.load)
+      };
+      ImportConfiguration.mockImplementation(() => mockConfig);
+
+      const allRows = [{ NAME: 'Alice' }, { NAME: 'Bob' }, { NAME: 'Carol' }];
+      const mockStrategy = {
+        supportsCursor: jest.fn().mockReturnValue(true),
+        extractChunk: jest.fn((_config, cursor, maxRows) => {
+          const offset = cursor.rowOffset;
+          const rows = allRows.slice(offset, offset + maxRows);
+          const newOffset = offset + rows.length;
+          return {
+            rows,
+            nextCursor: { rowOffset: newOffset, headers: ['NAME'] },
+            exhausted: newOffset >= allRows.length
+          };
+        })
+      };
+      mockSourceFactory.createStrategy.mockReturnValue(mockStrategy);
+      mockTransformer.transform.mockImplementation((rows) => rows);
+
+      // Fake table mirroring Loader.loadChunk's real OVERWRITE semantics:
+      // purge-then-insert only on isFirstChunk, append (never purge) after —
+      // proves via the real orchestrator (not a direct Loader.loadChunk unit
+      // test) that a second chunk doesn't wipe out the first (review finding #4).
+      let fakeTable = [];
+      mockLoader.loadChunk = jest.fn((data, _loadConfig, { isFirstChunk }) => {
+        if (isFirstChunk) {
+          fakeTable = [];
+        }
+        fakeTable.push(...data);
+        return {
+          success: true,
+          inserted: data.length,
+          updated: 0,
+          skipped: 0,
+          deleted: 0,
+          total: data.length
+        };
+      });
+
+      let checkpoint = engine.startImport(recipe);
+      let done = false;
+      let iterations = 0;
+      while (!done && iterations < 20) {
+        const step = engine.runImportChunk(recipe, checkpoint, { maxRows: 1 });
+        checkpoint = step.checkpoint;
+        done = step.done;
+        iterations++;
+      }
+
+      expect(done).toBe(true);
+      expect(mockLoader.loadChunk).toHaveBeenCalledTimes(3);
+      expect(mockLoader.loadChunk).toHaveBeenNthCalledWith(1, [{ NAME: 'Alice' }], recipe.load, {
+        isFirstChunk: true
+      });
+      // The genuinely interesting assertion: a second (and third) LOAD call
+      // really happens with isFirstChunk:false, driven through runImportChunk.
+      expect(mockLoader.loadChunk).toHaveBeenNthCalledWith(2, [{ NAME: 'Bob' }], recipe.load, {
+        isFirstChunk: false
+      });
+      expect(mockLoader.loadChunk).toHaveBeenNthCalledWith(3, [{ NAME: 'Carol' }], recipe.load, {
+        isFirstChunk: false
+      });
+      // The table ends up with rows from ALL chunks, not just the last one —
+      // proving the second/third chunk appended instead of re-purging.
+      expect(fakeTable).toEqual([{ NAME: 'Alice' }, { NAME: 'Bob' }, { NAME: 'Carol' }]);
     });
 
     it('runImportChunk on a non-cursor-aware source strategy completes extraction in one chunk (compatibility path)', () => {
@@ -699,14 +862,20 @@ describe('ImportEngine - Comprehensive Test Suite', () => {
         extract: jest.fn().mockReturnValue([{ Name: 'Alice' }])
       };
       mockSourceFactory.createStrategy.mockReturnValue(mockStrategy);
+      // Non-cursor compatibility path transforms its one-shot extract inline
+      // (same as the cursor-aware EXTRACT stage), so the mock must return
+      // something rather than undefined.
+      mockTransformer.transform.mockImplementation((rows) => rows);
 
       const checkpoint = engine.startImport(recipe);
       const step = engine.runImportChunk(recipe, checkpoint, { maxRows: 1 });
 
-      expect(step.done).toBe(false); // extract done, but TRANSFORM/LOAD still remain
-      expect(step.checkpoint.stage).toBe('TRANSFORM');
+      expect(step.done).toBe(false); // extract+transform done, but LOAD still remains
+      expect(step.checkpoint.stage).toBe('LOAD');
       expect(mockStrategy.extract).toHaveBeenCalledTimes(1); // whole extract happened in this one chunk
       expect(step.checkpoint.counters.extracted).toBe(1);
+      expect(step.checkpoint.counters.transformed).toBe(1);
+      expect(step.checkpoint.buffer).toEqual([{ Name: 'Alice' }]);
     });
 
     it('rejects resuming a checkpoint with a mismatched recipe', () => {

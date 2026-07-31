@@ -53,14 +53,30 @@ to the caller, e.g. via `JobHandlerParams` in a `JobRunnerLib` job). Calling
 
 Each call does **one** of:
 
-- **`EXTRACT`**: pulls one bounded window of rows (see "Cursor-aware
-  extraction" below) and appends them to the checkpoint's internal buffer.
-  Stays at `EXTRACT` until the source reports itself exhausted, then moves to
-  `TRANSFORM`.
-- **`TRANSFORM`**: transforms the entire buffered row set in one call, then
-  moves to `LOAD`.
-- **`LOAD`**: loads the transformed buffer via `Loader.loadChunk` (always
-  commits with `db.save()`), then moves to `DONE` and returns `done: true`.
+- **`EXTRACT`** (entered whenever the checkpoint's internal buffer is empty
+  and extraction isn't exhausted yet): pulls one bounded window of rows (see
+  "Cursor-aware extraction" below) and **immediately transforms that one
+  chunk** — `Transformer.transform` is a pure per-row mapping, not an
+  aggregate, so transforming a bounded slice is safe. The transformed,
+  load-ready rows become the checkpoint's buffer (never the whole dataset).
+  Moves to `LOAD`.
+- **`LOAD`** (entered whenever the buffer has pending load-ready rows): loads
+  the buffer via `Loader.loadChunk` (always commits with `db.save()`) and
+  clears it. If extraction is now exhausted, moves to `DONE` and returns
+  `done: true`; otherwise moves back to `EXTRACT` to pull the next bounded
+  chunk.
+- **`TRANSFORM`**: kept only so a checkpoint persisted by an older library
+  version still resumes correctly. Current runs never transition into this
+  stage themselves — transform now happens inline during `EXTRACT`, on the
+  bounded chunk, not as a separate whole-buffer step.
+
+**Bounded-buffer guarantee**: for the cursor-aware (`SheetById`) case, each
+call does work bounded by `budget.maxRows` (default 500), and
+`checkpoint.buffer` never holds more than roughly one `maxRows`-sized batch
+at rest between calls — not the whole dataset. This is what makes the
+checkpoint small enough to fit `PropertiesService` and keeps every stage
+(not just `EXTRACT`) inside the GAS execution-time budget. **This guarantee
+does NOT hold for non-cursor sources** — see "Cursor-aware extraction" below.
 
 ### `ImportCheckpoint` shape
 
@@ -73,8 +89,8 @@ Plain, JSON-serializable object — safe to round-trip through
   stage: 'EXTRACT' | 'TRANSFORM' | 'LOAD' | 'DONE',
   recipeName: string,
   sourceCursor: unknown,   // opaque, owned by the extract strategy
-  rowOffset: number,       // reserved for future row-level bookkeeping
-  loadOffset: number,      // number of LOAD chunks already committed
+  rowOffset: number,       // 0/1 flag: 1 once EXTRACT reports the source exhausted
+  loadOffset: number,      // number of LOAD chunks already committed (increments every LOAD call)
   counters: {
     extracted: number,
     transformed: number,
@@ -111,10 +127,25 @@ Any other extract strategy (`FolderStrategy`, or a custom-registered
 strategy via `registerCustomSource`) runs through a **compatibility path**:
 `supportsCursor()` defaults to `false` on the `SourceStrategy` base class, so
 `runImportChunk`'s first `EXTRACT`-stage call extracts the entire source in
-one `extract()` call and reports itself immediately exhausted. This means
-`startImport`/`runImportChunk` work for every recipe today — only
-`SheetById` sources actually spread extraction across multiple chunks and
-multiple GAS execution windows.
+one `extract()` call, transforms it as a single (unbounded) chunk, and
+reports extraction itself immediately exhausted. This means
+`startImport`/`runImportChunk` work for every recipe today — but the
+bounded-buffer guarantee only holds for `SheetById`: a non-cursor source
+still buffers its **whole** extract (and its whole transformed output) at
+once in `checkpoint.buffer` between the `EXTRACT` and `LOAD` calls, so it
+does not solve the `PropertiesService` size problem for large non-`SheetById`
+sources. Only `SheetById` sources actually spread extraction — and now
+transform and load — across multiple chunks and multiple GAS execution
+windows.
+
+`SheetByIdStrategy.extractChunk` also honors an explicit `config.range`: if
+the recipe's source config sets `range` (e.g. `'A5:C200'`), chunked
+pagination is clamped to that rectangle's row/column bounds instead of the
+whole sheet grid, so `runImportChunk` and `runImport` import the same rows
+for the same recipe. Only `A1:B2`-style full rectangles are parsed this way;
+other range shapes fall back to full-grid pagination for `extractChunk`
+(while `runImport`'s one-shot `extract()` path continues to honor them via
+`_resolveValues`, unaffected by this parsing).
 
 ### `Loader.loadChunk(data, loadConfig, { isFirstChunk })`
 

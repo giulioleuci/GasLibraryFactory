@@ -25,21 +25,53 @@ export class ImportPipelineExecutor {
   }
 
   /**
-   * Advances a checkpoint by one bounded unit of work: a single extraction
-   * window (for cursor-aware source strategies) or a whole-stage step
-   * (TRANSFORM, LOAD) for stages that aren't chunked. The recipe must be
+   * Advances a checkpoint by one bounded unit of work. The recipe must be
    * re-passed on every call — it is intentionally not part of the
    * serializable checkpoint, to keep checkpoints small (`PropertiesService`
    * has per-key size limits) and because the recipe is normally already
    * available to the caller (e.g. `JobHandlerParams` in ALDO's `JobRunnerLib`
    * integration).
    *
+   * Unlike the original design (extract everything into the buffer, then
+   * transform the whole buffer, then load the whole buffer), each call now
+   * does bounded work and `checkpoint.buffer` never holds more than roughly
+   * one `maxRows`-sized batch at rest between calls (for the cursor-aware
+   * case) — otherwise `checkpoint.buffer` could grow to the size of the
+   * entire dataset, which won't fit in `PropertiesService` (~9KB per key,
+   * ~500KB total), and TRANSFORM/LOAD would each still run unbounded in one
+   * call, defeating the point of chunking:
+   *
+   * - **`EXTRACT`** (entered when `checkpoint.buffer` is empty and
+   *   extraction isn't exhausted): pulls one bounded window of rows (see
+   *   "Cursor-aware extraction" below), immediately transforms *that chunk*
+   *   (`Transformer.transform` is a pure per-row mapping, so transforming a
+   *   bounded slice is safe), and stores the transformed, load-ready rows as
+   *   `checkpoint.buffer`. Moves to `LOAD`. Whether the source is now fully
+   *   consumed is remembered in `checkpoint.rowOffset` (repurposed as a 0/1
+   *   "extraction exhausted" flag — the field was previously reserved and
+   *   unused) so the `LOAD` branch below can decide, without re-extracting,
+   *   whether there is more to pull after this buffer is loaded.
+   * - **`LOAD`** (entered when `checkpoint.buffer` has pending rows): loads
+   *   the buffer via `Loader.loadChunk` (already handles arbitrary-size
+   *   input, since it's already one bounded chunk) and clears the buffer.
+   *   `isFirstChunk` is true only on the very first `LOAD` call of the
+   *   entire run (`checkpoint.loadOffset === 0`); `loadOffset` increments on
+   *   every `LOAD` call from here on (not pinned at 0/1 as before). If
+   *   extraction was already exhausted, moves to `DONE`; otherwise moves
+   *   back to `EXTRACT` to pull the next bounded chunk.
+   * - **`TRANSFORM`**: kept only for backward compatibility with a
+   *   checkpoint persisted by a prior library version — this pipeline no
+   *   longer produces that stage itself (transform now happens inline
+   *   during `EXTRACT`, on the bounded chunk).
+   *
    * Extract-phase behavior depends on `SourceStrategy.supportsCursor()`:
    * cursor-aware strategies (currently only `SheetByIdStrategy`) extract one
-   * bounded window per call via `extractChunk`. Strategies that don't
+   * bounded window per call via `extractChunk`, so the streaming/
+   * bounded-buffer guarantee above holds for them. Strategies that don't
    * support cursors fall back to a compatibility path: the entire source is
-   * extracted in a single call via `extract()`, reported as immediately
-   * exhausted.
+   * extracted (and, in this call, transformed) in a single call, reported as
+   * immediately exhausted — so the bounded-buffer guarantee does NOT hold
+   * for non-cursor sources; only `SheetById` truly streams.
    * @param {Object} recipe Import configuration — must match `checkpoint.recipeName`.
    * @param {ImportCheckpoint} checkpoint Checkpoint to resume from.
    * @param {Object} [budget={}] Per-call work limits.
@@ -72,27 +104,37 @@ export class ImportPipelineExecutor {
         rows = strategy.extract(sourceConfig.config);
         exhausted = true;
       }
-      const buffer = (checkpoint.buffer || []).concat(rows);
+
+      // Transform this bounded chunk immediately — Transformer.transform is a
+      // pure per-row mapping, not an aggregate, so transforming a slice is
+      // safe and keeps the checkpoint buffer to one chunk's worth of data.
+      const transformConfig = config.getTransform();
+      const transformedChunk = this.facade._transformer.transform(rows, transformConfig);
+
       const counters = {
         ...checkpoint.counters,
-        extracted: checkpoint.counters.extracted + rows.length
+        extracted: checkpoint.counters.extracted + rows.length,
+        transformed: checkpoint.counters.transformed + transformedChunk.length
       };
-      const nextStage = exhausted ? 'TRANSFORM' : 'EXTRACT';
+
       return {
         checkpoint: new ImportCheckpoint(
           checkpoint.recipeName,
-          nextStage,
+          'LOAD',
           cursor,
-          checkpoint.rowOffset,
+          exhausted ? 1 : 0, // repurposed: 0/1 "extraction exhausted" flag (see method doc)
           checkpoint.loadOffset,
           counters,
-          buffer,
+          transformedChunk,
           false
         ),
         done: false
       };
     }
 
+    // Kept for backward compatibility with a checkpoint persisted by a prior
+    // library version — this pipeline no longer transitions into this stage
+    // itself (see method doc).
     if (checkpoint.stage === 'TRANSFORM') {
       const transformConfig = config.getTransform();
       const transformed = this.facade._transformer.transform(
@@ -128,17 +170,36 @@ export class ImportPipelineExecutor {
         skipped: checkpoint.counters.skipped + result.skipped,
         deleted: checkpoint.counters.deleted + result.deleted
       };
-      const doneCheckpoint = new ImportCheckpoint(
-        checkpoint.recipeName,
-        'DONE',
-        checkpoint.sourceCursor,
-        checkpoint.rowOffset,
-        checkpoint.loadOffset + 1,
-        counters,
-        null,
-        true
-      );
-      return { checkpoint: doneCheckpoint, done: true };
+      const newLoadOffset = checkpoint.loadOffset + 1;
+      const extractionExhausted = checkpoint.rowOffset === 1;
+
+      if (extractionExhausted) {
+        const doneCheckpoint = new ImportCheckpoint(
+          checkpoint.recipeName,
+          'DONE',
+          checkpoint.sourceCursor,
+          checkpoint.rowOffset,
+          newLoadOffset,
+          counters,
+          null,
+          true
+        );
+        return { checkpoint: doneCheckpoint, done: true };
+      }
+
+      return {
+        checkpoint: new ImportCheckpoint(
+          checkpoint.recipeName,
+          'EXTRACT',
+          checkpoint.sourceCursor,
+          checkpoint.rowOffset,
+          newLoadOffset,
+          counters,
+          null,
+          false
+        ),
+        done: false
+      };
     }
 
     // Already DONE (or an unrecognized stage on a foreign checkpoint) — nothing left to do.

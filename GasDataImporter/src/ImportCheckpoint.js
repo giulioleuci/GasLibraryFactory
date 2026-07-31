@@ -18,7 +18,11 @@ class ImportCheckpoint {
    * @param {ImportStage} stage Current pipeline stage.
    * @param {*} sourceCursor Opaque cursor understood by the extract strategy
    *   (e.g. `{ rowOffset, headers }` for `SheetByIdStrategy`).
-   * @param {number} rowOffset Reserved for future row-level resume bookkeeping.
+   * @param {number} rowOffset 0/1 flag set by `ImportPipelineExecutor.runImportChunk`'s
+   *   `EXTRACT` stage: 1 once the source has reported itself exhausted (no more
+   *   rows to pull), 0 while more remains. Consulted by the `LOAD` stage to
+   *   decide whether the next call goes back to `EXTRACT` or on to `DONE`,
+   *   without re-extracting to find out.
    * @param {number} loadOffset Number of load chunks already committed.
    * @param {Object} counters Running totals across all pipeline phases.
    * @param {Array<Object>|null} buffer Rows carried between stages (extracted
