@@ -66,10 +66,15 @@ export class ImportPipelineExecutor {
    *   first real data happened to arrive after an empty chunk. If
    *   extraction was already exhausted, moves to `DONE`; otherwise moves
    *   back to `EXTRACT` to pull the next bounded chunk.
-   * - **`TRANSFORM`**: kept only for backward compatibility with a
-   *   checkpoint persisted by a prior library version — this pipeline no
-   *   longer produces that stage itself (transform now happens inline
-   *   during `EXTRACT`, on the bounded chunk).
+   *
+   * There is no standalone `TRANSFORM` stage: an earlier design produced one
+   * (transforming the whole accumulated buffer in its own step), but that
+   * design was replaced before ever shipping — transform now happens inline
+   * during `EXTRACT`, on the bounded chunk — so no checkpoint constructed by
+   * this pipeline (`startImport`, or any transition below) ever carries
+   * `stage: 'TRANSFORM'`. A checkpoint whose `stage` isn't `EXTRACT`, `LOAD`,
+   * or `DONE` is therefore foreign/corrupt and `runImportChunk` throws
+   * rather than silently treating it as complete.
    *
    * Extract-phase behavior depends on `SourceStrategy.supportsCursor()`:
    * cursor-aware strategies (currently only `SheetByIdStrategy`) extract one
@@ -139,31 +144,6 @@ export class ImportPipelineExecutor {
       };
     }
 
-    // Kept for backward compatibility with a checkpoint persisted by a prior
-    // library version — this pipeline no longer transitions into this stage
-    // itself (see method doc).
-    if (checkpoint.stage === 'TRANSFORM') {
-      const transformConfig = config.getTransform();
-      const transformed = this.facade._transformer.transform(
-        checkpoint.buffer || [],
-        transformConfig
-      );
-      const counters = { ...checkpoint.counters, transformed: transformed.length };
-      return {
-        checkpoint: new ImportCheckpoint(
-          checkpoint.recipeName,
-          'LOAD',
-          checkpoint.sourceCursor,
-          checkpoint.rowOffset,
-          checkpoint.loadOffset,
-          counters,
-          transformed,
-          false
-        ),
-        done: false
-      };
-    }
-
     if (checkpoint.stage === 'LOAD') {
       const loadConfig = config.getLoad();
       const buffer = checkpoint.buffer || [];
@@ -214,8 +194,20 @@ export class ImportPipelineExecutor {
       };
     }
 
-    // Already DONE (or an unrecognized stage on a foreign checkpoint) — nothing left to do.
-    return { checkpoint, done: true };
+    if (checkpoint.stage === 'DONE') {
+      // Already DONE — nothing left to do; safe to call again idempotently.
+      return { checkpoint, done: true };
+    }
+
+    // No stage this pipeline produces (EXTRACT/LOAD/DONE) matches — this is a
+    // foreign or corrupt checkpoint (e.g. a stale 'TRANSFORM'-stage checkpoint
+    // from a design this pipeline never shipped). Fail loudly rather than
+    // silently treating unknown progress as complete.
+    throw new ImportError(
+      `Cannot resume checkpoint with unrecognized stage "${checkpoint.stage}" for recipe "${checkpoint.recipeName}"; expected one of EXTRACT, LOAD, DONE.`,
+      'UNRECOGNIZED_CHECKPOINT_STAGE',
+      { stage: checkpoint.stage, recipeName: checkpoint.recipeName }
+    );
   }
 
   runImport(recipe, options = {}) {

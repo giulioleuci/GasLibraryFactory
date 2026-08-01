@@ -3,11 +3,12 @@
  * @author GasLibraryFactory
  */
 
-/** @typedef {'EXTRACT'|'TRANSFORM'|'LOAD'|'DONE'} ImportStage */
+/** @typedef {'EXTRACT'|'LOAD'|'DONE'} ImportStage */
 
 /**
  * Plain, JSON-serializable checkpoint describing progress through a single
- * recipe's ETL pipeline (EXTRACT -> TRANSFORM -> LOAD -> DONE). Designed to
+ * recipe's ETL pipeline (EXTRACT -> LOAD -> DONE, transform runs inline
+ * during EXTRACT on each bounded chunk). Designed to
  * be persisted via `PropertiesService`/`JobRunnerLib` between GAS execution
  * windows and resumed with `ImportEngine.runImportChunk`.
  * @class

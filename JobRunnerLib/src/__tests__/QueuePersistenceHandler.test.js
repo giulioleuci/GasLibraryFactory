@@ -260,6 +260,34 @@ describe('QueuePersistenceHandler', () => {
       expect(handler.loadType()).toBe('importJob');
       expect(propertiesService.getProperty('job_job-a')).toBe('running');
     });
+
+    // Regression coverage: batchSave (the timeout/suspension persistence
+    // path) used to bypass saveResumeState's size-check-then-Drive-offload
+    // protection entirely — a plain JSON.stringify + setProperties with no
+    // threshold check — so a large yielded checkpoint on the suspend path
+    // would silently write oversized state inline instead of tiering to
+    // Drive like saveResumeState always has.
+    it('routes an oversized resumeState above LARGE_STATE_THRESHOLD to Drive, same as saveResumeState', () => {
+      const bigState = { blob: 'x'.repeat(QueuePersistenceHandler.LARGE_STATE_THRESHOLD) };
+
+      handler.batchSave({ resumeState: bigState });
+
+      const pointer = propertiesService.getProperty('state_job-a');
+      expect(pointer).toMatch(/^__DRIVE__:/);
+      expect(propertiesService.getProperty('state_size_job-a')).not.toBeNull();
+      expect(driveApp.createFolder).toHaveBeenCalledWith('JobRunnerStates');
+    });
+
+    it('round-trips an oversized resumeState written via batchSave back through loadResumeState', () => {
+      const bigState = { blob: 'y'.repeat(QueuePersistenceHandler.LARGE_STATE_THRESHOLD) };
+
+      handler.batchSave({ resumeState: bigState, progress: { pct: 75 } });
+
+      // Genuine round-trip proof: read back through the paired read method,
+      // not just an assertion on what was written.
+      expect(handler.loadResumeState()).toEqual(bigState);
+      expect(propertiesService.getProperty('progress_job-a')).toBe(JSON.stringify({ pct: 75 }));
+    });
   });
 
   describe('configuration and type persistence', () => {

@@ -65,10 +65,12 @@ Each call does **one** of:
   clears it. If extraction is now exhausted, moves to `DONE` and returns
   `done: true`; otherwise moves back to `EXTRACT` to pull the next bounded
   chunk.
-- **`TRANSFORM`**: kept only so a checkpoint persisted by an older library
-  version still resumes correctly. Current runs never transition into this
-  stage themselves — transform now happens inline during `EXTRACT`, on the
-  bounded chunk, not as a separate whole-buffer step.
+There is no standalone `TRANSFORM` stage: an earlier design produced one
+(transforming the whole accumulated buffer as its own step), but it was
+replaced before ever shipping — transform now happens inline during
+`EXTRACT`, on the bounded chunk. No checkpoint this pipeline constructs ever
+carries `stage: 'TRANSFORM'`; `runImportChunk` throws if it's ever handed a
+checkpoint whose stage isn't `EXTRACT`, `LOAD`, or `DONE`.
 
 **Bounded-buffer guarantee**: for the cursor-aware (`SheetById`) case, each
 call does work bounded by `budget.maxRows` (default 500), and
@@ -86,7 +88,7 @@ Plain, JSON-serializable object — safe to round-trip through
 
 ```javascript
 {
-  stage: 'EXTRACT' | 'TRANSFORM' | 'LOAD' | 'DONE',
+  stage: 'EXTRACT' | 'LOAD' | 'DONE',
   recipeName: string,
   sourceCursor: unknown,   // opaque, owned by the extract strategy
   rowOffset: number,       // 0/1 flag: 1 once EXTRACT reports the source exhausted
@@ -180,3 +182,15 @@ once, on the first chunk that has real data.
 `loadChunk` always calls `db.save()` at the end of the chunk — this is the
 durable commit boundary a resumed run picks up from after a GAS execution
 window ends mid-recipe.
+
+**`OVERWRITE` is NOT idempotent if a non-first chunk is re-applied**: unlike
+`INSERT_ONLY`/`UPDATE_ONLY`/`UPSERT` above, a non-first `OVERWRITE` chunk
+(`isFirstChunk: false`) routes through the unconditional-append path — it
+inserts every row with no conflict-key dedupe. If a crash or restart happens
+after `loadChunk`'s internal `db.save()` commits but before the caller
+persists the advanced `checkpoint` (so the same chunk is handed to
+`runImportChunk`/`loadChunk` again on resume), that chunk's rows are
+duplicated in the table rather than skipped or deduped. Callers must persist
+`checkpoint` durably immediately after each `loadChunk`/`runImportChunk` call
+returns, before doing any other work, to keep this window as small as
+possible.

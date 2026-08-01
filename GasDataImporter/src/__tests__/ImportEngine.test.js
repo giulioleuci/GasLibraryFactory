@@ -893,6 +893,16 @@ describe('ImportEngine - Comprehensive Test Suite', () => {
       // row is never purged this run.
       let fakeTable = [{ NAME: 'OldStale' }];
       mockLoader.loadChunk = jest.fn((data, _loadConfig, { isFirstChunk }) => {
+        // Mirrors the real Loader.loadChunk, which short-circuits on empty
+        // `data` BEFORE any purge logic runs (see Loader.loadChunk's
+        // `data.length === 0` branch) — an empty chunk must never purge the
+        // table, even when it's flagged isFirstChunk:true, so this fake has
+        // to reproduce that or the final-state assertion below would pass
+        // vacuously (purged by this fake's own empty-chunk branch) even
+        // under the buggy pre-fix behavior it's meant to catch.
+        if (data.length === 0) {
+          return { success: true, inserted: 0, updated: 0, skipped: 0, deleted: 0, total: 0 };
+        }
         if (isFirstChunk) {
           fakeTable = [];
         }

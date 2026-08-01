@@ -75,10 +75,13 @@ describe('Integration Test 6: JobRunner-State Serialization', () => {
 
       stateManager.saveResumeState(complexState);
 
-      expect(mockPropertiesService.setObjectProperty).toHaveBeenCalledWith(
-        'state_test-job',
-        complexState
-      );
+      // saveResumeState now writes the resolved state patch via the batched
+      // setProperties (shared with batchSave's Drive-offload protection —
+      // see QueuePersistenceHandler._resolveResumeStatePatch) rather than
+      // setObjectProperty directly.
+      expect(mockPropertiesService.setProperties).toHaveBeenCalledWith({
+        'state_test-job': JSON.stringify(complexState)
+      });
 
       const storedVal = store.get('state_test-job');
       expect(typeof storedVal).toBe('string');
@@ -164,10 +167,16 @@ describe('Integration Test 6: JobRunner-State Serialization', () => {
       // Should NOT call setObjectProperty for large state
       expect(mockPropertiesService.setObjectProperty).not.toHaveBeenCalled();
 
-      // Should call setProperty with DRIVE prefix
-      expect(mockPropertiesService.setProperty).toHaveBeenCalledWith(
-        'state_test-job',
-        expect.stringContaining('__DRIVE__:drive-file-123')
+      // saveResumeState now writes the resolved state patch via the batched
+      // setProperties (shared with batchSave's Drive-offload protection —
+      // see QueuePersistenceHandler._resolveResumeStatePatch), so the DRIVE
+      // pointer for the state key is asserted on that call rather than a
+      // direct setProperty call. (setProperty is still called once, by
+      // _saveLargeStateToDrive, but for the unrelated state_file_id key.)
+      expect(mockPropertiesService.setProperties).toHaveBeenCalledWith(
+        expect.objectContaining({
+          'state_test-job': expect.stringContaining('__DRIVE__:drive-file-123')
+        })
       );
 
       // Clean up global mock

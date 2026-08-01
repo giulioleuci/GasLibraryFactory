@@ -127,6 +127,7 @@ export { Delegation } from './src/utils/Delegation.js';
 // Generic single-value lazy loader (Code Reuse Initiative, ported 1:1 from
 // ALDO's src/application/storico/LazyRef.ts)
 export { LazyRef } from './src/utils/LazyRef.js';
+
 export {
   BaseError,
   ValidationError,
