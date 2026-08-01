@@ -754,4 +754,44 @@ new RoleRegistry();
 
 - `toJSON(): Object`
 
+### Materia slot CSV parsing
+
+Four standalone, dependency-free helpers for parsing `MATERIA.itp`/
+`MATERIA.specifica`-style CSV cattedra columns (a spreadsheet cell listing
+several teaching subjects, each optionally slot-qualified) — reusable by any
+GAS app that stores this shape, not just role-resolution consumers. Import
+path: `RoleResolutionLib/src/utils/MateriaSlotParsing.js`, re-exported from the
+library's root `index.js`.
+
+- `splitCsvList(raw: string): string[]`
+
+  Splits a comma-separated string into trimmed, non-empty entries (drops
+  entries left empty by whitespace-only content or doubled/trailing commas).
+
+- `groupMateriaEntriesBySlot(materieRaw: string): Array<{kind: string, specifica: string, materie: string[]}>`
+
+  Groups a materia CSV's entries by slot qualifier, per-entry (a single CSV can
+  legitimately mix a bare materia with a slot-qualified one from a different
+  materia). Parsing rule per entry: `MATERIA` → unqualified (`kind: '*'`);
+  `MATERIA.itp` → `kind: 'ITP'`; `MATERIA.<anything else>` → `kind: 'SPECIFICA'`
+  with that suffix as `specifica`. Returns one group per distinct
+  `(kind, specifica)` pair, each collecting the base materia ids that share it,
+  in first-seen order.
+
+- `slotCompatible(a: {kind: string, specifica: string}, b: {kind: string, specifica: string}): boolean`
+
+  Whether two slot qualifiers can refer to the same physical teaching post.
+  The wildcard `'*'` (unqualified) is compatible with anything; two different
+  non-wildcard kinds are never compatible; two `SPECIFICA` qualifiers are
+  compatible only when their `specifica` matches (or either side is `'*'`).
+
+- `pairsOverlap(a: ReadonlyArray<{classeId: string, materia: string, kind: string, specifica: string}>, b: ReadonlyArray<{...}>): boolean`
+
+  True if any pair in `a` shares a `(classeId, materia)` with a
+  slot-compatible pair in `b` (via `slotCompatible`).
+
+Callers needing a named constant for the `'*'` sentinel should keep their own
+local constant equal to this literal — these helpers use the literal directly
+and do not export one.
+
 ---

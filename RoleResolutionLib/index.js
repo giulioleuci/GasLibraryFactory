@@ -126,6 +126,15 @@
  * @see RoutingPolicy For routing options
  */
 
+// Materia slot CSV parsing helpers (reusable outside role resolution proper —
+// any GAS app parsing MATERIA.itp/MATERIA.specifica-style CSV cattedra columns)
+export {
+  splitCsvList,
+  groupMateriaEntriesBySlot,
+  slotCompatible,
+  pairsOverlap
+} from './src/utils/MateriaSlotParsing.js';
+
 // Core value objects and enums
 export { ScopeType, isValidScopeType, getScopeTypes } from './src/core/ScopeType.js';
 export { ActorType, isValidActorType, getActorTypes } from './src/core/ActorType.js';
