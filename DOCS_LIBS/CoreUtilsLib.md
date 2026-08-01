@@ -683,6 +683,27 @@ new Delegation()
   > Binds each named method from each manager onto the target object, so calls to `target[method](...)` are forwarded to `manager[method](...)` with the manager's `this` preserved. Methods that don't exist (or aren't functions) on a given manager are silently skipped, unless `logger` is provided, in which case a warning is emitted for each missing method.
 
 
+### LazyRef
+
+Generic single-value lazy loader — defers an expensive computation until
+first access, then caches it for the lifetime of the instance. Ported 1:1
+from ALDO's `src/application/storico/LazyRef.ts` (used to defer historical
+CDU queries until a template or email box actually reads them).
+
+**Initialization:**
+```javascript
+new LazyRef(loader: () => T)
+```
+
+**Methods:**
+
+- `get(): T`
+  > Invokes `loader()` on the first call and caches the result; every subsequent call returns the cached value without re-invoking `loader`.
+
+- `isResolved(): boolean`
+  > True once `get()` has been called at least once.
+
+
 ### HtmlSanitizer
 
 Centralized HTML-context escaping utilities (XSS prevention) for

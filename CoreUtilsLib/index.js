@@ -123,6 +123,10 @@ export { DateRange } from './src/utils/DateRange.js';
 // Shared dynamic-delegation helper for Facade/Delegation-pattern classes
 // (Code Reuse Initiative - deduplicates the copy-pasted private `_delegate` method)
 export { Delegation } from './src/utils/Delegation.js';
+
+// Generic single-value lazy loader (Code Reuse Initiative, ported 1:1 from
+// ALDO's src/application/storico/LazyRef.ts)
+export { LazyRef } from './src/utils/LazyRef.js';
 export {
   BaseError,
   ValidationError,
