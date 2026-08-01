@@ -10,6 +10,7 @@ import { Transformer } from '../pipeline/Transformer.js';
 import { Loader } from '../internal/load/Loader.js';
 import { ImportError } from '../internal/errors/ImportError.js';
 import { ConfigurationError } from '../internal/errors/ConfigurationError.js';
+import { ImportCheckpoint } from '../ImportCheckpoint.js';
 import { MockFactory } from '../../../test/fakes';
 
 // Mock internal dependencies
@@ -1007,6 +1008,35 @@ describe('ImportEngine - Comprehensive Test Suite', () => {
       expect(() => {
         engine.runImportChunk(otherRecipe, checkpoint, { maxRows: 1 });
       }).toThrow(/recipeName/);
+    });
+
+    // Regression coverage: ImportCheckpoint.fromJSON passes `stage` through
+    // without validation, so a foreign/corrupt checkpoint (e.g. a stale
+    // 'TRANSFORM'-stage checkpoint from a design that never shipped, or any
+    // other unrecognized stage) can reach runImportChunk. It must fail loudly
+    // via ImportError rather than silently falling through unhandled.
+    it('throws ImportError for a checkpoint with an unrecognized stage', () => {
+      const recipe = {
+        name: 'Import A',
+        source: { type: 'SheetById', config: {} },
+        transform: {},
+        load: {}
+      };
+      const mockConfig = { getName: jest.fn().mockReturnValue('Import A') };
+      ImportConfiguration.mockImplementation(() => mockConfig);
+
+      const validCheckpoint = engine.startImport(recipe);
+      const bogusCheckpoint = ImportCheckpoint.fromJSON({
+        ...validCheckpoint,
+        stage: 'BOGUS'
+      });
+
+      expect(() => {
+        engine.runImportChunk(recipe, bogusCheckpoint, { maxRows: 1 });
+      }).toThrow(ImportError);
+      expect(() => {
+        engine.runImportChunk(recipe, bogusCheckpoint, { maxRows: 1 });
+      }).toThrow(/unrecognized stage "BOGUS"/);
     });
   });
 

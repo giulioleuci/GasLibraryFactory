@@ -89,12 +89,41 @@ export class QueuePersistenceHandler {
     };
   }
 
+  /**
+   * `batchSave` is used on the timeout/suspension path (see JobQueue.js's
+   * `TimeoutException` handler): it must persist `state: 'to_resume'`,
+   * `progress`, and the version bump together so `createResumeTrigger()`
+   * runs afterward. If the Drive offload of an oversized `resumeState`
+   * fails (Drive unavailable/quota), `_resolveResumeStatePatch` throws —
+   * and letting that propagate would make the whole `batchSave` call fail,
+   * losing the suspend state and stranding the job with no resume trigger.
+   * So here (unlike `saveResumeState`, which intentionally still hard-fails
+   * on Drive errors since it isn't on the crash-recovery path) a Drive
+   * failure falls back to the old pre-tiering inline-JSON write instead of
+   * propagating: same risk of exceeding `PropertiesService`'s ~9KB cap that
+   * applied unconditionally before large-state tiering existed, but the job
+   * still gets flagged `to_resume` with a trigger created.
+   * @private
+   * @param {*} state Resume-state value to persist.
+   * @returns {{properties: Object<string,string>, propertiesToDelete: string[]}}
+   */
+  _resolveResumeStatePatchForBatch(state) {
+    try {
+      return this._resolveResumeStatePatch(state);
+    } catch (_driveError) {
+      return {
+        properties: { [this._key('state')]: JSON.stringify(state) },
+        propertiesToDelete: [this._key('state_size')]
+      };
+    }
+  }
+
   batchSave(updates) {
     const properties = {};
     const propertiesToDelete = [];
 
     if (updates.resumeState !== undefined) {
-      const patch = this._resolveResumeStatePatch(updates.resumeState);
+      const patch = this._resolveResumeStatePatchForBatch(updates.resumeState);
       Object.assign(properties, patch.properties);
       propertiesToDelete.push(...patch.propertiesToDelete);
     }

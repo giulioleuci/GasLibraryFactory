@@ -91,6 +91,8 @@ export class ImportPipelineExecutor {
    * @returns {{checkpoint: ImportCheckpoint, done: boolean}} Advanced checkpoint and completion flag.
    * @throws {ConfigurationError} If the recipe fails validation.
    * @throws {Error} If `checkpoint.recipeName` doesn't match the recipe being resumed.
+   * @throws {ImportError} `UNRECOGNIZED_CHECKPOINT_STAGE` if `checkpoint.stage` isn't
+   *   one of `EXTRACT`, `LOAD`, or `DONE` (a foreign/corrupt checkpoint).
    */
   runImportChunk(recipe, checkpoint, budget = {}) {
     const maxRows = budget.maxRows || 500;

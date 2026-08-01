@@ -283,10 +283,53 @@ describe('QueuePersistenceHandler', () => {
 
       handler.batchSave({ resumeState: bigState, progress: { pct: 75 } });
 
+      // Pin this test to the new Drive-routing behavior itself, not just to
+      // its sibling test: without this, the assertions below would also
+      // pass under the old plain-JSON batchSave (the mock PropertiesService
+      // has no 9KB cap), making this test a false regression guard on its own.
+      expect(propertiesService.getProperty('state_job-a')).toMatch(/^__DRIVE__:/);
+
       // Genuine round-trip proof: read back through the paired read method,
       // not just an assertion on what was written.
       expect(handler.loadResumeState()).toEqual(bigState);
       expect(propertiesService.getProperty('progress_job-a')).toBe(JSON.stringify({ pct: 75 }));
+    });
+
+    // Regression coverage for the review finding on commit f4c1bb0: the
+    // Drive-offload path introduced by the tiering fix above sat BEFORE
+    // batchSave's single setProperties call, making the whole suspend
+    // persist all-or-nothing. If Drive throws (unavailable/quota) while
+    // offloading an oversized resumeState, batchSave must still persist the
+    // rest of the update (state/progress/version) instead of losing the
+    // suspend state entirely and stranding the job with no resume trigger.
+    it('falls back to inline JSON for resumeState and still persists state/progress/version when Drive offload fails', () => {
+      const bigState = { blob: 'x'.repeat(QueuePersistenceHandler.LARGE_STATE_THRESHOLD) };
+      driveApp.createFolder.mockImplementationOnce(() => {
+        throw new Error('Drive quota exceeded');
+      });
+      stateManager.setState('running'); // version -> 1
+
+      expect(() =>
+        handler.batchSave({
+          state: 'to_resume',
+          resumeState: bigState,
+          progress: { completed: false, percentage: 42 }
+        })
+      ).not.toThrow();
+
+      // The suspend-critical fields must all still be persisted...
+      expect(propertiesService.getProperty('job_job-a')).toBe('to_resume');
+      expect(propertiesService.getProperty('version_job-a')).toBe('2');
+      expect(propertiesService.getProperty('progress_job-a')).toBe(
+        JSON.stringify({ completed: false, percentage: 42 })
+      );
+      // ...and resumeState itself falls back to the old inline-JSON write
+      // (not a __DRIVE__ pointer, since the offload failed) rather than
+      // being dropped.
+      const stateValue = propertiesService.getProperty('state_job-a');
+      expect(stateValue).not.toMatch(/^__DRIVE__:/);
+      expect(JSON.parse(stateValue)).toEqual(bigState);
+      expect(handler.loadResumeState()).toEqual(bigState);
     });
   });
 

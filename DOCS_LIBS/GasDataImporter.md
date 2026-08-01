@@ -65,6 +65,7 @@ Each call does **one** of:
   clears it. If extraction is now exhausted, moves to `DONE` and returns
   `done: true`; otherwise moves back to `EXTRACT` to pull the next bounded
   chunk.
+
 There is no standalone `TRANSFORM` stage: an earlier design produced one
 (transforming the whole accumulated buffer as its own step), but it was
 replaced before ever shipping — transform now happens inline during
