@@ -1315,6 +1315,61 @@ describe('SpreadsheetService - Comprehensive Test Suite', () => {
       expect(result.protectedRangeIds).toEqual([111, 222, 333]);
     });
 
+    it('keeps strict batch protection and propagates an API failure without options', () => {
+      const protectionRequests = [
+        { range: 'Sheet1!A:A', description: 'Column A' },
+        { range: 'Sheet1!B:B', description: 'Column B' }
+      ];
+      const apiError = new Error('Permission denied');
+      mockSheets.Spreadsheets.batchUpdate.mockImplementationOnce(() => {
+        throw apiError;
+      });
+
+      expect(() => service.protectRanges('sheet123', protectionRequests)).toThrow(apiError);
+
+      expect(mockSheets.Spreadsheets.batchUpdate).toHaveBeenCalledTimes(1);
+      expect(mockSheets.Spreadsheets.batchUpdate).toHaveBeenCalledWith(
+        expect.objectContaining({
+          requests: expect.arrayContaining([
+            expect.objectContaining({ addProtectedRange: expect.any(Object) })
+          ])
+        }),
+        'sheet123'
+      );
+      expect(mockSheets.Spreadsheets.batchUpdate.mock.calls[0][0].requests).toHaveLength(2);
+    });
+
+    it('continues protecting later ranges and reports failures in best-effort mode', () => {
+      const firstRequest = { range: 'Sheet1!A:A', description: 'First column' };
+      const secondRequest = { range: 'Sheet1!B:B', description: 'Second column' };
+      const apiError = new Error('Utente non valido');
+      mockSheets.Spreadsheets.batchUpdate
+        .mockImplementationOnce(() => {
+          throw apiError;
+        })
+        .mockReturnValueOnce({
+          spreadsheetId: 'sheet123',
+          replies: [
+            {
+              addProtectedRange: {
+                protectedRange: { protectedRangeId: 222 }
+              }
+            }
+          ]
+        });
+
+      const result = service.protectRanges('sheet123', [firstRequest, secondRequest], {
+        onError: 'continue'
+      });
+
+      expect(mockSheets.Spreadsheets.batchUpdate).toHaveBeenCalledTimes(2);
+      expect(mockSheets.Spreadsheets.batchUpdate.mock.calls[0][0].requests).toHaveLength(1);
+      expect(mockSheets.Spreadsheets.batchUpdate.mock.calls[1][0].requests).toHaveLength(1);
+      expect(result.protectedCount).toBe(1);
+      expect(result.protectedRangeIds).toEqual([222]);
+      expect(result.failures).toEqual([{ request: firstRequest, message: 'Utente non valido' }]);
+    });
+
     it('should merge specific editors with global editors', () => {
       const protectionRequest = {
         range: 'Sheet1!A:A',
