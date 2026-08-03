@@ -1365,8 +1365,12 @@ describe('SpreadsheetService - Comprehensive Test Suite', () => {
       expect(mockSheets.Spreadsheets.batchUpdate).toHaveBeenCalledTimes(2);
       expect(mockSheets.Spreadsheets.batchUpdate.mock.calls[0][0].requests).toHaveLength(1);
       expect(mockSheets.Spreadsheets.batchUpdate.mock.calls[1][0].requests).toHaveLength(1);
+      expect(result.spreadsheetId).toBe('sheet123');
       expect(result.protectedCount).toBe(1);
       expect(result.protectedRangeIds).toEqual([222]);
+      expect(result.replies).toEqual([
+        { addProtectedRange: { protectedRange: { protectedRangeId: 222 } } }
+      ]);
       expect(result.failures).toEqual([{ request: firstRequest, message: 'Utente non valido' }]);
     });
 
