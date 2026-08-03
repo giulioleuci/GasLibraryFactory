@@ -1,639 +1,397 @@
-# GasLibraryFactory API Reference
+# API Reference: RoleResolutionLib
 
-> Detailed API documentation with method descriptions. Auto-generated.
+## CLASS: RoleRegistry
+**File Path:** `RoleResolutionLib/src/registry/RoleRegistry.js`
+**Constructor Usage:** `const instance = new RoleRegistry();`
+**Description:** Registry for role definitions.
 
+/
+
+import { Role } from '../core/Role.js';
+import { RoleNotFoundError, RoleValidationError } from '../internal/errors/RoleResolutionError.js';
+import { cloneDeep, Registry } from '@CoreUtilsLib';
+
+/**
+@class RoleRegistry
+Centralized CRUD store for Role definitions. Handles validation and indexing.
+
+### Raw JSDoc Context:
+```javascript
+/**
+ * @file RoleResolutionLib/src/registry/RoleRegistry.js
+ * @description Registry for role definitions.
+ * @version 1.0.0
+ */
+
+import { Role } from '../core/Role.js';
+import { RoleNotFoundError, RoleValidationError } from '../internal/errors/RoleResolutionError.js';
+import { cloneDeep, Registry } from '@CoreUtilsLib';
+
+/**
+ * @class RoleRegistry
+ * @description Centralized CRUD store for Role definitions. Handles validation and indexing.
+ */
+```
+
+<br>
+
+## CLASS: WideRowAssignmentSource
+**File Path:** `RoleResolutionLib/src/registry/MappedAssignmentSources.js`
+**Constructor Usage:** `const instance = new WideRowAssignmentSource();`
+**Description:** Maps wide, tabular rows to opaque assignment candidates.
+
+### Raw JSDoc Context:
+```javascript
+/** Maps wide, tabular rows to opaque assignment candidates. */
+```
+
+### Methods of WideRowAssignmentSource
+
+#### METHOD: WideRowAssignmentSource.getAssignments
+- **Scope:** instance
+- **LLM Call Syntax:** `wideRowAssignmentSource.getAssignments(context, _asOfDate);`
+- **Pure JSDoc:**
+```javascript
+/** Method getAssignments */
+```
 ---
+<br>
 
-## Table of Contents
+## CLASS: MappedOverrideSource
+**File Path:** `RoleResolutionLib/src/registry/MappedAssignmentSources.js`
+**Constructor Usage:** `const instance = new MappedOverrideSource();`
+**Description:** Maps generic rows to dated, opaque assignment overrides.
 
-- [RoleResolutionLib](#roleresolutionlib)
+### Raw JSDoc Context:
+```javascript
+/** Maps generic rows to dated, opaque assignment overrides. */
+```
 
+### Methods of MappedOverrideSource
+
+#### METHOD: MappedOverrideSource.getOverrides
+- **Scope:** instance
+- **LLM Call Syntax:** `mappedOverrideSource.getOverrides(context, _asOfDate);`
+- **Pure JSDoc:**
+```javascript
+/** Method getOverrides */
+```
 ---
+<br>
 
-## RoleResolutionLib
+## CLASS: MappedDelegationSource
+**File Path:** `RoleResolutionLib/src/registry/MappedAssignmentSources.js`
+**Constructor Usage:** `const instance = new MappedDelegationSource();`
+**Description:** Maps generic rows to context-scoped delegation values.
 
-Role Resolution Library - Layer 2 service for resolving abstract roles to concrete actors.
-
-### Actor
-
-Actor value object representing an entity that can hold roles.
-
-**Initialization:**
-
+### Raw JSDoc Context:
 ```javascript
-new Actor();
+/** Maps generic rows to context-scoped delegation values. */
 ```
 
-**Static Methods:**
+### Methods of MappedDelegationSource
 
-- `person(id: string, email: string, displayName: string, metadata={}: Object): Actor`
-
-  > this.id = id; /** this.type = type; /** this.identifier = identifier; /** this.displayName = displayName; /** this.metadata = cloneDeep(metadata); // Freeze the instance to ensure immutability Object.freeze(this); Object.freeze(this.metadata); } /**
-
-- `system(id: string, serviceId: string, displayName: string, metadata={}: Object): Actor`
-
-- `group(id: string, groupId: string, displayName: string, metadata={}: Object): Actor`
-
-- `fromJSON(obj: Object): Actor`
-
-**Methods:**
-
-- `isPerson(): boolean`
-
-- `isSystem(): boolean`
-
-- `isGroup(): boolean`
-
-- `equals(other: Actor): boolean`
-
-- `getMetadata(key: string, defaultValue=null: *): *`
-
-- `withMetadata(additionalMetadata: Object): Actor`
-
-- `toJSON(): Object`
-
-- `toString(): string`
-
-### Assignment
-
-Assignment value object representing a role-actor-scope association.
-
-**Initialization:**
-
+#### METHOD: MappedDelegationSource.getDelegations
+- **Scope:** instance
+- **LLM Call Syntax:** `mappedDelegationSource.getDelegations(context, asOfDate);`
+- **Pure JSDoc:**
 ```javascript
-new Assignment();
+/** Method getDelegations */
+```
+---
+<br>
+
+## CLASS: CompositeAssignmentSource
+**File Path:** `RoleResolutionLib/src/registry/MappedAssignmentSources.js`
+**Constructor Usage:** `const instance = new CompositeAssignmentSource();`
+**Description:** Combines independent candidate sources with a deterministic identity.
+
+### Raw JSDoc Context:
+```javascript
+/** Combines independent candidate sources with a deterministic identity. */
 ```
 
-**Static Methods:**
+### Methods of CompositeAssignmentSource
 
-- `fromJSON(obj: Object): Assignment`
-
-**Methods:**
-
-- `equals(asOfDate=new Date(): Date, roleId: string, scope: Scope, asOfDate=new Date(): Date, other: Assignment): boolean`
-
-  > / isValidAt(asOfDate = new Date()) { // Check active flag if (!this.isActive) { return false; } // Check validFrom if (this.validFrom !== null && asOfDate < this.validFrom) { return false; } // Check validTo if (this.validTo !== null && asOfDate > this.validTo) { return false; } return true; } /** / matches(roleId, scope, asOfDate = new Date()) { // Check role if (this.roleId !== roleId) { return false; } // Check validity if (!this.isValidAt(asOfDate)) { return false; } // Check scope - assignment scope must contain the query scope // or be exactly equal to it return this.scope.contains(scope) || this.scope.matches(scope); } /**
-
-- `getMetadata(key: string, defaultValue=null: *): *`
-
-- `toJSON(): Object`
-
-- `toString(): string`
-
-### ResolutionResult
-
-ResolutionResult representing the complete result of role resolution.
-
-**Initialization:**
-
+#### METHOD: CompositeAssignmentSource.getAssignments
+- **Scope:** instance
+- **LLM Call Syntax:** `compositeAssignmentSource.getAssignments(context, asOfDate);`
+- **Pure JSDoc:**
 ```javascript
-new ResolutionResult();
+/** Method getAssignments */
+```
+---
+#### METHOD: CompositeAssignmentSource.if
+- **Scope:** instance
+- **LLM Call Syntax:** `compositeAssignmentSource.if(!existing);`
+- **Pure JSDoc:**
+```javascript
+/** Method if */
+```
+---
+<br>
+
+## CLASS: EffectiveAssignmentSource
+**File Path:** `RoleResolutionLib/src/registry/EffectiveAssignmentSource.js`
+**Constructor Usage:** `const instance = new EffectiveAssignmentSource();`
+**Description:** Generic persistence contracts for effective-assignment resolution.
+
+### Raw JSDoc Context:
+```javascript
+/** Generic persistence contracts for effective-assignment resolution. */
 ```
 
-**Static Methods:**
+### Methods of EffectiveAssignmentSource
 
-- `empty(requestedRole: Object, scope: Object, metadata={}: Object): ResolutionResult`
-
-- `simple(requestedRole: Object, scope: Object, actor: Object): ResolutionResult`
-
-**Methods:**
-
-- `isResolved(): boolean`
-
-  > The role that was requested.
-
-- `isDelegated(): boolean`
-
-- `getDelegationDepth(): number`
-
-- `hasEffectiveActorChange(): boolean`
-
-- `getAllRoutingRecipients(): Object[]`
-
-- `getAllActorIds(): string[]`
-
-- `toJSON(): Object`
-
-- `toString(): string`
-
-### Role
-
-Role value object representing a role definition.
-
-**Initialization:**
-
+#### METHOD: EffectiveAssignmentSource.getAssignments
+- **Scope:** instance
+- **LLM Call Syntax:** `effectiveAssignmentSource.getAssignments(_context, _asOfDate);`
+- **Pure JSDoc:**
 ```javascript
-new Role();
+/** Method getAssignments */
+```
+---
+<br>
+
+## CLASS: OverrideSource
+**File Path:** `RoleResolutionLib/src/registry/EffectiveAssignmentSource.js`
+**Constructor Usage:** `const instance = new OverrideSource();`
+**Description:** N/A
+
+### Raw JSDoc Context:
+```javascript
+/** Class definition */
 ```
 
-**Static Methods:**
+### Methods of OverrideSource
 
-- `fromJSON(obj: Object): Role`
-
-**Methods:**
-
-- `isGlobal(): boolean`
-
-  > this.id = id; /** this.name = name; /** this.description = description; /** this.scopeType = scopeType; /** this.resolutionStrategy = resolutionStrategy; /** this.allowsDelegation = allowsDelegation; /** this.fallbackRoles = [...fallbackRoles]; /** this.metadata = cloneDeep(metadata); // Freeze the instance Object.freeze(this); Object.freeze(this.fallbackRoles); Object.freeze(this.metadata); } /**
-
-- `resolvesToAll(): boolean`
-
-- `usesPriority(): boolean`
-
-- `hasFallbacks(): boolean`
-
-- `getMetadata(key: string, defaultValue=null: *): *`
-
-- `equals(other: Role): boolean`
-
-- `toJSON(): Object`
-
-- `toString(): string`
-
-### Scope
-
-Scope value object representing a validity context for roles.
-
-**Initialization:**
-
+#### METHOD: OverrideSource.getOverrides
+- **Scope:** instance
+- **LLM Call Syntax:** `overrideSource.getOverrides(_context, _asOfDate);`
+- **Pure JSDoc:**
 ```javascript
-new Scope();
+/** Method getOverrides */
+```
+---
+<br>
+
+## CLASS: ActorSource
+**File Path:** `RoleResolutionLib/src/registry/EffectiveAssignmentSource.js`
+**Constructor Usage:** `const instance = new ActorSource();`
+**Description:** N/A
+
+### Raw JSDoc Context:
+```javascript
+/** Class definition */
 ```
 
-**Static Methods:**
+### Methods of ActorSource
 
-- `global(): Scope`
-
-  > this.type = type; /** this.value = value !== null ? cloneDeep(value) : null; /** this.hierarchy = Array.isArray(hierarchy) ? [...hierarchy] : []; // Freeze the instance to ensure immutability Object.freeze(this); Object.freeze(this.hierarchy); } /**
-
-- `orgUnit(value: string, hierarchy=[: string[]): Scope`
-
-- `project(value: string|Object): Scope`
-
-- `resource(value: string|Object): Scope`
-
-- `custom(value: string|Object, hierarchy=[: string[]): Scope`
-
-- `fromJSON(obj: Object): Scope`
-
-**Methods:**
-
-- `isGlobal(): boolean`
-
-- `contains(other: Scope): boolean`
-
-- `matches(other: Scope): boolean`
-
-- `getValueString(): string`
-
-- `toJSON(): Object`
-
-- `toString(): string`
-
-### Delegation
-
-Delegation value object representing a responsibility transfer.
-
-**Initialization:**
-
+#### METHOD: ActorSource.getActor
+- **Scope:** instance
+- **LLM Call Syntax:** `actorSource.getActor(_actorId);`
+- **Pure JSDoc:**
 ```javascript
-new Delegation();
+/** Method getActor */
 ```
+---
+<br>
 
-**Static Methods:**
+## CLASS: DelegationSource
+**File Path:** `RoleResolutionLib/src/registry/DelegationSource.js`
+**Constructor Usage:** `const instance = new DelegationSource();`
+**Description:** Interface definition for delegation data sources.
 
-- `fromJSON(obj: Object): Delegation`
-
-**Methods:**
-
-- `equals(other: Delegation): boolean`
-
-- `toString(): string`
-
-### DelegationChain
-
-DelegationChain representing a chain of delegations.
-
-**Initialization:**
-
-```javascript
-new DelegationChain();
-```
-
-**Static Methods:**
-
-- `empty(): DelegationChain`
-
-  > this.delegations = [...delegations]; Object.freeze(this); Object.freeze(this.delegations); } /**
-
-- `single(delegation: Delegation): DelegationChain`
-
-- `fromJSON(obj: Object): DelegationChain`
-
-**Methods:**
-
-- `isEmpty(): boolean`
-
-- `getDepth(): number`
-
-- `getOriginalPrincipalId(): string|null`
-
-- `getFinalDelegateId(): string|null`
-
-- `getAllActorIds(): string[]`
-
-- `getFirst(): Delegation|null`
-
-- `getLast(): Delegation|null`
-
-- `getAt(index: number): Delegation|null`
-
-- `containsActor(actorId: string): boolean`
-
-- `wouldCreateCycle(delegation: Delegation): boolean`
-
-- `extend(delegation: Delegation): DelegationChain`
-
-- `forEach(callback: Function): void`
-
-- `map(mapper: Function): Array`
-
-- `toJSON(asOfDate=new Date(): Date): boolean`
-
-  > / isValidAt(asOfDate = new Date()) { return this.delegations.every((d) => d.isValidAt(asOfDate)); } /**
-
-- `toString(): string`
-
-### DelegationRules
-
-Business rules and applicability logic for a Delegation.
-
-**Initialization:**
-
-```javascript
-new DelegationRules();
-```
-
-### DelegationValidator
-
-Validator for delegations and delegation chains.
-
-**Initialization:**
-
-```javascript
-new DelegationValidator();
-```
-
-**Methods:**
-
-- `validate(delegation: Delegation, context={}: Object): Object`
-
-  > this._maxDelegationDepth = options.maxDelegationDepth || 10; /** this._logger = options.logger || console; } /**
-
-- `validateChain(chain: DelegationChain, context={}: Object): Object`
-
-- `validateExtension(chain: DelegationChain, delegation: Delegation, context={}: Object): Object`
-
-- `getMaxDelegationDepth(): number`
-
-### RoleResolutionError
-
-Base error class and specialized errors for role resolution.
-
-**Initialization:**
-
-```javascript
-new RoleResolutionError();
-```
-
-### RoleNotFoundError
-
-@constructor
-@param {string} message - Error details.
-@param {Object} [context={}] - Metadata (roleId, scope, etc.).
-@param {Error} [originalError=null] - Wrapped exception.
 /
-constructor(message, context = {}, originalError = null) {
-super(message, context, originalError);
-this.name = 'RoleResolutionError';
-}
-}
 
-**Initialization:**
+/**
+@interface DelegationSource
+Contract for persistence layers providing active responsibility transfers.
 
+### Raw JSDoc Context:
 ```javascript
-new RoleNotFoundError();
+/**
+ * @file RoleResolutionLib/src/registry/DelegationSource.js
+ * @description Interface definition for delegation data sources.
+ * @version 1.0.0
+ */
+
+/**
+ * @interface DelegationSource
+ * @description Contract for persistence layers providing active responsibility transfers.
+ */
 ```
 
-### NoActorFoundError
+<br>
 
-@constructor
-@param {string} roleId - The unknown role identifier.
-@param {Object} [context={}] - Additional metadata.
+## CLASS: InMemoryDelegationSource
+**File Path:** `RoleResolutionLib/src/registry/DelegationSource.js`
+**Constructor Usage:** `const instance = new InMemoryDelegationSource();`
+**Description:** @function getActiveDelegationsForPrincipal
+Retrieves delegations issued by an actor that are valid at a specific time.
+@param {string} principalId - Issuing actor ID.
+@param {Date} [asOfDate=new Date()] - Temporal validity point.
+@returns {Delegation[]}
+@abstract
 /
-constructor(roleId, context = {}) {
-super(`Role not found: ${roleId}`, { ...context, roleId });
-this.name = 'RoleNotFoundError';
-this.roleId = roleId;
-}
-}
+  getActiveDelegationsForPrincipal(principalId, asOfDate = new Date()) {
+    throw new Error('DelegationSource.getActiveDelegationsForPrincipal() must be implemented');
+  }
 
-**Initialization:**
-
-```javascript
-new NoActorFoundError();
-```
-
-### ActorNotFoundError
-
-@constructor
-@param {string} roleId - Queried role.
-@param {Object} [scope=null] - Searched scope instance.
-@param {Object} [context={}] - Additional metadata.
+  /**
+@function getActiveDelegationsForDelegate
+Retrieves delegations received by an actor.
+@param {string} delegateId - Receiving actor ID.
+@param {Date} [asOfDate=new Date()] - Temporal validity point.
+@returns {Delegation[]}
+@abstract
 /
-constructor(roleId, scope = null, context = {}) {
-const scopeStr = scope ? ` in scope ${scope.toString?.() || JSON.stringify(scope)}` : '';
-super(`No actor found for role ${roleId}${scopeStr}`, { ...context, roleId, scope });
-this.name = 'NoActorFoundError';
-this.roleId = roleId;
-this.scope = scope;
-}
-}
+  getActiveDelegationsForDelegate(delegateId, asOfDate = new Date()) {
+    throw new Error('DelegationSource.getActiveDelegationsForDelegate() must be implemented');
+  }
 
-**Initialization:**
-
-```javascript
-new ActorNotFoundError();
-```
-
-### CircularDelegationError
-
-@constructor
-@param {string} actorId - The missing actor identifier.
-@param {Object} [context={}] - Additional metadata.
+  /**
+@function getDelegationChain
+Resolves transitive delegation paths (A -> B -> C) for a role/scope context.
+@param {string} actorId - Starting principal ID.
+@param {string} roleId - Role context for filtering.
+@param {Scope} scope - Scope context for filtering.
+@param {Date} [asOfDate=new Date()] - Temporal validity point.
+@returns {Delegation[]} Ordered array from nearest to farthest delegate.
+@abstract
 /
-constructor(actorId, context = {}) {
-super(`Actor not found: ${actorId}`, { ...context, actorId });
-this.name = 'ActorNotFoundError';
-this.actorId = actorId;
-}
+  getDelegationChain(actorId, roleId, scope, asOfDate = new Date()) {
+    throw new Error('DelegationSource.getDelegationChain() must be implemented');
+  }
 }
 
-**Initialization:**
+/**
+@class InMemoryDelegationSource
+@extends DelegationSource
+Non-persistent implementation using arrays for delegation storage.
 
+### Raw JSDoc Context:
 ```javascript
-new CircularDelegationError();
+/**
+   * @function getActiveDelegationsForPrincipal
+   * @description Retrieves delegations issued by an actor that are valid at a specific time.
+   * @param {string} principalId - Issuing actor ID.
+   * @param {Date} [asOfDate=new Date()] - Temporal validity point.
+   * @returns {Delegation[]}
+   * @abstract
+   */
+  getActiveDelegationsForPrincipal(principalId, asOfDate = new Date()) {
+    throw new Error('DelegationSource.getActiveDelegationsForPrincipal() must be implemented');
+  }
+
+  /**
+   * @function getActiveDelegationsForDelegate
+   * @description Retrieves delegations received by an actor.
+   * @param {string} delegateId - Receiving actor ID.
+   * @param {Date} [asOfDate=new Date()] - Temporal validity point.
+   * @returns {Delegation[]}
+   * @abstract
+   */
+  getActiveDelegationsForDelegate(delegateId, asOfDate = new Date()) {
+    throw new Error('DelegationSource.getActiveDelegationsForDelegate() must be implemented');
+  }
+
+  /**
+   * @function getDelegationChain
+   * @description Resolves transitive delegation paths (A -> B -> C) for a role/scope context.
+   * @param {string} actorId - Starting principal ID.
+   * @param {string} roleId - Role context for filtering.
+   * @param {Scope} scope - Scope context for filtering.
+   * @param {Date} [asOfDate=new Date()] - Temporal validity point.
+   * @returns {Delegation[]} Ordered array from nearest to farthest delegate.
+   * @abstract
+   */
+  getDelegationChain(actorId, roleId, scope, asOfDate = new Date()) {
+    throw new Error('DelegationSource.getDelegationChain() must be implemented');
+  }
+}
+
+/**
+ * @class InMemoryDelegationSource
+ * @extends DelegationSource
+ * @description Non-persistent implementation using arrays for delegation storage.
+ */
 ```
 
-### InvalidScopeError
+<br>
 
-@constructor
-@param {string} actorId - Actor causing the cycle.
-@param {string[]} [chain=[]] - Trace of IDs forming the cycle.
-@param {Object} [context={}] - Additional metadata.
+## CLASS: AssignmentSource
+**File Path:** `RoleResolutionLib/src/registry/AssignmentSource.js`
+**Constructor Usage:** `const instance = new AssignmentSource();`
+**Description:** Interface definition for assignment data sources.
+
 /
-constructor(actorId, chain = [], context = {}) {
-const chainStr = chain.length > 0 ? ` (chain: ${chain.join(' -> ')})` : '';
-super(`Circular delegation detected for actor: ${actorId}${chainStr}`, {
-...context,
-actorId,
-chain
-});
-this.name = 'CircularDelegationError';
-this.actorId = actorId;
-this.chain = chain;
-}
-}
 
-**Initialization:**
+/**
+@interface AssignmentSource
+Contract for persistence layers providing role assignments and actor metadata.
 
+### Raw JSDoc Context:
 ```javascript
-new InvalidScopeError();
+/**
+ * @file RoleResolutionLib/src/registry/AssignmentSource.js
+ * @description Interface definition for assignment data sources.
+ * @version 1.0.0
+ */
+
+/**
+ * @interface AssignmentSource
+ * @description Contract for persistence layers providing role assignments and actor metadata.
+ */
 ```
 
-### DelegationDepthExceededError
+### Methods of AssignmentSource
 
-@constructor
-@param {string} roleId - Role under query.
-@param {string} providedScopeType - Actual scope level.
-@param {string} expectedScopeType - Required scope level.
-@param {Object} [context={}] - Additional metadata.
-/
-constructor(roleId, providedScopeType, expectedScopeType, context = {}) {
-super(
-`Invalid scope for role ${roleId}: expected ${expectedScopeType}, got ${providedScopeType}`,
-{ ...context, roleId, providedScopeType, expectedScopeType }
-);
-this.name = 'InvalidScopeError';
-this.roleId = roleId;
-this.providedScopeType = providedScopeType;
-this.expectedScopeType = expectedScopeType;
-}
-}
-
-**Initialization:**
-
+#### METHOD: AssignmentSource.getActorById
+- **Scope:** instance
+- **LLM Call Syntax:** `const result = assignmentSource.getActorById(roleId, scope, asOfDate, actorId, asOfDate, actorId);`
+- **Pure JSDoc:**
 ```javascript
-new DelegationDepthExceededError();
+/**
+   * @function getAssignmentsForRole
+   * @description Fetches active assignments for a role within a scope at a given time.
+   * @param {string} roleId - Role to query.
+   * @param {Scope} scope - Context boundary.
+   * @param {Date} [asOfDate=new Date()] - Temporal validity point.
+   * @returns {Assignment[]}
+   * @abstract
+   */
+  getAssignmentsForRole(roleId, scope, asOfDate = new Date()) {
+    throw new Error('AssignmentSource.getAssignmentsForRole() must be implemented');
+  }
+
+  /**
+   * @function getAssignmentsForActor
+   * @description Retrieves all roles currently held by a specific actor.
+   * @param {string} actorId - Target actor ID.
+   * @param {Date} [asOfDate=new Date()] - Temporal validity point.
+   * @returns {Assignment[]}
+   * @abstract
+   */
+  getAssignmentsForActor(actorId, asOfDate = new Date()) {
+    throw new Error('AssignmentSource.getAssignmentsForActor() must be implemented');
+  }
+
+  /**
+   * @function getActorById
+   * @description Resolves actor metadata (type, identifier, displayName) by unique ID.
+   * @param {string} actorId - ID to resolve.
+   * @returns {Actor|null}
+   * @abstract
+   */
 ```
-
-### RoleValidationError
-
-@constructor
-@param {number} actualDepth - Chain length detected.
-@param {number} maxDepth - Allowed threshold.
-@param {Object} [context={}] - Additional metadata.
-/
-constructor(actualDepth, maxDepth, context = {}) {
-super(`Delegation chain depth (${actualDepth}) exceeds maximum (${maxDepth})`, {
-...context,
-actualDepth,
-maxDepth
-});
-this.name = 'DelegationDepthExceededError';
-this.actualDepth = actualDepth;
-this.maxDepth = maxDepth;
-}
-}
-
-**Initialization:**
-
-```javascript
-new RoleValidationError();
-```
-
-### Effective assignment API
-
-`AssignmentSlot` is an immutable, opaque set of application-defined dimensions.
-The resolver only uses those dimensions for stable identity and wildcard-aware matching;
-it imposes no school- or organization-specific slot schema.
-
-### AssignmentSlot
-
-`new AssignmentSlot({ dimensions: Record<string, string | number | boolean | null> })`
-
-- `get(name: string): string | number | boolean | null`
-- `matches(scopeDimensions: Record<string, string | number | boolean | null>): boolean`
-- `toJSON(): { dimensions: Record<string, string | number | boolean | null> }`
-
-### AssignmentCandidate
-
-`new AssignmentCandidate({ id, actorId, slot, validFrom, validTo, source, priority, metadata })`
-
-- `isValidAt(date: Date): boolean`
-- `toJSON(): Object`
-
-### AssignmentOverride
-
-`new AssignmentOverride({ id, previousActorId, nextActorId, slotScope, effectiveFrom, source, metadata })`
-
-- `matches(candidate: AssignmentCandidate, date: Date): boolean`
-- `toJSON(): Object`
-
-### EffectiveAssignmentResolver
-
-`new EffectiveAssignmentResolver({ actorSource, assignmentSource, overrideSource, delegationSource, policy, routingResolver })`
-
-- `resolve({ context, asOfDate, routingPolicy }): EffectiveAssignmentResult[]`
-
-`ResolutionPolicy.tieBehavior` supports `THROW` and deterministic source-ordered
-`FIRST`. `missingActorBehavior: NULL` produces null actor fields with empty routing
-buckets. `resultIdentity` deduplicates resolved results using `slot`,
-`principalActor`, or dotted result paths.
-
-### Source adapters
-
-- `WideRowAssignmentSource` maps arrays or synchronous `rows(context)` callbacks into candidates.
-- `MappedOverrideSource` maps generic dated override rows.
-- `MappedDelegationSource` maps generic context-scoped delegation rows.
-- `CompositeAssignmentSource` merges and deduplicates source results.
-
-`ActorSource`, `EffectiveAssignmentSource`, and `OverrideSource` are the public
-persistence contracts used by `EffectiveAssignmentResolver`.
-`EffectiveAssignmentSource` exposes `getAssignments(context, asOfDate)`.
-The distinct legacy `AssignmentSource` contract remains public for `RoleResolver`
-and exposes `getAssignmentsForRole`, `getAssignmentsForActor`, and `getActorById`.
-
-### EffectiveAssignmentSource
-
-Interface definition for effective-assignment candidate sources.
-
-**Initialization:**
-
-```javascript
-new EffectiveAssignmentSource();
-```
-
-**Methods:**
-
-- `getAssignments(context: Object, asOfDate: Date): AssignmentCandidate[]`
-
-### RoleResolver
-
-Main role resolution engine.
-
-**Initialization:**
-
-```javascript
-new RoleResolver();
-```
-
-**Methods:**
-
-- `resolve(roleId: string, scope: Scope, options={}: Object, options.asOfDate=new Date(): Date, options.routingPolicy=null: string, options.includeFallbacks=true: boolean): ResolutionResult`
-
-  > this._roleRegistry = roleRegistry; /** this._assignmentSource = assignmentSource; /** this._delegationSource = delegationSource; /** this._logger = options.logger || console; /** this._defaultRoutingPolicy = options.defaultRoutingPolicy || RoutingPolicy.DELEGATE_ONLY; /** this._maxDelegationDepth = options.maxDelegationDepth || 10; /** this._throwOnNotFound = options.throwOnNotFound === true; /** this._delegationValidator = new DelegationValidator({ maxDelegationDepth: this._maxDelegationDepth, logger: this._logger }); /** this._routingResolver = new RoutingResolver({ logger: this._logger, defaultPolicy: this._defaultRoutingPolicy }); } /**
-
-- `resolveMultiple(roleIds: string[], scope: Scope, options={}: Object): Map<string, ResolutionResult>`
-
-- `resolveForActor(actorId: string, scope: Scope, options={}: Object): Object`
-
-- `getRoutingFor(roleId: string, scope: Scope, options={}: Object): Object`
-
-### RoutingResolver
-
-Resolves routing based on delegation chain and routing policies.
-
-**Initialization:**
-
-```javascript
-new RoutingResolver();
-```
-
-**Methods:**
-
-- `resolve(params: Object, params.principalActor: Actor, params.effectiveActor=null: Actor, params.delegationChain=null: DelegationChain, params.routingPolicy=null: string): RoutingResult`
-
-  > Logger instance.
-
-- `resolveChainAllWithActors(chainActors: Actor[]): RoutingResult`
-
-- `getDefaultPolicy(): string`
-
-### RoutingResult
-
-RoutingResult representing the routing decision for communications.
-
-**Initialization:**
-
-```javascript
-new RoutingResult();
-```
-
-**Static Methods:**
-
-- `empty(): RoutingResult`
-
-  > this.primary = Array.isArray(data.primary) ? [...data.primary] : []; /** this.cc = Array.isArray(data.cc) ? [...data.cc] : []; /** this.bcc = Array.isArray(data.bcc) ? [...data.bcc] : []; /** this.metadata = cloneDeep(data.metadata || {}); // Freeze the instance Object.freeze(this); Object.freeze(this.primary); Object.freeze(this.cc); Object.freeze(this.bcc); Object.freeze(this.metadata); } /**
-
-- `singlePrimary(actor: Actor): RoutingResult`
-
-- `allPrimary(actors: Actor[]): RoutingResult`
-
-**Methods:**
-
-- `isEmpty(): boolean`
-
-- `getTotalRecipientCount(): number`
-
-- `getAllRecipients(): Actor[]`
-
-- `getUniqueRecipientIds(): string[]`
-
-- `containsRecipient(actorId: string): boolean`
-
-- `getRecipientCategory(actorId: string): string|null`
-
-- `withPrimary(actor: Actor): RoutingResult`
-
-- `withCC(actor: Actor): RoutingResult`
-
-- `withBCC(actor: Actor): RoutingResult`
-
-- `merge(other: RoutingResult): RoutingResult`
-
-- `toJSON(): Object`
-
-- `toString(): string`
-
-### AssignmentSource
-
-Interface definition for assignment data sources.
-
-**Initialization:**
-
-```javascript
-new AssignmentSource(roleId: string, scope: Scope, asOfDate=new Date(): Date)
-```
-
-**Methods:**
-
-- `getActorById(roleId: string, scope: Scope, asOfDate=new Date(): Date, actorId: string, asOfDate=new Date(): Date, actorId: string): Assignment[]`
-  > / getAssignmentsForRole(roleId, scope, asOfDate = new Date()) { throw new Error('AssignmentSource.getAssignmentsForRole() must be implemented'); } /** / getAssignmentsForActor(actorId, asOfDate = new Date()) { throw new Error('AssignmentSource.getAssignmentsForActor() must be implemented'); } /**
-
-### InMemoryAssignmentSource
-
-@function getAssignmentsForRole
+---
+<br>
+
+## CLASS: InMemoryAssignmentSource
+**File Path:** `RoleResolutionLib/src/registry/AssignmentSource.js`
+**Constructor Usage:** `const instance = new InMemoryAssignmentSource();`
+**Description:** @function getAssignmentsForRole
 Fetches active assignments for a role within a scope at a given time.
 @param {string} roleId - Role to query.
 @param {Scope} scope - Context boundary.
@@ -641,157 +399,1544 @@ Fetches active assignments for a role within a scope at a given time.
 @returns {Assignment[]}
 @abstract
 /
-getAssignmentsForRole(roleId, scope, asOfDate = new Date()) {
-throw new Error('AssignmentSource.getAssignmentsForRole() must be implemented');
-}
+  getAssignmentsForRole(roleId, scope, asOfDate = new Date()) {
+    throw new Error('AssignmentSource.getAssignmentsForRole() must be implemented');
+  }
 
-**Initialization:**
-
-```javascript
-new InMemoryAssignmentSource(actorId: string, asOfDate=new Date(): Date)
-```
-
-**Methods:**
-
-- `addAssignment(assignment: Assignment): void`
-
-  > this._assignments = data.assignments || []; /** this._actors = new Map(); // Index actors if (Array.isArray(data.actors)) { data.actors.forEach((actor) => { this._actors.set(actor.id, actor); }); } } /**
-
-- `addActor(actor: Actor): void`
-
-- `getActorById(roleId: string, scope: Scope, asOfDate=new Date(): Date, actorId: string, asOfDate=new Date(): Date, actorId: string): Assignment[]`
-
-  > / getAssignmentsForRole(roleId, scope, asOfDate = new Date()) { return this._assignments.filter((assignment) => { // Check role match if (assignment.roleId !== roleId) { return false; } // Check validity if assignment has isValidAt method if (typeof assignment.isValidAt === 'function') { if (!assignment.isValidAt(asOfDate)) { return false; } } else { // Manual validity check if (assignment.isActive === false) { return false; } if (assignment.validFrom && asOfDate < new Date(assignment.validFrom)) { return false; } if (assignment.validTo && asOfDate > new Date(assignment.validTo)) { return false; } } // Check scope match if assignment has scope matching method if (typeof assignment.scope?.contains === 'function') { return assignment.scope.contains(scope) || assignment.scope.matches(scope); } // Simple scope match - check type and value if (assignment.scope) { const assignmentScope = assignment.scope; const queryScope = scope; // Global scope matches everything if (assignmentScope.type === 'GLOBAL') { return true; } // Same type and value match if (assignmentScope.type === queryScope.type) { return assignmentScope.value === queryScope.value; } } return true; }); } /** / getAssignmentsForActor(actorId, asOfDate = new Date()) { return this._assignments.filter((assignment) => { if (assignment.actorId !== actorId) { return false; } // Check validity if (typeof assignment.isValidAt === 'function') { return assignment.isValidAt(asOfDate); } // Manual validity check if (assignment.isActive === false) { return false; } if (assignment.validFrom && asOfDate < new Date(assignment.validFrom)) { return false; } if (assignment.validTo && asOfDate > new Date(assignment.validTo)) { return false; } return true; }); } /**
-
-- `getAllAssignments(): Assignment[]`
-
-- `getAllActors(): Actor[]`
-
-- `clear(): void`
-
-### DelegationSource
-
-Interface definition for delegation data sources.
-
-**Initialization:**
-
-```javascript
-new DelegationSource(principalId: string, asOfDate=new Date(): Date)
-```
-
-### InMemoryDelegationSource
-
-@function getActiveDelegationsForPrincipal
-Retrieves delegations issued by an actor that are valid at a specific time.
-@param {string} principalId - Issuing actor ID.
+  /**
+@function getAssignmentsForActor
+Retrieves all roles currently held by a specific actor.
+@param {string} actorId - Target actor ID.
 @param {Date} [asOfDate=new Date()] - Temporal validity point.
-@returns {Delegation[]}
+@returns {Assignment[]}
 @abstract
 /
-getActiveDelegationsForPrincipal(principalId, asOfDate = new Date()) {
-throw new Error('DelegationSource.getActiveDelegationsForPrincipal() must be implemented');
+  getAssignmentsForActor(actorId, asOfDate = new Date()) {
+    throw new Error('AssignmentSource.getAssignmentsForActor() must be implemented');
+  }
+
+  /**
+@function getActorById
+Resolves actor metadata (type, identifier, displayName) by unique ID.
+@param {string} actorId - ID to resolve.
+@returns {Actor|null}
+@abstract
+/
+  getActorById(actorId) {
+    throw new Error('AssignmentSource.getActorById() must be implemented');
+  }
 }
 
-**Initialization:**
+/**
+@class InMemoryAssignmentSource
+@extends AssignmentSource
+Non-persistent implementation using arrays/maps for assignment storage.
 
+### Raw JSDoc Context:
 ```javascript
-new InMemoryDelegationSource(delegateId: string, asOfDate=new Date(): Date)
+/**
+   * @function getAssignmentsForRole
+   * @description Fetches active assignments for a role within a scope at a given time.
+   * @param {string} roleId - Role to query.
+   * @param {Scope} scope - Context boundary.
+   * @param {Date} [asOfDate=new Date()] - Temporal validity point.
+   * @returns {Assignment[]}
+   * @abstract
+   */
+  getAssignmentsForRole(roleId, scope, asOfDate = new Date()) {
+    throw new Error('AssignmentSource.getAssignmentsForRole() must be implemented');
+  }
+
+  /**
+   * @function getAssignmentsForActor
+   * @description Retrieves all roles currently held by a specific actor.
+   * @param {string} actorId - Target actor ID.
+   * @param {Date} [asOfDate=new Date()] - Temporal validity point.
+   * @returns {Assignment[]}
+   * @abstract
+   */
+  getAssignmentsForActor(actorId, asOfDate = new Date()) {
+    throw new Error('AssignmentSource.getAssignmentsForActor() must be implemented');
+  }
+
+  /**
+   * @function getActorById
+   * @description Resolves actor metadata (type, identifier, displayName) by unique ID.
+   * @param {string} actorId - ID to resolve.
+   * @returns {Actor|null}
+   * @abstract
+   */
+  getActorById(actorId) {
+    throw new Error('AssignmentSource.getActorById() must be implemented');
+  }
+}
+
+/**
+ * @class InMemoryAssignmentSource
+ * @extends AssignmentSource
+ * @description Non-persistent implementation using arrays/maps for assignment storage.
+ */
 ```
 
-**Methods:**
+<br>
 
-- `addDelegation(delegation: Delegation): void`
+## CLASS: RoutingResult
+**File Path:** `RoleResolutionLib/src/internal/routing/RoutingResult.js`
+**Constructor Usage:** `const instance = new RoutingResult();`
+**Description:** RoutingResult representing the routing decision for communications.
 
-  > this._delegations = data.delegations || []; } /**
+/
 
-- `getAllDelegations(principalId: string, asOfDate=new Date(): Date, delegateId: string, asOfDate=new Date(): Date, actorId: string, roleId: string, scope: Scope, asOfDate=new Date(): Date): Delegation[]`
+import { cloneDeep } from '@CoreUtilsLib';
 
-  > / getActiveDelegationsForPrincipal(principalId, asOfDate = new Date()) { return this._delegations.filter((delegation) => { if (delegation.principalId !== principalId) { return false; } return this._isValidDelegation(delegation, asOfDate); }); } /** / getActiveDelegationsForDelegate(delegateId, asOfDate = new Date()) { return this._delegations.filter((delegation) => { if (delegation.delegateId !== delegateId) { return false; } return this._isValidDelegation(delegation, asOfDate); }); } /** / getDelegationChain(actorId, roleId, scope, asOfDate = new Date()) { const chain = []; const visited = new Set(); let currentActorId = actorId; while (currentActorId && !visited.has(currentActorId)) { visited.add(currentActorId); // Find delegations from this actor const delegations = this.getActiveDelegationsForPrincipal(currentActorId, asOfDate); // Find a delegation that applies to the role and scope const applicableDelegation = delegations.find((delegation) => { // Check if delegation applies to this role if (typeof delegation.appliesToRole === 'function') { if (!delegation.appliesToRole(roleId)) { return false; } } else { // Manual check if (delegation.roleIds !== '*' && !delegation.roleIds?.includes(roleId)) { return false; } } // Check if delegation applies to this scope if (typeof delegation.appliesToScope === 'function') { return delegation.appliesToScope(scope); } return true; }); if (applicableDelegation) { chain.push(applicableDelegation); currentActorId = applicableDelegation.delegateId; } else { break; } } return chain; } /**
+/**
+@class RoutingResult
+Immutable Value Object categorizing actors into communication channels (primary, cc, bcc).
 
-- `clear(): void`
-
-### RoleRegistry
-
-Registry for role definitions.
-
-**Initialization:**
-
+### Raw JSDoc Context:
 ```javascript
-new RoleRegistry();
+/**
+ * @file RoleResolutionLib/src/routing/RoutingResult.js
+ * @description RoutingResult representing the routing decision for communications.
+ * @version 1.0.0
+ */
+
+import { cloneDeep } from '@CoreUtilsLib';
+
+/**
+ * @class RoutingResult
+ * @description Immutable Value Object categorizing actors into communication channels (primary, cc, bcc).
+ */
 ```
 
-**Static Methods:**
+<br>
 
-- `fromJSON(obj: Object, options={}: Object): RoleRegistry`
+## CLASS: RoutingResolver
+**File Path:** `RoleResolutionLib/src/internal/routing/RoutingResolver.js`
+**Constructor Usage:** `const instance = new RoutingResolver();`
+**Description:** Resolves routing based on delegation chain and routing policies.
 
-**Methods:**
+/
 
-- `register(roleOrDefinition: Role|Object): Role`
+import { RoutingPolicy } from './RoutingPolicy.js';
+import { RoutingResult } from './RoutingResult.js';
+import { DelegationChain } from '../delegation/DelegationChain.js';
 
-  > this._logger = options.logger || console; /** this._roles = new Registry({ entityName: 'role' }); // Register initial roles if (Array.isArray(options.initialRoles)) { options.initialRoles.forEach((role) => this.register(role)); } } /**
+/**
+@class RoutingResolver
+Decision engine for mapping delegation chains and policies to communication buckets (primary, cc, bcc).
 
-- `registerAll(roles: (Role|Object)[]): Role[]`
+### Raw JSDoc Context:
+```javascript
+/**
+ * @file RoleResolutionLib/src/routing/RoutingResolver.js
+ * @description Resolves routing based on delegation chain and routing policies.
+ * @version 1.0.0
+ */
 
-- `getOrNull(roleId: string): Role|null`
+import { RoutingPolicy } from './RoutingPolicy.js';
+import { RoutingResult } from './RoutingResult.js';
+import { DelegationChain } from '../delegation/DelegationChain.js';
 
-- `has(roleId: string): boolean`
+/**
+ * @class RoutingResolver
+ * @description Decision engine for mapping delegation chains and policies to communication buckets (primary, cc, bcc).
+ */
+```
 
-- `unregister(roleId: string): boolean`
+<br>
 
-- `getAll(): Role[]`
+## CLASS: RoleResolver
+**File Path:** `RoleResolutionLib/src/internal/resolution/RoleResolver.js`
+**Constructor Usage:** `const instance = new RoleResolver();`
+**Description:** Main role resolution engine.
 
-- `getAllIds(): string[]`
+/
 
-- `size(): number`
+import { ResolutionResult } from '../../core/ResolutionResult.js';
+import { ResolutionStrategy } from '../../core/ResolutionStrategy.js';
+import { ScopeType } from '../../core/ScopeType.js';
+import { DelegationChain } from '../delegation/DelegationChain.js';
+import { DelegationValidator } from '../delegation/DelegationValidator.js';
+import { RoutingResolver } from '../routing/RoutingResolver.js';
+import { RoutingPolicy } from '../routing/RoutingPolicy.js';
+import {
+  RoleNotFoundError,
+  NoActorFoundError,
+  InvalidScopeError,
+  CircularDelegationError,
+  DelegationDepthExceededError
+} from '../errors/RoleResolutionError.js';
 
-- `clear(): void`
+/**
+@class RoleResolver
+Central orchestration engine for mapping roles to actors via assignments, fallbacks, and transitive delegations.
 
-- `find(predicate: Function): Role[]`
+### Raw JSDoc Context:
+```javascript
+/**
+ * @file RoleResolutionLib/src/resolution/RoleResolver.js
+ * @description Main role resolution engine.
+ * @version 1.0.0
+ */
 
-- `findByScopeType(scopeType: string): Role[]`
+import { ResolutionResult } from '../../core/ResolutionResult.js';
+import { ResolutionStrategy } from '../../core/ResolutionStrategy.js';
+import { ScopeType } from '../../core/ScopeType.js';
+import { DelegationChain } from '../delegation/DelegationChain.js';
+import { DelegationValidator } from '../delegation/DelegationValidator.js';
+import { RoutingResolver } from '../routing/RoutingResolver.js';
+import { RoutingPolicy } from '../routing/RoutingPolicy.js';
+import {
+  RoleNotFoundError,
+  NoActorFoundError,
+  InvalidScopeError,
+  CircularDelegationError,
+  DelegationDepthExceededError
+} from '../errors/RoleResolutionError.js';
 
-- `findDelegatable(): Role[]`
+/**
+ * @class RoleResolver
+ * @description Central orchestration engine for mapping roles to actors via assignments, fallbacks, and transitive delegations.
+ */
+```
 
-- `toJSON(): Object`
+<br>
 
-### Materia slot CSV parsing
+## CLASS: ResolutionTrace
+**File Path:** `RoleResolutionLib/src/internal/resolution/ResolutionTrace.js`
+**Constructor Usage:** `const instance = new ResolutionTrace();`
+**Description:** Immutable sequence of explainable effective-assignment decisions.
 
-Four standalone, dependency-free helpers for parsing `MATERIA.itp`/
-`MATERIA.specifica`-style CSV cattedra columns (a spreadsheet cell listing
-several teaching subjects, each optionally slot-qualified) — reusable by any
-GAS app that stores this shape, not just role-resolution consumers. Import
-path: `RoleResolutionLib/src/utils/MateriaSlotParsing.js`, re-exported from the
-library's root `index.js`.
+### Raw JSDoc Context:
+```javascript
+/** Immutable sequence of explainable effective-assignment decisions. */
+```
 
-- `splitCsvList(raw: string): string[]`
+### Methods of ResolutionTrace
 
-  Splits a comma-separated string into trimmed, non-empty entries (drops
-  entries left empty by whitespace-only content or doubled/trailing commas).
-
-- `groupMateriaEntriesBySlot(materieRaw: string): Array<{kind: string, specifica: string, materie: string[]}>`
-
-  Groups a materia CSV's entries by slot qualifier, per-entry (a single CSV can
-  legitimately mix a bare materia with a slot-qualified one from a different
-  materia). Parsing rule per entry: `MATERIA` → unqualified (`kind: '*'`);
-  `MATERIA.itp` → `kind: 'ITP'`; `MATERIA.<anything else>` → `kind: 'SPECIFICA'`
-  with that suffix as `specifica`. Returns one group per distinct
-  `(kind, specifica)` pair, each collecting the base materia ids that share it,
-  in first-seen order.
-
-- `slotCompatible(a: {kind: string, specifica: string}, b: {kind: string, specifica: string}): boolean`
-
-  Whether two slot qualifiers can refer to the same physical teaching post.
-  The wildcard `'*'` (unqualified) is compatible with anything; two different
-  non-wildcard kinds are never compatible; two `SPECIFICA` qualifiers are
-  compatible only when their `specifica` matches (or either side is `'*'`).
-
-- `pairsOverlap(a: ReadonlyArray<{classeId: string, materia: string, kind: string, specifica: string}>, b: ReadonlyArray<{...}>): boolean`
-
-  True if any pair in `a` shares a `(classeId, materia)` with a
-  slot-compatible pair in `b` (via `slotCompatible`).
-
-Callers needing a named constant for the `'*'` sentinel should keep their own
-local constant equal to this literal — these helpers use the literal directly
-and do not export one.
-
+#### METHOD: ResolutionTrace.append
+- **Scope:** instance
+- **LLM Call Syntax:** `resolutionTrace.append(entry);`
+- **Pure JSDoc:**
+```javascript
+/** Method append */
+```
 ---
+#### METHOD: ResolutionTrace.toJSON
+- **Scope:** instance
+- **LLM Call Syntax:** `resolutionTrace.toJSON();`
+- **Pure JSDoc:**
+```javascript
+/** Method toJSON */
+```
+---
+<br>
+
+## CLASS: ResolutionPolicy
+**File Path:** `RoleResolutionLib/src/internal/resolution/ResolutionPolicy.js`
+**Constructor Usage:** `const instance = new ResolutionPolicy();`
+**Description:** Immutable policy options for effective-assignment resolution.
+
+### Raw JSDoc Context:
+```javascript
+/** Immutable policy options for effective-assignment resolution. */
+```
+
+### Methods of ResolutionPolicy
+
+#### METHOD: ResolutionPolicy.toJSON
+- **Scope:** instance
+- **LLM Call Syntax:** `resolutionPolicy.toJSON();`
+- **Pure JSDoc:**
+```javascript
+/** Method toJSON */
+```
+---
+<br>
+
+## CLASS: EffectiveAssignmentResolver
+**File Path:** `RoleResolutionLib/src/internal/resolution/EffectiveAssignmentResolver.js`
+**Constructor Usage:** `const instance = new EffectiveAssignmentResolver();`
+**Description:** Resolves generic candidates through temporal overrides, delegation, and routing.
+
+### Raw JSDoc Context:
+```javascript
+/** Resolves generic candidates through temporal overrides, delegation, and routing. */
+```
+
+### Methods of EffectiveAssignmentResolver
+
+#### METHOD: EffectiveAssignmentResolver.if
+- **Scope:** instance
+- **LLM Call Syntax:** `effectiveAssignmentResolver.if(!actorSource || typeof actorSource.getActor !);`
+- **Pure JSDoc:**
+```javascript
+/** Method if */
+```
+---
+#### METHOD: EffectiveAssignmentResolver.if
+- **Scope:** instance
+- **LLM Call Syntax:** `effectiveAssignmentResolver.if(!assignmentSource || typeof assignmentSource.getAssignments !);`
+- **Pure JSDoc:**
+```javascript
+/** Method if */
+```
+---
+#### METHOD: EffectiveAssignmentResolver.if
+- **Scope:** instance
+- **LLM Call Syntax:** `effectiveAssignmentResolver.if(!overrideSource || typeof overrideSource.getOverrides !);`
+- **Pure JSDoc:**
+```javascript
+/** Method if */
+```
+---
+#### METHOD: EffectiveAssignmentResolver.resolve
+- **Scope:** instance
+- **LLM Call Syntax:** `effectiveAssignmentResolver.resolve({ context, asOfDate, routingPolicy);`
+- **Pure JSDoc:**
+```javascript
+/** Method resolve */
+```
+---
+#### METHOD: EffectiveAssignmentResolver.if
+- **Scope:** instance
+- **LLM Call Syntax:** `effectiveAssignmentResolver.if(chainSelection.chain.length > 0);`
+- **Pure JSDoc:**
+```javascript
+/** Method if */
+```
+---
+#### METHOD: EffectiveAssignmentResolver.for
+- **Scope:** instance
+- **LLM Call Syntax:** `effectiveAssignmentResolver.for(;;);`
+- **Pure JSDoc:**
+```javascript
+/** Method for */
+```
+---
+#### METHOD: EffectiveAssignmentResolver.if
+- **Scope:** instance
+- **LLM Call Syntax:** `effectiveAssignmentResolver.if(!selection.override);`
+- **Pure JSDoc:**
+```javascript
+/** Method if */
+```
+---
+#### METHOD: EffectiveAssignmentResolver.if
+- **Scope:** instance
+- **LLM Call Syntax:** `effectiveAssignmentResolver.if(this._policy.maxOverrideChainDepth !);`
+- **Pure JSDoc:**
+```javascript
+/** Method if */
+```
+---
+#### METHOD: EffectiveAssignmentResolver.if
+- **Scope:** instance
+- **LLM Call Syntax:** `effectiveAssignmentResolver.if(applicable.length);`
+- **Pure JSDoc:**
+```javascript
+/** Method if */
+```
+---
+#### METHOD: EffectiveAssignmentResolver.if
+- **Scope:** instance
+- **LLM Call Syntax:** `effectiveAssignmentResolver.if(finalists.length > 1 && this._policy.tieBehavior);`
+- **Pure JSDoc:**
+```javascript
+/** Method if */
+```
+---
+#### METHOD: EffectiveAssignmentResolver.while
+- **Scope:** instance
+- **LLM Call Syntax:** `effectiveAssignmentResolver.while(current);`
+- **Pure JSDoc:**
+```javascript
+/** Method while */
+```
+---
+#### METHOD: EffectiveAssignmentResolver.if
+- **Scope:** instance
+- **LLM Call Syntax:** `effectiveAssignmentResolver.if(outgoing.length);`
+- **Pure JSDoc:**
+```javascript
+/** Method if */
+```
+---
+#### METHOD: EffectiveAssignmentResolver.if
+- **Scope:** instance
+- **LLM Call Syntax:** `effectiveAssignmentResolver.if(outgoing.length > 1);`
+- **Pure JSDoc:**
+```javascript
+/** Method if */
+```
+---
+#### METHOD: EffectiveAssignmentResolver.if
+- **Scope:** instance
+- **LLM Call Syntax:** `effectiveAssignmentResolver.if(typeof this._delegationSource.getDelegations);`
+- **Pure JSDoc:**
+```javascript
+/** Method if */
+```
+---
+#### METHOD: EffectiveAssignmentResolver.if
+- **Scope:** instance
+- **LLM Call Syntax:** `effectiveAssignmentResolver.if(actor);`
+- **Pure JSDoc:**
+```javascript
+/** Method if */
+```
+---
+#### METHOD: EffectiveAssignmentResolver.if
+- **Scope:** instance
+- **LLM Call Syntax:** `effectiveAssignmentResolver.if(this._policy.missingActorBehavior);`
+- **Pure JSDoc:**
+```javascript
+/** Method if */
+```
+---
+<br>
+
+## CLASS: RoleResolutionError
+**File Path:** `RoleResolutionLib/src/internal/errors/RoleResolutionError.js`
+**Constructor Usage:** `const instance = new RoleResolutionError();`
+**Description:** Base error class and specialized errors for role resolution.
+
+/
+
+import { BaseError } from '@CoreUtilsLib';
+
+/**
+@class RoleResolutionError
+@extends BaseError
+Base exception for all role-related lookup and assignment failures.
+
+### Raw JSDoc Context:
+```javascript
+/**
+ * @file RoleResolutionLib/src/errors/RoleResolutionError.js
+ * @description Base error class and specialized errors for role resolution.
+ * @version 1.0.0
+ */
+
+import { BaseError } from '@CoreUtilsLib';
+
+/**
+ * @class RoleResolutionError
+ * @extends BaseError
+ * @description Base exception for all role-related lookup and assignment failures.
+ */
+```
+
+<br>
+
+## CLASS: RoleNotFoundError
+**File Path:** `RoleResolutionLib/src/internal/errors/RoleResolutionError.js`
+**Constructor Usage:** `const instance = new RoleNotFoundError();`
+**Description:** @constructor
+@param {string} message - Error details.
+@param {Object} [context={}] - Metadata (roleId, scope, etc.).
+@param {Error} [originalError=null] - Wrapped exception.
+/
+  constructor(message, context = {}, originalError = null) {
+    super(message, context, originalError);
+    this.name = 'RoleResolutionError';
+  }
+}
+
+/**
+@class RoleNotFoundError
+@extends RoleResolutionError
+Thrown when a role ID is missing from the registry.
+
+### Raw JSDoc Context:
+```javascript
+/**
+   * @constructor
+   * @param {string} message - Error details.
+   * @param {Object} [context={}] - Metadata (roleId, scope, etc.).
+   * @param {Error} [originalError=null] - Wrapped exception.
+   */
+  constructor(message, context = {}, originalError = null) {
+    super(message, context, originalError);
+    this.name = 'RoleResolutionError';
+  }
+}
+
+/**
+ * @class RoleNotFoundError
+ * @extends RoleResolutionError
+ * @description Thrown when a role ID is missing from the registry.
+ */
+```
+
+<br>
+
+## CLASS: NoActorFoundError
+**File Path:** `RoleResolutionLib/src/internal/errors/RoleResolutionError.js`
+**Constructor Usage:** `const instance = new NoActorFoundError();`
+**Description:** @constructor
+@param {string} roleId - The unknown role identifier.
+@param {Object} [context={}] - Additional metadata.
+/
+  constructor(roleId, context = {}) {
+    super(`Role not found: ${roleId}`, { ...context, roleId });
+    this.name = 'RoleNotFoundError';
+    this.roleId = roleId;
+  }
+}
+
+/**
+@class NoActorFoundError
+@extends RoleResolutionError
+Thrown when resolution logic yields an empty set for a role/scope.
+
+### Raw JSDoc Context:
+```javascript
+/**
+   * @constructor
+   * @param {string} roleId - The unknown role identifier.
+   * @param {Object} [context={}] - Additional metadata.
+   */
+  constructor(roleId, context = {}) {
+    super(`Role not found: ${roleId}`, { ...context, roleId });
+    this.name = 'RoleNotFoundError';
+    this.roleId = roleId;
+  }
+}
+
+/**
+ * @class NoActorFoundError
+ * @extends RoleResolutionError
+ * @description Thrown when resolution logic yields an empty set for a role/scope.
+ */
+```
+
+<br>
+
+## CLASS: ActorNotFoundError
+**File Path:** `RoleResolutionLib/src/internal/errors/RoleResolutionError.js`
+**Constructor Usage:** `const instance = new ActorNotFoundError();`
+**Description:** @constructor
+@param {string} roleId - Queried role.
+@param {Object} [scope=null] - Searched scope instance.
+@param {Object} [context={}] - Additional metadata.
+/
+  constructor(roleId, scope = null, context = {}) {
+    const scopeStr = scope ? ` in scope ${scope.toString?.() || JSON.stringify(scope)}` : '';
+    super(`No actor found for role ${roleId}${scopeStr}`, { ...context, roleId, scope });
+    this.name = 'NoActorFoundError';
+    this.roleId = roleId;
+    this.scope = scope;
+  }
+}
+
+/**
+@class ActorNotFoundError
+@extends RoleResolutionError
+Thrown when a specific actor ID cannot be resolved.
+
+### Raw JSDoc Context:
+```javascript
+/**
+   * @constructor
+   * @param {string} roleId - Queried role.
+   * @param {Object} [scope=null] - Searched scope instance.
+   * @param {Object} [context={}] - Additional metadata.
+   */
+  constructor(roleId, scope = null, context = {}) {
+    const scopeStr = scope ? ` in scope ${scope.toString?.() || JSON.stringify(scope)}` : '';
+    super(`No actor found for role ${roleId}${scopeStr}`, { ...context, roleId, scope });
+    this.name = 'NoActorFoundError';
+    this.roleId = roleId;
+    this.scope = scope;
+  }
+}
+
+/**
+ * @class ActorNotFoundError
+ * @extends RoleResolutionError
+ * @description Thrown when a specific actor ID cannot be resolved.
+ */
+```
+
+<br>
+
+## CLASS: CircularDelegationError
+**File Path:** `RoleResolutionLib/src/internal/errors/RoleResolutionError.js`
+**Constructor Usage:** `const instance = new CircularDelegationError();`
+**Description:** @constructor
+@param {string} actorId - The missing actor identifier.
+@param {Object} [context={}] - Additional metadata.
+/
+  constructor(actorId, context = {}) {
+    super(`Actor not found: ${actorId}`, { ...context, actorId });
+    this.name = 'ActorNotFoundError';
+    this.actorId = actorId;
+  }
+}
+
+/**
+@class CircularDelegationError
+@extends RoleResolutionError
+Thrown when a loop is detected in the delegation graph.
+
+### Raw JSDoc Context:
+```javascript
+/**
+   * @constructor
+   * @param {string} actorId - The missing actor identifier.
+   * @param {Object} [context={}] - Additional metadata.
+   */
+  constructor(actorId, context = {}) {
+    super(`Actor not found: ${actorId}`, { ...context, actorId });
+    this.name = 'ActorNotFoundError';
+    this.actorId = actorId;
+  }
+}
+
+/**
+ * @class CircularDelegationError
+ * @extends RoleResolutionError
+ * @description Thrown when a loop is detected in the delegation graph.
+ */
+```
+
+<br>
+
+## CLASS: InvalidScopeError
+**File Path:** `RoleResolutionLib/src/internal/errors/RoleResolutionError.js`
+**Constructor Usage:** `const instance = new InvalidScopeError();`
+**Description:** @constructor
+@param {string} actorId - Actor causing the cycle.
+@param {string[]} [chain=[]] - Trace of IDs forming the cycle.
+@param {Object} [context={}] - Additional metadata.
+/
+  constructor(actorId, chain = [], context = {}) {
+    const chainStr = chain.length > 0 ? ` (chain: ${chain.join(' -> ')})` : '';
+    super(`Circular delegation detected for actor: ${actorId}${chainStr}`, {
+      ...context,
+      actorId,
+      chain
+    });
+    this.name = 'CircularDelegationError';
+    this.actorId = actorId;
+    this.chain = chain;
+  }
+}
+
+/**
+@class InvalidScopeError
+@extends RoleResolutionError
+Thrown when a provided scope type is incompatible with role requirements.
+
+### Raw JSDoc Context:
+```javascript
+/**
+   * @constructor
+   * @param {string} actorId - Actor causing the cycle.
+   * @param {string[]} [chain=[]] - Trace of IDs forming the cycle.
+   * @param {Object} [context={}] - Additional metadata.
+   */
+  constructor(actorId, chain = [], context = {}) {
+    const chainStr = chain.length > 0 ? ` (chain: ${chain.join(' -> ')})` : '';
+    super(`Circular delegation detected for actor: ${actorId}${chainStr}`, {
+      ...context,
+      actorId,
+      chain
+    });
+    this.name = 'CircularDelegationError';
+    this.actorId = actorId;
+    this.chain = chain;
+  }
+}
+
+/**
+ * @class InvalidScopeError
+ * @extends RoleResolutionError
+ * @description Thrown when a provided scope type is incompatible with role requirements.
+ */
+```
+
+<br>
+
+## CLASS: DelegationDepthExceededError
+**File Path:** `RoleResolutionLib/src/internal/errors/RoleResolutionError.js`
+**Constructor Usage:** `const instance = new DelegationDepthExceededError();`
+**Description:** @constructor
+@param {string} roleId - Role under query.
+@param {string} providedScopeType - Actual scope level.
+@param {string} expectedScopeType - Required scope level.
+@param {Object} [context={}] - Additional metadata.
+/
+  constructor(roleId, providedScopeType, expectedScopeType, context = {}) {
+    super(
+      `Invalid scope for role ${roleId}: expected ${expectedScopeType}, got ${providedScopeType}`,
+      { ...context, roleId, providedScopeType, expectedScopeType }
+    );
+    this.name = 'InvalidScopeError';
+    this.roleId = roleId;
+    this.providedScopeType = providedScopeType;
+    this.expectedScopeType = expectedScopeType;
+  }
+}
+
+/**
+@class DelegationDepthExceededError
+@extends RoleResolutionError
+Thrown when a chain exceeds safety limits (default 10).
+
+### Raw JSDoc Context:
+```javascript
+/**
+   * @constructor
+   * @param {string} roleId - Role under query.
+   * @param {string} providedScopeType - Actual scope level.
+   * @param {string} expectedScopeType - Required scope level.
+   * @param {Object} [context={}] - Additional metadata.
+   */
+  constructor(roleId, providedScopeType, expectedScopeType, context = {}) {
+    super(
+      `Invalid scope for role ${roleId}: expected ${expectedScopeType}, got ${providedScopeType}`,
+      { ...context, roleId, providedScopeType, expectedScopeType }
+    );
+    this.name = 'InvalidScopeError';
+    this.roleId = roleId;
+    this.providedScopeType = providedScopeType;
+    this.expectedScopeType = expectedScopeType;
+  }
+}
+
+/**
+ * @class DelegationDepthExceededError
+ * @extends RoleResolutionError
+ * @description Thrown when a chain exceeds safety limits (default 10).
+ */
+```
+
+<br>
+
+## CLASS: RoleValidationError
+**File Path:** `RoleResolutionLib/src/internal/errors/RoleResolutionError.js`
+**Constructor Usage:** `const instance = new RoleValidationError();`
+**Description:** @constructor
+@param {number} actualDepth - Chain length detected.
+@param {number} maxDepth - Allowed threshold.
+@param {Object} [context={}] - Additional metadata.
+/
+  constructor(actualDepth, maxDepth, context = {}) {
+    super(`Delegation chain depth (${actualDepth}) exceeds maximum (${maxDepth})`, {
+      ...context,
+      actualDepth,
+      maxDepth
+    });
+    this.name = 'DelegationDepthExceededError';
+    this.actualDepth = actualDepth;
+    this.maxDepth = maxDepth;
+  }
+}
+
+/**
+@class RoleValidationError
+@extends RoleResolutionError
+Thrown when role or actor definition schemas are violated.
+
+### Raw JSDoc Context:
+```javascript
+/**
+   * @constructor
+   * @param {number} actualDepth - Chain length detected.
+   * @param {number} maxDepth - Allowed threshold.
+   * @param {Object} [context={}] - Additional metadata.
+   */
+  constructor(actualDepth, maxDepth, context = {}) {
+    super(`Delegation chain depth (${actualDepth}) exceeds maximum (${maxDepth})`, {
+      ...context,
+      actualDepth,
+      maxDepth
+    });
+    this.name = 'DelegationDepthExceededError';
+    this.actualDepth = actualDepth;
+    this.maxDepth = maxDepth;
+  }
+}
+
+/**
+ * @class RoleValidationError
+ * @extends RoleResolutionError
+ * @description Thrown when role or actor definition schemas are violated.
+ */
+```
+
+<br>
+
+## CLASS: MalformedAssignmentSlotError
+**File Path:** `RoleResolutionLib/src/internal/errors/RoleResolutionError.js`
+**Constructor Usage:** `const instance = new MalformedAssignmentSlotError();`
+**Description:** @constructor
+@param {string} message - High-level failure reason.
+@param {string[]} [errors=[]] - Detailed list of violations.
+@param {Object} [context={}] - Additional metadata.
+/
+  constructor(message, errors = [], context = {}) {
+    super(message, { ...context, validationErrors: errors });
+    this.name = 'RoleValidationError';
+    this.validationErrors = errors;
+  }
+}
+
+/** @class MalformedAssignmentSlotError @extends RoleResolutionError
+
+### Raw JSDoc Context:
+```javascript
+/**
+   * @constructor
+   * @param {string} message - High-level failure reason.
+   * @param {string[]} [errors=[]] - Detailed list of violations.
+   * @param {Object} [context={}] - Additional metadata.
+   */
+  constructor(message, errors = [], context = {}) {
+    super(message, { ...context, validationErrors: errors });
+    this.name = 'RoleValidationError';
+    this.validationErrors = errors;
+  }
+}
+
+/** @class MalformedAssignmentSlotError @extends RoleResolutionError */
+```
+
+<br>
+
+## CLASS: DuplicateAssignmentSlotError
+**File Path:** `RoleResolutionLib/src/internal/errors/RoleResolutionError.js`
+**Constructor Usage:** `const instance = new DuplicateAssignmentSlotError();`
+**Description:** @class DuplicateAssignmentSlotError @extends RoleResolutionError
+
+### Raw JSDoc Context:
+```javascript
+/** @class DuplicateAssignmentSlotError @extends RoleResolutionError */
+```
+
+<br>
+
+## CLASS: InconsistentAssignmentOverrideError
+**File Path:** `RoleResolutionLib/src/internal/errors/RoleResolutionError.js`
+**Constructor Usage:** `const instance = new InconsistentAssignmentOverrideError();`
+**Description:** @class InconsistentAssignmentOverrideError @extends RoleResolutionError
+
+### Raw JSDoc Context:
+```javascript
+/** @class InconsistentAssignmentOverrideError @extends RoleResolutionError */
+```
+
+<br>
+
+## CLASS: AmbiguousAssignmentOverrideError
+**File Path:** `RoleResolutionLib/src/internal/errors/RoleResolutionError.js`
+**Constructor Usage:** `const instance = new AmbiguousAssignmentOverrideError();`
+**Description:** @class AmbiguousAssignmentOverrideError @extends RoleResolutionError
+
+### Raw JSDoc Context:
+```javascript
+/** @class AmbiguousAssignmentOverrideError @extends RoleResolutionError */
+```
+
+<br>
+
+## CLASS: AssignmentActorNotFoundError
+**File Path:** `RoleResolutionLib/src/internal/errors/RoleResolutionError.js`
+**Constructor Usage:** `const instance = new AssignmentActorNotFoundError();`
+**Description:** @class AssignmentActorNotFoundError @extends RoleResolutionError
+
+### Raw JSDoc Context:
+```javascript
+/** @class AssignmentActorNotFoundError @extends RoleResolutionError */
+```
+
+<br>
+
+## CLASS: OverlappingDelegationError
+**File Path:** `RoleResolutionLib/src/internal/errors/RoleResolutionError.js`
+**Constructor Usage:** `const instance = new OverlappingDelegationError();`
+**Description:** @class OverlappingDelegationError @extends RoleResolutionError
+
+### Raw JSDoc Context:
+```javascript
+/** @class OverlappingDelegationError @extends RoleResolutionError */
+```
+
+<br>
+
+## CLASS: CircularAssignmentOverrideError
+**File Path:** `RoleResolutionLib/src/internal/errors/RoleResolutionError.js`
+**Constructor Usage:** `const instance = new CircularAssignmentOverrideError();`
+**Description:** @class CircularAssignmentOverrideError
+@extends RoleResolutionError
+Thrown when a loop is detected while walking an override chain.
+
+### Raw JSDoc Context:
+```javascript
+/**
+ * @class CircularAssignmentOverrideError
+ * @extends RoleResolutionError
+ * @description Thrown when a loop is detected while walking an override chain.
+ */
+```
+
+<br>
+
+## CLASS: OverrideChainDepthExceededError
+**File Path:** `RoleResolutionLib/src/internal/errors/RoleResolutionError.js`
+**Constructor Usage:** `const instance = new OverrideChainDepthExceededError();`
+**Description:** @constructor
+@param {string} actorId - Actor causing the cycle.
+@param {string[]} [chain=[]] - Visited actor ids forming the cycle.
+@param {Object} [context={}] - Additional metadata.
+/
+  constructor(actorId, chain = [], context = {}) {
+    const chainStr = chain.length > 0 ? ` (chain: ${chain.join(' -> ')})` : '';
+    super(`Circular assignment override detected for actor: ${actorId}${chainStr}`, {
+      ...context,
+      actorId,
+      chain
+    });
+    this.name = 'CircularAssignmentOverrideError';
+    this.actorId = actorId;
+    this.chain = chain;
+  }
+}
+
+/**
+@class OverrideChainDepthExceededError
+@extends RoleResolutionError
+Thrown when an override chain exceeds the configured maximum depth.
+
+### Raw JSDoc Context:
+```javascript
+/**
+   * @constructor
+   * @param {string} actorId - Actor causing the cycle.
+   * @param {string[]} [chain=[]] - Visited actor ids forming the cycle.
+   * @param {Object} [context={}] - Additional metadata.
+   */
+  constructor(actorId, chain = [], context = {}) {
+    const chainStr = chain.length > 0 ? ` (chain: ${chain.join(' -> ')})` : '';
+    super(`Circular assignment override detected for actor: ${actorId}${chainStr}`, {
+      ...context,
+      actorId,
+      chain
+    });
+    this.name = 'CircularAssignmentOverrideError';
+    this.actorId = actorId;
+    this.chain = chain;
+  }
+}
+
+/**
+ * @class OverrideChainDepthExceededError
+ * @extends RoleResolutionError
+ * @description Thrown when an override chain exceeds the configured maximum depth.
+ */
+```
+
+<br>
+
+## CLASS: DelegationValidator
+**File Path:** `RoleResolutionLib/src/internal/delegation/DelegationValidator.js`
+**Constructor Usage:** `const instance = new DelegationValidator();`
+**Description:** Validator for delegations and delegation chains.
+
+/
+
+import { Delegation } from './Delegation.js';
+import { DelegationChain } from './DelegationChain.js';
+
+/**
+@class DelegationValidator
+Logic engine for enforcing constraints (cycles, depth, temporal, scope) on delegations and chains.
+
+### Raw JSDoc Context:
+```javascript
+/**
+ * @file RoleResolutionLib/src/delegation/DelegationValidator.js
+ * @description Validator for delegations and delegation chains.
+ * @version 1.0.0
+ */
+
+import { Delegation } from './Delegation.js';
+import { DelegationChain } from './DelegationChain.js';
+
+/**
+ * @class DelegationValidator
+ * @description Logic engine for enforcing constraints (cycles, depth, temporal, scope) on delegations and chains.
+ */
+```
+
+<br>
+
+## CLASS: DelegationState
+**File Path:** `RoleResolutionLib/src/internal/delegation/DelegationState.js`
+**Constructor Usage:** `const instance = new DelegationState();`
+**Description:** N/A
+
+### Raw JSDoc Context:
+```javascript
+/** Class definition */
+```
+
+### Methods of DelegationState
+
+#### METHOD: DelegationState.if
+- **Scope:** instance
+- **LLM Call Syntax:** `delegationState.if(!definition || typeof definition !);`
+- **Pure JSDoc:**
+```javascript
+/** Method if */
+```
+---
+#### METHOD: DelegationState.if
+- **Scope:** instance
+- **LLM Call Syntax:** `delegationState.if(!id || typeof id !);`
+- **Pure JSDoc:**
+```javascript
+/** Method if */
+```
+---
+#### METHOD: DelegationState.if
+- **Scope:** instance
+- **LLM Call Syntax:** `delegationState.if(!principalId || typeof principalId !);`
+- **Pure JSDoc:**
+```javascript
+/** Method if */
+```
+---
+#### METHOD: DelegationState.if
+- **Scope:** instance
+- **LLM Call Syntax:** `delegationState.if(!delegateId || typeof delegateId !);`
+- **Pure JSDoc:**
+```javascript
+/** Method if */
+```
+---
+#### METHOD: DelegationState.if
+- **Scope:** instance
+- **LLM Call Syntax:** `delegationState.if(principalId);`
+- **Pure JSDoc:**
+```javascript
+/** Method if */
+```
+---
+#### METHOD: DelegationState.getMetadata
+- **Scope:** instance
+- **LLM Call Syntax:** `delegationState.getMetadata(key, defaultValue);`
+- **Pure JSDoc:**
+```javascript
+/** Method getMetadata */
+```
+---
+#### METHOD: DelegationState.toJSON
+- **Scope:** instance
+- **LLM Call Syntax:** `delegationState.toJSON();`
+- **Pure JSDoc:**
+```javascript
+/** Method toJSON */
+```
+---
+<br>
+
+## CLASS: DelegationRules
+**File Path:** `RoleResolutionLib/src/internal/delegation/DelegationRules.js`
+**Constructor Usage:** `const instance = new DelegationRules();`
+**Description:** Business rules and applicability logic for a Delegation.
+
+### Raw JSDoc Context:
+```javascript
+/**
+ * @file RoleResolutionLib/src/delegation/DelegationRules.js
+ * @description Business rules and applicability logic for a Delegation.
+ */
+```
+
+### Methods of DelegationRules
+
+#### METHOD: DelegationRules.if
+- **Scope:** instance
+- **LLM Call Syntax:** `delegationRules.if(!this.state.isActive);`
+- **Pure JSDoc:**
+```javascript
+/** Method if */
+```
+---
+#### METHOD: DelegationRules.if
+- **Scope:** instance
+- **LLM Call Syntax:** `delegationRules.if(asOfDate < this.state.validFrom);`
+- **Pure JSDoc:**
+```javascript
+/** Method if */
+```
+---
+#### METHOD: DelegationRules.if
+- **Scope:** instance
+- **LLM Call Syntax:** `delegationRules.if(this.state.validTo !);`
+- **Pure JSDoc:**
+```javascript
+/** Method if */
+```
+---
+#### METHOD: DelegationRules.appliesToRole
+- **Scope:** instance
+- **LLM Call Syntax:** `delegationRules.appliesToRole(roleId);`
+- **Pure JSDoc:**
+```javascript
+/** Method appliesToRole */
+```
+---
+#### METHOD: DelegationRules.if
+- **Scope:** instance
+- **LLM Call Syntax:** `delegationRules.if(this.state.roleIds);`
+- **Pure JSDoc:**
+```javascript
+/** Method if */
+```
+---
+#### METHOD: DelegationRules.appliesToScope
+- **Scope:** instance
+- **LLM Call Syntax:** `delegationRules.appliesToScope(targetScope);`
+- **Pure JSDoc:**
+```javascript
+/** Method appliesToScope */
+```
+---
+#### METHOD: DelegationRules.if
+- **Scope:** instance
+- **LLM Call Syntax:** `delegationRules.if(!this.state.scopeRestriction);`
+- **Pure JSDoc:**
+```javascript
+/** Method if */
+```
+---
+#### METHOD: DelegationRules.isFullDelegation
+- **Scope:** instance
+- **LLM Call Syntax:** `delegationRules.isFullDelegation();`
+- **Pure JSDoc:**
+```javascript
+/** Method isFullDelegation */
+```
+---
+#### METHOD: DelegationRules.isIndefinite
+- **Scope:** instance
+- **LLM Call Syntax:** `delegationRules.isIndefinite();`
+- **Pure JSDoc:**
+```javascript
+/** Method isIndefinite */
+```
+---
+#### METHOD: DelegationRules.if
+- **Scope:** instance
+- **LLM Call Syntax:** `delegationRules.if(this.state.validTo);`
+- **Pure JSDoc:**
+```javascript
+/** Method if */
+```
+---
+#### METHOD: DelegationRules.if
+- **Scope:** instance
+- **LLM Call Syntax:** `delegationRules.if(asOfDate > this.state.validTo);`
+- **Pure JSDoc:**
+```javascript
+/** Method if */
+```
+---
+<br>
+
+## CLASS: DelegationChain
+**File Path:** `RoleResolutionLib/src/internal/delegation/DelegationChain.js`
+**Constructor Usage:** `const instance = new DelegationChain();`
+**Description:** DelegationChain representing a chain of delegations.
+
+/
+
+import { Delegation } from './Delegation.js';
+
+/**
+@class DelegationChain
+Immutable Collection representing a transitive series of Delegations (A -> B -> C).
+
+### Raw JSDoc Context:
+```javascript
+/**
+ * @file RoleResolutionLib/src/delegation/DelegationChain.js
+ * @description DelegationChain representing a chain of delegations.
+ * @version 1.0.0
+ */
+
+import { Delegation } from './Delegation.js';
+
+/**
+ * @class DelegationChain
+ * @description Immutable Collection representing a transitive series of Delegations (A -> B -> C).
+ */
+```
+
+<br>
+
+## CLASS: Delegation
+**File Path:** `RoleResolutionLib/src/internal/delegation/Delegation.js`
+**Constructor Usage:** `const instance = new Delegation();`
+**Description:** Delegation value object representing a responsibility transfer.
+
+/
+
+import { DelegationState } from './DelegationState.js';
+import { DelegationRules } from './DelegationRules.js';
+
+/**
+@class Delegation
+Immutable Value Object representing the transfer of role responsibilities from a Principal to a Delegate.
+
+### Raw JSDoc Context:
+```javascript
+/**
+ * @file RoleResolutionLib/src/delegation/Delegation.js
+ * @description Delegation value object representing a responsibility transfer.
+ * @version 1.0.0
+ */
+
+import { DelegationState } from './DelegationState.js';
+import { DelegationRules } from './DelegationRules.js';
+
+/**
+ * @class Delegation
+ * @description Immutable Value Object representing the transfer of role responsibilities from a Principal to a Delegate.
+ */
+```
+
+<br>
+
+## CLASS: Scope
+**File Path:** `RoleResolutionLib/src/core/Scope.js`
+**Constructor Usage:** `const instance = new Scope();`
+**Description:** Scope value object representing a validity context for roles.
+
+/
+
+import { ScopeType, isValidScopeType } from './ScopeType.js';
+import { cloneDeep, isEqual } from '@CoreUtilsLib';
+
+/**
+@class Scope
+Immutable Value Object defining the context (GLOBAL, ORG_UNIT, PROJECT, etc.) for role assignments.
+
+### Raw JSDoc Context:
+```javascript
+/**
+ * @file RoleResolutionLib/src/core/Scope.js
+ * @description Scope value object representing a validity context for roles.
+ * @version 1.0.0
+ */
+
+import { ScopeType, isValidScopeType } from './ScopeType.js';
+import { cloneDeep, isEqual } from '@CoreUtilsLib';
+
+/**
+ * @class Scope
+ * @description Immutable Value Object defining the context (GLOBAL, ORG_UNIT, PROJECT, etc.) for role assignments.
+ */
+```
+
+<br>
+
+## CLASS: Role
+**File Path:** `RoleResolutionLib/src/core/Role.js`
+**Constructor Usage:** `const instance = new Role();`
+**Description:** Role value object representing a role definition.
+
+/
+
+import { ScopeType, isValidScopeType } from './ScopeType.js';
+import { ResolutionStrategy, isValidResolutionStrategy } from './ResolutionStrategy.js';
+import { cloneDeep } from '@CoreUtilsLib';
+
+/**
+@class Role
+Immutable Value Object defining a responsibility, its scope requirements, and resolution logic.
+
+### Raw JSDoc Context:
+```javascript
+/**
+ * @file RoleResolutionLib/src/core/Role.js
+ * @description Role value object representing a role definition.
+ * @version 1.0.0
+ */
+
+import { ScopeType, isValidScopeType } from './ScopeType.js';
+import { ResolutionStrategy, isValidResolutionStrategy } from './ResolutionStrategy.js';
+import { cloneDeep } from '@CoreUtilsLib';
+
+/**
+ * @class Role
+ * @description Immutable Value Object defining a responsibility, its scope requirements, and resolution logic.
+ */
+```
+
+<br>
+
+## CLASS: ResolutionResult
+**File Path:** `RoleResolutionLib/src/core/ResolutionResult.js`
+**Constructor Usage:** `const instance = new ResolutionResult();`
+**Description:** ResolutionResult representing the complete result of role resolution.
+
+/
+
+import { cloneDeep } from '@CoreUtilsLib';
+
+/**
+@class ResolutionResult
+Immutable Value Object encapsulating role resolution output (actors, delegation chain, routing).
+
+### Raw JSDoc Context:
+```javascript
+/**
+ * @file RoleResolutionLib/src/core/ResolutionResult.js
+ * @description ResolutionResult representing the complete result of role resolution.
+ * @version 1.0.0
+ */
+
+import { cloneDeep } from '@CoreUtilsLib';
+
+/**
+ * @class ResolutionResult
+ * @description Immutable Value Object encapsulating role resolution output (actors, delegation chain, routing).
+ */
+```
+
+<br>
+
+## CLASS: EffectiveAssignmentResult
+**File Path:** `RoleResolutionLib/src/core/EffectiveAssignmentResult.js`
+**Constructor Usage:** `const instance = new EffectiveAssignmentResult();`
+**Description:** Immutable outcome of resolving a base assignment through overrides and delegation.
+
+### Raw JSDoc Context:
+```javascript
+/** Immutable outcome of resolving a base assignment through overrides and delegation. */
+```
+
+### Methods of EffectiveAssignmentResult
+
+#### METHOD: EffectiveAssignmentResult.toJSON
+- **Scope:** instance
+- **LLM Call Syntax:** `effectiveAssignmentResult.toJSON();`
+- **Pure JSDoc:**
+```javascript
+/** Method toJSON */
+```
+---
+<br>
+
+## CLASS: AssignmentSlot
+**File Path:** `RoleResolutionLib/src/core/AssignmentSlot.js`
+**Constructor Usage:** `const instance = new AssignmentSlot();`
+**Description:** Immutable, opaque set of dimensions identifying an assignment slot.
+
+### Raw JSDoc Context:
+```javascript
+/** Immutable, opaque set of dimensions identifying an assignment slot. */
+```
+
+### Methods of AssignmentSlot
+
+#### METHOD: AssignmentSlot.if
+- **Scope:** instance
+- **LLM Call Syntax:** `assignmentSlot.if(entries.length);`
+- **Pure JSDoc:**
+```javascript
+/** Method if */
+```
+---
+#### METHOD: AssignmentSlot.matches
+- **Scope:** instance
+- **LLM Call Syntax:** `assignmentSlot.matches(scopeDimensions);`
+- **Pure JSDoc:**
+```javascript
+/** Method matches */
+```
+---
+#### METHOD: AssignmentSlot.toJSON
+- **Scope:** instance
+- **LLM Call Syntax:** `assignmentSlot.toJSON();`
+- **Pure JSDoc:**
+```javascript
+/** Method toJSON */
+```
+---
+<br>
+
+## CLASS: AssignmentOverride
+**File Path:** `RoleResolutionLib/src/core/AssignmentOverride.js`
+**Constructor Usage:** `const instance = new AssignmentOverride();`
+**Description:** Immutable, dated actor replacement scoped by opaque assignment dimensions.
+
+### Raw JSDoc Context:
+```javascript
+/** Immutable, dated actor replacement scoped by opaque assignment dimensions. */
+```
+
+### Methods of AssignmentOverride
+
+#### METHOD: AssignmentOverride.if
+- **Scope:** instance
+- **LLM Call Syntax:** `assignmentOverride.if(this.previousActorId);`
+- **Pure JSDoc:**
+```javascript
+/** Method if */
+```
+---
+#### METHOD: AssignmentOverride.if
+- **Scope:** instance
+- **LLM Call Syntax:** `assignmentOverride.if(this.effectiveFrom);`
+- **Pure JSDoc:**
+```javascript
+/** Method if */
+```
+---
+#### METHOD: AssignmentOverride.appliesAtDate
+- **Scope:** instance
+- **LLM Call Syntax:** `assignmentOverride.appliesAtDate(date);`
+- **Pure JSDoc:**
+```javascript
+/** Method appliesAtDate */
+```
+---
+#### METHOD: AssignmentOverride.matchesActor
+- **Scope:** instance
+- **LLM Call Syntax:** `assignmentOverride.matchesActor(actorId);`
+- **Pure JSDoc:**
+```javascript
+/** Method matchesActor */
+```
+---
+#### METHOD: AssignmentOverride.matchesSlot
+- **Scope:** instance
+- **LLM Call Syntax:** `assignmentOverride.matchesSlot(slot);`
+- **Pure JSDoc:**
+```javascript
+/** Method matchesSlot */
+```
+---
+#### METHOD: AssignmentOverride.toJSON
+- **Scope:** instance
+- **LLM Call Syntax:** `assignmentOverride.toJSON();`
+- **Pure JSDoc:**
+```javascript
+/** Method toJSON */
+```
+---
+<br>
+
+## CLASS: AssignmentCandidate
+**File Path:** `RoleResolutionLib/src/core/AssignmentCandidate.js`
+**Constructor Usage:** `const instance = new AssignmentCandidate();`
+**Description:** Immutable candidate assignment that can become effective at a point in time.
+
+### Raw JSDoc Context:
+```javascript
+/** Immutable candidate assignment that can become effective at a point in time. */
+```
+
+### Methods of AssignmentCandidate
+
+#### METHOD: AssignmentCandidate.if
+- **Scope:** instance
+- **LLM Call Syntax:** `assignmentCandidate.if(this.validFrom && this.validTo && this.validFrom > this.validTo);`
+- **Pure JSDoc:**
+```javascript
+/** Method if */
+```
+---
+#### METHOD: AssignmentCandidate.if
+- **Scope:** instance
+- **LLM Call Syntax:** `assignmentCandidate.if(asOf);`
+- **Pure JSDoc:**
+```javascript
+/** Method if */
+```
+---
+#### METHOD: AssignmentCandidate.toJSON
+- **Scope:** instance
+- **LLM Call Syntax:** `assignmentCandidate.toJSON();`
+- **Pure JSDoc:**
+```javascript
+/** Method toJSON */
+```
+---
+<br>
+
+## CLASS: Assignment
+**File Path:** `RoleResolutionLib/src/core/Assignment.js`
+**Constructor Usage:** `const instance = new Assignment();`
+**Description:** Assignment value object representing a role-actor-scope association.
+
+/
+
+import { Scope } from './Scope.js';
+import { cloneDeep } from '@CoreUtilsLib';
+import { parseDate } from '../internal/DateParsing.js';
+
+/**
+@class Assignment
+Immutable Value Object binding an Actor to a Role within a Scope (with temporal validity).
+
+### Raw JSDoc Context:
+```javascript
+/**
+ * @file RoleResolutionLib/src/core/Assignment.js
+ * @description Assignment value object representing a role-actor-scope association.
+ * @version 1.0.0
+ */
+
+import { Scope } from './Scope.js';
+import { cloneDeep } from '@CoreUtilsLib';
+import { parseDate } from '../internal/DateParsing.js';
+
+/**
+ * @class Assignment
+ * @description Immutable Value Object binding an Actor to a Role within a Scope (with temporal validity).
+ */
+```
+
+<br>
+
+## CLASS: Actor
+**File Path:** `RoleResolutionLib/src/core/Actor.js`
+**Constructor Usage:** `const instance = new Actor();`
+**Description:** Actor value object representing an entity that can hold roles.
+
+/
+
+import { ActorType, isValidActorType } from './ActorType.js';
+import { cloneDeep } from '@CoreUtilsLib';
+
+/**
+@class Actor
+Immutable Value Object representing a role-bearing entity (PERSON, SYSTEM, or GROUP).
+
+### Raw JSDoc Context:
+```javascript
+/**
+ * @file RoleResolutionLib/src/core/Actor.js
+ * @description Actor value object representing an entity that can hold roles.
+ * @version 1.0.0
+ */
+
+import { ActorType, isValidActorType } from './ActorType.js';
+import { cloneDeep } from '@CoreUtilsLib';
+
+/**
+ * @class Actor
+ * @description Immutable Value Object representing a role-bearing entity (PERSON, SYSTEM, or GROUP).
+ */
+```
+
+<br>
+

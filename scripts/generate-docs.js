@@ -38,7 +38,7 @@ const LIBRARIES = [
 
 // This script lives in scripts/; the monorepo root is its parent directory.
 const ROOT_DIR = path.join(__dirname, '..');
-const OUTPUT_DIR = path.join(ROOT_DIR, 'docs');
+const OUTPUT_DIR = path.join(ROOT_DIR, 'DOCS_LIBS');
 
 // --- HELPER FUNCTIONS ---
 
@@ -146,6 +146,132 @@ function generateMarkdown(libName, data) {
   return doc;
 }
 
+// --- FALLBACK PARSER FOR TS / MODERN JSDOC SYNTAX ---
+
+function extractDescriptionFromJsDoc(jsDoc) {
+  if (!jsDoc) return '';
+  let content = jsDoc.replace(/^\/\*\*\s*/, '').replace(/\s*\*\/$/, '');
+  content = content
+    .split('\n')
+    .map((line) => line.replace(/^\s*\*\s?/, ''))
+    .join('\n');
+  const atTagIndex = content.search(/@\w+/);
+  let description = atTagIndex > 0 ? content.substring(0, atTagIndex) : content;
+  return description
+    .replace(/@file\s+[^\n]+/g, '')
+    .replace(/@description\s*/g, '')
+    .replace(/@module\s+[^\n]+/g, '')
+    .replace(/@version\s+[^\n]+/g, '')
+    .trim();
+}
+
+function extractParamsFromJsDoc(jsDoc, rawParamsStr) {
+  const params = [];
+  if (jsDoc) {
+    const paramRegex = /@param\s+(?:\{([^}]+)\}\s+)?(?:\[([^\]]+)\]|(\S+))/g;
+    let m;
+    while ((m = paramRegex.exec(jsDoc)) !== null) {
+      const name = (m[2] || m[3] || '').split('=')[0].trim();
+      if (name) {
+        params.push({ name, type: m[1] ? { names: [m[1].trim()] } : undefined });
+      }
+    }
+  }
+  if (params.length === 0 && rawParamsStr && rawParamsStr.trim()) {
+    rawParamsStr.split(',').forEach((p) => {
+      const clean = p.trim().split('=')[0].trim();
+      if (clean) params.push({ name: clean });
+    });
+  }
+  return params;
+}
+
+function extractReturnsFromJsDoc(jsDoc) {
+  if (!jsDoc) return [];
+  const returnsMatch = jsDoc.match(/@returns?\s+(?:\{([^}]+)\})?/);
+  if (returnsMatch) {
+    return [{ type: returnsMatch[1] ? { names: [returnsMatch[1].trim()] } : undefined }];
+  }
+  return [];
+}
+
+function fallbackParseFile(filePath) {
+  const content = fs.readFileSync(filePath, 'utf8');
+  const dir = path.dirname(filePath);
+  const filename = path.basename(filePath);
+  const items = [];
+
+  const classRegex = /(\/\*\*[\s\S]*?\*\/)?\s*(?:export\s+)?class\s+(\w+)/g;
+  let match;
+
+  while ((match = classRegex.exec(content)) !== null) {
+    const jsDoc = match[1] || '';
+    const className = match[2];
+    const desc = extractDescriptionFromJsDoc(jsDoc);
+
+    items.push({
+      kind: 'class',
+      name: className,
+      description: desc,
+      classdesc: desc,
+      comment: jsDoc || '/** Class definition */',
+      meta: { path: dir, filename: filename }
+    });
+
+    const classStart = content.indexOf('{', match.index);
+    if (classStart !== -1) {
+      let braceCount = 0;
+      let classEnd = classStart;
+      let foundStart = false;
+
+      for (let i = classStart; i < content.length; i++) {
+        if (content[i] === '{') {
+          braceCount++;
+          foundStart = true;
+        } else if (content[i] === '}') {
+          braceCount--;
+          if (foundStart && braceCount === 0) {
+            classEnd = i;
+            break;
+          }
+        }
+      }
+
+      const classBody = content.substring(classStart, classEnd + 1);
+      const methodRegex = /(\/\*\*[\s\S]*?\*\/)?\s*(static\s+)?(?:async\s+)?(\w+)\s*\(([^)]*)\)\s*\{/g;
+      let mMatch;
+
+      while ((mMatch = methodRegex.exec(classBody)) !== null) {
+        const mJsDoc = mMatch[1] || '';
+        const isStatic = !!mMatch[2];
+        const methodName = mMatch[3];
+
+        if (methodName === 'constructor' || methodName.startsWith('_') || methodName === 'get') {
+          continue;
+        }
+
+        const params = extractParamsFromJsDoc(mJsDoc, mMatch[4]);
+        const returns = extractReturnsFromJsDoc(mJsDoc);
+        const mDesc = extractDescriptionFromJsDoc(mJsDoc);
+
+        items.push({
+          kind: 'function',
+          name: methodName,
+          memberof: className,
+          scope: isStatic ? 'static' : 'instance',
+          comment: mJsDoc || `/** Method ${methodName} */`,
+          description: mDesc,
+          meta: { path: dir, filename: filename },
+          params: params,
+          returns: returns
+        });
+      }
+    }
+  }
+
+  return items;
+}
+
 // --- MAIN PROCESS ---
 
 async function processLibrary(libName) {
@@ -157,8 +283,6 @@ async function processLibrary(libName) {
     return;
   }
 
-  // 1. Find files using glob (handles .js and .gs recursively)
-  // We explicitly search for .js and .gs
   const files = globSync(`${libPath}/**/*.{js,gs}`, {
     ignore: ['**/__tests__/**', '**/__testOnline__/**']
   });
@@ -168,12 +292,20 @@ async function processLibrary(libName) {
     return;
   }
 
+  let data = [];
   try {
-    // 2. Parse with jsdoc-api
-    const data = await jsdocApi.explain({ files, cache: false });
+    data = await jsdocApi.explain({ files, cache: false });
+  } catch (err) {
+    console.warn(
+      `  [WARN] JSDoc batch parsing failed for ${libName}. Fast fallback to regex parsing...`
+    );
+    for (const file of files) {
+      const fallbackItems = fallbackParseFile(file);
+      data.push(...fallbackItems);
+    }
+  }
 
-    // 3. Filter out junk (undocumented code if necessary, or internal package objects)
-    // Keeping everything that has a 'kind' is usually safer.
+  try {
     const validData = data.filter(
       (item) => !item.undocumented && (item.kind === 'class' || item.kind === 'function')
     );
@@ -182,20 +314,15 @@ async function processLibrary(libName) {
       console.warn(`  [WARN] JSDoc found no documented symbols in ${libName}`);
     }
 
-    // 4. Generate Content
     const markdownContent = generateMarkdown(libName, validData);
 
-    // 5. Write to File
     const outputPath = path.join(OUTPUT_DIR, `${libName}.md`);
     fs.writeFileSync(outputPath, markdownContent);
     console.log(
       `  [SUCCESS] Generated docs for ${libName} -> ${path.relative(ROOT_DIR, outputPath)}`
     );
   } catch (err) {
-    console.error(`  [ERROR] Failed to process ${libName}:`, err.message);
-    if (err.cause) {
-      console.error(err.cause);
-    }
+    console.error(`  [ERROR] Failed to generate markdown for ${libName}:`, err.message);
   }
 }
 
@@ -214,3 +341,4 @@ async function run() {
 }
 
 run();
+
