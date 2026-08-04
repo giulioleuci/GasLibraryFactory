@@ -15,17 +15,6 @@
 
 ### Methods of TestContext
 
-#### METHOD: TestContext._trackApiCall
-- **Scope:** instance
-- **LLM Call Syntax:** `testContext._trackApiCall();`
-- **Pure JSDoc:**
-```javascript
-/**
-   * Increments the internal counter for outbound Google service requests.
-   * @private
-   */
-```
----
 #### METHOD: TestContext.getRootFolder
 - **Scope:** instance
 - **LLM Call Syntax:** `const result = testContext.getRootFolder();`
@@ -35,6 +24,14 @@
    * Resolves or creates the dedicated Drive folder for test artifact storage.
    * @returns {GoogleAppsScript.Drive.Folder} Persistent test root.
    */
+```
+---
+#### METHOD: TestContext.if
+- **Scope:** instance
+- **LLM Call Syntax:** `testContext.if(this._rootFolder);`
+- **Pure JSDoc:**
+```javascript
+/** Method if */
 ```
 ---
 #### METHOD: TestContext.getOrCreateNamedFolder
@@ -63,6 +60,14 @@
    */
 ```
 ---
+#### METHOD: TestContext.if
+- **Scope:** instance
+- **LLM Call Syntax:** `testContext.if(this._spreadsheet);`
+- **Pure JSDoc:**
+```javascript
+/** Method if */
+```
+---
 #### METHOD: TestContext.getOrCreateNamedSpreadsheet
 - **Scope:** instance
 - **LLM Call Syntax:** `const result = testContext.getOrCreateNamedSpreadsheet(name, parentFolder);`
@@ -80,6 +85,14 @@
    */
 ```
 ---
+#### METHOD: TestContext.if
+- **Scope:** instance
+- **LLM Call Syntax:** `testContext.if(parentFolder);`
+- **Pure JSDoc:**
+```javascript
+/** Method if */
+```
+---
 #### METHOD: TestContext.getDocument
 - **Scope:** instance
 - **LLM Call Syntax:** `const result = testContext.getDocument();`
@@ -91,6 +104,22 @@
    */
 ```
 ---
+#### METHOD: TestContext.if
+- **Scope:** instance
+- **LLM Call Syntax:** `testContext.if(this._document);`
+- **Pure JSDoc:**
+```javascript
+/** Method if */
+```
+---
+#### METHOD: TestContext.catch
+- **Scope:** instance
+- **LLM Call Syntax:** `testContext.catch(_e);`
+- **Pure JSDoc:**
+```javascript
+/** Method catch */
+```
+---
 #### METHOD: TestContext.resetSpreadsheet
 - **Scope:** instance
 - **LLM Call Syntax:** `testContext.resetSpreadsheet(ss);`
@@ -100,6 +129,22 @@
    * Restores a spreadsheet to a baseline state by purging protections, named ranges, and additional tabs.
    * @param {GoogleAppsScript.Spreadsheet.Spreadsheet} [ss] target spreadsheet (defaults to persistent instance).
    */
+```
+---
+#### METHOD: TestContext.if
+- **Scope:** instance
+- **LLM Call Syntax:** `testContext.if(sheets.length);`
+- **Pure JSDoc:**
+```javascript
+/** Method if */
+```
+---
+#### METHOD: TestContext.for
+- **Scope:** instance
+- **LLM Call Syntax:** `testContext.for(let i);`
+- **Pure JSDoc:**
+```javascript
+/** Method for */
 ```
 ---
 #### METHOD: TestContext.buildSampleSpreadsheet
@@ -140,21 +185,20 @@
    */
 ```
 ---
-#### METHOD: TestContext._clearBodySafely
+#### METHOD: TestContext.catch
 - **Scope:** instance
-- **LLM Call Syntax:** `testContext._clearBodySafely(body);`
+- **LLM Call Syntax:** `testContext.catch(_e);`
 - **Pure JSDoc:**
 ```javascript
-/**
-   * @description Body.clear() can throw "Can't remove the last paragraph in a
-   * document section" when the body's last child isn't a plain Paragraph -
-   * e.g. a ListItem left behind by a prior test's native list-loop expansion
-   * (Paragraph.copy()/insertListItem() on this persistent, reused test doc).
-   * Append a fresh empty paragraph first so clear() always has a real
-   * Paragraph to collapse the body down to, then retry.
-   * @param {GoogleAppsScript.Document.Body} body
-   * @private
-   */
+/** Method catch */
+```
+---
+#### METHOD: TestContext.catch
+- **Scope:** instance
+- **LLM Call Syntax:** `testContext.catch(e);`
+- **Pure JSDoc:**
+```javascript
+/** Method catch */
 ```
 ---
 #### METHOD: TestContext.resetAll
@@ -167,16 +211,12 @@
    */
 ```
 ---
-#### METHOD: TestContext._log
+#### METHOD: TestContext.if
 - **Scope:** instance
-- **LLM Call Syntax:** `testContext._log(message);`
+- **LLM Call Syntax:** `testContext.if(typeof Logger !);`
 - **Pure JSDoc:**
 ```javascript
-/**
-   * Routes diagnostic messages to the environment-appropriate output.
-   * @private
-   * @param {string} message Diagnostic content.
-   */
+/** Method if */
 ```
 ---
 <br>
@@ -196,20 +236,52 @@
 
 ### Methods of SmartAssert
 
-#### METHOD: SmartAssert._safeStringify
-- **Scope:** static
-- **LLM Call Syntax:** `SmartAssert._safeStringify(passed, expected, actual, message);`
+#### METHOD: SmartAssert.catch
+- **Scope:** instance
+- **LLM Call Syntax:** `smartAssert.catch(_e);`
 - **Pure JSDoc:**
 ```javascript
-/**
-   * Routes assertion outcomes to system logs and enforces test failure by throwing exceptions on mismatch.
-   * @private
-   * @param {boolean} passed Validation outcome.
-   * @param {*} expected benchmark value.
-   * @param {*} actual observed runtime value.
-   * @param {string} message Contextual description of the assertion.
-   * @throws {Error} If the assertion fails (passed is false).
-   */
+/** Method catch */
+```
+---
+#### METHOD: SmartAssert.if
+- **Scope:** instance
+- **LLM Call Syntax:** `smartAssert.if(v && typeof v);`
+- **Pure JSDoc:**
+```javascript
+/** Method if */
+```
+---
+#### METHOD: SmartAssert.catch
+- **Scope:** instance
+- **LLM Call Syntax:** `smartAssert.catch(_e2);`
+- **Pure JSDoc:**
+```javascript
+/** Method catch */
+```
+---
+#### METHOD: SmartAssert.catch
+- **Scope:** instance
+- **LLM Call Syntax:** `smartAssert.catch(_e3);`
+- **Pure JSDoc:**
+```javascript
+/** Method catch */
+```
+---
+#### METHOD: SmartAssert.if
+- **Scope:** instance
+- **LLM Call Syntax:** `smartAssert.if(typeof Logger !);`
+- **Pure JSDoc:**
+```javascript
+/** Method if */
+```
+---
+#### METHOD: SmartAssert.if
+- **Scope:** instance
+- **LLM Call Syntax:** `smartAssert.if(!passed);`
+- **Pure JSDoc:**
+```javascript
+/** Method if */
 ```
 ---
 #### METHOD: SmartAssert.equals
@@ -398,17 +470,39 @@
    */
 ```
 ---
+#### METHOD: SmartAssert.catch
+- **Scope:** instance
+- **LLM Call Syntax:** `smartAssert.catch(e);`
+- **Pure JSDoc:**
+```javascript
+/** Method catch */
+```
+---
 <br>
 
 ## CLASS: SampleSpreadsheetBuilder
 **File Path:** `GasOnlineTestFramework/src/SampleSpreadsheetBuilder.js`
 **Constructor Usage:** `const instance = new SampleSpreadsheetBuilder();`
-**Description:** Wraps a live Spreadsheet handle with add-sheet/append-row
+**Description:** Generic add-sheet/append-row/reset helper for building throwaway
+sample spreadsheets inside online tests, on top of a live Spreadsheet handle
+(typically obtained via TestContext.buildSampleSpreadsheet).
+/
+
+/**
+@class SampleSpreadsheetBuilder
+Wraps a live Spreadsheet handle with add-sheet/append-row
 operations, so library consumers building sample test data never call
 `SpreadsheetApp`/`Sheet` natives directly.
 
 ### Raw JSDoc Context:
 ```javascript
+/**
+ * @file GasOnlineTestFramework/src/SampleSpreadsheetBuilder.js
+ * @description Generic add-sheet/append-row/reset helper for building throwaway
+ * sample spreadsheets inside online tests, on top of a live Spreadsheet handle
+ * (typically obtained via TestContext.buildSampleSpreadsheet).
+ */
+
 /**
  * @class SampleSpreadsheetBuilder
  * @description Wraps a live Spreadsheet handle with add-sheet/append-row
@@ -424,7 +518,11 @@ operations, so library consumers building sample test data never call
 - **LLM Call Syntax:** `sampleSpreadsheetBuilder.addSheet(name, headerRow);`
 - **Pure JSDoc:**
 ```javascript
-/**
+/** @private Header rows keyed by sheet name, as declared via {@link addSheet}. */
+    this._headersBySheet = new Map();
+  }
+
+  /**
    * @description Creates a new sheet with the given header row, dropping the
    * spreadsheet's auto-created placeholder sheet the first time this is called.
    * Flushes afterwards so the new tab is immediately visible to callers reading
@@ -434,6 +532,22 @@ operations, so library consumers building sample test data never call
    * @param {string} name Sheet name.
    * @param {string[]} headerRow Header cell values.
    */
+```
+---
+#### METHOD: SampleSpreadsheetBuilder.if
+- **Scope:** instance
+- **LLM Call Syntax:** `sampleSpreadsheetBuilder.if(headerRow.length > 0);`
+- **Pure JSDoc:**
+```javascript
+/** Method if */
+```
+---
+#### METHOD: SampleSpreadsheetBuilder.if
+- **Scope:** instance
+- **LLM Call Syntax:** `sampleSpreadsheetBuilder.if(this.defaultSheet !);`
+- **Pure JSDoc:**
+```javascript
+/** Method if */
 ```
 ---
 #### METHOD: SampleSpreadsheetBuilder.appendRow
@@ -453,65 +567,12 @@ operations, so library consumers building sample test data never call
    */
 ```
 ---
-#### METHOD: SampleSpreadsheetBuilder.getUrl
+#### METHOD: SampleSpreadsheetBuilder.if
 - **Scope:** instance
-- **LLM Call Syntax:** `const result = sampleSpreadsheetBuilder.getUrl();`
+- **LLM Call Syntax:** `sampleSpreadsheetBuilder.if(sheet);`
 - **Pure JSDoc:**
 ```javascript
-/**
-   * @description Public URL of the underlying spreadsheet.
-   * @returns {string}
-   */
-```
----
-<br>
-
-## CLASS: SampleSpreadsheetBuilder
-**File Path:** `GasOnlineTestFramework/src/SampleSpreadsheetBuilder.js`
-**Constructor Usage:** `const instance = new SampleSpreadsheetBuilder(spreadsheet);`
-**Description:** N/A
-
-### Raw JSDoc Context:
-```javascript
-/**
-   * @param {GoogleAppsScript.Spreadsheet.Spreadsheet} spreadsheet Live spreadsheet handle.
-   */
-```
-
-### Methods of SampleSpreadsheetBuilder
-
-#### METHOD: SampleSpreadsheetBuilder.addSheet
-- **Scope:** instance
-- **LLM Call Syntax:** `sampleSpreadsheetBuilder.addSheet(name, headerRow);`
-- **Pure JSDoc:**
-```javascript
-/**
-   * @description Creates a new sheet with the given header row, dropping the
-   * spreadsheet's auto-created placeholder sheet the first time this is called.
-   * Flushes afterwards so the new tab is immediately visible to callers reading
-   * the spreadsheet back through the Advanced Sheets Service (e.g. SheetDBLib's
-   * schema explorer), which — unlike `SpreadsheetApp` — does not see pending,
-   * unflushed `SpreadsheetApp` writes within the same execution.
-   * @param {string} name Sheet name.
-   * @param {string[]} headerRow Header cell values.
-   */
-```
----
-#### METHOD: SampleSpreadsheetBuilder.appendRow
-- **Scope:** instance
-- **LLM Call Syntax:** `sampleSpreadsheetBuilder.appendRow(sheetName, row);`
-- **Pure JSDoc:**
-```javascript
-/**
-   * @description Appends a row to a named sheet, matching values to that sheet's header order
-   * (as declared via {@link addSheet} — tracked locally rather than re-read from the live sheet,
-   * to avoid an extra round-trip per row). Flushes afterwards for the same reason as
-   * {@link addSheet} — row data written via `SpreadsheetApp` must be committed before any
-   * Advanced-Sheets-Service-backed read (e.g. SheetDBLib) can see it.
-   * @param {string} sheetName Target sheet name.
-   * @param {Object<string, *>} row Values keyed by header name.
-   * @throws {Error} If the named sheet does not exist.
-   */
+/** Method if */
 ```
 ---
 #### METHOD: SampleSpreadsheetBuilder.getUrl
@@ -571,6 +632,14 @@ operations, so library consumers building sample test data never call
    */
 ```
 ---
+#### METHOD: EnhancedTestRunner.if
+- **Scope:** instance
+- **LLM Call Syntax:** `enhancedTestRunner.if(this.hooks[type]);`
+- **Pure JSDoc:**
+```javascript
+/** Method if */
+```
+---
 #### METHOD: EnhancedTestRunner.run
 - **Scope:** instance
 - **LLM Call Syntax:** `const result = enhancedTestRunner.run(filter);`
@@ -583,51 +652,77 @@ operations, so library consumers building sample test data never call
    */
 ```
 ---
-#### METHOD: EnhancedTestRunner._runTest
+#### METHOD: EnhancedTestRunner.for
 - **Scope:** instance
-- **LLM Call Syntax:** `enhancedTestRunner._runTest(test);`
+- **LLM Call Syntax:** `enhancedTestRunner.for(const test of testsToRun);`
 - **Pure JSDoc:**
 ```javascript
-/**
-   * Executes a single test unit within its lifecycle context (beforeEach/afterEach).
-   * @private
-   * @param {Object} test Internal registry record.
-   */
+/** Method for */
 ```
 ---
-#### METHOD: EnhancedTestRunner._runHooks
+#### METHOD: EnhancedTestRunner.if
 - **Scope:** instance
-- **LLM Call Syntax:** `enhancedTestRunner._runHooks(type);`
+- **LLM Call Syntax:** `enhancedTestRunner.if(test.skip);`
 - **Pure JSDoc:**
 ```javascript
-/**
-   * Sequentially executes all registered callbacks for a specific lifecycle phase.
-   * @private
-   * @param {string} type Hook classification.
-   */
+/** Method if */
 ```
 ---
-#### METHOD: EnhancedTestRunner._log
+#### METHOD: EnhancedTestRunner.catch
 - **Scope:** instance
-- **LLM Call Syntax:** `enhancedTestRunner._log(message);`
+- **LLM Call Syntax:** `enhancedTestRunner.catch(error);`
 - **Pure JSDoc:**
 ```javascript
-/**
-   * Routes diagnostic messages to the environment-appropriate output (GAS Logger or System Console).
-   * @private
-   * @param {string} message Diagnostic content.
-   */
+/** Method catch */
 ```
 ---
-#### METHOD: EnhancedTestRunner._printSummary
+#### METHOD: EnhancedTestRunner.catch
 - **Scope:** instance
-- **LLM Call Syntax:** `enhancedTestRunner._printSummary();`
+- **LLM Call Syntax:** `enhancedTestRunner.catch(rawError);`
 - **Pure JSDoc:**
 ```javascript
-/**
-   * Synthesizes and outputs the final execution report including total counts and failure details.
-   * @private
-   */
+/** Method catch */
+```
+---
+#### METHOD: EnhancedTestRunner.catch
+- **Scope:** instance
+- **LLM Call Syntax:** `enhancedTestRunner.catch(hookError);`
+- **Pure JSDoc:**
+```javascript
+/** Method catch */
+```
+---
+#### METHOD: EnhancedTestRunner.for
+- **Scope:** instance
+- **LLM Call Syntax:** `enhancedTestRunner.for(const hook of this.hooks[type]);`
+- **Pure JSDoc:**
+```javascript
+/** Method for */
+```
+---
+#### METHOD: EnhancedTestRunner.if
+- **Scope:** instance
+- **LLM Call Syntax:** `enhancedTestRunner.if(typeof Logger !);`
+- **Pure JSDoc:**
+```javascript
+/** Method if */
+```
+---
+#### METHOD: EnhancedTestRunner.if
+- **Scope:** instance
+- **LLM Call Syntax:** `enhancedTestRunner.if(this.results.failed > 0);`
+- **Pure JSDoc:**
+```javascript
+/** Method if */
+```
+---
+#### METHOD: EnhancedTestRunner.for
+- **Scope:** instance
+- **LLM Call Syntax:** `enhancedTestRunner.for(const err of this.results.errors);`
+- **Pure JSDoc:**
+```javascript
+/** Method for */
 ```
 ---
 <br>
+

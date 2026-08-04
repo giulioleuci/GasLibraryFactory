@@ -1,26 +1,101 @@
 # API Reference: WorkspaceTemplateEngine
 
-## CLASS: MyPlaceholderService
-**File Path:** `WorkspaceTemplateEngine/src/PlaceholderService.js`
-**Constructor Usage:** `const instance = new MyPlaceholderService(options, options.logger, options.mustache, options.utils, options.cache, options.strictFilters);`
-**Description:** Initializes the service with required rendering and logging dependencies.
+## CLASS: for
+**File Path:** `WorkspaceTemplateEngine/index.js`
+**Constructor Usage:** `const instance = new for();`
+**Description:** N/A
 
 ### Raw JSDoc Context:
 ```javascript
-/**
-   * @description Initializes the service with required rendering and logging dependencies.
-   * @param {Object} options Configuration options.
-   * @param {LoggerService} options.logger Diagnostic logger instance.
-   * @param {Mustache} options.mustache Initialized Mustache engine.
-   * @param {UtilsService} [options.utils] Optional utility service for formatting.
-   * @param {Cache} [options.cache] Optional cache service for template storage.
-   * @param {boolean} [options.strictFilters=false] If true, filter errors throw exceptions.
-   * @throws {Error} If required mustache dependency is missing.
-   */
+/** Class definition */
+```
+
+<br>
+
+## CLASS: CurrencyFilter
+**File Path:** `WorkspaceTemplateEngine/index.js`
+**Constructor Usage:** `const instance = new CurrencyFilter();`
+**Description:** N/A
+
+### Raw JSDoc Context:
+```javascript
+/** Class definition */
+```
+
+### Methods of CurrencyFilter
+
+#### METHOD: CurrencyFilter.getName
+- **Scope:** instance
+- **LLM Call Syntax:** `currencyFilter.getName();`
+- **Pure JSDoc:**
+```javascript
+/** Method getName */
+```
+---
+#### METHOD: CurrencyFilter.execute
+- **Scope:** instance
+- **LLM Call Syntax:** `currencyFilter.execute(value, symbol);`
+- **Pure JSDoc:**
+```javascript
+/** Method execute */
+```
+---
+<br>
+
+## CLASS: GenerateReportStep
+**File Path:** `WorkspaceTemplateEngine/index.js`
+**Constructor Usage:** `const instance = new GenerateReportStep();`
+**Description:** N/A
+
+### Raw JSDoc Context:
+```javascript
+/** Class definition */
+```
+
+### Methods of GenerateReportStep
+
+#### METHOD: GenerateReportStep.execute
+- **Scope:** instance
+- **LLM Call Syntax:** `generateReportStep.execute(context);`
+- **Pure JSDoc:**
+```javascript
+/** Method execute */
+```
+---
+<br>
+
+## CLASS: for
+**File Path:** `WorkspaceTemplateEngine/index.js`
+**Constructor Usage:** `const instance = new for();`
+**Description:** N/A
+
+### Raw JSDoc Context:
+```javascript
+/** Class definition */
+```
+
+<br>
+
+## CLASS: MyPlaceholderService
+**File Path:** `WorkspaceTemplateEngine/src/PlaceholderService.js`
+**Constructor Usage:** `const instance = new MyPlaceholderService();`
+**Description:** N/A
+
+### Raw JSDoc Context:
+```javascript
+/** Class definition */
 ```
 
 ### Methods of MyPlaceholderService
 
+#### METHOD: MyPlaceholderService.if
+- **Scope:** instance
+- **LLM Call Syntax:** `myPlaceholderService.if(!this.mustache);`
+- **Pure JSDoc:**
+```javascript
+/** Method if */
+```
+---
 #### METHOD: MyPlaceholderService.processString
 - **Scope:** instance
 - **LLM Call Syntax:** `const result = myPlaceholderService.processString(template, context);`
@@ -34,6 +109,30 @@
    * @returns {string} Processed string or original template on failure.
    * @throws {TypeError} If inputs are invalid types.
    */
+```
+---
+#### METHOD: MyPlaceholderService.if
+- **Scope:** instance
+- **LLM Call Syntax:** `myPlaceholderService.if(typeof template !);`
+- **Pure JSDoc:**
+```javascript
+/** Method if */
+```
+---
+#### METHOD: MyPlaceholderService.if
+- **Scope:** instance
+- **LLM Call Syntax:** `myPlaceholderService.if(context !);`
+- **Pure JSDoc:**
+```javascript
+/** Method if */
+```
+---
+#### METHOD: MyPlaceholderService.catch
+- **Scope:** instance
+- **LLM Call Syntax:** `myPlaceholderService.catch(error);`
+- **Pure JSDoc:**
+```javascript
+/** Method catch */
 ```
 ---
 #### METHOD: MyPlaceholderService.resolve
@@ -64,6 +163,22 @@
    */
 ```
 ---
+#### METHOD: MyPlaceholderService.if
+- **Scope:** instance
+- **LLM Call Syntax:** `myPlaceholderService.if(context !);`
+- **Pure JSDoc:**
+```javascript
+/** Method if */
+```
+---
+#### METHOD: MyPlaceholderService.catch
+- **Scope:** instance
+- **LLM Call Syntax:** `myPlaceholderService.catch(error);`
+- **Pure JSDoc:**
+```javascript
+/** Method catch */
+```
+---
 #### METHOD: MyPlaceholderService.processSheet
 - **Scope:** instance
 - **LLM Call Syntax:** `const result = myPlaceholderService.processSheet(sheetId, context, sheetName);`
@@ -87,16 +202,62 @@
    */
 ```
 ---
+#### METHOD: MyPlaceholderService.if
+- **Scope:** instance
+- **LLM Call Syntax:** `myPlaceholderService.if(context !);`
+- **Pure JSDoc:**
+```javascript
+/** Method if */
+```
+---
+#### METHOD: MyPlaceholderService.if
+- **Scope:** instance
+- **LLM Call Syntax:** `myPlaceholderService.if(sheetName !);`
+- **Pure JSDoc:**
+```javascript
+/** Method if */
+```
+---
+#### METHOD: MyPlaceholderService.catch
+- **Scope:** instance
+- **LLM Call Syntax:** `myPlaceholderService.catch(error);`
+- **Pure JSDoc:**
+```javascript
+/** Method catch */
+```
+---
 <br>
 
 ## CLASS: FilterStrategy
 **File Path:** `WorkspaceTemplateEngine/src/FilterStrategy.js`
 **Constructor Usage:** `const instance = new FilterStrategy();`
-**Description:** Abstract base for Mustache template filters using the Strategy pattern.
+**Description:** Base class and registry for template filters using Strategy pattern.
+             WTE-HIGH-001: Refactored from inline filter implementations for better
+             extensibility, testability, and maintainability.
+
+/
+
+/**
+Abstract base for Mustache template filters using the Strategy pattern.
 Enables value transformations via pipe syntax: `{{value | filterName:args}}`.
+@abstract
+@class
+@example
+class UppercaseFilter extends FilterStrategy {
+  getName() { return 'uppercase'; }
+  execute(v) { return String(v).toUpperCase(); }
+}
 
 ### Raw JSDoc Context:
 ```javascript
+/**
+ * @file WorkspaceTemplateEngine/src/FilterStrategy.js
+ * @description Base class and registry for template filters using Strategy pattern.
+ *              WTE-HIGH-001: Refactored from inline filter implementations for better
+ *              extensibility, testability, and maintainability.
+ * @version 2.0.0
+ */
+
 /**
  * @description Abstract base for Mustache template filters using the Strategy pattern.
  * Enables value transformations via pipe syntax: `{{value | filterName:args}}`.
@@ -110,189 +271,126 @@ Enables value transformations via pipe syntax: `{{value | filterName:args}}`.
  */
 ```
 
-### Methods of FilterStrategy
+<br>
 
-#### METHOD: FilterStrategy.getName
-- **Scope:** instance
-- **LLM Call Syntax:** `const result = filterStrategy.getName();`
-- **Pure JSDoc:**
+## CLASS: FilterRegistry
+**File Path:** `WorkspaceTemplateEngine/src/FilterStrategy.js`
+**Constructor Usage:** `const instance = new FilterRegistry();`
+**Description:** Returns the unique identifier for the filter used in template expressions.
+@returns {string} Unique filter name (e.g., 'uppercase').
+@abstract
+/
+  getName() {
+    throw new Error('FilterStrategy.getName() must be implemented by subclass');
+  }
+
+  /**
+Returns a technical description of the filter transformation logic.
+@returns {string} Human-readable functional summary.
+@abstract
+/
+  getDescription() {
+    throw new Error('FilterStrategy.getDescription() must be implemented by subclass');
+  }
+
+  /**
+Performs the core value transformation.
+@param {*} value Input value to be transformed.
+@param {...*} args Optional arguments passed from the template expression.
+@returns {*} The transformed value.
+@abstract
+/
+  execute(_value, ..._args) {
+    throw new Error('FilterStrategy.execute() must be implemented by subclass');
+  }
+
+  /**
+Validates filter arguments before execution.
+@param {*} value The input value.
+@param {Array<*>} args Array of arguments passed to the filter.
+@throws {Error} If argument validation fails.
+/
+  validate(_value, _args) {
+    // Default: no validation
+    // Subclasses can override to add specific validation
+  }
+}
+
+/**
+Centralized registry for managing and resolving FilterStrategy instances.
+@class
+
+### Raw JSDoc Context:
 ```javascript
 /**
    * @description Returns the unique identifier for the filter used in template expressions.
    * @returns {string} Unique filter name (e.g., 'uppercase').
    * @abstract
    */
-```
----
-#### METHOD: FilterStrategy.getDescription
-- **Scope:** instance
-- **LLM Call Syntax:** `const result = filterStrategy.getDescription();`
-- **Pure JSDoc:**
-```javascript
-/**
+  getName() {
+    throw new Error('FilterStrategy.getName() must be implemented by subclass');
+  }
+
+  /**
    * @description Returns a technical description of the filter transformation logic.
    * @returns {string} Human-readable functional summary.
    * @abstract
    */
-```
----
-#### METHOD: FilterStrategy.execute
-- **Scope:** instance
-- **LLM Call Syntax:** `const result = filterStrategy.execute(value, args);`
-- **Pure JSDoc:**
-```javascript
-/**
+  getDescription() {
+    throw new Error('FilterStrategy.getDescription() must be implemented by subclass');
+  }
+
+  /**
    * @description Performs the core value transformation.
    * @param {*} value Input value to be transformed.
    * @param {...*} args Optional arguments passed from the template expression.
    * @returns {*} The transformed value.
    * @abstract
    */
-```
----
-#### METHOD: FilterStrategy.validate
-- **Scope:** instance
-- **LLM Call Syntax:** `filterStrategy.validate(value, args);`
-- **Pure JSDoc:**
-```javascript
-/**
+  execute(_value, ..._args) {
+    throw new Error('FilterStrategy.execute() must be implemented by subclass');
+  }
+
+  /**
    * @description Validates filter arguments before execution.
    * @param {*} value The input value.
    * @param {Array<*>} args Array of arguments passed to the filter.
    * @throws {Error} If argument validation fails.
    */
-```
----
-<br>
+  validate(_value, _args) {
+    // Default: no validation
+    // Subclasses can override to add specific validation
+  }
+}
 
-## CLASS: FilterRegistry
-**File Path:** `WorkspaceTemplateEngine/src/FilterStrategy.js`
-**Constructor Usage:** `const instance = new FilterRegistry(logger);`
-**Description:** Centralized registry for managing and resolving FilterStrategy instances.
-
-### Raw JSDoc Context:
-```javascript
 /**
  * @description Centralized registry for managing and resolving FilterStrategy instances.
  * @class
  */
 ```
 
-### Methods of FilterRegistry
-
-#### METHOD: FilterRegistry.register
-- **Scope:** instance
-- **LLM Call Syntax:** `filterRegistry.register(filterStrategy);`
-- **Pure JSDoc:**
-```javascript
-/**
-   * @description Registers a new filter strategy.
-   * @param {FilterStrategy} filterStrategy Instance of a FilterStrategy subclass.
-   * @throws {Error} If filterStrategy is invalid or name collisions occur.
-   */
-```
----
-#### METHOD: FilterRegistry.registerAll
-- **Scope:** instance
-- **LLM Call Syntax:** `filterRegistry.registerAll(filterStrategies);`
-- **Pure JSDoc:**
-```javascript
-/**
-   * @description Batch registers multiple filter strategies.
-   * @param {FilterStrategy[]} filterStrategies Array of filter instances.
-   * @throws {Error} If input is not an array.
-   */
-```
----
-#### METHOD: FilterRegistry.get
-- **Scope:** instance
-- **LLM Call Syntax:** `const result = filterRegistry.get(name);`
-- **Pure JSDoc:**
-```javascript
-/**
-   * @description Resolves a filter strategy by its unique name.
-   * @param {string} name Unique identifier of the filter.
-   * @returns {FilterStrategy|null} Filter instance or null if not registered.
-   */
-```
----
-#### METHOD: FilterRegistry.has
-- **Scope:** instance
-- **LLM Call Syntax:** `const result = filterRegistry.has(name);`
-- **Pure JSDoc:**
-```javascript
-/**
-   * @description Checks if a filter name is currently registered.
-   * @param {string} name Filter identifier.
-   * @returns {boolean} True if registered.
-   */
-```
----
-#### METHOD: FilterRegistry.unregister
-- **Scope:** instance
-- **LLM Call Syntax:** `const result = filterRegistry.unregister(name);`
-- **Pure JSDoc:**
-```javascript
-/**
-   * @description Removes a filter registration by name.
-   * @param {string} name Filter identifier.
-   * @returns {boolean} True if the filter was successfully removed.
-   */
-```
----
-#### METHOD: FilterRegistry.getAllNames
-- **Scope:** instance
-- **LLM Call Syntax:** `const result = filterRegistry.getAllNames();`
-- **Pure JSDoc:**
-```javascript
-/**
-   * @description Returns all registered filter identifiers.
-   * @returns {string[]} Collection of registered filter names.
-   */
-```
----
-#### METHOD: FilterRegistry.getAll
-- **Scope:** instance
-- **LLM Call Syntax:** `const result = filterRegistry.getAll();`
-- **Pure JSDoc:**
-```javascript
-/**
-   * @description Returns all registered filter instances.
-   * @returns {FilterStrategy[]} Collection of filter strategies.
-   */
-```
----
-#### METHOD: FilterRegistry.clear
-- **Scope:** instance
-- **LLM Call Syntax:** `filterRegistry.clear();`
-- **Pure JSDoc:**
-```javascript
-/**
-   * @description Purges all filter registrations from the registry.
-   */
-```
----
-#### METHOD: FilterRegistry.count
-- **Scope:** instance
-- **LLM Call Syntax:** `const result = filterRegistry.count();`
-- **Pure JSDoc:**
-```javascript
-/**
-   * @description Returns the current registration count.
-   * @returns {number} Total number of active filters.
-   */
-```
----
 <br>
 
 ## CLASS: MustacheMock
 **File Path:** `WorkspaceTemplateEngine/src/testing/mocks.js`
 **Constructor Usage:** `const instance = new MustacheMock();`
-**Description:** High-fidelity mock for the Mustache engine.
+**Description:** Centralized high-fidelity mocks for WorkspaceTemplateEngine services.
+
+/
+
+/**
+High-fidelity mock for the Mustache engine.
 Simulates core rendering logic, variable substitution, and basic filter execution for unit testing.
+@class
 
 ### Raw JSDoc Context:
 ```javascript
+/**
+ * @file WorkspaceTemplateEngine/src/testing/mocks.js
+ * @description Centralized high-fidelity mocks for WorkspaceTemplateEngine services.
+ * @version 1.0.0
+ */
+
 /**
  * @description High-fidelity mock for the Mustache engine.
  * Simulates core rendering logic, variable substitution, and basic filter execution for unit testing.
@@ -300,29 +398,15 @@ Simulates core rendering logic, variable substitution, and basic filter executio
  */
 ```
 
-### Methods of MustacheMock
-
-#### METHOD: MustacheMock._getValue
-- **Scope:** instance
-- **LLM Call Syntax:** `const result = mustacheMock._getValue(obj, path);`
-- **Pure JSDoc:**
-```javascript
-/**
-   * @description Utility for dot-notation property resolution within mock data.
-   * @param {Object} obj Source object.
-   * @param {string} path Property path.
-   * @returns {*} Resolved value or undefined.
-   * @private
-   */
-```
----
 <br>
 
 ## CLASS: _SheetProcessor
 **File Path:** `WorkspaceTemplateEngine/src/processors/SheetProcessor.js`
-**Constructor Usage:** `const instance = new _SheetProcessor(placeholderService);`
+**Constructor Usage:** `const instance = new _SheetProcessor();`
 **Description:** Specialized engine for Google Sheets template expansion using batch-first strategy.
 Implements cell-level substitutions and structural expansions (matrices, dynamic columns) in atomic updates.
+@class
+@private
 
 ### Raw JSDoc Context:
 ```javascript
@@ -334,193 +418,156 @@ Implements cell-level substitutions and structural expansions (matrices, dynamic
  */
 ```
 
-### Methods of _SheetProcessor
+<br>
 
-#### METHOD: _SheetProcessor.process
-- **Scope:** instance
-- **LLM Call Syntax:** `const result = _SheetProcessor.process(sheetId, context, sheetName);`
-- **Pure JSDoc:**
+## CLASS: _DocumentProcessor
+**File Path:** `WorkspaceTemplateEngine/src/processors/DocumentProcessor.js`
+**Constructor Usage:** `const instance = new _DocumentProcessor();`
+**Description:** N/A
+
+### Raw JSDoc Context:
+```javascript
+/** Class definition */
+```
+
+<br>
+
+## CLASS: DocumentProcessorValueResolver
+**File Path:** `WorkspaceTemplateEngine/src/internal/processors-managers/DocumentProcessorValueResolver.js`
+**Constructor Usage:** `const instance = new DocumentProcessorValueResolver();`
+**Description:** Manager for resolving values, applying filters, and sorting data.
+
+### Raw JSDoc Context:
 ```javascript
 /**
-   * @description Orchestrates the scan-and-batch processing workflow for a spreadsheet.
-   * Scans sheets for `{{...}}` tokens, resolves operations (matrix vs. substitution), and executes a single batch update.
-   * @param {string} sheetId Target spreadsheet identifier.
-   * @param {Object} context Data context for substitution.
-   * @param {string|null} sheetName Specific sheet name or null for all.
-   * @returns {{layouts: Array<{sheetName: string, headerRow: number, startColumn: number, columns: Array<{header: *, column: number, isLabel: boolean, item: *}>}>}} The resolved `dynamic_columns` layouts found while scanning, in encounter order.
-   */
+ * @file WorkspaceTemplateEngine/src/processors/managers/DocumentProcessorValueResolver.js
+ * @description Manager for resolving values, applying filters, and sorting data.
+ */
 ```
----
-#### METHOD: _SheetProcessor._parseDynamicColumnParams
+
+### Methods of DocumentProcessorValueResolver
+
+#### METHOD: DocumentProcessorValueResolver.for
 - **Scope:** instance
-- **LLM Call Syntax:** `const result = _SheetProcessor._parseDynamicColumnParams(paramsStr);`
+- **LLM Call Syntax:** `documentProcessorValueResolver.for(const filter of filters);`
 - **Pure JSDoc:**
 ```javascript
-/**
-   * @description Parses the flat `key=value,key=value` param body of a
-   * `{{dynamic_columns[...]}}` placeholder into a plain object.
-   * @param {string} paramsStr Raw content between the placeholder's brackets.
-   * @returns {Object<string,string>} Parsed key/value map (values are trimmed strings).
-   * @private
-   */
+/** Method for */
 ```
 ---
-#### METHOD: _SheetProcessor._bucketDynamicColumnGroups
+#### METHOD: DocumentProcessorValueResolver.switch
 - **Scope:** instance
-- **LLM Call Syntax:** `const result = _SheetProcessor._bucketDynamicColumnGroups(params);`
+- **LLM Call Syntax:** `documentProcessorValueResolver.switch(filter.name);`
 - **Pure JSDoc:**
 ```javascript
-/**
-   * @description Buckets a flat dynamic_columns param map into an ordered list of
-   * column groups. Group 1 (the original single-group syntax) uses unsuffixed keys
-   * (`source`, `value`, `acl`, `scope`). Each subsequent group N (N >= 2) uses the
-   * numbered-suffix keys `sourceN`, `valueN`, `aclN`, `scopeN`, and optionally `labelN`
-   * — a context-path resolved ONCE per group (not per item) and rendered as a single
-   * non-data, no-ACL separator column immediately before that group's items. This is
-   * additive/backward-compatible: when no numbered keys are present, the result is a
-   * single-element array equivalent to the pre-existing flat parse, so the rendering
-   * loop degenerates to exactly today's single-group behavior.
-   * @param {Object<string,string>} params Flat parsed params (see `_parseDynamicColumnParams`).
-   * @returns {Array<{source: string|undefined, value: string|undefined, acl: string|undefined, scope: string, label: string|undefined}>} Ordered groups; empty array if no `source` key exists at all.
-   * @private
-   */
+/** Method switch */
 ```
 ---
-#### METHOD: _SheetProcessor._prepareDynamicColumnRequests
+#### METHOD: DocumentProcessorValueResolver.if
 - **Scope:** instance
-- **LLM Call Syntax:** `const result = _SheetProcessor._prepareDynamicColumnRequests(sheetName, startRow, startColumn, placeholder, context);`
+- **LLM Call Syntax:** `documentProcessorValueResolver.if(filter.args.length > 0);`
 - **Pure JSDoc:**
 ```javascript
-/**
-   * @description Generates batch update and protection requests for dynamic column expansion.
-   * Parses `{{dynamic_columns[...]}}` syntax to expand array data horizontally with ACL protections.
-   *
-   * Supports N sequential column groups from a single placeholder cell, placed as
-   * contiguous blocks in declared order starting at the placeholder's own position.
-   * Group 1 uses the original flat keys (`source=`, `value=`, `acl=`, `scope=`).
-   * Group 2+ use numbered-suffix keys (`source2=`, `value2=`, `acl2=`, `scope2=`,
-   * `label2=`, `source3=`, ... ). If a group (from the 2nd onward) declares a `labelN=`
-   * param, one non-data, non-ACL separator column is inserted immediately before that
-   * group's items, with its text resolved ONCE against the whole context (not per item).
-   * Single-group placeholders (no numbered keys) render byte-identically to the
-   * pre-multi-group implementation, plus the additive `layout` field below.
-   *
-   * @param {string} sheetName Target sheet name.
-   * @param {number} startRow Starting row index (1-based).
-   * @param {number} startColumn Starting column index (1-based).
-   * @param {string} placeholder Raw placeholder string.
-   * @param {Object} context Data context.
-   * @returns {{valueRequests: Object[], protectionRequests: Object[], layout: ({sheetName: string, headerRow: number, startColumn: number, columns: Array<{header: *, column: number, isLabel: boolean, item: *}>}|null)}} Batch requests plus the resolved column layout (null when nothing was rendered).
-   * @private
-   */
+/** Method if */
 ```
 ---
-#### METHOD: _SheetProcessor._prepareDynamicRowRequests
+#### METHOD: DocumentProcessorValueResolver.if
 - **Scope:** instance
-- **LLM Call Syntax:** `const result = _SheetProcessor._prepareDynamicRowRequests(sheetName, startRow, startColumn, placeholder, context);`
+- **LLM Call Syntax:** `documentProcessorValueResolver.if(filter.args.length >);`
 - **Pure JSDoc:**
 ```javascript
-/**
-   * @description Generates batch update requests for vertical (row-wise) array expansion.
-   * Parses `{{dynamic_rows[source=...,value=...]}}` syntax — the vertical mirror of
-   * `{{dynamic_columns[...]}}`: one row per source-array item, downward from the placeholder
-   * cell. Single-group only (no multi-group, no acl/scope) — deliberately smaller than
-   * dynamic_columns since no caller needs per-row protection or multiple sequential groups.
-   * @param {string} sheetName Target sheet name.
-   * @param {number} startRow Starting row index (1-based).
-   * @param {number} startColumn Starting column index (1-based).
-   * @param {string} placeholder Raw placeholder string.
-   * @param {Object} context Data context.
-   * @returns {{valueRequests: Object[]}} Batch value-update requests.
-   * @private
-   */
+/** Method if */
 ```
 ---
-#### METHOD: _SheetProcessor._applyProtections
+#### METHOD: DocumentProcessorValueResolver.catch
 - **Scope:** instance
-- **LLM Call Syntax:** `_SheetProcessor._applyProtections(spreadsheetId, protectionRequests);`
+- **LLM Call Syntax:** `documentProcessorValueResolver.catch(error);`
 - **Pure JSDoc:**
 ```javascript
-/**
-   * @description Batch applies range protections after clearing existing ones with matching descriptions.
-   * Ensures idempotency by deleting prior dynamic protections before applying the new set.
-   * @param {string} spreadsheetId target spreadsheet.
-   * @param {Object[]} protectionRequests Array of protection configurations.
-   * @private
-   */
+/** Method catch */
 ```
 ---
-#### METHOD: _SheetProcessor._prepareMatrixRequests
+<br>
+
+## CLASS: DocumentProcessorTagScanner
+**File Path:** `WorkspaceTemplateEngine/src/internal/processors-managers/DocumentProcessorTagScanner.js`
+**Constructor Usage:** `const instance = new DocumentProcessorTagScanner();`
+**Description:** N/A
+
+### Raw JSDoc Context:
+```javascript
+/** Class definition */
+```
+
+### Methods of DocumentProcessorTagScanner
+
+#### METHOD: DocumentProcessorTagScanner.if
 - **Scope:** instance
-- **LLM Call Syntax:** `const result = _SheetProcessor._prepareMatrixRequests(sheetName, startRow, startColumn, placeholder, context);`
+- **LLM Call Syntax:** `documentProcessorTagScanner.if(table.rows.length < 1);`
 - **Pure JSDoc:**
 ```javascript
-/**
-   * @description Generates batch requests for expanding an array of objects into a table grid.
-   * Parses `{{matrice_dati[...]}}` syntax to render headers and data rows.
-   * @param {string} sheetName Target sheet name.
-   * @param {number} startRow Top-left row index.
-   * @param {number} startColumn Top-left column index.
-   * @param {string} placeholder Raw placeholder.
-   * @param {Object} context Data context.
-   * @returns {Object[]} Collection of update requests.
-   * @private
-   */
+/** Method if */
 ```
 ---
-#### METHOD: _SheetProcessor._expandGridIfNeeded
+#### METHOD: DocumentProcessorTagScanner.for
 - **Scope:** instance
-- **LLM Call Syntax:** `_SheetProcessor._expandGridIfNeeded(spreadsheetId, sheets, batchRequests);`
+- **LLM Call Syntax:** `documentProcessorTagScanner.for(let cellIndex);`
 - **Pure JSDoc:**
 ```javascript
-/**
-   * @description Proactively expands sheet dimensions if batch requests exceed current grid limits.
-   * Analyzes A1 ranges in requests to calculate the required row/column count and triggers expansion via API.
-   * @param {string} spreadsheetId target spreadsheet.
-   * @param {Object[]} sheets Array of sheet metadata.
-   * @param {Object[]} batchRequests Collection of planned updates.
-   * @private
-   */
+/** Method for */
 ```
 ---
-#### METHOD: _SheetProcessor._columnToLetter
+#### METHOD: DocumentProcessorTagScanner.if
 - **Scope:** instance
-- **LLM Call Syntax:** `const result = _SheetProcessor._columnToLetter(column);`
+- **LLM Call Syntax:** `documentProcessorTagScanner.if(match);`
 - **Pure JSDoc:**
 ```javascript
-/**
-   * @description Converts a 1-based column number to its alphabetical A1 notation (e.g., 27 -> "AA").
-   * @param {number} column Column index.
-   * @returns {string} Alphabetical column label.
-   * @private
-   */
+/** Method if */
 ```
 ---
-#### METHOD: _SheetProcessor._rangeToA1
-- **Scope:** instance
-- **LLM Call Syntax:** `const result = _SheetProcessor._rangeToA1(startRow, startColumn, endRow, endColumn);`
-- **Pure JSDoc:**
+<br>
+
+## CLASS: DocumentProcessorInjector
+**File Path:** `WorkspaceTemplateEngine/src/internal/processors-managers/DocumentProcessorInjector.js`
+**Constructor Usage:** `const instance = new DocumentProcessorInjector();`
+**Description:** N/A
+
+### Raw JSDoc Context:
 ```javascript
-/**
-   * @description Formats row/column coordinates into standard A1 or range notation.
-   * @param {number} startRow Starting row.
-   * @param {number} startColumn Starting column.
-   * @param {number} endRow Ending row.
-   * @param {number} endColumn Ending column.
-   * @returns {string} Range string (e.g., "A1" or "A1:B10").
-   * @private
-   */
+/** Class definition */
 ```
----
+
 <br>
 
 ## CLASS: UppercaseFilter
 **File Path:** `WorkspaceTemplateEngine/src/internal/filters/BuiltInFilters.js`
 **Constructor Usage:** `const instance = new UppercaseFilter();`
-**Description:** String transformer. Converts all characters to uppercase.
+**Description:** Built-in filter implementations using Strategy pattern.
+             WTE-HIGH-001: Refactored from inline implementations in MyMustache.
+
+/
+
+import { FilterStrategy } from '../../FilterStrategy.js';
+
+// ==================== STRING FILTERS ====================
+
+/**
+String transformer. Converts all characters to uppercase.
+@class
 
 ### Raw JSDoc Context:
 ```javascript
+/**
+ * @file WorkspaceTemplateEngine/src/filters/BuiltInFilters.js
+ * @description Built-in filter implementations using Strategy pattern.
+ *              WTE-HIGH-001: Refactored from inline implementations in MyMustache.
+ * @version 2.0.0
+ */
+
+import { FilterStrategy } from '../../FilterStrategy.js';
+
+// ==================== STRING FILTERS ====================
+
 /**
  * @description String transformer. Converts all characters to uppercase.
  * @class
@@ -533,6 +580,7 @@ Implements cell-level substitutions and structural expansions (matrices, dynamic
 **File Path:** `WorkspaceTemplateEngine/src/internal/filters/BuiltInFilters.js`
 **Constructor Usage:** `const instance = new LowercaseFilter();`
 **Description:** String transformer. Converts all characters to lowercase.
+@class
 
 ### Raw JSDoc Context:
 ```javascript
@@ -542,12 +590,39 @@ Implements cell-level substitutions and structural expansions (matrices, dynamic
  */
 ```
 
+### Methods of LowercaseFilter
+
+#### METHOD: LowercaseFilter.getName
+- **Scope:** instance
+- **LLM Call Syntax:** `lowercaseFilter.getName();`
+- **Pure JSDoc:**
+```javascript
+/** Method getName */
+```
+---
+#### METHOD: LowercaseFilter.getDescription
+- **Scope:** instance
+- **LLM Call Syntax:** `lowercaseFilter.getDescription();`
+- **Pure JSDoc:**
+```javascript
+/** Method getDescription */
+```
+---
+#### METHOD: LowercaseFilter.execute
+- **Scope:** instance
+- **LLM Call Syntax:** `lowercaseFilter.execute(value);`
+- **Pure JSDoc:**
+```javascript
+/** Method execute */
+```
+---
 <br>
 
 ## CLASS: CapitalizeFilter
 **File Path:** `WorkspaceTemplateEngine/src/internal/filters/BuiltInFilters.js`
 **Constructor Usage:** `const instance = new CapitalizeFilter();`
 **Description:** String transformer. Capitalizes the first character and lowercases the rest. Unicode-safe.
+@class
 
 ### Raw JSDoc Context:
 ```javascript
@@ -557,12 +632,47 @@ Implements cell-level substitutions and structural expansions (matrices, dynamic
  */
 ```
 
+### Methods of CapitalizeFilter
+
+#### METHOD: CapitalizeFilter.getName
+- **Scope:** instance
+- **LLM Call Syntax:** `capitalizeFilter.getName();`
+- **Pure JSDoc:**
+```javascript
+/** Method getName */
+```
+---
+#### METHOD: CapitalizeFilter.getDescription
+- **Scope:** instance
+- **LLM Call Syntax:** `capitalizeFilter.getDescription();`
+- **Pure JSDoc:**
+```javascript
+/** Method getDescription */
+```
+---
+#### METHOD: CapitalizeFilter.execute
+- **Scope:** instance
+- **LLM Call Syntax:** `capitalizeFilter.execute(value);`
+- **Pure JSDoc:**
+```javascript
+/** Method execute */
+```
+---
+#### METHOD: CapitalizeFilter.if
+- **Scope:** instance
+- **LLM Call Syntax:** `capitalizeFilter.if(!value);`
+- **Pure JSDoc:**
+```javascript
+/** Method if */
+```
+---
 <br>
 
 ## CLASS: DateFilter
 **File Path:** `WorkspaceTemplateEngine/src/internal/filters/BuiltInFilters.js`
 **Constructor Usage:** `const instance = new DateFilter();`
 **Description:** Date formatter. Returns "dd/MM/yyyy" via UtilsService or US-locale string.
+@class
 
 ### Raw JSDoc Context:
 ```javascript
@@ -574,17 +684,52 @@ Implements cell-level substitutions and structural expansions (matrices, dynamic
 
 ### Methods of DateFilter
 
-#### METHOD: DateFilter._formatDDMMYYYY
-- **Scope:** static
-- **LLM Call Syntax:** `const result = DateFilter._formatDDMMYYYY(date);`
+#### METHOD: DateFilter.getName
+- **Scope:** instance
+- **LLM Call Syntax:** `dateFilter.getName();`
 - **Pure JSDoc:**
 ```javascript
-/**
-   * @description Formats a Date as dd/MM/yyyy using only arithmetic (no locale).
-   * @param {Date} date Valid Date instance.
-   * @returns {string} Zero-padded dd/MM/yyyy string.
-   * @private
-   */
+/** Method getName */
+```
+---
+#### METHOD: DateFilter.getDescription
+- **Scope:** instance
+- **LLM Call Syntax:** `dateFilter.getDescription();`
+- **Pure JSDoc:**
+```javascript
+/** Method getDescription */
+```
+---
+#### METHOD: DateFilter.execute
+- **Scope:** instance
+- **LLM Call Syntax:** `dateFilter.execute(value);`
+- **Pure JSDoc:**
+```javascript
+/** Method execute */
+```
+---
+#### METHOD: DateFilter.if
+- **Scope:** instance
+- **LLM Call Syntax:** `dateFilter.if(this.utils && typeof this.utils.formatDate);`
+- **Pure JSDoc:**
+```javascript
+/** Method if */
+```
+---
+#### METHOD: DateFilter.if
+- **Scope:** instance
+- **LLM Call Syntax:** `dateFilter.if(formatted);`
+- **Pure JSDoc:**
+```javascript
+/** Method if */
+```
+---
+#### METHOD: DateFilter.catch
+- **Scope:** instance
+- **LLM Call Syntax:** `dateFilter.catch(_e);`
+- **Pure JSDoc:**
+```javascript
+/** Method catch */
 ```
 ---
 <br>
@@ -592,10 +737,35 @@ Implements cell-level substitutions and structural expansions (matrices, dynamic
 ## CLASS: NumberFilter
 **File Path:** `WorkspaceTemplateEngine/src/internal/filters/BuiltInFilters.js`
 **Constructor Usage:** `const instance = new NumberFilter();`
-**Description:** Number formatter. Applies locale-specific formatting with optional fixed decimals.
+**Description:** Formats a Date as dd/MM/yyyy using only arithmetic (no locale).
+@param {Date} date Valid Date instance.
+@returns {string} Zero-padded dd/MM/yyyy string.
+@private
+/
+  static _formatDDMMYYYY(date) {
+    const pad = (n) => String(n).padStart(2, '0');
+    return `${pad(date.getDate())}/${pad(date.getMonth() + 1)}/${date.getFullYear()}`;
+  }
+}
+
+/**
+Number formatter. Applies locale-specific formatting with optional fixed decimals.
+@class
 
 ### Raw JSDoc Context:
 ```javascript
+/**
+   * @description Formats a Date as dd/MM/yyyy using only arithmetic (no locale).
+   * @param {Date} date Valid Date instance.
+   * @returns {string} Zero-padded dd/MM/yyyy string.
+   * @private
+   */
+  static _formatDDMMYYYY(date) {
+    const pad = (n) => String(n).padStart(2, '0');
+    return `${pad(date.getDate())}/${pad(date.getMonth() + 1)}/${date.getFullYear()}`;
+  }
+}
+
 /**
  * @description Number formatter. Applies locale-specific formatting with optional fixed decimals.
  * @class
@@ -608,6 +778,7 @@ Implements cell-level substitutions and structural expansions (matrices, dynamic
 **File Path:** `WorkspaceTemplateEngine/src/internal/filters/BuiltInFilters.js`
 **Constructor Usage:** `const instance = new JoinFilter();`
 **Description:** Array aggregator. Joins elements with a separator, optionally extracting a specific key. Includes prototype pollution protection.
+@class
 
 ### Raw JSDoc Context:
 ```javascript
@@ -619,17 +790,28 @@ Implements cell-level substitutions and structural expansions (matrices, dynamic
 
 ### Methods of JoinFilter
 
-#### METHOD: JoinFilter._isDangerousKey
+#### METHOD: JoinFilter.getName
 - **Scope:** instance
-- **LLM Call Syntax:** `const result = joinFilter._isDangerousKey(key);`
+- **LLM Call Syntax:** `joinFilter.getName();`
 - **Pure JSDoc:**
 ```javascript
-/**
-   * @description Security guard against prototype pollution.
-   * @param {string} key Property key.
-   * @returns {boolean} True if restricted.
-   * @private
-   */
+/** Method getName */
+```
+---
+#### METHOD: JoinFilter.getDescription
+- **Scope:** instance
+- **LLM Call Syntax:** `joinFilter.getDescription();`
+- **Pure JSDoc:**
+```javascript
+/** Method getDescription */
+```
+---
+#### METHOD: JoinFilter.execute
+- **Scope:** instance
+- **LLM Call Syntax:** `joinFilter.execute(array, key, separator, ');`
+- **Pure JSDoc:**
+```javascript
+/** Method execute */
 ```
 ---
 <br>
@@ -637,10 +819,69 @@ Implements cell-level substitutions and structural expansions (matrices, dynamic
 ## CLASS: PluralizeFilter
 **File Path:** `WorkspaceTemplateEngine/src/internal/filters/BuiltInFilters.js`
 **Constructor Usage:** `const instance = new PluralizeFilter();`
-**Description:** Conditional string selector. Returns singular or plural form based on a numeric count.
+**Description:** Security guard against prototype pollution.
+@param {string} key Property key.
+@returns {boolean} True if restricted.
+@private
+/
+  _isDangerousKey(key) {
+    return key === '__proto__' || key === 'constructor' || key === 'prototype';
+  }
+
+  execute(array, key, separator = ', ') {
+    if (!Array.isArray(array)) {
+      return '';
+    }
+    // GEL-C004: Prevent prototype pollution in filter
+    if (this._isDangerousKey(key)) {
+      return '';
+    }
+    return array
+      .map((item) => {
+        if (item && typeof item === 'object' && Object.prototype.hasOwnProperty.call(item, key)) {
+          return item[key];
+        }
+        return item;
+      })
+      .join(separator);
+  }
+}
+
+/**
+Conditional string selector. Returns singular or plural form based on a numeric count.
+@class
 
 ### Raw JSDoc Context:
 ```javascript
+/**
+   * @description Security guard against prototype pollution.
+   * @param {string} key Property key.
+   * @returns {boolean} True if restricted.
+   * @private
+   */
+  _isDangerousKey(key) {
+    return key === '__proto__' || key === 'constructor' || key === 'prototype';
+  }
+
+  execute(array, key, separator = ', ') {
+    if (!Array.isArray(array)) {
+      return '';
+    }
+    // GEL-C004: Prevent prototype pollution in filter
+    if (this._isDangerousKey(key)) {
+      return '';
+    }
+    return array
+      .map((item) => {
+        if (item && typeof item === 'object' && Object.prototype.hasOwnProperty.call(item, key)) {
+          return item[key];
+        }
+        return item;
+      })
+      .join(separator);
+  }
+}
+
 /**
  * @description Conditional string selector. Returns singular or plural form based on a numeric count.
  * @class
@@ -653,6 +894,7 @@ Implements cell-level substitutions and structural expansions (matrices, dynamic
 **File Path:** `WorkspaceTemplateEngine/src/internal/filters/BuiltInFilters.js`
 **Constructor Usage:** `const instance = new SortByFilter();`
 **Description:** Array sorter. Performs in-place sorting based on a specific property key. Includes prototype pollution protection.
+@class
 
 ### Raw JSDoc Context:
 ```javascript
@@ -662,12 +904,87 @@ Implements cell-level substitutions and structural expansions (matrices, dynamic
  */
 ```
 
+### Methods of SortByFilter
+
+#### METHOD: SortByFilter.getName
+- **Scope:** instance
+- **LLM Call Syntax:** `sortByFilter.getName();`
+- **Pure JSDoc:**
+```javascript
+/** Method getName */
+```
+---
+#### METHOD: SortByFilter.getDescription
+- **Scope:** instance
+- **LLM Call Syntax:** `sortByFilter.getDescription();`
+- **Pure JSDoc:**
+```javascript
+/** Method getDescription */
+```
+---
+#### METHOD: SortByFilter.execute
+- **Scope:** instance
+- **LLM Call Syntax:** `sortByFilter.execute(array, key);`
+- **Pure JSDoc:**
+```javascript
+/** Method execute */
+```
+---
+#### METHOD: SortByFilter.if
+- **Scope:** instance
+- **LLM Call Syntax:** `sortByFilter.if(valA);`
+- **Pure JSDoc:**
+```javascript
+/** Method if */
+```
+---
+#### METHOD: SortByFilter.if
+- **Scope:** instance
+- **LLM Call Syntax:** `sortByFilter.if(valA !);`
+- **Pure JSDoc:**
+```javascript
+/** Method if */
+```
+---
+#### METHOD: SortByFilter.if
+- **Scope:** instance
+- **LLM Call Syntax:** `sortByFilter.if(valA);`
+- **Pure JSDoc:**
+```javascript
+/** Method if */
+```
+---
+#### METHOD: SortByFilter.if
+- **Scope:** instance
+- **LLM Call Syntax:** `sortByFilter.if(typeof valA !);`
+- **Pure JSDoc:**
+```javascript
+/** Method if */
+```
+---
+#### METHOD: SortByFilter.if
+- **Scope:** instance
+- **LLM Call Syntax:** `sortByFilter.if(valA < valB);`
+- **Pure JSDoc:**
+```javascript
+/** Method if */
+```
+---
+#### METHOD: SortByFilter.if
+- **Scope:** instance
+- **LLM Call Syntax:** `sortByFilter.if(valA > valB);`
+- **Pure JSDoc:**
+```javascript
+/** Method if */
+```
+---
 <br>
 
 ## CLASS: WhereFilter
 **File Path:** `WorkspaceTemplateEngine/src/internal/filters/BuiltInFilters.js`
 **Constructor Usage:** `const instance = new WhereFilter();`
 **Description:** Array filter. Returns elements where the specified property matches a value. Includes prototype pollution protection.
+@class
 
 ### Raw JSDoc Context:
 ```javascript
@@ -677,12 +994,39 @@ Implements cell-level substitutions and structural expansions (matrices, dynamic
  */
 ```
 
+### Methods of WhereFilter
+
+#### METHOD: WhereFilter.getName
+- **Scope:** instance
+- **LLM Call Syntax:** `whereFilter.getName();`
+- **Pure JSDoc:**
+```javascript
+/** Method getName */
+```
+---
+#### METHOD: WhereFilter.getDescription
+- **Scope:** instance
+- **LLM Call Syntax:** `whereFilter.getDescription();`
+- **Pure JSDoc:**
+```javascript
+/** Method getDescription */
+```
+---
+#### METHOD: WhereFilter.execute
+- **Scope:** instance
+- **LLM Call Syntax:** `whereFilter.execute(array, key, value);`
+- **Pure JSDoc:**
+```javascript
+/** Method execute */
+```
+---
 <br>
 
 ## CLASS: ExcludeFilter
 **File Path:** `WorkspaceTemplateEngine/src/internal/filters/BuiltInFilters.js`
 **Constructor Usage:** `const instance = new ExcludeFilter();`
 **Description:** Array filter. Returns elements where the specified property does not match a value. Includes prototype pollution protection.
+@class
 
 ### Raw JSDoc Context:
 ```javascript
@@ -692,15 +1036,63 @@ Implements cell-level substitutions and structural expansions (matrices, dynamic
  */
 ```
 
+### Methods of ExcludeFilter
+
+#### METHOD: ExcludeFilter.getName
+- **Scope:** instance
+- **LLM Call Syntax:** `excludeFilter.getName();`
+- **Pure JSDoc:**
+```javascript
+/** Method getName */
+```
+---
+#### METHOD: ExcludeFilter.getDescription
+- **Scope:** instance
+- **LLM Call Syntax:** `excludeFilter.getDescription();`
+- **Pure JSDoc:**
+```javascript
+/** Method getDescription */
+```
+---
+#### METHOD: ExcludeFilter.execute
+- **Scope:** instance
+- **LLM Call Syntax:** `excludeFilter.execute(array, key, value);`
+- **Pure JSDoc:**
+```javascript
+/** Method execute */
+```
+---
 <br>
 
 ## CLASS: DefaultFilter
 **File Path:** `WorkspaceTemplateEngine/src/internal/filters/AdvancedFilters.js`
 **Constructor Usage:** `const instance = new DefaultFilter();`
-**Description:** Liquid-style default filter. Returns defaultValue if value is null, undefined, or empty.
+**Description:** Advanced filter implementations inspired by Handlebars and Liquid.
+             Extends the Mustache template engine with "logic-light" features.
+
+/
+
+import { FilterStrategy } from '../../FilterStrategy.js';
+
+// ==================== LOGIC & DEFAULTS ====================
+
+/**
+Liquid-style default filter. Returns defaultValue if value is null, undefined, or empty.
+@class
 
 ### Raw JSDoc Context:
 ```javascript
+/**
+ * @file WorkspaceTemplateEngine/src/filters/AdvancedFilters.js
+ * @description Advanced filter implementations inspired by Handlebars and Liquid.
+ *              Extends the Mustache template engine with "logic-light" features.
+ * @version 2.1.0
+ */
+
+import { FilterStrategy } from '../../FilterStrategy.js';
+
+// ==================== LOGIC & DEFAULTS ====================
+
 /**
  * @description Liquid-style default filter. Returns defaultValue if value is null, undefined, or empty.
  * @class
@@ -713,6 +1105,7 @@ Implements cell-level substitutions and structural expansions (matrices, dynamic
 **File Path:** `WorkspaceTemplateEngine/src/internal/filters/AdvancedFilters.js`
 **Constructor Usage:** `const instance = new YesNoFilter();`
 **Description:** Boolean-to-string transformer. Format: "YesString,NoString".
+@class
 
 ### Raw JSDoc Context:
 ```javascript
@@ -722,12 +1115,39 @@ Implements cell-level substitutions and structural expansions (matrices, dynamic
  */
 ```
 
+### Methods of YesNoFilter
+
+#### METHOD: YesNoFilter.getName
+- **Scope:** instance
+- **LLM Call Syntax:** `yesNoFilter.getName();`
+- **Pure JSDoc:**
+```javascript
+/** Method getName */
+```
+---
+#### METHOD: YesNoFilter.getDescription
+- **Scope:** instance
+- **LLM Call Syntax:** `yesNoFilter.getDescription();`
+- **Pure JSDoc:**
+```javascript
+/** Method getDescription */
+```
+---
+#### METHOD: YesNoFilter.execute
+- **Scope:** instance
+- **LLM Call Syntax:** `yesNoFilter.execute(value, yesNoString, No');`
+- **Pure JSDoc:**
+```javascript
+/** Method execute */
+```
+---
 <br>
 
 ## CLASS: FallbackFilter
 **File Path:** `WorkspaceTemplateEngine/src/internal/filters/AdvancedFilters.js`
 **Constructor Usage:** `const instance = new FallbackFilter();`
 **Description:** Simple fallback mechanism. Returns fallbackValue if value is missing.
+@class
 
 ### Raw JSDoc Context:
 ```javascript
@@ -737,12 +1157,47 @@ Implements cell-level substitutions and structural expansions (matrices, dynamic
  */
 ```
 
+### Methods of FallbackFilter
+
+#### METHOD: FallbackFilter.getName
+- **Scope:** instance
+- **LLM Call Syntax:** `fallbackFilter.getName();`
+- **Pure JSDoc:**
+```javascript
+/** Method getName */
+```
+---
+#### METHOD: FallbackFilter.getDescription
+- **Scope:** instance
+- **LLM Call Syntax:** `fallbackFilter.getDescription();`
+- **Pure JSDoc:**
+```javascript
+/** Method getDescription */
+```
+---
+#### METHOD: FallbackFilter.execute
+- **Scope:** instance
+- **LLM Call Syntax:** `fallbackFilter.execute(value, fallbackValue);`
+- **Pure JSDoc:**
+```javascript
+/** Method execute */
+```
+---
+#### METHOD: FallbackFilter.if
+- **Scope:** instance
+- **LLM Call Syntax:** `fallbackFilter.if(value);`
+- **Pure JSDoc:**
+```javascript
+/** Method if */
+```
+---
 <br>
 
 ## CLASS: TruncateFilter
 **File Path:** `WorkspaceTemplateEngine/src/internal/filters/AdvancedFilters.js`
 **Constructor Usage:** `const instance = new TruncateFilter();`
 **Description:** String truncator with optional suffix. Defaults to 50 chars and "...".
+@class
 
 ### Raw JSDoc Context:
 ```javascript
@@ -752,12 +1207,47 @@ Implements cell-level substitutions and structural expansions (matrices, dynamic
  */
 ```
 
+### Methods of TruncateFilter
+
+#### METHOD: TruncateFilter.getName
+- **Scope:** instance
+- **LLM Call Syntax:** `truncateFilter.getName();`
+- **Pure JSDoc:**
+```javascript
+/** Method getName */
+```
+---
+#### METHOD: TruncateFilter.getDescription
+- **Scope:** instance
+- **LLM Call Syntax:** `truncateFilter.getDescription();`
+- **Pure JSDoc:**
+```javascript
+/** Method getDescription */
+```
+---
+#### METHOD: TruncateFilter.execute
+- **Scope:** instance
+- **LLM Call Syntax:** `truncateFilter.execute(value, length, suffix);`
+- **Pure JSDoc:**
+```javascript
+/** Method execute */
+```
+---
+#### METHOD: TruncateFilter.if
+- **Scope:** instance
+- **LLM Call Syntax:** `truncateFilter.if(str.length <);`
+- **Pure JSDoc:**
+```javascript
+/** Method if */
+```
+---
 <br>
 
 ## CLASS: SplitFilter
 **File Path:** `WorkspaceTemplateEngine/src/internal/filters/AdvancedFilters.js`
 **Constructor Usage:** `const instance = new SplitFilter();`
 **Description:** String-to-array splitter using a specified separator (default: ",").
+@class
 
 ### Raw JSDoc Context:
 ```javascript
@@ -767,12 +1257,39 @@ Implements cell-level substitutions and structural expansions (matrices, dynamic
  */
 ```
 
+### Methods of SplitFilter
+
+#### METHOD: SplitFilter.getName
+- **Scope:** instance
+- **LLM Call Syntax:** `splitFilter.getName();`
+- **Pure JSDoc:**
+```javascript
+/** Method getName */
+```
+---
+#### METHOD: SplitFilter.getDescription
+- **Scope:** instance
+- **LLM Call Syntax:** `splitFilter.getDescription();`
+- **Pure JSDoc:**
+```javascript
+/** Method getDescription */
+```
+---
+#### METHOD: SplitFilter.execute
+- **Scope:** instance
+- **LLM Call Syntax:** `splitFilter.execute(value, separator, ');`
+- **Pure JSDoc:**
+```javascript
+/** Method execute */
+```
+---
 <br>
 
 ## CLASS: ReplaceFilter
 **File Path:** `WorkspaceTemplateEngine/src/internal/filters/AdvancedFilters.js`
 **Constructor Usage:** `const instance = new ReplaceFilter();`
 **Description:** Global string replacer. Replaces all occurrences of searchValue with replaceValue.
+@class
 
 ### Raw JSDoc Context:
 ```javascript
@@ -782,12 +1299,47 @@ Implements cell-level substitutions and structural expansions (matrices, dynamic
  */
 ```
 
+### Methods of ReplaceFilter
+
+#### METHOD: ReplaceFilter.getName
+- **Scope:** instance
+- **LLM Call Syntax:** `replaceFilter.getName();`
+- **Pure JSDoc:**
+```javascript
+/** Method getName */
+```
+---
+#### METHOD: ReplaceFilter.getDescription
+- **Scope:** instance
+- **LLM Call Syntax:** `replaceFilter.getDescription();`
+- **Pure JSDoc:**
+```javascript
+/** Method getDescription */
+```
+---
+#### METHOD: ReplaceFilter.execute
+- **Scope:** instance
+- **LLM Call Syntax:** `replaceFilter.execute(value, searchValue, replaceValue);`
+- **Pure JSDoc:**
+```javascript
+/** Method execute */
+```
+---
+#### METHOD: ReplaceFilter.if
+- **Scope:** instance
+- **LLM Call Syntax:** `replaceFilter.if(!searchValue);`
+- **Pure JSDoc:**
+```javascript
+/** Method if */
+```
+---
 <br>
 
 ## CLASS: UrlEncodeFilter
 **File Path:** `WorkspaceTemplateEngine/src/internal/filters/AdvancedFilters.js`
 **Constructor Usage:** `const instance = new UrlEncodeFilter();`
 **Description:** URI component encoder for URL-safe string generation.
+@class
 
 ### Raw JSDoc Context:
 ```javascript
@@ -797,12 +1349,47 @@ Implements cell-level substitutions and structural expansions (matrices, dynamic
  */
 ```
 
+### Methods of UrlEncodeFilter
+
+#### METHOD: UrlEncodeFilter.getName
+- **Scope:** instance
+- **LLM Call Syntax:** `urlEncodeFilter.getName();`
+- **Pure JSDoc:**
+```javascript
+/** Method getName */
+```
+---
+#### METHOD: UrlEncodeFilter.getDescription
+- **Scope:** instance
+- **LLM Call Syntax:** `urlEncodeFilter.getDescription();`
+- **Pure JSDoc:**
+```javascript
+/** Method getDescription */
+```
+---
+#### METHOD: UrlEncodeFilter.execute
+- **Scope:** instance
+- **LLM Call Syntax:** `urlEncodeFilter.execute(value);`
+- **Pure JSDoc:**
+```javascript
+/** Method execute */
+```
+---
+#### METHOD: UrlEncodeFilter.catch
+- **Scope:** instance
+- **LLM Call Syntax:** `urlEncodeFilter.catch(_e);`
+- **Pure JSDoc:**
+```javascript
+/** Method catch */
+```
+---
 <br>
 
 ## CLASS: MapFilter
 **File Path:** `WorkspaceTemplateEngine/src/internal/filters/AdvancedFilters.js`
 **Constructor Usage:** `const instance = new MapFilter();`
 **Description:** Array property mapper. Extracts a specific key from each object in an array. Includes prototype pollution protection.
+@class
 
 ### Raw JSDoc Context:
 ```javascript
@@ -812,12 +1399,39 @@ Implements cell-level substitutions and structural expansions (matrices, dynamic
  */
 ```
 
+### Methods of MapFilter
+
+#### METHOD: MapFilter.getName
+- **Scope:** instance
+- **LLM Call Syntax:** `mapFilter.getName();`
+- **Pure JSDoc:**
+```javascript
+/** Method getName */
+```
+---
+#### METHOD: MapFilter.getDescription
+- **Scope:** instance
+- **LLM Call Syntax:** `mapFilter.getDescription();`
+- **Pure JSDoc:**
+```javascript
+/** Method getDescription */
+```
+---
+#### METHOD: MapFilter.execute
+- **Scope:** instance
+- **LLM Call Syntax:** `mapFilter.execute(array, propertyName);`
+- **Pure JSDoc:**
+```javascript
+/** Method execute */
+```
+---
 <br>
 
 ## CLASS: LimitFilter
 **File Path:** `WorkspaceTemplateEngine/src/internal/filters/AdvancedFilters.js`
 **Constructor Usage:** `const instance = new LimitFilter();`
 **Description:** Array slicer. Returns the first N items (default: 10).
+@class
 
 ### Raw JSDoc Context:
 ```javascript
@@ -827,12 +1441,39 @@ Implements cell-level substitutions and structural expansions (matrices, dynamic
  */
 ```
 
+### Methods of LimitFilter
+
+#### METHOD: LimitFilter.getName
+- **Scope:** instance
+- **LLM Call Syntax:** `limitFilter.getName();`
+- **Pure JSDoc:**
+```javascript
+/** Method getName */
+```
+---
+#### METHOD: LimitFilter.getDescription
+- **Scope:** instance
+- **LLM Call Syntax:** `limitFilter.getDescription();`
+- **Pure JSDoc:**
+```javascript
+/** Method getDescription */
+```
+---
+#### METHOD: LimitFilter.execute
+- **Scope:** instance
+- **LLM Call Syntax:** `limitFilter.execute(array, count);`
+- **Pure JSDoc:**
+```javascript
+/** Method execute */
+```
+---
 <br>
 
 ## CLASS: SkipFilter
 **File Path:** `WorkspaceTemplateEngine/src/internal/filters/AdvancedFilters.js`
 **Constructor Usage:** `const instance = new SkipFilter();`
 **Description:** Array offsetter. Skips the first N items.
+@class
 
 ### Raw JSDoc Context:
 ```javascript
@@ -842,12 +1483,39 @@ Implements cell-level substitutions and structural expansions (matrices, dynamic
  */
 ```
 
+### Methods of SkipFilter
+
+#### METHOD: SkipFilter.getName
+- **Scope:** instance
+- **LLM Call Syntax:** `skipFilter.getName();`
+- **Pure JSDoc:**
+```javascript
+/** Method getName */
+```
+---
+#### METHOD: SkipFilter.getDescription
+- **Scope:** instance
+- **LLM Call Syntax:** `skipFilter.getDescription();`
+- **Pure JSDoc:**
+```javascript
+/** Method getDescription */
+```
+---
+#### METHOD: SkipFilter.execute
+- **Scope:** instance
+- **LLM Call Syntax:** `skipFilter.execute(array, count);`
+- **Pure JSDoc:**
+```javascript
+/** Method execute */
+```
+---
 <br>
 
 ## CLASS: SortFilter
 **File Path:** `WorkspaceTemplateEngine/src/internal/filters/AdvancedFilters.js`
 **Constructor Usage:** `const instance = new SortFilter();`
 **Description:** Advanced array sorter. Supports property-based sorting and descending order ("desc"). Includes prototype pollution protection.
+@class
 
 ### Raw JSDoc Context:
 ```javascript
@@ -857,12 +1525,111 @@ Implements cell-level substitutions and structural expansions (matrices, dynamic
  */
 ```
 
+### Methods of SortFilter
+
+#### METHOD: SortFilter.getName
+- **Scope:** instance
+- **LLM Call Syntax:** `sortFilter.getName();`
+- **Pure JSDoc:**
+```javascript
+/** Method getName */
+```
+---
+#### METHOD: SortFilter.getDescription
+- **Scope:** instance
+- **LLM Call Syntax:** `sortFilter.getDescription();`
+- **Pure JSDoc:**
+```javascript
+/** Method getDescription */
+```
+---
+#### METHOD: SortFilter.execute
+- **Scope:** instance
+- **LLM Call Syntax:** `sortFilter.execute(array, propertyOrDirection, direction);`
+- **Pure JSDoc:**
+```javascript
+/** Method execute */
+```
+---
+#### METHOD: SortFilter.if
+- **Scope:** instance
+- **LLM Call Syntax:** `sortFilter.if(array.length);`
+- **Pure JSDoc:**
+```javascript
+/** Method if */
+```
+---
+#### METHOD: SortFilter.if
+- **Scope:** instance
+- **LLM Call Syntax:** `sortFilter.if(propertyOrDirection);`
+- **Pure JSDoc:**
+```javascript
+/** Method if */
+```
+---
+#### METHOD: SortFilter.if
+- **Scope:** instance
+- **LLM Call Syntax:** `sortFilter.if(propertyOrDirection);`
+- **Pure JSDoc:**
+```javascript
+/** Method if */
+```
+---
+#### METHOD: SortFilter.if
+- **Scope:** instance
+- **LLM Call Syntax:** `sortFilter.if(valA);`
+- **Pure JSDoc:**
+```javascript
+/** Method if */
+```
+---
+#### METHOD: SortFilter.if
+- **Scope:** instance
+- **LLM Call Syntax:** `sortFilter.if(valA !);`
+- **Pure JSDoc:**
+```javascript
+/** Method if */
+```
+---
+#### METHOD: SortFilter.if
+- **Scope:** instance
+- **LLM Call Syntax:** `sortFilter.if(valA);`
+- **Pure JSDoc:**
+```javascript
+/** Method if */
+```
+---
+#### METHOD: SortFilter.if
+- **Scope:** instance
+- **LLM Call Syntax:** `sortFilter.if(typeof valA);`
+- **Pure JSDoc:**
+```javascript
+/** Method if */
+```
+---
+#### METHOD: SortFilter.if
+- **Scope:** instance
+- **LLM Call Syntax:** `sortFilter.if(valA < valB);`
+- **Pure JSDoc:**
+```javascript
+/** Method if */
+```
+---
+#### METHOD: SortFilter.if
+- **Scope:** instance
+- **LLM Call Syntax:** `sortFilter.if(valA > valB);`
+- **Pure JSDoc:**
+```javascript
+/** Method if */
+```
+---
 <br>
 
 ## CLASS: ReverseFilter
 **File Path:** `WorkspaceTemplateEngine/src/internal/filters/AdvancedFilters.js`
 **Constructor Usage:** `const instance = new ReverseFilter();`
 **Description:** Array order reverser. Creates a shallow copy before reversing.
+@class
 
 ### Raw JSDoc Context:
 ```javascript
@@ -872,12 +1639,39 @@ Implements cell-level substitutions and structural expansions (matrices, dynamic
  */
 ```
 
+### Methods of ReverseFilter
+
+#### METHOD: ReverseFilter.getName
+- **Scope:** instance
+- **LLM Call Syntax:** `reverseFilter.getName();`
+- **Pure JSDoc:**
+```javascript
+/** Method getName */
+```
+---
+#### METHOD: ReverseFilter.getDescription
+- **Scope:** instance
+- **LLM Call Syntax:** `reverseFilter.getDescription();`
+- **Pure JSDoc:**
+```javascript
+/** Method getDescription */
+```
+---
+#### METHOD: ReverseFilter.execute
+- **Scope:** instance
+- **LLM Call Syntax:** `reverseFilter.execute(array);`
+- **Pure JSDoc:**
+```javascript
+/** Method execute */
+```
+---
 <br>
 
 ## CLASS: PlusFilter
 **File Path:** `WorkspaceTemplateEngine/src/internal/filters/AdvancedFilters.js`
 **Constructor Usage:** `const instance = new PlusFilter();`
 **Description:** Numeric addition filter. Adds addend to the value.
+@class
 
 ### Raw JSDoc Context:
 ```javascript
@@ -887,12 +1681,39 @@ Implements cell-level substitutions and structural expansions (matrices, dynamic
  */
 ```
 
+### Methods of PlusFilter
+
+#### METHOD: PlusFilter.getName
+- **Scope:** instance
+- **LLM Call Syntax:** `plusFilter.getName();`
+- **Pure JSDoc:**
+```javascript
+/** Method getName */
+```
+---
+#### METHOD: PlusFilter.getDescription
+- **Scope:** instance
+- **LLM Call Syntax:** `plusFilter.getDescription();`
+- **Pure JSDoc:**
+```javascript
+/** Method getDescription */
+```
+---
+#### METHOD: PlusFilter.execute
+- **Scope:** instance
+- **LLM Call Syntax:** `plusFilter.execute(value, addend);`
+- **Pure JSDoc:**
+```javascript
+/** Method execute */
+```
+---
 <br>
 
 ## CLASS: MinusFilter
 **File Path:** `WorkspaceTemplateEngine/src/internal/filters/AdvancedFilters.js`
 **Constructor Usage:** `const instance = new MinusFilter();`
 **Description:** Numeric subtraction filter. Subtracts subtrahend from the value.
+@class
 
 ### Raw JSDoc Context:
 ```javascript
@@ -902,12 +1723,39 @@ Implements cell-level substitutions and structural expansions (matrices, dynamic
  */
 ```
 
+### Methods of MinusFilter
+
+#### METHOD: MinusFilter.getName
+- **Scope:** instance
+- **LLM Call Syntax:** `minusFilter.getName();`
+- **Pure JSDoc:**
+```javascript
+/** Method getName */
+```
+---
+#### METHOD: MinusFilter.getDescription
+- **Scope:** instance
+- **LLM Call Syntax:** `minusFilter.getDescription();`
+- **Pure JSDoc:**
+```javascript
+/** Method getDescription */
+```
+---
+#### METHOD: MinusFilter.execute
+- **Scope:** instance
+- **LLM Call Syntax:** `minusFilter.execute(value, subtrahend);`
+- **Pure JSDoc:**
+```javascript
+/** Method execute */
+```
+---
 <br>
 
 ## CLASS: JsonFilter
 **File Path:** `WorkspaceTemplateEngine/src/internal/filters/AdvancedFilters.js`
 **Constructor Usage:** `const instance = new JsonFilter();`
 **Description:** JSON serializer with optional indentation support.
+@class
 
 ### Raw JSDoc Context:
 ```javascript
@@ -917,12 +1765,48 @@ Implements cell-level substitutions and structural expansions (matrices, dynamic
  */
 ```
 
+### Methods of JsonFilter
+
+#### METHOD: JsonFilter.getName
+- **Scope:** instance
+- **LLM Call Syntax:** `jsonFilter.getName();`
+- **Pure JSDoc:**
+```javascript
+/** Method getName */
+```
+---
+#### METHOD: JsonFilter.getDescription
+- **Scope:** instance
+- **LLM Call Syntax:** `jsonFilter.getDescription();`
+- **Pure JSDoc:**
+```javascript
+/** Method getDescription */
+```
+---
+#### METHOD: JsonFilter.execute
+- **Scope:** instance
+- **LLM Call Syntax:** `jsonFilter.execute(value, indent);`
+- **Pure JSDoc:**
+```javascript
+/** Method execute */
+```
+---
+#### METHOD: JsonFilter.catch
+- **Scope:** instance
+- **LLM Call Syntax:** `jsonFilter.catch(_e);`
+- **Pure JSDoc:**
+```javascript
+/** Method catch */
+```
+---
 <br>
 
 ## CLASS: MustacheRenderError
 **File Path:** `WorkspaceTemplateEngine/src/facades/Mustache.js`
 **Constructor Usage:** `const instance = new MustacheRenderError();`
-**Description:** Thrown when template rendering exceeds the maximum nesting depth or
+**Description:** @class MustacheRenderError
+@extends BaseError
+Thrown when template rendering exceeds the maximum nesting depth or
 detects a self-referencing partial cycle — surfaces a catchable, diagnosable error
 instead of an opaque call-stack overflow when a data-driven CONF_DOC/CONF_MAIL
 template is malformed (ref analysis_3_structural_errors.md Finding 3).
@@ -945,6 +1829,8 @@ template is malformed (ref analysis_3_structural_errors.md Finding 3).
 **File Path:** `WorkspaceTemplateEngine/src/facades/Mustache.js`
 **Constructor Usage:** `const instance = new _MustacheScanner();`
 **Description:** State-tracking scanner for incremental Mustache template parsing.
+@private
+@class
 
 ### Raw JSDoc Context:
 ```javascript
@@ -980,6 +1866,14 @@ template is malformed (ref analysis_3_structural_errors.md Finding 3).
    */
 ```
 ---
+#### METHOD: _MustacheScanner.if
+- **Scope:** instance
+- **LLM Call Syntax:** `_MustacheScanner.if(!match || match.index !);`
+- **Pure JSDoc:**
+```javascript
+/** Method if */
+```
+---
 #### METHOD: _MustacheScanner.scanUntil
 - **Scope:** instance
 - **LLM Call Syntax:** `const result = _MustacheScanner.scanUntil(re);`
@@ -992,16 +1886,124 @@ template is malformed (ref analysis_3_structural_errors.md Finding 3).
    */
 ```
 ---
+#### METHOD: _MustacheScanner.switch
+- **Scope:** instance
+- **LLM Call Syntax:** `_MustacheScanner.switch(index);`
+- **Pure JSDoc:**
+```javascript
+/** Method switch */
+```
+---
 <br>
 
 ## CLASS: _MustacheContext
 **File Path:** `WorkspaceTemplateEngine/src/facades/Mustache.js`
 **Constructor Usage:** `const instance = new _MustacheContext();`
-**Description:** Hierarchical context stack for Mustache variable resolution.
+**Description:** Checks if the scanner has reached the end of the input string.
+@returns {boolean} True if no characters remain in the tail.
+/
+  eos() {
+    return this.tail === '';
+  }
+
+  /**
+Attempts to match a regular expression at the current position.
+@param {RegExp} re Regular expression anchored to the start of the tail.
+@returns {string} The matched string fragment or an empty string if no match.
+/
+  scan(re) {
+    const match = this.tail.match(re);
+    if (!match || match.index !== 0) {
+      return '';
+    }
+    const string = match[0];
+    this.tail = this.tail.substring(string.length);
+    this.pos += string.length;
+    return string;
+  }
+
+  /**
+Consumes characters from the tail until the specified pattern is encountered.
+@param {RegExp} re Regular expression pattern to search for.
+@returns {string} The captured string content preceding the match.
+/
+  scanUntil(re) {
+    const index = this.tail.search(re);
+    let match;
+    switch (index) {
+      case -1:
+        match = this.tail;
+        this.tail = '';
+        break;
+      case 0:
+        match = '';
+        break;
+      default:
+        match = this.tail.substring(0, index);
+        this.tail = this.tail.substring(index);
+    }
+    this.pos += match.length;
+    return match;
+  }
+}
+
+/**
+Hierarchical context stack for Mustache variable resolution.
 Supports parent context navigation ('../') and dot-notation property access.
+@private
+@class
 
 ### Raw JSDoc Context:
 ```javascript
+/**
+   * @description Checks if the scanner has reached the end of the input string.
+   * @returns {boolean} True if no characters remain in the tail.
+   */
+  eos() {
+    return this.tail === '';
+  }
+
+  /**
+   * @description Attempts to match a regular expression at the current position.
+   * @param {RegExp} re Regular expression anchored to the start of the tail.
+   * @returns {string} The matched string fragment or an empty string if no match.
+   */
+  scan(re) {
+    const match = this.tail.match(re);
+    if (!match || match.index !== 0) {
+      return '';
+    }
+    const string = match[0];
+    this.tail = this.tail.substring(string.length);
+    this.pos += string.length;
+    return string;
+  }
+
+  /**
+   * @description Consumes characters from the tail until the specified pattern is encountered.
+   * @param {RegExp} re Regular expression pattern to search for.
+   * @returns {string} The captured string content preceding the match.
+   */
+  scanUntil(re) {
+    const index = this.tail.search(re);
+    let match;
+    switch (index) {
+      case -1:
+        match = this.tail;
+        this.tail = '';
+        break;
+      case 0:
+        match = '';
+        break;
+      default:
+        match = this.tail.substring(0, index);
+        this.tail = this.tail.substring(index);
+    }
+    this.pos += match.length;
+    return match;
+  }
+}
+
 /**
  * @description Hierarchical context stack for Mustache variable resolution.
  * Supports parent context navigation ('../') and dot-notation property access.
@@ -1010,56 +2012,238 @@ Supports parent context navigation ('../') and dot-notation property access.
  */
 ```
 
-### Methods of _MustacheContext
+<br>
 
-#### METHOD: _MustacheContext.push
-- **Scope:** instance
-- **LLM Call Syntax:** `const result = _MustacheContext.push(view);`
-- **Pure JSDoc:**
+## CLASS: _FunctionFilterStrategy
+**File Path:** `WorkspaceTemplateEngine/src/facades/Mustache.js`
+**Constructor Usage:** `const instance = new _FunctionFilterStrategy();`
+**Description:** Creates a child context by pushing a new data view onto the stack.
+@param {*} view The data object or primitive for the new context level.
+@returns {_MustacheContext} A new context instance linked to the current one as parent.
+/
+  push(view) {
+    return new _MustacheContext(view, this);
+  }
+
+  /**
+Resolves a value by key name across the current and parent contexts.
+Supports Handlebars-style '../' navigation and deep property paths.
+@param {string} name Identifier or path (e.g., 'user.name', '../title').
+@returns {*} Resolved value or undefined.
+/
+  lookup(name) {
+    const cache = this.cache;
+    let value;
+    if (Object.prototype.hasOwnProperty.call(cache, name)) {
+      value = cache[name];
+    } else {
+      let context = this,
+        intermediateValue,
+        names,
+        index,
+        lookupHit = false;
+
+      // Handle parent context navigation (../)
+      let parentLevels = 0;
+      let remainingName = name;
+
+      // Count how many '../' prefixes exist
+      while (remainingName.startsWith('../')) {
+        parentLevels++;
+        remainingName = remainingName.substring(3); // Remove '../'
+      }
+
+      // Traverse up the context stack
+      let targetContext = context;
+      for (let i = 0; i < parentLevels && targetContext; i++) {
+        targetContext = targetContext.parent;
+      }
+
+      // If we traversed too far up (no parent exists), return undefined
+      if (parentLevels > 0 && !targetContext) {
+        value = undefined;
+      } else {
+        // Start lookup from the target context (could be parent or current)
+        context = targetContext || this;
+
+        while (context) {
+          if (remainingName.indexOf('.') > 0) {
+            intermediateValue = context.view;
+            names = remainingName.split('.');
+            index = 0;
+            while (intermediateValue != null && index < names.length) {
+              if (index === names.length - 1) {
+                // SEC-006: Use hasOwnProperty to prevent prototype pollution
+                lookupHit =
+                  intermediateValue != null &&
+                  typeof intermediateValue === 'object' &&
+                  Object.prototype.hasOwnProperty.call(intermediateValue, names[index]);
+              }
+              intermediateValue = intermediateValue[names[index++]];
+            }
+          } else {
+            intermediateValue = context.view[remainingName];
+            // SEC-006: Use hasOwnProperty to prevent prototype pollution
+            lookupHit =
+              context.view != null &&
+              typeof context.view === 'object' &&
+              Object.prototype.hasOwnProperty.call(context.view, remainingName);
+          }
+          if (lookupHit) {
+            value = intermediateValue;
+            break;
+          }
+
+          // If we explicitly navigated to parent, don't traverse further up
+          if (parentLevels > 0) {
+            break;
+          }
+
+          context = context.parent;
+        }
+      }
+
+      // SEC-006: Prevent prototype pollution via cache assignment
+      if (!this._isDangerousKey(name)) {
+        cache[name] = value;
+      }
+    }
+    if (typeof value === 'function') {
+      value = value.call(this.view);
+    }
+    return value;
+  }
+
+  /**
+Security guard against prototype pollution during context lookups.
+@param {string} key Property key to validate.
+@returns {boolean} True if the key is restricted ('__proto__', 'constructor', 'prototype').
+@private
+/
+  _isDangerousKey(key) {
+    // SEC-006: Prevent prototype pollution
+    return key === '__proto__' || key === 'constructor' || key === 'prototype';
+  }
+}
+
+/**
+Adapter for converting standard functions into FilterStrategy instances.
+Enables backward compatibility with functional filter registrations.
+@private
+@class
+
+### Raw JSDoc Context:
 ```javascript
 /**
    * @description Creates a child context by pushing a new data view onto the stack.
    * @param {*} view The data object or primitive for the new context level.
    * @returns {_MustacheContext} A new context instance linked to the current one as parent.
    */
-```
----
-#### METHOD: _MustacheContext.lookup
-- **Scope:** instance
-- **LLM Call Syntax:** `const result = _MustacheContext.lookup(name);`
-- **Pure JSDoc:**
-```javascript
-/**
+  push(view) {
+    return new _MustacheContext(view, this);
+  }
+
+  /**
    * @description Resolves a value by key name across the current and parent contexts.
    * Supports Handlebars-style '../' navigation and deep property paths.
    * @param {string} name Identifier or path (e.g., 'user.name', '../title').
    * @returns {*} Resolved value or undefined.
    */
-```
----
-#### METHOD: _MustacheContext._isDangerousKey
-- **Scope:** instance
-- **LLM Call Syntax:** `const result = _MustacheContext._isDangerousKey(key);`
-- **Pure JSDoc:**
-```javascript
-/**
+  lookup(name) {
+    const cache = this.cache;
+    let value;
+    if (Object.prototype.hasOwnProperty.call(cache, name)) {
+      value = cache[name];
+    } else {
+      let context = this,
+        intermediateValue,
+        names,
+        index,
+        lookupHit = false;
+
+      // Handle parent context navigation (../)
+      let parentLevels = 0;
+      let remainingName = name;
+
+      // Count how many '../' prefixes exist
+      while (remainingName.startsWith('../')) {
+        parentLevels++;
+        remainingName = remainingName.substring(3); // Remove '../'
+      }
+
+      // Traverse up the context stack
+      let targetContext = context;
+      for (let i = 0; i < parentLevels && targetContext; i++) {
+        targetContext = targetContext.parent;
+      }
+
+      // If we traversed too far up (no parent exists), return undefined
+      if (parentLevels > 0 && !targetContext) {
+        value = undefined;
+      } else {
+        // Start lookup from the target context (could be parent or current)
+        context = targetContext || this;
+
+        while (context) {
+          if (remainingName.indexOf('.') > 0) {
+            intermediateValue = context.view;
+            names = remainingName.split('.');
+            index = 0;
+            while (intermediateValue != null && index < names.length) {
+              if (index === names.length - 1) {
+                // SEC-006: Use hasOwnProperty to prevent prototype pollution
+                lookupHit =
+                  intermediateValue != null &&
+                  typeof intermediateValue === 'object' &&
+                  Object.prototype.hasOwnProperty.call(intermediateValue, names[index]);
+              }
+              intermediateValue = intermediateValue[names[index++]];
+            }
+          } else {
+            intermediateValue = context.view[remainingName];
+            // SEC-006: Use hasOwnProperty to prevent prototype pollution
+            lookupHit =
+              context.view != null &&
+              typeof context.view === 'object' &&
+              Object.prototype.hasOwnProperty.call(context.view, remainingName);
+          }
+          if (lookupHit) {
+            value = intermediateValue;
+            break;
+          }
+
+          // If we explicitly navigated to parent, don't traverse further up
+          if (parentLevels > 0) {
+            break;
+          }
+
+          context = context.parent;
+        }
+      }
+
+      // SEC-006: Prevent prototype pollution via cache assignment
+      if (!this._isDangerousKey(name)) {
+        cache[name] = value;
+      }
+    }
+    if (typeof value === 'function') {
+      value = value.call(this.view);
+    }
+    return value;
+  }
+
+  /**
    * @description Security guard against prototype pollution during context lookups.
    * @param {string} key Property key to validate.
    * @returns {boolean} True if the key is restricted ('__proto__', 'constructor', 'prototype').
    * @private
    */
-```
----
-<br>
+  _isDangerousKey(key) {
+    // SEC-006: Prevent prototype pollution
+    return key === '__proto__' || key === 'constructor' || key === 'prototype';
+  }
+}
 
-## CLASS: _FunctionFilterStrategy
-**File Path:** `WorkspaceTemplateEngine/src/facades/Mustache.js`
-**Constructor Usage:** `const instance = new _FunctionFilterStrategy();`
-**Description:** Adapter for converting standard functions into FilterStrategy instances.
-Enables backward compatibility with functional filter registrations.
-
-### Raw JSDoc Context:
-```javascript
 /**
  * @description Adapter for converting standard functions into FilterStrategy instances.
  * Enables backward compatibility with functional filter registrations.
@@ -1072,9 +2256,14 @@ Enables backward compatibility with functional filter registrations.
 
 ## CLASS: MyMustache
 **File Path:** `WorkspaceTemplateEngine/src/facades/Mustache.js`
-**Constructor Usage:** `const instance = new MyMustache(options, options.logger, options.utils, options.partials, options.tags);`
+**Constructor Usage:** `const instance = new MyMustache();`
 **Description:** Advanced Mustache engine with Handlebars meta-variables (@index, @first) and Liquid-style filters.
 Implements template caching, prototype pollution protection, and Strategy-based filter registry.
+@class
+
+@example
+const mustache = new MyMustache({ logger: console });
+const result = mustache.render('{{items | join:", "}}', { items: [1, 2, 3] });
 
 ### Raw JSDoc Context:
 ```javascript
@@ -1089,386 +2278,17 @@ Implements template caching, prototype pollution protection, and Strategy-based 
  */
 ```
 
-### Methods of MyMustache
-
-#### METHOD: MyMustache.isNullOrUndefined
-- **Scope:** static
-- **LLM Call Syntax:** `const result = MyMustache.isNullOrUndefined(value);`
-- **Pure JSDoc:**
-```javascript
-/**
-   * @description Strict null/undefined check for template value resolution.
-   * @param {*} value Value to evaluate.
-   * @returns {boolean} True if value is null or undefined.
-   * @static
-   */
-```
----
-#### METHOD: MyMustache._isDangerousKey
-- **Scope:** instance
-- **LLM Call Syntax:** `const result = myMustache._isDangerousKey(key);`
-- **Pure JSDoc:**
-```javascript
-/**
-   * @description Security guard against prototype pollution during context lookups.
-   * @param {string} key Property key to validate.
-   * @returns {boolean} True if the key is restricted ('__proto__', 'constructor', 'prototype').
-   * @private
-   */
-```
----
-#### METHOD: MyMustache.getValue
-- **Scope:** instance
-- **LLM Call Syntax:** `const result = myMustache.getValue(key, data);`
-- **Pure JSDoc:**
-```javascript
-/**
-   * @description Resolves a deep property value using dot-notation, with prototype pollution protection.
-   * @param {string} key Dot-separated property path (e.g., 'user.profile.name').
-   * @param {Object} data Source object for resolution.
-   * @returns {*} Resolved value or undefined if path is invalid or blocked.
-   */
-```
----
-#### METHOD: MyMustache._initBuiltInFilters
-- **Scope:** instance
-- **LLM Call Syntax:** `myMustache._initBuiltInFilters();`
-- **Pure JSDoc:**
-```javascript
-/**
-   * @description Internal bootstrap for loading built-in and advanced filter strategies.
-   * @private
-   */
-```
----
-#### METHOD: MyMustache.clearCache
-- **Scope:** instance
-- **LLM Call Syntax:** `myMustache.clearCache();`
-- **Pure JSDoc:**
-```javascript
-/**
-   * @description Purges the internal template cache to reclaim memory.
-   */
-```
----
-#### METHOD: MyMustache.addPartial
-- **Scope:** instance
-- **LLM Call Syntax:** `myMustache.addPartial(name, template);`
-- **Pure JSDoc:**
-```javascript
-/**
-   * @description Registers a named partial template for global inclusion.
-   * @param {string} name Unique partial identifier.
-   * @param {string} template Partial template string.
-   */
-```
----
-#### METHOD: MyMustache.addPartials
-- **Scope:** instance
-- **LLM Call Syntax:** `myMustache.addPartials(partialsObject);`
-- **Pure JSDoc:**
-```javascript
-/**
-   * @description Batch registers multiple partial templates.
-   * @param {Object.<string, string>} partialsObject Map of names to template strings.
-   */
-```
----
-#### METHOD: MyMustache.registerFilter
-- **Scope:** instance
-- **LLM Call Syntax:** `myMustache.registerFilter(filterStrategyOrName, fn);`
-- **Pure JSDoc:**
-```javascript
-/**
-   * @description Registers a custom filter strategy.
-   * @param {FilterStrategy|string} filterStrategyOrName FilterStrategy instance or name for backward compatibility.
-   * @param {Function} [fn] Filter function (v1.x compatibility).
-   * @throws {Error} If registration fails or invalid types provided.
-   */
-```
----
-#### METHOD: MyMustache.compile
-- **Scope:** instance
-- **LLM Call Syntax:** `const result = myMustache.compile(template);`
-- **Pure JSDoc:**
-```javascript
-/**
-   * @description Compiles a template into a reusable execution function.
-   * @param {string} template Mustache template string.
-   * @returns {function(Object): string} Renderer function bound to this engine instance.
-   */
-```
----
-#### METHOD: MyMustache.render
-- **Scope:** instance
-- **LLM Call Syntax:** `const result = myMustache.render(template, data, additionalPartials);`
-- **Pure JSDoc:**
-```javascript
-/**
-   * @description Executes template rendering with data substitution and partial resolution.
-   * @param {string} template Mustache template string.
-   * @param {Object} [data={}] View model data.
-   * @param {Object} [additionalPartials={}] Render-specific partial overrides.
-   * @returns {string} Rendered output or error diagnostic string.
-   * @throws {TypeError} If input arguments are invalid.
-   */
-```
----
-#### METHOD: MyMustache.renderSegments
-- **Scope:** instance
-- **LLM Call Syntax:** `const result = myMustache.renderSegments(template, data, additionalPartials);`
-- **Pure JSDoc:**
-```javascript
-/**
-   * @description Renders a template into an ordered list of segments, each carrying
-   * its resolved text plus its raw start/end offset in the original template string.
-   * Unlike render(), this does not collapse the output into one string — it exposes
-   * segment boundaries so a caller can map a rendered span back to the original
-   * template offset it came from (e.g. to re-apply the original run's formatting).
-   * Only supports top-level tokens; a section/inverted/partial token is rendered as
-   * one opaque 'value' segment via the existing render machinery, not sub-divided.
-   * Comment ('!') and set-delimiter ('=') tokens produce no segment, matching the
-   * fact that render() also produces no output for them.
-   * @param {string} template Mustache template string.
-   * @param {Object} [data={}] View model data.
-   * @param {Object} [additionalPartials={}] Render-specific partial overrides.
-   * @returns {Array<{type: 'text'|'value', raw: string, rendered: string, rawStart: number, rawEnd: number}>}
-   */
-```
----
-#### METHOD: MyMustache._escapeRegExp
-- **Scope:** instance
-- **LLM Call Syntax:** `const result = myMustache._escapeRegExp(string);`
-- **Pure JSDoc:**
-```javascript
-/**
-   * @description Escapes characters for use in a literal regular expression.
-   * @param {string} string Input string.
-   * @returns {string} Regex-safe escaped string.
-   * @private
-   */
-```
----
-#### METHOD: MyMustache._escapeHtml
-- **Scope:** instance
-- **LLM Call Syntax:** `const result = myMustache._escapeHtml(string);`
-- **Pure JSDoc:**
-```javascript
-/**
-   * @description Robust HTML entity encoding for XSS prevention.
-   * Encodes &, <, >, ", ', `, and = while preserving Unicode/international characters.
-   * @param {string} string Raw input string.
-   * @returns {string} HTML-encoded safe string.
-   * @private
-   */
-```
----
-#### METHOD: MyMustache._parse
-- **Scope:** instance
-- **LLM Call Syntax:** `const result = myMustache._parse(template, tags);`
-- **Pure JSDoc:**
-```javascript
-/**
-   * @description Orchestrates template parsing with delimiter-aware caching.
-   * @param {string} template Raw template string.
-   * @param {string[]} [tags] Custom delimiters.
-   * @returns {Array[]} Parsed token hierarchy.
-   * @private
-   */
-```
----
-#### METHOD: MyMustache._renderTokens
-- **Scope:** instance
-- **LLM Call Syntax:** `const result = myMustache._renderTokens(tokens, context, partials, originalTemplate, state);`
-- **Pure JSDoc:**
-```javascript
-/**
-   * @description Recursively renders a token collection into a final string.
-   * @param {Array[]} tokens Array of parsed tokens.
-   * @param {MustacheContext} context Data resolution context.
-   * @param {Object} partials Map of partial templates.
-   * @param {string} originalTemplate Source template for section extraction.
-   * @param {Object} state Internal recursion-tracking state ({depth, partialStack}).
-   * @returns {string} Partial rendered output.
-   * @private
-   */
-```
----
-#### METHOD: MyMustache._lookupValue
-- **Scope:** instance
-- **LLM Call Syntax:** `const result = myMustache._lookupValue(token, context);`
-- **Pure JSDoc:**
-```javascript
-/**
-   * @description Parses filter pipe syntax and executes the transformation chain.
-   * @param {Array} token Target token containing key and filter string.
-   * @param {MustacheContext} context Current data context.
-   * @returns {*} Final resolved and transformed value.
-   * @private
-   */
-```
----
-#### METHOD: MyMustache._escapedValue
-- **Scope:** instance
-- **LLM Call Syntax:** `const result = myMustache._escapedValue(token, context);`
-- **Pure JSDoc:**
-```javascript
-/**
-   * @description Renders a value with default string conversion.
-   * @param {Array} token Value token.
-   * @param {MustacheContext} context Data context.
-   * @returns {string|undefined} Stringified value.
-   * @private
-   */
-```
----
-#### METHOD: MyMustache._unescapedValue
-- **Scope:** instance
-- **LLM Call Syntax:** `const result = myMustache._unescapedValue(token, context);`
-- **Pure JSDoc:**
-```javascript
-/**
-   * @description Renders a raw value without escaping.
-   * @param {Array} token Value token.
-   * @param {MustacheContext} context Data context.
-   * @returns {string|undefined} Stringified raw value.
-   * @private
-   */
-```
----
-#### METHOD: MyMustache._createLoopContext
-- **Scope:** instance
-- **LLM Call Syntax:** `const result = myMustache._createLoopContext(item, index, total, key);`
-- **Pure JSDoc:**
-```javascript
-/**
-   * @description Decorates iteration items with Handlebars-style meta-variables (@index, @first, etc.).
-   * @param {*} item Array element.
-   * @param {number} index Current zero-based index.
-   * @param {number} total Total element count.
-   * @param {string} [key] Optional map key.
-   * @returns {Object|*} Decorated item or original if primitive.
-   * @private
-   */
-```
----
-#### METHOD: MyMustache._renderSection
-- **Scope:** instance
-- **LLM Call Syntax:** `const result = myMustache._renderSection(token, context, partials, originalTemplate, state);`
-- **Pure JSDoc:**
-```javascript
-/**
-   * @description Renders a conditional or iterative section with meta-variable support.
-   * @param {Array} token Section token hierarchy.
-   * @param {MustacheContext} context Parent context.
-   * @param {Object} partials Map of partial templates.
-   * @param {string} originalTemplate Source template.
-   * @param {Object} state Internal recursion-tracking state ({depth, partialStack}).
-   * @returns {string|undefined} Rendered section content.
-   * @private
-   */
-```
----
-#### METHOD: MyMustache._renderInverted
-- **Scope:** instance
-- **LLM Call Syntax:** `const result = myMustache._renderInverted(token, context, partials, originalTemplate, state);`
-- **Pure JSDoc:**
-```javascript
-/**
-   * @description Renders content if a key is falsy or an empty array.
-   * @param {Array} token Inverted section token.
-   * @param {MustacheContext} context Current context.
-   * @param {Object} partials Partial definitions.
-   * @param {string} originalTemplate Source template.
-   * @param {Object} state Internal recursion-tracking state ({depth, partialStack}).
-   * @returns {string|undefined} Rendered content.
-   * @private
-   */
-```
----
-#### METHOD: MyMustache._renderPartial
-- **Scope:** instance
-- **LLM Call Syntax:** `const result = myMustache._renderPartial(token, context, partials, state);`
-- **Pure JSDoc:**
-```javascript
-/**
-   * @description Resolves and renders a partial template inclusion.
-   * @param {Array} token Partial token.
-   * @param {MustacheContext} context Current context.
-   * @param {Object|function} partials Partial source.
-   * @param {Object} state Internal recursion-tracking state ({depth, partialStack}).
-   * @returns {string|undefined} Rendered partial output.
-   * @private
-   */
-```
----
-#### METHOD: MyMustache._squashTokens
-- **Scope:** instance
-- **LLM Call Syntax:** `const result = myMustache._squashTokens(tokens);`
-- **Pure JSDoc:**
-```javascript
-/**
-   * @description Optimizes token stream by merging adjacent text fragments.
-   * @param {Array[]} tokens Raw token sequence.
-   * @returns {Array[]} Optimized token sequence.
-   * @private
-   */
-```
----
-#### METHOD: MyMustache._nestTokens
-- **Scope:** instance
-- **LLM Call Syntax:** `const result = myMustache._nestTokens(tokens);`
-- **Pure JSDoc:**
-```javascript
-/**
-   * @description Transforms flat token stream into a nested section hierarchy.
-   * @param {Array[]} tokens Linear token sequence.
-   * @returns {Array[]} Hierarchical token tree.
-   * @private
-   */
-```
----
-#### METHOD: MyMustache._parseTemplate
-- **Scope:** instance
-- **LLM Call Syntax:** `const result = myMustache._parseTemplate(template, tags);`
-- **Pure JSDoc:**
-```javascript
-/**
-   * @description Lexical analyzer that converts a template string into tokens.
-   * @param {string} template Raw template.
-   * @param {string[]} tags Delimiters.
-   * @returns {Array[]} Token tree.
-   * @throws {Error} On unclosed tags or sections.
-   * @private
-   */
-```
----
 <br>
 
-## GLOBAL FUNCTIONS
+## CLASS: extending
+**File Path:** `WorkspaceTemplateEngine/src/facades/Mustache.js`
+**Constructor Usage:** `const instance = new extending();`
+**Description:** N/A
 
-### FUNCTION: createBuiltInFilters
-- **Source:** `WorkspaceTemplateEngine/src/internal/filters/BuiltInFilters.js`
-- **LLM Call Syntax:** `const result = createBuiltInFilters(utils);`
-- **Pure JSDoc:**
+### Raw JSDoc Context:
 ```javascript
-/**
- * @description Factory function that instantiates and returns all core built-in filter strategies.
- * @param {UtilsService} [utils] Optional utility service for date formatting.
- * @returns {FilterStrategy[]} Collection of core filter instances.
- */
+/** Class definition */
 ```
 
----
-### FUNCTION: createAdvancedFilters
-- **Source:** `WorkspaceTemplateEngine/src/internal/filters/AdvancedFilters.js`
-- **LLM Call Syntax:** `const result = createAdvancedFilters();`
-- **Pure JSDoc:**
-```javascript
-/**
- * @description Factory function that instantiates and returns all advanced filter strategies.
- * @returns {FilterStrategy[]} Collection of advanced filter instances.
- */
-```
+<br>
 
----
