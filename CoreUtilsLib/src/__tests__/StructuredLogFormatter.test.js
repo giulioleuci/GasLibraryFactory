@@ -148,6 +148,20 @@ describe('StructuredLogFormatter', () => {
         { depth: 2, isLast: false, ancestorHasNext: [true] }
       )
     ).toEqual(['  │    ├─ ✅ [AnalyzeContext] EXECUTED in 0ms']);
+
+    expect(
+      formatter.pipelineStep(
+        'ApplyPermissions',
+        'EXECUTED',
+        {
+          content: { Editors: ['docente@example.edu'], Viewers: [] },
+          durationMs: 2
+        },
+        { depth: 2, isLast: false, ancestorHasNext: [true] }
+      )
+    ).toEqual([
+      '  │    ├─ ✅ [ApplyPermissions] Editors: docente@example.edu; Viewers: [] (EXECUTED in 2ms)'
+    ]);
   });
 
   it('renders exact skipped and failed pipeline reasons from the detail envelope', () => {
