@@ -909,28 +909,11 @@ frozen immutability, richer payloads) on top of this contract.
 ## CLASS: LoggerService
 **File Path:** `CoreUtilsLib/src/LoggerService.js`
 **Constructor Usage:** `const instance = new LoggerService();`
-**Description:** Advanced logging service with configurable log levels.
-Provides structured logging with level-based filtering.
-
-/
-
-/**
-Hierarchical logging service with structured output and lazy evaluation.
-@class LoggerService
+**Description:** N/A
 
 ### Raw JSDoc Context:
 ```javascript
-/**
- * @file CoreUtilsLib/src/LoggerService.js
- * @description Advanced logging service with configurable log levels.
- * Provides structured logging with level-based filtering.
- * @version 2.0 - Moved to CoreUtilsLib (foundation layer).
- */
-
-/**
- * Hierarchical logging service with structured output and lazy evaluation.
- * @class LoggerService
- */
+/** Class definition */
 ```
 
 ### Methods of LoggerService
@@ -960,6 +943,8 @@ Hierarchical logging service with structured output and lazy evaluation.
       INFO: 3,
       DEBUG: 4
     };
+
+    this._structured = new StructuredLogFormatter(this._safeStringify.bind(this));
   }
 
   /**
@@ -1150,6 +1135,451 @@ Hierarchical logging service with structured output and lazy evaluation.
    * @param {string|Object|Function} message - Content or callback.
    * @returns {LoggerService} Fluent instance for chaining.
    */
+```
+---
+#### METHOD: LoggerService.logJobStart
+- **Scope:** instance
+- **LLM Call Syntax:** `const result = loggerService.logJobStart(jobName, jobType);`
+- **Pure JSDoc:**
+```javascript
+/** Start a job invocation. @returns {LoggerService} */
+```
+---
+#### METHOD: LoggerService.logJobResume
+- **Scope:** instance
+- **LLM Call Syntax:** `const result = loggerService.logJobResume(jobName, jobType, details);`
+- **Pure JSDoc:**
+```javascript
+/** Resume a persisted job invocation. @returns {LoggerService} */
+```
+---
+#### METHOD: LoggerService.logJobEnd
+- **Scope:** instance
+- **LLM Call Syntax:** `const result = loggerService.logJobEnd(jobName, isSuccess, details);`
+- **Pure JSDoc:**
+```javascript
+/** Finish a job invocation. @returns {LoggerService} */
+```
+---
+#### METHOD: LoggerService.logJobSuspended
+- **Scope:** instance
+- **LLM Call Syntax:** `const result = loggerService.logJobSuspended(jobName, details);`
+- **Pure JSDoc:**
+```javascript
+/** Suspend a resumable job invocation. @returns {LoggerService} */
+```
+---
+#### METHOD: LoggerService.logBatchStart
+- **Scope:** instance
+- **LLM Call Syntax:** `const result = loggerService.logBatchStart(totalItems, label);`
+- **Pure JSDoc:**
+```javascript
+/** Start a batch. @returns {LoggerService} */
+```
+---
+#### METHOD: LoggerService.logItemStart
+- **Scope:** instance
+- **LLM Call Syntax:** `const result = loggerService.logItemStart(itemIndex, totalItems, itemLabel, identifier, kind);`
+- **Pure JSDoc:**
+```javascript
+/** Start a batch item. @returns {LoggerService} */
+```
+---
+#### METHOD: LoggerService.logStep
+- **Scope:** instance
+- **LLM Call Syntax:** `const result = loggerService.logStep(message, position);`
+- **Pure JSDoc:**
+```javascript
+/** Emit a generic tree step. @returns {LoggerService} */
+```
+---
+#### METHOD: LoggerService.logPipelineStart
+- **Scope:** instance
+- **LLM Call Syntax:** `const result = loggerService.logPipelineStart(pipelineName, totalSteps, position);`
+- **Pure JSDoc:**
+```javascript
+/** Start a pipeline trace. @returns {LoggerService} */
+```
+---
+#### METHOD: LoggerService.logPipelineStep
+- **Scope:** instance
+- **LLM Call Syntax:** `const result = loggerService.logPipelineStep(stepName, status, details, position);`
+- **Pure JSDoc:**
+```javascript
+/** Emit a pipeline step result. @returns {LoggerService} */
+```
+---
+#### METHOD: LoggerService.logSummary
+- **Scope:** instance
+- **LLM Call Syntax:** `const result = loggerService.logSummary(label, durationMs, itemDetails, position);`
+- **Pure JSDoc:**
+```javascript
+/** Emit a duration summary. @returns {LoggerService} */
+```
+---
+#### METHOD: LoggerService.child
+- **Scope:** instance
+- **LLM Call Syntax:** `const result = loggerService.child(prefix);`
+- **Pure JSDoc:**
+```javascript
+/**
+   * Spawn a namespaced logger with a message prefix.
+   * @param {string} prefix - Namespace identifier.
+   * @returns {Object} Proxy object with level-specific logging methods.
+   */
+```
+---
+#### METHOD: LoggerService.if
+- **Scope:** instance
+- **LLM Call Syntax:** `loggerService.if(typeof msg);`
+- **Pure JSDoc:**
+```javascript
+/** Method if */
+```
+---
+#### METHOD: LoggerService.if
+- **Scope:** instance
+- **LLM Call Syntax:** `loggerService.if(typeof msg);`
+- **Pure JSDoc:**
+```javascript
+/** Method if */
+```
+---
+#### METHOD: LoggerService.if
+- **Scope:** instance
+- **LLM Call Syntax:** `loggerService.if(typeof msg);`
+- **Pure JSDoc:**
+```javascript
+/** Method if */
+```
+---
+#### METHOD: LoggerService.if
+- **Scope:** instance
+- **LLM Call Syntax:** `loggerService.if(typeof msg);`
+- **Pure JSDoc:**
+```javascript
+/** Method if */
+```
+---
+#### METHOD: LoggerService.if
+- **Scope:** instance
+- **LLM Call Syntax:** `loggerService.if(typeof msg);`
+- **Pure JSDoc:**
+```javascript
+/** Method if */
+```
+---
+<br>
+
+## CLASS: LoggerService
+**File Path:** `CoreUtilsLib/src/LoggerService.js`
+**Constructor Usage:** `const instance = new LoggerService();`
+**Description:** N/A
+
+### Raw JSDoc Context:
+```javascript
+/** Class definition */
+```
+
+### Methods of LoggerService
+
+#### METHOD: LoggerService.setLevel
+- **Scope:** instance
+- **LLM Call Syntax:** `const result = loggerService.setLevel(level);`
+- **Pure JSDoc:**
+```javascript
+/**
+     * Current log level.
+     * @private
+     * @type {string}
+     */
+    this._level = options.level || 'INFO';
+
+    /**
+     * Log level hierarchy mapping.
+     * Lower numbers mean higher priority (less verbose).
+     * @private
+     * @type {Object.<string, number>}
+     */
+    this._logLevels = {
+      OFF: 0,
+      ERROR: 1,
+      WARN: 2,
+      INFO: 3,
+      DEBUG: 4
+    };
+
+    this._structured = new StructuredLogFormatter(this._safeStringify.bind(this));
+  }
+
+  /**
+   * Update the active logging threshold.
+   * @param {string} level - New filter threshold identifier.
+   * @returns {LoggerService} Fluent instance for chaining.
+   */
+```
+---
+#### METHOD: LoggerService.if
+- **Scope:** instance
+- **LLM Call Syntax:** `loggerService.if(this._logLevels[level] !);`
+- **Pure JSDoc:**
+```javascript
+/** Method if */
+```
+---
+#### METHOD: LoggerService.getLevel
+- **Scope:** instance
+- **LLM Call Syntax:** `const result = loggerService.getLevel();`
+- **Pure JSDoc:**
+```javascript
+/**
+   * Retrieve the current logging threshold.
+   * @returns {string} Threshold identifier.
+   */
+```
+---
+#### METHOD: LoggerService.if
+- **Scope:** instance
+- **LLM Call Syntax:** `loggerService.if(depth > maxDepth);`
+- **Pure JSDoc:**
+```javascript
+/** Method if */
+```
+---
+#### METHOD: LoggerService.if
+- **Scope:** instance
+- **LLM Call Syntax:** `loggerService.if(value);`
+- **Pure JSDoc:**
+```javascript
+/** Method if */
+```
+---
+#### METHOD: LoggerService.if
+- **Scope:** instance
+- **LLM Call Syntax:** `loggerService.if(value.length > 100);`
+- **Pure JSDoc:**
+```javascript
+/** Method if */
+```
+---
+#### METHOD: LoggerService.if
+- **Scope:** instance
+- **LLM Call Syntax:** `loggerService.if(keys.length > 50);`
+- **Pure JSDoc:**
+```javascript
+/** Method if */
+```
+---
+#### METHOD: LoggerService.for
+- **Scope:** instance
+- **LLM Call Syntax:** `loggerService.for(const k of keys);`
+- **Pure JSDoc:**
+```javascript
+/** Method for */
+```
+---
+#### METHOD: LoggerService.catch
+- **Scope:** instance
+- **LLM Call Syntax:** `loggerService.catch(_e);`
+- **Pure JSDoc:**
+```javascript
+/** Method catch */
+```
+---
+#### METHOD: LoggerService.if
+- **Scope:** instance
+- **LLM Call Syntax:** `loggerService.if(result.length > maxLength);`
+- **Pure JSDoc:**
+```javascript
+/** Method if */
+```
+---
+#### METHOD: LoggerService.catch
+- **Scope:** instance
+- **LLM Call Syntax:** `loggerService.catch(e);`
+- **Pure JSDoc:**
+```javascript
+/** Method catch */
+```
+---
+#### METHOD: LoggerService.if
+- **Scope:** instance
+- **LLM Call Syntax:** `loggerService.if(typeof messageOrCallback);`
+- **Pure JSDoc:**
+```javascript
+/** Method if */
+```
+---
+#### METHOD: LoggerService.if
+- **Scope:** instance
+- **LLM Call Syntax:** `loggerService.if(typeof message);`
+- **Pure JSDoc:**
+```javascript
+/** Method if */
+```
+---
+#### METHOD: LoggerService.if
+- **Scope:** instance
+- **LLM Call Syntax:** `loggerService.if(context && typeof context);`
+- **Pure JSDoc:**
+```javascript
+/** Method if */
+```
+---
+#### METHOD: LoggerService.debug
+- **Scope:** instance
+- **LLM Call Syntax:** `const result = loggerService.debug(message, context);`
+- **Pure JSDoc:**
+```javascript
+/**
+   * Log a DEBUG message with optional context and lazy evaluation.
+   * @param {string|Object|Function} message - Content or callback.
+   * @param {Object|Function} [context=null] - Metadata or callback.
+   * @returns {LoggerService} Fluent instance for chaining.
+   */
+```
+---
+#### METHOD: LoggerService.info
+- **Scope:** instance
+- **LLM Call Syntax:** `const result = loggerService.info(message, context);`
+- **Pure JSDoc:**
+```javascript
+/**
+   * Log an INFO message with optional context and lazy evaluation.
+   * @param {string|Object|Function} message - Content or callback.
+   * @param {Object|Function} [context=null] - Metadata or callback.
+   * @returns {LoggerService} Fluent instance for chaining.
+   */
+```
+---
+#### METHOD: LoggerService.warn
+- **Scope:** instance
+- **LLM Call Syntax:** `const result = loggerService.warn(message, context);`
+- **Pure JSDoc:**
+```javascript
+/**
+   * Log a WARN message with optional context and lazy evaluation.
+   * @param {string|Object|Function} message - Content or callback.
+   * @param {Object|Function} [context=null] - Metadata or callback.
+   * @returns {LoggerService} Fluent instance for chaining.
+   */
+```
+---
+#### METHOD: LoggerService.error
+- **Scope:** instance
+- **LLM Call Syntax:** `const result = loggerService.error(message, context);`
+- **Pure JSDoc:**
+```javascript
+/**
+   * Log an ERROR message with optional context and lazy evaluation.
+   * @param {string|Object|Function} message - Content or callback.
+   * @param {Object|Function} [context=null] - Metadata or callback.
+   * @returns {LoggerService} Fluent instance for chaining.
+   */
+```
+---
+#### METHOD: LoggerService.clear
+- **Scope:** instance
+- **LLM Call Syntax:** `const result = loggerService.clear();`
+- **Pure JSDoc:**
+```javascript
+/**
+   * Purge all buffered messages from the global GAS Logger.
+   * @returns {LoggerService} Fluent instance for chaining.
+   */
+```
+---
+#### METHOD: LoggerService.log
+- **Scope:** instance
+- **LLM Call Syntax:** `const result = loggerService.log(level, message);`
+- **Pure JSDoc:**
+```javascript
+/**
+   * Log a message at a dynamic threshold level.
+   * @param {string} level - Priority threshold for this entry.
+   * @param {string|Object|Function} message - Content or callback.
+   * @returns {LoggerService} Fluent instance for chaining.
+   */
+```
+---
+#### METHOD: LoggerService.logJobStart
+- **Scope:** instance
+- **LLM Call Syntax:** `const result = loggerService.logJobStart(jobName, jobType);`
+- **Pure JSDoc:**
+```javascript
+/** Start a job invocation. @returns {LoggerService} */
+```
+---
+#### METHOD: LoggerService.logJobResume
+- **Scope:** instance
+- **LLM Call Syntax:** `const result = loggerService.logJobResume(jobName, jobType, details);`
+- **Pure JSDoc:**
+```javascript
+/** Resume a persisted job invocation. @returns {LoggerService} */
+```
+---
+#### METHOD: LoggerService.logJobEnd
+- **Scope:** instance
+- **LLM Call Syntax:** `const result = loggerService.logJobEnd(jobName, isSuccess, details);`
+- **Pure JSDoc:**
+```javascript
+/** Finish a job invocation. @returns {LoggerService} */
+```
+---
+#### METHOD: LoggerService.logJobSuspended
+- **Scope:** instance
+- **LLM Call Syntax:** `const result = loggerService.logJobSuspended(jobName, details);`
+- **Pure JSDoc:**
+```javascript
+/** Suspend a resumable job invocation. @returns {LoggerService} */
+```
+---
+#### METHOD: LoggerService.logBatchStart
+- **Scope:** instance
+- **LLM Call Syntax:** `const result = loggerService.logBatchStart(totalItems, label);`
+- **Pure JSDoc:**
+```javascript
+/** Start a batch. @returns {LoggerService} */
+```
+---
+#### METHOD: LoggerService.logItemStart
+- **Scope:** instance
+- **LLM Call Syntax:** `const result = loggerService.logItemStart(itemIndex, totalItems, itemLabel, identifier, kind);`
+- **Pure JSDoc:**
+```javascript
+/** Start a batch item. @returns {LoggerService} */
+```
+---
+#### METHOD: LoggerService.logStep
+- **Scope:** instance
+- **LLM Call Syntax:** `const result = loggerService.logStep(message, position);`
+- **Pure JSDoc:**
+```javascript
+/** Emit a generic tree step. @returns {LoggerService} */
+```
+---
+#### METHOD: LoggerService.logPipelineStart
+- **Scope:** instance
+- **LLM Call Syntax:** `const result = loggerService.logPipelineStart(pipelineName, totalSteps, position);`
+- **Pure JSDoc:**
+```javascript
+/** Start a pipeline trace. @returns {LoggerService} */
+```
+---
+#### METHOD: LoggerService.logPipelineStep
+- **Scope:** instance
+- **LLM Call Syntax:** `const result = loggerService.logPipelineStep(stepName, status, details, position);`
+- **Pure JSDoc:**
+```javascript
+/** Emit a pipeline step result. @returns {LoggerService} */
+```
+---
+#### METHOD: LoggerService.logSummary
+- **Scope:** instance
+- **LLM Call Syntax:** `const result = loggerService.logSummary(label, durationMs, itemDetails, position);`
+- **Pure JSDoc:**
+```javascript
+/** Emit a duration summary. @returns {LoggerService} */
 ```
 ---
 #### METHOD: LoggerService.child
@@ -3679,6 +4109,17 @@ High-fidelity mock for LoggerService with jest.fn() instrumentation and method c
     this.warn.mockClear();
     this.error.mockClear();
     this.fatal.mockClear();
+    this.log.mockClear();
+    this.logJobStart.mockClear();
+    this.logJobResume.mockClear();
+    this.logJobEnd.mockClear();
+    this.logJobSuspended.mockClear();
+    this.logBatchStart.mockClear();
+    this.logItemStart.mockClear();
+    this.logStep.mockClear();
+    this.logPipelineStart.mockClear();
+    this.logPipelineStep.mockClear();
+    this.logSummary.mockClear();
     this.setLevel.mockClear();
     this.getLevel.mockClear();
     this.child.mockClear();
@@ -3718,6 +4159,73 @@ High-fidelity mock for LoggerService with jest.fn() instrumentation and method c
 /** Method for */
 ```
 ---
+<br>
+
+## CLASS: StructuredLogFormatter
+**File Path:** `CoreUtilsLib/src/internal/StructuredLogFormatter.js`
+**Constructor Usage:** `const instance = new StructuredLogFormatter();`
+**Description:** @typedef {Object} TreePosition
+@property {number} depth
+@property {boolean} isLast
+@property {boolean[]} [ancestorHasNext]
+/
+
+/**
+@typedef {string|string[]|Object<string, string|number|boolean|null|undefined>} LogDetails
+/
+
+const MAJOR_BORDER = '='.repeat(70);
+const SECTION_BORDER = '-'.repeat(70);
+
+const ITEM_ICONS = {
+  DOCUMENT: '📄',
+  EMAIL: '✉️',
+  IMPORT: '📥',
+  RETRY: '🔁',
+  GENERIC: '📦'
+};
+
+const STEP_ICONS = {
+  EXECUTED: '✅',
+  SKIPPED: '⚠️',
+  ERROR: '❌'
+};
+
+/** Pure formatter for deterministic hierarchical console lines.
+
+### Raw JSDoc Context:
+```javascript
+/**
+ * @typedef {Object} TreePosition
+ * @property {number} depth
+ * @property {boolean} isLast
+ * @property {boolean[]} [ancestorHasNext]
+ */
+
+/**
+ * @typedef {string|string[]|Object<string, string|number|boolean|null|undefined>} LogDetails
+ */
+
+const MAJOR_BORDER = '='.repeat(70);
+const SECTION_BORDER = '-'.repeat(70);
+
+const ITEM_ICONS = {
+  DOCUMENT: '📄',
+  EMAIL: '✉️',
+  IMPORT: '📥',
+  RETRY: '🔁',
+  GENERIC: '📦'
+};
+
+const STEP_ICONS = {
+  EXECUTED: '✅',
+  SKIPPED: '⚠️',
+  ERROR: '❌'
+};
+
+/** Pure formatter for deterministic hierarchical console lines. */
+```
+
 <br>
 
 ## CLASS: Registry

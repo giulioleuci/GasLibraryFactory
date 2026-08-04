@@ -481,7 +481,6 @@ Executes job logic with interruption and persistence support.
   execute(handler, parameters, startTime, maxDuration) {
     // JRL-H001: Check if job was cancelled before starting
     if (this._stateManager.isCancelled()) {
-      this._logger.info(`Job ${this._stateManager.jobName} was cancelled, aborting execution`);
       this._stateManager.releaseLock();
       return { done: true, cancelled: true };
     }
@@ -536,7 +535,6 @@ Executes job logic with interruption and persistence support.
       while (!next.done) {
         // JRL-H001: Check for cancellation during execution
         if (this._stateManager.isCancelled()) {
-          this._logger.info(`Job ${this._stateManager.jobName} cancelled during execution`);
           this._stateManager.releaseLock();
           this._triggerManager.deleteExistingTriggers();
           return { done: true, cancelled: true };
@@ -577,14 +575,10 @@ Executes job logic with interruption and persistence support.
           timestamp: new Date().getTime()
         }
       });
-      this._logger.info(`Job ${this._stateManager.jobName} completed successfully`);
       return { done: true, value: result };
     } catch (error) {
       // Handle timeout separately from other errors
       if (error instanceof TimeoutException) {
-        this._logger.info(
-          `Interrupting job ${this._stateManager.jobName} due to timeout. State saved.`
-        );
         // JRL-H006, JRL-H007: Batch state updates into single operation
         this._stateManager.releaseLock(); // JRL-C001: Release lock when suspending
         this._stateManager.batchSave({
@@ -601,7 +595,6 @@ Executes job logic with interruption and persistence support.
       }
 
       // JRL-C003: Complete error cleanup for non-timeout errors
-      this._logger.error(`Error in job ${this._stateManager.jobName}: ${error.message}`);
       // JRL-H006, JRL-H007: Batch state updates into single operation
       this._stateManager.releaseLock();
       this._stateManager.batchSave({
@@ -660,7 +653,6 @@ High-level API for job registration, execution, and lifecycle management.
   execute(handler, parameters, startTime, maxDuration) {
     // JRL-H001: Check if job was cancelled before starting
     if (this._stateManager.isCancelled()) {
-      this._logger.info(`Job ${this._stateManager.jobName} was cancelled, aborting execution`);
       this._stateManager.releaseLock();
       return { done: true, cancelled: true };
     }
@@ -715,7 +707,6 @@ High-level API for job registration, execution, and lifecycle management.
       while (!next.done) {
         // JRL-H001: Check for cancellation during execution
         if (this._stateManager.isCancelled()) {
-          this._logger.info(`Job ${this._stateManager.jobName} cancelled during execution`);
           this._stateManager.releaseLock();
           this._triggerManager.deleteExistingTriggers();
           return { done: true, cancelled: true };
@@ -756,14 +747,10 @@ High-level API for job registration, execution, and lifecycle management.
           timestamp: new Date().getTime()
         }
       });
-      this._logger.info(`Job ${this._stateManager.jobName} completed successfully`);
       return { done: true, value: result };
     } catch (error) {
       // Handle timeout separately from other errors
       if (error instanceof TimeoutException) {
-        this._logger.info(
-          `Interrupting job ${this._stateManager.jobName} due to timeout. State saved.`
-        );
         // JRL-H006, JRL-H007: Batch state updates into single operation
         this._stateManager.releaseLock(); // JRL-C001: Release lock when suspending
         this._stateManager.batchSave({
@@ -780,7 +767,6 @@ High-level API for job registration, execution, and lifecycle management.
       }
 
       // JRL-C003: Complete error cleanup for non-timeout errors
-      this._logger.error(`Error in job ${this._stateManager.jobName}: ${error.message}`);
       // JRL-H006, JRL-H007: Batch state updates into single operation
       this._stateManager.releaseLock();
       this._stateManager.batchSave({
@@ -1343,6 +1329,94 @@ and UI replay.
    */
 ```
 ---
+#### METHOD: CapturingLogger.if
+- **Scope:** instance
+- **LLM Call Syntax:** `capturingLogger.if(typeof this._realLogger[method]);`
+- **Pure JSDoc:**
+```javascript
+/** Method if */
+```
+---
+#### METHOD: CapturingLogger.logJobStart
+- **Scope:** instance
+- **LLM Call Syntax:** `capturingLogger.logJobStart(jobName, jobType);`
+- **Pure JSDoc:**
+```javascript
+/** Method logJobStart */
+```
+---
+#### METHOD: CapturingLogger.logJobResume
+- **Scope:** instance
+- **LLM Call Syntax:** `capturingLogger.logJobResume(jobName, jobType, details);`
+- **Pure JSDoc:**
+```javascript
+/** Method logJobResume */
+```
+---
+#### METHOD: CapturingLogger.logJobEnd
+- **Scope:** instance
+- **LLM Call Syntax:** `capturingLogger.logJobEnd(jobName, isSuccess, details);`
+- **Pure JSDoc:**
+```javascript
+/** Method logJobEnd */
+```
+---
+#### METHOD: CapturingLogger.logJobSuspended
+- **Scope:** instance
+- **LLM Call Syntax:** `capturingLogger.logJobSuspended(jobName, details);`
+- **Pure JSDoc:**
+```javascript
+/** Method logJobSuspended */
+```
+---
+#### METHOD: CapturingLogger.logBatchStart
+- **Scope:** instance
+- **LLM Call Syntax:** `capturingLogger.logBatchStart(totalItems, label);`
+- **Pure JSDoc:**
+```javascript
+/** Method logBatchStart */
+```
+---
+#### METHOD: CapturingLogger.logItemStart
+- **Scope:** instance
+- **LLM Call Syntax:** `capturingLogger.logItemStart(itemIndex, totalItems, itemLabel, identifier, kind);`
+- **Pure JSDoc:**
+```javascript
+/** Method logItemStart */
+```
+---
+#### METHOD: CapturingLogger.logStep
+- **Scope:** instance
+- **LLM Call Syntax:** `capturingLogger.logStep(message, position);`
+- **Pure JSDoc:**
+```javascript
+/** Method logStep */
+```
+---
+#### METHOD: CapturingLogger.logPipelineStart
+- **Scope:** instance
+- **LLM Call Syntax:** `capturingLogger.logPipelineStart(pipelineName, totalSteps, position);`
+- **Pure JSDoc:**
+```javascript
+/** Method logPipelineStart */
+```
+---
+#### METHOD: CapturingLogger.logPipelineStep
+- **Scope:** instance
+- **LLM Call Syntax:** `capturingLogger.logPipelineStep(stepName, status, details, position);`
+- **Pure JSDoc:**
+```javascript
+/** Method logPipelineStep */
+```
+---
+#### METHOD: CapturingLogger.logSummary
+- **Scope:** instance
+- **LLM Call Syntax:** `capturingLogger.logSummary(label, durationMs, itemDetails, position);`
+- **Pure JSDoc:**
+```javascript
+/** Method logSummary */
+```
+---
 #### METHOD: CapturingLogger.getCapturedLogs
 - **Scope:** instance
 - **LLM Call Syntax:** `const result = capturingLogger.getCapturedLogs();`
@@ -1736,6 +1810,30 @@ and UI replay.
 
 ### Methods of JobRunnerExecutionController
 
+#### METHOD: JobRunnerExecutionController.if
+- **Scope:** instance
+- **LLM Call Syntax:** `jobRunnerExecutionController.if(state);`
+- **Pure JSDoc:**
+```javascript
+/** Method if */
+```
+---
+#### METHOD: JobRunnerExecutionController.if
+- **Scope:** instance
+- **LLM Call Syntax:** `jobRunnerExecutionController.if(state);`
+- **Pure JSDoc:**
+```javascript
+/** Method if */
+```
+---
+#### METHOD: JobRunnerExecutionController.if
+- **Scope:** instance
+- **LLM Call Syntax:** `jobRunnerExecutionController.if(result);`
+- **Pure JSDoc:**
+```javascript
+/** Method if */
+```
+---
 #### METHOD: JobRunnerExecutionController.run
 - **Scope:** instance
 - **LLM Call Syntax:** `jobRunnerExecutionController.run(jobName, jobType, parameters, jobHandlerRegistryCallback, forceRestart, maxDurationMs, loggingConfig);`
@@ -1755,14 +1853,6 @@ and UI replay.
 #### METHOD: JobRunnerExecutionController.if
 - **Scope:** instance
 - **LLM Call Syntax:** `jobRunnerExecutionController.if(jobDefinition);`
-- **Pure JSDoc:**
-```javascript
-/** Method if */
-```
----
-#### METHOD: JobRunnerExecutionController.if
-- **Scope:** instance
-- **LLM Call Syntax:** `jobRunnerExecutionController.if(result !);`
 - **Pure JSDoc:**
 ```javascript
 /** Method if */

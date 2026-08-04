@@ -48,6 +48,7 @@ Manages context validation, conditional execution, error handling, and performan
 @typedef {Object} StepExecutionResult
 @property {boolean} success - True if step completed or continueOnError was active.
 @property {boolean} skipped - True if shouldExecute() returned false.
+@property {string} [skipReason] - Stable reason when skipped is true.
 @property {number} durationMs - Total execution time in milliseconds.
 @property {Error} [error] - Captured error if continueOnError is true.
 
@@ -84,6 +85,7 @@ import { StepExecutionError } from './internal/errors/StepExecutionError';
  * @typedef {Object} StepExecutionResult
  * @property {boolean} success - True if step completed or continueOnError was active.
  * @property {boolean} skipped - True if shouldExecute() returned false.
+ * @property {string} [skipReason] - Stable reason when skipped is true.
  * @property {number} durationMs - Total execution time in milliseconds.
  * @property {Error} [error] - Captured error if continueOnError is true.
  *
