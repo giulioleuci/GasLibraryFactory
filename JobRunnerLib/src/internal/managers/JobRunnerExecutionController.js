@@ -17,6 +17,74 @@ export class JobRunnerExecutionController {
     this._triggerService = facade._triggerService;
   }
 
+  _semantic(logger, method, args, level, fallbackMessage) {
+    if (typeof logger[method] === 'function') logger[method](...args);
+    else if (typeof logger[level] === 'function') logger[level](fallbackMessage);
+    else logger.info(fallbackMessage);
+  }
+
+  _logJobStart(logger, jobName, jobType) {
+    this._semantic(
+      logger,
+      'logJobStart',
+      [jobName, jobType],
+      'info',
+      `Starting job ${jobName} (type: ${jobType})`
+    );
+  }
+
+  _logJobResume(logger, jobName, jobType, details) {
+    this._semantic(
+      logger,
+      'logJobResume',
+      details === undefined ? [jobName, jobType] : [jobName, jobType, details],
+      'info',
+      `Resuming job ${jobName} (type: ${jobType})`
+    );
+  }
+
+  _logTerminal(logger, jobName, result, status) {
+    const state = status && status.state;
+    if (state === 'cancelled') {
+      this._semantic(
+        logger,
+        'logJobEnd',
+        [jobName, false, 'cancelled'],
+        'error',
+        `Job ${jobName} cancelled`
+      );
+    } else if (state === 'failed' || state === 'error') {
+      this._semantic(
+        logger,
+        'logJobEnd',
+        [jobName, false, state],
+        'error',
+        `Job ${jobName} failed (${state})`
+      );
+    } else if (result === null) {
+      this._semantic(
+        logger,
+        'logJobSuspended',
+        [jobName, 'state saved; automatic resume scheduled'],
+        'warn',
+        `Job ${jobName} suspended; automatic resume scheduled`
+      );
+    } else {
+      this._semantic(
+        logger,
+        'logJobEnd',
+        [jobName, true],
+        'info',
+        `Job ${jobName} completed successfully`
+      );
+    }
+  }
+
+  _status(queue, jobName, result) {
+    if (typeof queue.getStatus === 'function') return queue.getStatus(jobName);
+    return { state: result === null ? 'to_resume' : 'completed' };
+  }
+
   run(
     jobName,
     jobType,
@@ -39,7 +107,6 @@ export class JobRunnerExecutionController {
     if (typeof maxDurationMs !== 'number' || maxDurationMs <= 0)
       throw new Error('MyJobRunnerService.run: maxDurationMs must be a positive number');
 
-    this._logger.info(`MyJobRunnerService.run: Starting job '${jobName}' of type '${jobType}'`);
     if (loggingConfig) this.facade._validateLoggingConfig(loggingConfig);
 
     let capturingLogger = null;
@@ -49,6 +116,7 @@ export class JobRunnerExecutionController {
       effectiveLogger = capturingLogger;
       this._logger.debug('MyJobRunnerService.run: Capturing logger enabled');
     }
+    this._logJobStart(effectiveLogger, jobName, jobType);
 
     const queue = this.facade._createQueue();
     queue.setMaxDuration(maxDurationMs);
@@ -73,18 +141,21 @@ export class JobRunnerExecutionController {
       jobCompleted = false;
     try {
       result = queue.execute(jobName, jobType, parameters, forceRestart);
-      if (result !== null) {
-        effectiveLogger.info(`MyJobRunnerService.run: Job '${jobName}' completed successfully`);
-        jobCompleted = true;
-      } else {
-        effectiveLogger.info(
-          `MyJobRunnerService.run: Job '${jobName}' suspended due to timeout, will resume automatically`
-        );
-      }
+      const status = this._status(queue, jobName, result);
+      this._logTerminal(effectiveLogger, jobName, result, status);
+      jobCompleted =
+        result !== null ||
+        status.state === 'cancelled' ||
+        status.state === 'failed' ||
+        status.state === 'error';
     } catch (err) {
       error = err;
-      effectiveLogger.error(
-        `MyJobRunnerService.run: Error executing job '${jobName}': ${err.message}`
+      this._semantic(
+        effectiveLogger,
+        'logJobEnd',
+        [jobName, false, err.message],
+        'error',
+        `Job ${jobName} failed: ${err.message}`
       );
     } finally {
       if (capturingLogger && (jobCompleted || error)) {
@@ -114,7 +185,6 @@ export class JobRunnerExecutionController {
         'MyJobRunnerService.resume: Unable to determine job name. Provide jobName or ensure trigger context is available.'
       );
 
-    this._logger.info(`MyJobRunnerService.resume: Resuming job '${jobName}'`);
     const queue = this.facade._createQueue();
     const lockService = new LockService(this._logger);
     const stateManager = new JobStateManager(
@@ -131,6 +201,21 @@ export class JobRunnerExecutionController {
     if (!jobType)
       throw new Error(`MyJobRunnerService.resume: Unable to determine job type for '${jobName}'`);
 
+    const resumeState = stateManager.loadResumeState();
+    const currentStatus = this._status(queue, jobName, null);
+    const details = {};
+    if (resumeState && resumeState.nextIndex !== undefined)
+      details.checkpoint = `nextIndex: ${resumeState.nextIndex}`;
+    else if (resumeState && resumeState.position !== undefined)
+      details.checkpoint = String(resumeState.position);
+    if (Number.isFinite(currentStatus.percentage)) details.percentage = currentStatus.percentage;
+    this._logJobResume(
+      this._logger,
+      jobName,
+      jobType,
+      Object.keys(details).length > 0 ? details : undefined
+    );
+
     const services = {
       logger: this._logger,
       utils: this._utils,
@@ -145,16 +230,16 @@ export class JobRunnerExecutionController {
 
     try {
       const result = queue.execute(jobName, jobType, parameters, false);
-      if (result !== null)
-        this._logger.info(`MyJobRunnerService.resume: Job '${jobName}' completed successfully`);
-      else
-        this._logger.info(
-          `MyJobRunnerService.resume: Job '${jobName}' suspended again, will resume automatically`
-        );
+      const status = this._status(queue, jobName, result);
+      this._logTerminal(this._logger, jobName, result, status);
       return result;
     } catch (error) {
-      this._logger.error(
-        `MyJobRunnerService.resume: Error resuming job '${jobName}': ${error.message}`
+      this._semantic(
+        this._logger,
+        'logJobEnd',
+        [jobName, false, error.message],
+        'error',
+        `Job ${jobName} failed while resuming: ${error.message}`
       );
       throw error;
     }

@@ -20,7 +20,11 @@ describe('JobRunnerService - Coverage Gap Tests', () => {
       debug: jest.fn(),
       info: jest.fn(),
       warn: jest.fn(),
-      error: jest.fn()
+      error: jest.fn(),
+      logJobStart: jest.fn(),
+      logJobResume: jest.fn(),
+      logJobEnd: jest.fn(),
+      logJobSuspended: jest.fn()
     };
 
     // Mock utils
@@ -131,11 +135,9 @@ describe('JobRunnerService - Coverage Gap Tests', () => {
       const result = service.run('suspendTest', 'testType', {}, callback, false);
 
       expect(result).toBeNull();
-      expect(mockLogger.info).toHaveBeenCalledWith(
-        expect.stringContaining('suspended due to timeout')
-      );
-      expect(mockLogger.info).toHaveBeenCalledWith(
-        expect.stringContaining('will resume automatically')
+      expect(mockLogger.logJobSuspended).toHaveBeenCalledWith(
+        'suspendTest',
+        'state saved; automatic resume scheduled'
       );
     });
 
@@ -158,9 +160,7 @@ describe('JobRunnerService - Coverage Gap Tests', () => {
       const result = service.run('completeTest', 'testType', {}, callback, false);
 
       expect(result).toEqual({ success: true, data: 'complete' });
-      expect(mockLogger.info).toHaveBeenCalledWith(
-        expect.stringContaining('completed successfully')
-      );
+      expect(mockLogger.logJobEnd).toHaveBeenCalledWith('completeTest', true);
     });
   });
 
@@ -198,19 +198,22 @@ describe('JobRunnerService - Coverage Gap Tests', () => {
     });
 
     it('should successfully resume a job with all components', () => {
-      // Test basic resume call - full integration requires JobStateManager mocking
+      service._executionController._propertiesService = {
+        getProperty: jest.fn((key) => (key === 'type_explicitJob' ? 'resumeType' : null)),
+        setProperty: jest.fn(),
+        getObjectProperty: jest.fn(() => ({}))
+      };
+      service._createQueue = jest.fn(() => ({
+        applyConfiguration: jest.fn(),
+        setMaxDuration: jest.fn(),
+        execute: jest.fn(() => ({ resumed: true })),
+        getStatus: jest.fn(() => ({ state: 'completed' }))
+      }));
       const callback = jest.fn();
 
-      try {
-        service.resume('explicitJob', callback, 20000);
-      } catch (error) {
-        // Expected to throw due to JobStateManager not being mocked
-        // The important part is that resume() method is invoked
-      }
+      service.resume('explicitJob', callback, 20000);
 
-      expect(mockLogger.info).toHaveBeenCalledWith(
-        expect.stringContaining("Resuming job 'explicitJob'")
-      );
+      expect(mockLogger.logJobResume).toHaveBeenCalledWith('explicitJob', 'resumeType');
     });
 
     it('should throw error when jobHandlerRegistryCallback is not a function in resume()', () => {

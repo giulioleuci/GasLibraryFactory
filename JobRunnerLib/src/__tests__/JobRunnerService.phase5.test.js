@@ -17,6 +17,7 @@
 
 import { JobRunnerService } from '../JobRunnerService';
 import { JobDefinitionRegistry } from '../JobDefinitionRegistry';
+import { JobStateManager } from '../internal/managers/JobRunnerStateManager';
 import { MockFactory } from '../../../test/fakes/MockFactory';
 
 // Mock GoogleApiWrapper
@@ -366,8 +367,12 @@ describe('JobRunnerService - Phase 5 Coverage Tests', () => {
         jobRunner.run('error-job', 'errorJob', {}, callback);
       }).toThrow('Job execution failed');
 
-      // Verify error was logged
-      expect(logger.hasLog('ERROR', /Error executing job/)).toBe(true);
+      // Verify terminal failure was emitted once through the semantic channel
+      expect(logger.logJobEnd).toHaveBeenCalledWith(
+        'error-job',
+        false,
+        'Job execution failed'
+      );
     });
   });
 
@@ -503,6 +508,18 @@ describe('JobRunnerService - Phase 5 Coverage Tests', () => {
       // First, we need to simulate a job that has saved state
       // For this test, we'll mock the state
       const jobName = 'resume-test-job';
+      jobRunner._executionController._propertiesService = {
+        getProperty: jest.fn((key) => (key === `type_${jobName}` ? 'resumableJob' : null)),
+        setProperty: jest.fn(),
+        getObjectProperty: jest.fn(() => ({}))
+      };
+      jobRunner._createQueue = jest.fn(() => ({
+        applyConfiguration: jest.fn(),
+        setMaxDuration: jest.fn(),
+        execute: jest.fn(() => ({ resumed: true })),
+        getStatus: jest.fn(() => ({ state: 'completed' })),
+        registerJobHandler: jest.fn()
+      }));
 
       // Save fake job state
       propertiesService.setScriptPropertyJSON(`job:${jobName}`, {
@@ -512,9 +529,18 @@ describe('JobRunnerService - Phase 5 Coverage Tests', () => {
         parameters: { data: 'test' }
       });
 
-      propertiesService.setScriptProperty(`job:${jobName}:type`, 'resumableJob');
-      propertiesService.setScriptPropertyJSON(`job:${jobName}:config`, {
-        maxDuration: 25 * 60 * 1000
+      const stateManager = new JobStateManager(
+        jobName,
+        jobRunner._propertiesService,
+        utils,
+        lockService
+      );
+      stateManager.saveType('resumableJob');
+      stateManager.saveConfiguration({ maxDuration: 25 * 60 * 1000 });
+      stateManager.batchSave({
+        state: 'to_resume',
+        resumeState: { position: 1 },
+        progress: { completed: false, percentage: 50 }
       });
 
       function callback(queue, services) {
@@ -525,19 +551,10 @@ describe('JobRunnerService - Phase 5 Coverage Tests', () => {
         });
       }
 
-      // This will likely throw because JobStateManager isn't properly mocked
-      // But it exercises the code path
-      try {
-        jobRunner.resume(jobName, callback);
-      } catch (error) {
-        // Expected - we're not fully mocking JobStateManager
-        expect(error.message).toMatch(
-          /JobStateManager is not defined|Unable to determine job type/
-        );
-      }
+      jobRunner.resume(jobName, callback);
 
-      // Verify resume was attempted
-      expect(logger.hasLog('INFO', /Resuming job/)).toBe(true);
+      // Verify resume was attempted through the semantic channel
+      expect(logger.logJobResume).toHaveBeenCalledWith(jobName, 'resumableJob');
     });
 
     it('should validate callback parameter in resume', () => {
@@ -632,10 +649,13 @@ describe('JobRunnerService - Phase 5 Coverage Tests', () => {
 
       // If job was suspended (returned null), verify logging
       if (result === null) {
-        expect(logger.hasLog('INFO', /suspended due to timeout/)).toBe(true);
+        expect(logger.logJobSuspended).toHaveBeenCalledWith(
+          'long-job',
+          'state saved; automatic resume scheduled'
+        );
       } else {
         // Job completed successfully
-        expect(logger.hasLog('INFO', /completed successfully/)).toBe(true);
+        expect(logger.logJobEnd).toHaveBeenCalledWith('long-job', true);
       }
     });
   });

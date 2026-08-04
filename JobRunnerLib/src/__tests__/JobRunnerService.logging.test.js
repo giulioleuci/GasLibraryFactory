@@ -13,7 +13,12 @@ import { JobDefinitionRegistry } from '../JobDefinitionRegistry';
 jest.mock('@GoogleApiWrapper', () => ({
   PropertiesService: jest.fn(),
   TriggerService: jest.fn(),
-  LockService: jest.fn()
+  LockService: jest.fn(() => ({
+    getScriptLock: jest.fn(() => ({
+      tryLock: jest.fn(() => true),
+      releaseLock: jest.fn()
+    }))
+  }))
 }));
 
 describe('JobRunnerService - Logging Features', () => {
@@ -31,7 +36,11 @@ describe('JobRunnerService - Logging Features', () => {
       debug: jest.fn(),
       info: jest.fn(),
       warn: jest.fn(),
-      error: jest.fn()
+      error: jest.fn(),
+      logJobStart: jest.fn(),
+      logJobResume: jest.fn(),
+      logJobEnd: jest.fn(),
+      logJobSuspended: jest.fn()
     };
 
     utils = {
@@ -45,7 +54,9 @@ describe('JobRunnerService - Logging Features', () => {
     // Mock _createQueue to return a mock queue
     mockQueue = {
       setMaxDuration: jest.fn(),
+      applyConfiguration: jest.fn(),
       execute: jest.fn(() => ({ result: 'success' })),
+      getStatus: jest.fn(() => ({ state: 'completed', percentage: 100 })),
       registerJobHandler: jest.fn()
     };
 
@@ -163,6 +174,8 @@ describe('JobRunnerService - Logging Features', () => {
       // The job handler should receive a capturing logger in services
       const capturedQueue = service._createQueue.mock.results[0].value;
       expect(capturedQueue).toBe(mockQueue);
+      expect(logger.logJobStart).toHaveBeenCalledWith('job1', 'testJob');
+      expect(logger.logJobEnd).toHaveBeenCalledWith('job1', true);
     });
 
     it('should use normal logger when no logging config provided', () => {
@@ -200,16 +213,34 @@ describe('JobRunnerService - Logging Features', () => {
       }).toThrow('Job failed');
 
       expect(mockUiService.createSidebar).toHaveBeenCalled();
+      expect(logger.logJobEnd).toHaveBeenCalledWith('job1', false, 'Job failed');
     });
 
     it('should NOT display logs when job is suspended (not completed)', () => {
       const loggingConfig = { target: 'sidebar', uiService: mockUiService };
 
       mockQueue.execute = jest.fn(() => null); // Suspended
+      mockQueue.getStatus.mockReturnValue({ state: 'to_resume', percentage: 40 });
 
       service.run('job1', 'testJob', {}, jobHandlerCallback, false, 25 * 60 * 1000, loggingConfig);
 
       expect(mockUiService.createSidebar).not.toHaveBeenCalled();
+      expect(logger.logJobSuspended).toHaveBeenCalledWith(
+        'job1',
+        'state saved; automatic resume scheduled'
+      );
+      expect(logger.logJobEnd).not.toHaveBeenCalledWith('job1', true, expect.anything());
+    });
+
+    it('emits one suspension event per repeated suspended execution and never success', () => {
+      mockQueue.execute.mockReturnValue(null);
+      mockQueue.getStatus.mockReturnValue({ state: 'to_resume', percentage: 40 });
+
+      service.run('job1', 'testJob', {}, jobHandlerCallback);
+      service.run('job1', 'testJob', {}, jobHandlerCallback);
+
+      expect(logger.logJobSuspended).toHaveBeenCalledTimes(2);
+      expect(logger.logJobEnd).not.toHaveBeenCalledWith('job1', true, expect.anything());
     });
 
     it('should handle log display errors gracefully', () => {
@@ -223,6 +254,65 @@ describe('JobRunnerService - Logging Features', () => {
       service.run('job1', 'testJob', {}, jobHandlerCallback, false, 25 * 60 * 1000, loggingConfig);
 
       expect(logger.error).toHaveBeenCalledWith(expect.stringContaining('Error displaying logs'));
+    });
+
+    it('emits cancelled terminal status instead of suspension', () => {
+      mockQueue.execute.mockReturnValue(null);
+      mockQueue.getStatus.mockReturnValue({ state: 'cancelled', percentage: 40 });
+
+      service.run('job1', 'testJob', {}, jobHandlerCallback);
+
+      expect(logger.logJobEnd).toHaveBeenCalledWith('job1', false, 'cancelled');
+      expect(logger.logJobSuspended).not.toHaveBeenCalled();
+    });
+
+    it('emits failed terminal status returned by queue', () => {
+      mockQueue.execute.mockReturnValue(null);
+      mockQueue.getStatus.mockReturnValue({ state: 'failed', percentage: 40 });
+
+      service.run('job1', 'testJob', {}, jobHandlerCallback);
+
+      expect(logger.logJobEnd).toHaveBeenCalledWith('job1', false, 'failed');
+      expect(logger.logJobSuspended).not.toHaveBeenCalled();
+    });
+  });
+
+  describe('resume() lifecycle', () => {
+    const jobHandlerCallback = (queue) => {
+      queue.registerJobHandler('testJob', function* () {
+        return { success: true };
+      });
+    };
+
+    it('emits resume checkpoint/progress and suspension without false completion', () => {
+      service._executionController._propertiesService = {
+        setProperty: jest.fn(),
+        getProperty: jest.fn((key) => {
+          if (key === 'type_job1') return 'testJob';
+          if (key === 'state_job1') return 'saved';
+          return null;
+        }),
+        getObjectProperty: jest.fn((key) => {
+          if (key === 'state_job1') return { nextIndex: 4 };
+          if (key === 'config_job1') return {};
+          return null;
+        })
+      };
+      mockQueue.execute.mockReturnValue(null);
+      mockQueue.getStatus.mockReturnValue({ state: 'to_resume', percentage: 40 });
+
+      service.resume('job1', jobHandlerCallback);
+
+      expect(logger.logJobResume).toHaveBeenCalledWith(
+        'job1',
+        'testJob',
+        expect.objectContaining({ checkpoint: 'nextIndex: 4', percentage: 40 })
+      );
+      expect(logger.logJobSuspended).toHaveBeenCalledWith(
+        'job1',
+        'state saved; automatic resume scheduled'
+      );
+      expect(logger.logJobEnd).not.toHaveBeenCalledWith('job1', true, expect.anything());
     });
   });
 

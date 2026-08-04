@@ -200,6 +200,128 @@ export class CapturingLogger {
     return this;
   }
 
+  _semantic(method, args, level, message, status) {
+    this._capture(level, message, { method, status });
+    if (typeof this._realLogger[method] === 'function') {
+      this._realLogger[method](...args);
+    } else {
+      this._realLogger[level.toLowerCase()](message);
+    }
+    return this;
+  }
+
+  _withoutTrailingUndefined(args) {
+    const result = args.slice();
+    while (result.length && result[result.length - 1] === undefined) result.pop();
+    return result;
+  }
+
+  logJobStart(jobName, jobType) {
+    const args = [jobName, jobType];
+    return this._semantic(
+      'logJobStart',
+      args,
+      'INFO',
+      `Job '${jobName}' started (${jobType})`,
+      'INIT'
+    );
+  }
+
+  logJobResume(jobName, jobType, details) {
+    const args = this._withoutTrailingUndefined([jobName, jobType, details]);
+    return this._semantic(
+      'logJobResume',
+      args,
+      'INFO',
+      `Job resume: ${jobName} (${jobType})`,
+      'RESUME'
+    );
+  }
+
+  logJobEnd(jobName, isSuccess, details) {
+    const args = this._withoutTrailingUndefined([jobName, isSuccess, details]);
+    const status = isSuccess ? 'COMPLETED' : 'FAILED';
+    return this._semantic(
+      'logJobEnd',
+      args,
+      isSuccess ? 'INFO' : 'ERROR',
+      `Job end: ${jobName} (${status})`,
+      status
+    );
+  }
+
+  logJobSuspended(jobName, details) {
+    const args = this._withoutTrailingUndefined([jobName, details]);
+    return this._semantic(
+      'logJobSuspended',
+      args,
+      'WARN',
+      `Job suspended: ${jobName}`,
+      'SUSPENDED'
+    );
+  }
+
+  logBatchStart(totalItems, label) {
+    const args = this._withoutTrailingUndefined([totalItems, label]);
+    return this._semantic(
+      'logBatchStart',
+      args,
+      'INFO',
+      `Batch start: ${totalItems}${label ? ` ${label}` : ''}`,
+      'BATCH'
+    );
+  }
+
+  logItemStart(itemIndex, totalItems, itemLabel, identifier, kind) {
+    const args = [itemIndex, totalItems, itemLabel, identifier, kind];
+    return this._semantic(
+      'logItemStart',
+      args,
+      'INFO',
+      `Item ${itemIndex}/${totalItems}: ${itemLabel} ${identifier}`,
+      'ITEM'
+    );
+  }
+
+  logStep(message, position) {
+    const args = [message, position];
+    return this._semantic('logStep', args, 'INFO', `Step: ${message}`, 'STEP');
+  }
+
+  logPipelineStart(pipelineName, totalSteps, position) {
+    const args = this._withoutTrailingUndefined([pipelineName, totalSteps, position]);
+    return this._semantic(
+      'logPipelineStart',
+      args,
+      'INFO',
+      `Pipeline start: ${pipelineName} (${totalSteps})`,
+      'PIPELINE'
+    );
+  }
+
+  logPipelineStep(stepName, status, details, position) {
+    const args = [stepName, status, details, position];
+    const level = status === 'ERROR' ? 'ERROR' : status === 'SKIPPED' ? 'WARN' : 'INFO';
+    return this._semantic(
+      'logPipelineStep',
+      args,
+      level,
+      `Pipeline step: ${stepName} (${status})`,
+      status
+    );
+  }
+
+  logSummary(label, durationMs, itemDetails, position) {
+    const args = this._withoutTrailingUndefined([label, durationMs, itemDetails, position]);
+    return this._semantic(
+      'logSummary',
+      args,
+      'INFO',
+      `Summary: ${label} (${durationMs}ms)`,
+      'SUMMARY'
+    );
+  }
+
   // ===================================================================
   // CAPTURE RETRIEVAL METHODS
   // ===================================================================

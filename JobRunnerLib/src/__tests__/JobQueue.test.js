@@ -624,6 +624,9 @@ describe('JobExecutor', () => {
 
       expect(result.done).toBe(true);
       expect(result.value).toEqual({ success: true });
+      expect(logger.info).not.toHaveBeenCalledWith(
+        expect.stringMatching(/completed successfully|Starting job|Resuming job/)
+      );
     });
 
     it('should throw error if handler is not a generator', () => {
@@ -697,6 +700,9 @@ describe('JobExecutor', () => {
 
       expect(result.done).toBe(false);
       expect(stateManager.getState()).toBe('to_resume');
+      expect(logger.info).not.toHaveBeenCalledWith(
+        expect.stringMatching(/Interrupting job|timed out|suspended/)
+      );
     });
 
     it('should create resume trigger on timeout', () => {
@@ -807,6 +813,7 @@ describe('JobExecutor', () => {
 
       expect(result.done).toBe(true);
       expect(result.cancelled).toBe(true);
+      expect(logger.info).not.toHaveBeenCalledWith(expect.stringMatching(/cancelled|canceled/i));
     });
 
     it('should check for cancellation during execution', () => {
@@ -832,6 +839,7 @@ describe('JobExecutor', () => {
 
       expect(result.cancelled).toBe(true);
       expect(checkCount).toBe(1); // Should stop after cancellation
+      expect(logger.info).not.toHaveBeenCalledWith(expect.stringMatching(/cancelled|canceled/i));
     });
 
     it('should delete triggers on cancellation', () => {

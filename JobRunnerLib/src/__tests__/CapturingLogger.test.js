@@ -27,6 +27,49 @@ describe('CapturingLogger - Comprehensive Test Suite', () => {
     jest.clearAllMocks();
   });
 
+  describe('semantic logger forwarding', () => {
+    const cases = [
+      ['logJobStart', ['job-1', 'TYPE'], 'INFO', 'INIT'],
+      ['logJobResume', ['job-1', 'TYPE', { percentage: 40 }], 'INFO', 'RESUME'],
+      ['logJobEnd', ['job-1', true], 'INFO', 'COMPLETED'],
+      ['logJobSuspended', ['job-1', 'saved'], 'WARN', 'SUSPENDED'],
+      ['logBatchStart', [2], 'INFO', 'BATCH', '2'],
+      ['logItemStart', [1, 2, 'Target', 'job-1', 'GENERIC'], 'INFO', 'ITEM'],
+      ['logStep', ['job-1', { depth: 1, isLast: true }], 'INFO', 'STEP'],
+      ['logPipelineStart', ['job-1', 2, { depth: 1, isLast: false }], 'INFO', 'PIPELINE'],
+      [
+        'logPipelineStep',
+        ['job-1', 'SKIPPED', 'condition not met', { depth: 2, isLast: true }],
+        'WARN',
+        'SKIPPED'
+      ],
+      ['logSummary', ['job-1', 12, 'done'], 'INFO', 'SUMMARY']
+    ];
+
+    it.each(cases)('forwards and captures %s', (method, args, level, status, fragment = 'job-1') => {
+      realLogger[method] = jest.fn().mockReturnThis();
+      capturingLogger = new CapturingLogger(realLogger);
+
+      expect(capturingLogger[method](...args)).toBe(capturingLogger);
+      expect(realLogger[method]).toHaveBeenCalledWith(...args);
+      expect(capturingLogger.getCapturedLogs()).toEqual([
+        expect.objectContaining({
+          level,
+          message: expect.stringContaining(fragment),
+          context: expect.objectContaining({ method, status })
+        })
+      ]);
+    });
+
+    it('uses basic logger fallback when semantic method is absent', () => {
+      capturingLogger = new CapturingLogger(realLogger);
+
+      expect(capturingLogger.logJobStart('job-1', 'TYPE')).toBe(capturingLogger);
+      expect(realLogger.info).toHaveBeenCalledWith("Job 'job-1' started (TYPE)");
+      expect(capturingLogger.getCapturedLogs()).toHaveLength(1);
+    });
+  });
+
   // ===================================================================
   // CONSTRUCTOR
   // ===================================================================

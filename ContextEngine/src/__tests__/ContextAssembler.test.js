@@ -760,10 +760,12 @@ describe('ContextAssembler - Comprehensive Test Suite', () => {
 
       assembler.assemble(recipe, { userId: 123 });
 
-      expect(mocks.logger.info).toHaveBeenCalledWith(
-        expect.stringContaining('Starting context assembly')
+      expect(mocks.logger.logSummary).toHaveBeenCalledWith(
+        expect.stringContaining('Context Assembly completed'),
+        expect.any(Number),
+        expect.stringContaining('1 providers executed'),
+        undefined
       );
-      expect(mocks.logger.info).toHaveBeenCalledWith(expect.stringContaining('completed'));
     });
   });
 });

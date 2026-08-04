@@ -13,6 +13,7 @@
 import { JobRunnerService } from '../JobRunnerService';
 import { JobDefinitionRegistry } from '../JobDefinitionRegistry';
 import { JobQueue } from '../JobQueue';
+import { JobStateManager } from '../internal/managers/JobRunnerStateManager';
 import { MockFactory } from '../../../test/fakes';
 import { testing as CoreUtilsTesting } from '@CoreUtilsLib';
 import { testing as GoogleApiTesting } from '@GoogleApiWrapper';
@@ -211,7 +212,7 @@ describe('JobRunnerService (Stateful Library Pattern)', () => {
 
       // Depending on implementation, this might be null (cleaned up)
       // or might contain final state. Check logs for cleanup messages.
-      expect(logger.hasLog('INFO', /completed successfully/)).toBe(true);
+      expect(logger.logJobEnd).toHaveBeenCalledWith(jobName, true);
     });
   });
 
@@ -291,6 +292,39 @@ describe('JobRunnerService (Stateful Library Pattern)', () => {
       // it would skip already-processed steps)
       expect(result2).toBeDefined();
     });
+
+    it('logs resume checkpoint and progress before completing resumed work', () => {
+      const jobName = 'resume-log-job';
+      const stateManager = new JobStateManager(
+        jobName,
+        jobRunner._executionController._propertiesService,
+        utils,
+        new GoogleApiTesting.LockServiceMock()
+      );
+      stateManager.saveType('resumable-log');
+      stateManager.saveConfiguration({});
+      stateManager.batchSave({
+        state: 'to_resume',
+        resumeState: { position: 2 },
+        progress: { completed: false, percentage: 40 }
+      });
+
+      function registerHandlers(queue) {
+        queue.registerJobHandler('resumable-log', function* () {
+          yield { percentage: 100, position: 3 };
+          return { resumed: true };
+        });
+      }
+
+      const result = jobRunner.resume(jobName, registerHandlers);
+
+      expect(result).toEqual({ resumed: true });
+      expect(logger.logJobResume).toHaveBeenCalledWith(jobName, 'resumable-log', {
+        checkpoint: '2',
+        percentage: 40
+      });
+      expect(logger.logJobEnd).toHaveBeenCalledWith(jobName, true);
+    });
   });
 
   // ===================================================================
@@ -348,7 +382,7 @@ describe('JobRunnerService (Stateful Library Pattern)', () => {
       }).toThrow('Job failed at step 2');
 
       // Error should be logged
-      expect(logger.hasLog('ERROR', /failed/i)).toBe(true);
+      expect(logger.logJobEnd).toHaveBeenCalledWith('error-job', false, 'Job failed at step 2');
     });
 
     /**

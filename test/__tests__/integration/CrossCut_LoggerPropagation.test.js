@@ -172,8 +172,12 @@ describe('Cross-Cutting Concern: Logger Propagation', () => {
       // Act
       pipeline.execute({});
 
-      // Assert: Success should use info/debug, not error/warn
-      expect(mockLogger.hasLog('INFO', /SuccessPipeline/i)).toBe(true);
+      // Assert: Success uses the semantic pipeline channel, not error/warn
+      expect(mockLogger.logPipelineStart).toHaveBeenCalledWith(
+        'SuccessPipeline',
+        1,
+        expect.any(Object)
+      );
       expect(mockLogger.hasLog('ERROR')).toBe(false);
     });
 
@@ -274,8 +278,12 @@ describe('Cross-Cutting Concern: Logger Propagation', () => {
       // Act
       pipeline.execute({});
 
-      // Assert: Our mock logger captures logs
-      expect(mockLogger.hasLog('INFO', /TimedPipeline/i)).toBe(true);
+      // Assert: semantic event carries the pipeline identity
+      expect(mockLogger.logPipelineStart).toHaveBeenCalledWith(
+        'TimedPipeline',
+        1,
+        expect.any(Object)
+      );
     });
   });
 
@@ -428,14 +436,10 @@ describe('Cross-Cutting Concern: Logger Propagation', () => {
       // Act
       pipeline.execute({});
 
-      // Assert: Logger methods called (at minimum)
-      const totalCalls =
-        mockLogger.debug.mock.calls.length +
-        mockLogger.info.mock.calls.length +
-        mockLogger.warn.mock.calls.length +
-        mockLogger.error.mock.calls.length;
-
-      expect(totalCalls).toBeGreaterThan(0);
+      // Assert: semantic logger methods are called with their public signatures
+      expect(mockLogger.logPipelineStart).toHaveBeenCalled();
+      expect(mockLogger.logPipelineStep).toHaveBeenCalled();
+      expect(mockLogger.logSummary).toHaveBeenCalled();
     });
   });
 
@@ -459,8 +463,13 @@ describe('Cross-Cutting Concern: Logger Propagation', () => {
       // Act
       pipeline.execute({});
 
-      // Assert: Logger was called
-      expect(mockLogger.getLogs().length).toBeGreaterThan(0);
+      // Assert: structured step status is sent through the semantic API
+      expect(mockLogger.logPipelineStep).toHaveBeenCalledWith(
+        'structured',
+        'EXECUTED',
+        expect.any(String),
+        expect.any(Object)
+      );
     });
   });
 

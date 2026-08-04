@@ -82,7 +82,6 @@ export class JobExecutor {
   execute(handler, parameters, startTime, maxDuration) {
     // JRL-H001: Check if job was cancelled before starting
     if (this._stateManager.isCancelled()) {
-      this._logger.info(`Job ${this._stateManager.jobName} was cancelled, aborting execution`);
       this._stateManager.releaseLock();
       return { done: true, cancelled: true };
     }
@@ -137,7 +136,6 @@ export class JobExecutor {
       while (!next.done) {
         // JRL-H001: Check for cancellation during execution
         if (this._stateManager.isCancelled()) {
-          this._logger.info(`Job ${this._stateManager.jobName} cancelled during execution`);
           this._stateManager.releaseLock();
           this._triggerManager.deleteExistingTriggers();
           return { done: true, cancelled: true };
@@ -178,14 +176,10 @@ export class JobExecutor {
           timestamp: new Date().getTime()
         }
       });
-      this._logger.info(`Job ${this._stateManager.jobName} completed successfully`);
       return { done: true, value: result };
     } catch (error) {
       // Handle timeout separately from other errors
       if (error instanceof TimeoutException) {
-        this._logger.info(
-          `Interrupting job ${this._stateManager.jobName} due to timeout. State saved.`
-        );
         // JRL-H006, JRL-H007: Batch state updates into single operation
         this._stateManager.releaseLock(); // JRL-C001: Release lock when suspending
         this._stateManager.batchSave({
@@ -202,7 +196,6 @@ export class JobExecutor {
       }
 
       // JRL-C003: Complete error cleanup for non-timeout errors
-      this._logger.error(`Error in job ${this._stateManager.jobName}: ${error.message}`);
       // JRL-H006, JRL-H007: Batch state updates into single operation
       this._stateManager.releaseLock();
       this._stateManager.batchSave({
@@ -441,12 +434,9 @@ export class JobQueue {
         stateManager.saveConfiguration(this._config);
       }
 
-      this._logger.info(`Starting job ${jobName} (type: ${jobType})`);
-
       const savedState = stateManager.loadResumeState();
       if (savedState && !forceRestart) {
         parameters.resumeState = savedState;
-        this._logger.info(`Resuming job ${jobName} from saved state.`);
       }
 
       const handler = this._jobHandlers[jobType];
@@ -464,8 +454,6 @@ export class JobQueue {
       // JRL-HIGH-001: Handle job completion or timeout with retry logic
       if (executionResult.done) {
         // Job completed successfully
-        this._logger.info(`Job ${jobName} completed successfully`);
-
         // Reset retry count on successful completion
         stateManager.resetRetryCount();
 
@@ -516,10 +504,6 @@ export class JobQueue {
 
         // Increment retry count
         const newRetryCount = stateManager.incrementRetryCount();
-        this._logger.info(
-          `Job ${jobName} timed out. Retry ${newRetryCount}${this._maxRetries !== null ? ' of ' + this._maxRetries : ''}`
-        );
-
         // Calculate exponential backoff delay
         // Base delay is the configured trigger delay, multiplied by 2^retryCount
         // With a cap at 30 minutes to avoid very long delays
@@ -543,8 +527,6 @@ export class JobQueue {
         return null;
       }
     } catch (error) {
-      this._logger.error(`Fatal error in job ${jobName}: ${error.stack}`);
-
       // JRL-HIGH-001: On fatal error, increment retry count
       const retryCount = stateManager.incrementRetryCount();
 
