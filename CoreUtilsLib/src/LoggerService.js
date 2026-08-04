@@ -9,6 +9,8 @@
  * Hierarchical logging service with structured output and lazy evaluation.
  * @class LoggerService
  */
+import { StructuredLogFormatter } from './internal/StructuredLogFormatter.js';
+
 export class LoggerService {
   /**
    * Initialize LoggerService with configurable verbosity.
@@ -36,6 +38,8 @@ export class LoggerService {
       INFO: 3,
       DEBUG: 4
     };
+
+    this._structured = new StructuredLogFormatter(this._safeStringify.bind(this));
   }
 
   /**
@@ -270,6 +274,79 @@ export class LoggerService {
     return this;
   }
 
+  /** @private */
+  _writeStructured(level, lines) {
+    if (!this._isLevelActive(level)) return this;
+    for (const line of lines) Logger.log(line);
+    return this;
+  }
+
+  /** Start a job invocation. @returns {LoggerService} */
+  logJobStart(jobName, jobType) {
+    return this._writeStructured('INFO', this._structured.jobStart(jobName, jobType));
+  }
+
+  /** Resume a persisted job invocation. @returns {LoggerService} */
+  logJobResume(jobName, jobType, details) {
+    return this._writeStructured('INFO', this._structured.jobResume(jobName, jobType, details));
+  }
+
+  /** Finish a job invocation. @returns {LoggerService} */
+  logJobEnd(jobName, isSuccess, details) {
+    return this._writeStructured(
+      isSuccess ? 'INFO' : 'ERROR',
+      this._structured.jobEnd(jobName, isSuccess, details)
+    );
+  }
+
+  /** Suspend a resumable job invocation. @returns {LoggerService} */
+  logJobSuspended(jobName, details) {
+    return this._writeStructured('WARN', this._structured.jobSuspended(jobName, details));
+  }
+
+  /** Start a batch. @returns {LoggerService} */
+  logBatchStart(totalItems, label) {
+    return this._writeStructured('INFO', this._structured.batchStart(totalItems, label));
+  }
+
+  /** Start a batch item. @returns {LoggerService} */
+  logItemStart(itemIndex, totalItems, itemLabel, identifier, kind) {
+    return this._writeStructured(
+      'INFO',
+      this._structured.itemStart(itemIndex, totalItems, itemLabel, identifier, kind)
+    );
+  }
+
+  /** Emit a generic tree step. @returns {LoggerService} */
+  logStep(message, position) {
+    return this._writeStructured('INFO', this._structured.step(message, position));
+  }
+
+  /** Start a pipeline trace. @returns {LoggerService} */
+  logPipelineStart(pipelineName, totalSteps, position) {
+    return this._writeStructured(
+      'INFO',
+      this._structured.pipelineStart(pipelineName, totalSteps, position)
+    );
+  }
+
+  /** Emit a pipeline step result. @returns {LoggerService} */
+  logPipelineStep(stepName, status, details, position) {
+    const level = status === 'ERROR' ? 'ERROR' : status === 'SKIPPED' ? 'WARN' : 'INFO';
+    return this._writeStructured(
+      level,
+      this._structured.pipelineStep(stepName, status, details, position)
+    );
+  }
+
+  /** Emit a duration summary. @returns {LoggerService} */
+  logSummary(label, durationMs, itemDetails, position) {
+    return this._writeStructured(
+      'INFO',
+      this._structured.summary(label, durationMs, itemDetails, position)
+    );
+  }
+
   /**
    * Spawn a namespaced logger with a message prefix.
    * @param {string} prefix - Namespace identifier.
@@ -277,6 +354,7 @@ export class LoggerService {
    */
   child(prefix) {
     const parentLogger = this;
+    const prefixed = (label) => `[${prefix}] ${label}`;
     return {
       debug: (msg) => {
         if (typeof msg === 'function') {
@@ -307,7 +385,31 @@ export class LoggerService {
           return parentLogger.log(level, () => `[${prefix}] ${msg()}`);
         }
         return parentLogger.log(level, `[${prefix}] ${msg}`);
-      }
+      },
+      logJobStart: (jobName, jobType) => parentLogger.logJobStart(prefixed(jobName), jobType),
+      logJobResume: (jobName, jobType, details) =>
+        parentLogger.logJobResume(prefixed(jobName), jobType, details),
+      logJobEnd: (jobName, isSuccess, details) =>
+        parentLogger.logJobEnd(prefixed(jobName), isSuccess, details),
+      logJobSuspended: (jobName, details) =>
+        parentLogger.logJobSuspended(prefixed(jobName), details),
+      logBatchStart: (totalItems, label) =>
+        parentLogger.logBatchStart(totalItems, label === undefined ? undefined : prefixed(label)),
+      logItemStart: (itemIndex, totalItems, itemLabel, identifier, kind) =>
+        parentLogger.logItemStart(
+          itemIndex,
+          totalItems,
+          prefixed(itemLabel),
+          identifier,
+          kind
+        ),
+      logStep: (message, position) => parentLogger.logStep(message, position),
+      logPipelineStart: (pipelineName, totalSteps, position) =>
+        parentLogger.logPipelineStart(prefixed(pipelineName), totalSteps, position),
+      logPipelineStep: (stepName, status, details, position) =>
+        parentLogger.logPipelineStep(prefixed(stepName), status, details, position),
+      logSummary: (label, durationMs, itemDetails, position) =>
+        parentLogger.logSummary(prefixed(label), durationMs, itemDetails, position)
     };
   }
 }

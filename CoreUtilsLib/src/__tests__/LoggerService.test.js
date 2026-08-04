@@ -645,6 +645,80 @@ describe('LoggerService', () => {
     });
   });
 
+  describe('structured semantic logging', () => {
+    it('emits every rendered job line with one Logger.log call and returns itself', () => {
+      const result = logger.logJobStart('job-1', 'TYPE');
+
+      expect(result).toBe(logger);
+      expect(Logger.log.mock.calls.map(([line]) => line)).toEqual([
+        '======================================================================',
+        '🚀 [INIT] AVVIO JOB: job-1 (Tipo: TYPE)',
+        '======================================================================'
+      ]);
+    });
+
+    it('exposes every semantic method as a fluent API', () => {
+      expect(logger.logJobResume('job-1', 'TYPE', { percentage: 10 })).toBe(logger);
+      expect(logger.logJobEnd('job-1', true)).toBe(logger);
+      expect(logger.logJobSuspended('job-1', 'saved')).toBe(logger);
+      expect(logger.logBatchStart(1)).toBe(logger);
+      expect(logger.logItemStart(1, 1, 'Target', 'A', 'DOCUMENT')).toBe(logger);
+      expect(logger.logStep('work', { depth: 1, isLast: false })).toBe(logger);
+      expect(logger.logPipelineStart('Pipe', 1, { depth: 1, isLast: false })).toBe(logger);
+      expect(
+        logger.logPipelineStep('Step', 'EXECUTED', 'completed in 1ms', {
+          depth: 2,
+          isLast: true,
+          ancestorHasNext: [false]
+        })
+      ).toBe(logger);
+      expect(logger.logSummary('Done', 1, 'ok')).toBe(logger);
+    });
+
+    it('filters structured events at their semantic levels', () => {
+      logger.setLevel('ERROR');
+
+      logger.logJobStart('job-1', 'TYPE');
+      logger.logPipelineStep('Skipped', 'SKIPPED', 'condition not met', {});
+      logger.logPipelineStep('Failed', 'ERROR', 'boom', {});
+
+      expect(Logger.log).toHaveBeenCalledTimes(1);
+      expect(Logger.log).toHaveBeenCalledWith('❌ [Failed]: ERROR (boom)');
+    });
+
+    it('does not let malformed optional details break emission', () => {
+      const details = {};
+      Object.defineProperty(details, 'bad', {
+        enumerable: true,
+        get() {
+          throw new Error('access denied');
+        }
+      });
+
+      expect(() => logger.logJobEnd('job-1', false, details)).not.toThrow();
+      expect(Logger.log.mock.calls.map(([line]) => line).join('\n')).toContain(
+        '[Error accessing property]'
+      );
+    });
+
+    it('provides semantic child proxies while preserving tree layout', () => {
+      const child = logger.child('MAIL');
+
+      expect(
+        child.logPipelineStep('Compose', 'SKIPPED', 'condition not met', {
+          depth: 1,
+          isLast: true,
+          ancestorHasNext: []
+        })
+      ).toBe(logger);
+      expect(Logger.log).toHaveBeenCalledWith(
+        '  └─ ⚠️ [[MAIL] Compose]: SKIPPED (condition not met)'
+      );
+      expect(child.logBatchStart(1)).toBe(logger);
+      expect(Logger.log).toHaveBeenCalledWith('📑 [PROCESSING BATCH] (1 Item in queue)');
+    });
+  });
+
   describe('Edge Cases', () => {
     it('should handle undefined context', () => {
       logger.info('message', undefined);
