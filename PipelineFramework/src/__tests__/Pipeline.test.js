@@ -7,8 +7,6 @@
 
 import { Pipeline } from '../Pipeline';
 import { PipelineContext } from '../PipelineContext';
-import { Step } from '../Step';
-import { PipelineError } from '../internal/errors/PipelineError';
 import { MockFactory } from '../../../test/fakes';
 
 describe('Pipeline - Comprehensive Test Suite', () => {
@@ -304,11 +302,7 @@ describe('Pipeline - Comprehensive Test Suite', () => {
 
       pipeline.execute();
 
-      expect(logger.logPipelineStart).toHaveBeenCalledWith(
-        'NotificaPipeline',
-        3,
-        logPosition
-      );
+      expect(logger.logPipelineStart).toHaveBeenCalledWith('NotificaPipeline', 3, logPosition);
       expect(logger.logPipelineStep).toHaveBeenNthCalledWith(
         2,
         'ComposeEmail',
@@ -344,12 +338,11 @@ describe('Pipeline - Comprehensive Test Suite', () => {
       const result = pipeline.execute();
 
       expect(result.getSummary().failedSteps).toBe(1);
-      expect(logger.logPipelineStep).toHaveBeenCalledWith(
-        'Explode',
-        'ERROR',
-        'boom',
-        { depth: 1, isLast: true, ancestorHasNext: [true] }
-      );
+      expect(logger.logPipelineStep).toHaveBeenCalledWith('Explode', 'ERROR', 'boom', {
+        depth: 1,
+        isLast: true,
+        ancestorHasNext: [true]
+      });
       expect(logger.logSummary).toHaveBeenCalledWith(
         '⏹️ Pipeline completed',
         expect.any(Number),
@@ -404,7 +397,9 @@ describe('Pipeline - Comprehensive Test Suite', () => {
         expect.stringMatching(/^\[Basic\] TestStep: EXECUTED \(completed in 10ms\)$/)
       );
       expect(basicLogger.info).toHaveBeenCalledWith(
-        expect.stringMatching(/^\[Basic\] Pipeline completed in \d+ms \(1 executed, 0 skipped, 0 failed\)$/)
+        expect.stringMatching(
+          /^\[Basic\] Pipeline completed in \d+ms \(1 executed, 0 skipped, 0 failed\)$/
+        )
       );
     });
 
@@ -432,7 +427,7 @@ describe('Pipeline - Comprehensive Test Suite', () => {
 
       pipeline.addStep(mockStep).addStep(mockStep2);
 
-      const result = pipeline.execute({ test: 'data' });
+      pipeline.execute({ test: 'data' });
 
       expect(mockStep.execute).toHaveBeenCalledTimes(1);
       expect(mockStep2.execute).toHaveBeenCalledTimes(1);
@@ -492,7 +487,7 @@ describe('Pipeline - Comprehensive Test Suite', () => {
 
       try {
         pipeline.execute();
-      } catch (error) {
+      } catch (_error) {
         // Expected to throw
       }
 

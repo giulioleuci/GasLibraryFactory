@@ -5,7 +5,9 @@ describe('StructuredLogFormatter', () => {
     const seen = new WeakSet();
     return JSON.stringify(value, (_key, item) => {
       if (item && typeof item === 'object') {
-        if (seen.has(item)) return '[Circular reference]';
+        if (seen.has(item)) {
+          return '[Circular reference]';
+        }
         seen.add(item);
       }
       return item;
@@ -45,10 +47,12 @@ describe('StructuredLogFormatter', () => {
   });
 
   it('renders resume details without losing checkpoint or progress', () => {
-    expect(formatter.jobResume('mail_E2E', 'INVIO_EMAIL_BATCH', {
-      checkpoint: 'batch:4',
-      percentage: 40
-    })).toEqual([
+    expect(
+      formatter.jobResume('mail_E2E', 'INVIO_EMAIL_BATCH', {
+        checkpoint: 'batch:4',
+        percentage: 40
+      })
+    ).toEqual([
       '======================================================================',
       '🔄 [RESUME] RIPRESA JOB: mail_E2E (Tipo: INVIO_EMAIL_BATCH)',
       'Checkpoint: batch:4; Progress: 40%',
@@ -131,10 +135,7 @@ describe('StructuredLogFormatter', () => {
         isLast: false,
         ancestorHasNext: [true]
       })
-    ).toEqual([
-      '  │    ├─ ❌ [Validate]: ERROR (first',
-      '  │       second)'
-    ]);
+    ).toEqual(['  │    ├─ ❌ [Validate]: ERROR (first', '  │       second)']);
   });
 
   it('safely renders circular object details', () => {

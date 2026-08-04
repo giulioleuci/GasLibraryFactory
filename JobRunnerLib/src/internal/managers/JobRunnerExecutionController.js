@@ -18,9 +18,13 @@ export class JobRunnerExecutionController {
   }
 
   _semantic(logger, method, args, level, fallbackMessage) {
-    if (typeof logger[method] === 'function') logger[method](...args);
-    else if (typeof logger[level] === 'function') logger[level](fallbackMessage);
-    else logger.info(fallbackMessage);
+    if (typeof logger[method] === 'function') {
+      logger[method](...args);
+    } else if (typeof logger[level] === 'function') {
+      logger[level](fallbackMessage);
+    } else {
+      logger.info(fallbackMessage);
+    }
   }
 
   _logJobStart(logger, jobName, jobType) {
@@ -81,7 +85,9 @@ export class JobRunnerExecutionController {
   }
 
   _status(queue, jobName, result) {
-    if (typeof queue.getStatus === 'function') return queue.getStatus(jobName);
+    if (typeof queue.getStatus === 'function') {
+      return queue.getStatus(jobName);
+    }
     return { state: result === null ? 'to_resume' : 'completed' };
   }
 
@@ -94,20 +100,28 @@ export class JobRunnerExecutionController {
     maxDurationMs = 25 * 60 * 1000,
     loggingConfig = null
   ) {
-    if (!jobName || typeof jobName !== 'string')
+    if (!jobName || typeof jobName !== 'string') {
       throw new Error('MyJobRunnerService.run: jobName is required and must be a non-empty string');
-    if (!jobType || typeof jobType !== 'string')
+    }
+    if (!jobType || typeof jobType !== 'string') {
       throw new Error('MyJobRunnerService.run: jobType is required and must be a non-empty string');
-    if (!parameters || typeof parameters !== 'object')
+    }
+    if (!parameters || typeof parameters !== 'object') {
       throw new Error('MyJobRunnerService.run: parameters is required and must be an object');
-    if (typeof jobHandlerRegistryCallback !== 'function')
+    }
+    if (typeof jobHandlerRegistryCallback !== 'function') {
       throw new Error('MyJobRunnerService.run: jobHandlerRegistryCallback must be a function');
-    if (typeof forceRestart !== 'boolean')
+    }
+    if (typeof forceRestart !== 'boolean') {
       throw new Error('MyJobRunnerService.run: forceRestart must be a boolean');
-    if (typeof maxDurationMs !== 'number' || maxDurationMs <= 0)
+    }
+    if (typeof maxDurationMs !== 'number' || maxDurationMs <= 0) {
       throw new Error('MyJobRunnerService.run: maxDurationMs must be a positive number');
+    }
 
-    if (loggingConfig) this.facade._validateLoggingConfig(loggingConfig);
+    if (loggingConfig) {
+      this.facade._validateLoggingConfig(loggingConfig);
+    }
 
     let capturingLogger = null;
     let effectiveLogger = this._logger;
@@ -166,7 +180,9 @@ export class JobRunnerExecutionController {
         }
       }
     }
-    if (error) throw error;
+    if (error) {
+      throw error;
+    }
     return result;
   }
 
@@ -180,10 +196,11 @@ export class JobRunnerExecutionController {
         );
       }
     }
-    if (!jobName)
+    if (!jobName) {
       throw new Error(
         'MyJobRunnerService.resume: Unable to determine job name. Provide jobName or ensure trigger context is available.'
       );
+    }
 
     const queue = this.facade._createQueue();
     const lockService = new LockService(this._logger);
@@ -195,20 +212,26 @@ export class JobRunnerExecutionController {
     );
     const savedConfig = stateManager.loadConfiguration();
     queue.applyConfiguration(savedConfig);
-    if (maxDurationMs) queue.setMaxDuration(maxDurationMs);
+    if (maxDurationMs) {
+      queue.setMaxDuration(maxDurationMs);
+    }
 
     const jobType = stateManager.loadType();
-    if (!jobType)
+    if (!jobType) {
       throw new Error(`MyJobRunnerService.resume: Unable to determine job type for '${jobName}'`);
+    }
 
     const resumeState = stateManager.loadResumeState();
     const currentStatus = this._status(queue, jobName, null);
     const details = {};
-    if (resumeState && resumeState.nextIndex !== undefined)
+    if (resumeState && resumeState.nextIndex !== undefined) {
       details.checkpoint = `nextIndex: ${resumeState.nextIndex}`;
-    else if (resumeState && resumeState.position !== undefined)
+    } else if (resumeState && resumeState.position !== undefined) {
       details.checkpoint = String(resumeState.position);
-    if (Number.isFinite(currentStatus.percentage)) details.percentage = currentStatus.percentage;
+    }
+    if (Number.isFinite(currentStatus.percentage)) {
+      details.percentage = currentStatus.percentage;
+    }
     this._logJobResume(
       this._logger,
       jobName,
@@ -226,7 +249,9 @@ export class JobRunnerExecutionController {
 
     const jobDefinition = this._jobDefinitionRegistry.getDefinition(jobName);
     const parameters = { services: services };
-    if (jobDefinition) parameters.jobDefinition = jobDefinition;
+    if (jobDefinition) {
+      parameters.jobDefinition = jobDefinition;
+    }
 
     try {
       const result = queue.execute(jobName, jobType, parameters, false);

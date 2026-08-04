@@ -212,7 +212,9 @@ export class CapturingLogger {
 
   _withoutTrailingUndefined(args) {
     const result = args.slice();
-    while (result.length && result[result.length - 1] === undefined) result.pop();
+    while (result.length && result[result.length - 1] === undefined) {
+      result.pop();
+    }
     return result;
   }
 

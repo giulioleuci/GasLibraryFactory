@@ -5,7 +5,6 @@
  */
 
 import { PipelineContext } from './PipelineContext';
-import { PipelineError } from './internal/errors/PipelineError';
 
 /**
  * Orchestrator for sequential step execution with shared context and lifecycle hooks.
@@ -103,9 +102,13 @@ export class Pipeline {
       return;
     }
     const message = `[${this._name}] ${stepName}: ${status}${details ? ` (${details})` : ''}`;
-    if (status === 'ERROR') this._logger.error(message);
-    else if (status === 'SKIPPED') this._logger.warn(message);
-    else this._logger.info(message);
+    if (status === 'ERROR') {
+      this._logger.error(message);
+    } else if (status === 'SKIPPED') {
+      this._logger.warn(message);
+    } else {
+      this._logger.info(message);
+    }
   }
 
   _logPipelineSummary(context, prefix = '') {
@@ -113,8 +116,12 @@ export class Pipeline {
     let details =
       `${summary.completedSteps} executed, ${summary.skippedSteps} skipped, ` +
       `${summary.failedSteps} failed`;
-    if (prefix) details = `${prefix}; ${details}`;
-    if (summary.stopRequested) details += `; stopped: ${summary.stopReason}`;
+    if (prefix) {
+      details = `${prefix}; ${details}`;
+    }
+    if (summary.stopRequested) {
+      details += `; stopped: ${summary.stopReason}`;
+    }
     if (typeof this._logger.logSummary === 'function') {
       this._logger.logSummary(
         '⏹️ Pipeline completed',
@@ -350,12 +357,7 @@ export class Pipeline {
           : status === 'failed'
             ? result.error?.message || 'step failed'
             : `completed in ${result.durationMs || 0}ms`;
-      this._logPipelineStep(
-        stepName,
-        semanticStatus,
-        details,
-        this._stepLogPosition(stepIndex)
-      );
+      this._logPipelineStep(stepName, semanticStatus, details, this._stepLogPosition(stepIndex));
 
       if (this._monitor && this._jobId) {
         try {
@@ -365,7 +367,9 @@ export class Pipeline {
             this._monitor.logStepComplete(this._jobId, stepName, status === 'completed');
           }
         } catch (_e) {
-          this._logger.debug(`[${this._name}] monitor.logStepSkipped/Complete failed: ${_e.message}`);
+          this._logger.debug(
+            `[${this._name}] monitor.logStepSkipped/Complete failed: ${_e.message}`
+          );
         }
       }
 

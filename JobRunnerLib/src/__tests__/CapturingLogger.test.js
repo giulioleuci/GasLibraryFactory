@@ -46,20 +46,23 @@ describe('CapturingLogger - Comprehensive Test Suite', () => {
       ['logSummary', ['job-1', 12, 'done'], 'INFO', 'SUMMARY']
     ];
 
-    it.each(cases)('forwards and captures %s', (method, args, level, status, fragment = 'job-1') => {
-      realLogger[method] = jest.fn().mockReturnThis();
-      capturingLogger = new CapturingLogger(realLogger);
+    it.each(cases)(
+      'forwards and captures %s',
+      (method, args, level, status, fragment = 'job-1') => {
+        realLogger[method] = jest.fn().mockReturnThis();
+        capturingLogger = new CapturingLogger(realLogger);
 
-      expect(capturingLogger[method](...args)).toBe(capturingLogger);
-      expect(realLogger[method]).toHaveBeenCalledWith(...args);
-      expect(capturingLogger.getCapturedLogs()).toEqual([
-        expect.objectContaining({
-          level,
-          message: expect.stringContaining(fragment),
-          context: expect.objectContaining({ method, status })
-        })
-      ]);
-    });
+        expect(capturingLogger[method](...args)).toBe(capturingLogger);
+        expect(realLogger[method]).toHaveBeenCalledWith(...args);
+        expect(capturingLogger.getCapturedLogs()).toEqual([
+          expect.objectContaining({
+            level,
+            message: expect.stringContaining(fragment),
+            context: expect.objectContaining({ method, status })
+          })
+        ]);
+      }
+    );
 
     it('uses basic logger fallback when semantic method is absent', () => {
       capturingLogger = new CapturingLogger(realLogger);

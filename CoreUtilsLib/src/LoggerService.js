@@ -276,8 +276,12 @@ export class LoggerService {
 
   /** @private */
   _writeStructured(level, lines) {
-    if (!this._isLevelActive(level)) return this;
-    for (const line of lines) Logger.log(line);
+    if (!this._isLevelActive(level)) {
+      return this;
+    }
+    for (const line of lines) {
+      Logger.log(line);
+    }
     return this;
   }
 
@@ -396,13 +400,7 @@ export class LoggerService {
       logBatchStart: (totalItems, label) =>
         parentLogger.logBatchStart(totalItems, label === undefined ? undefined : prefixed(label)),
       logItemStart: (itemIndex, totalItems, itemLabel, identifier, kind) =>
-        parentLogger.logItemStart(
-          itemIndex,
-          totalItems,
-          prefixed(itemLabel),
-          identifier,
-          kind
-        ),
+        parentLogger.logItemStart(itemIndex, totalItems, prefixed(itemLabel), identifier, kind),
       logStep: (message, position) => parentLogger.logStep(message, position),
       logPipelineStart: (pipelineName, totalSteps, position) =>
         parentLogger.logPipelineStart(prefixed(pipelineName), totalSteps, position),

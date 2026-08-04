@@ -41,10 +41,10 @@ export class StructuredLogFormatter {
    */
   treePrefix(position = {}) {
     const depth = Math.max(0, Number.isFinite(position.depth) ? position.depth : 0);
-    if (depth === 0) return '';
-    const ancestors = Array.isArray(position.ancestorHasNext)
-      ? position.ancestorHasNext
-      : [];
+    if (depth === 0) {
+      return '';
+    }
+    const ancestors = Array.isArray(position.ancestorHasNext) ? position.ancestorHasNext : [];
     let prefix = '  ';
     for (let index = 0; index < depth - 1; index++) {
       prefix += ancestors[index] ? '│    ' : '     ';
@@ -68,7 +68,9 @@ export class StructuredLogFormatter {
       `🔄 [RESUME] RIPRESA JOB: ${this._text(jobName)} (Tipo: ${this._text(jobType)})`
     ];
     const detailText = this._resumeDetails(details);
-    if (detailText) lines.push(detailText);
+    if (detailText) {
+      lines.push(detailText);
+    }
     lines.push(MAJOR_BORDER);
     return lines;
   }
@@ -80,7 +82,9 @@ export class StructuredLogFormatter {
       ? `${status} Job '${this._text(jobName)}' completed successfully`
       : `${status} Job '${this._text(jobName)}' failed`;
     const detailText = this._detailsText(details);
-    if (detailText) message += ` (${detailText})`;
+    if (detailText) {
+      message += ` (${detailText})`;
+    }
     return [MAJOR_BORDER, ...this._splitPlain(message), MAJOR_BORDER];
   }
 
@@ -88,7 +92,9 @@ export class StructuredLogFormatter {
   jobSuspended(jobName, details) {
     let message = `⏸️ [SUSPENDED] Job '${this._text(jobName)}' suspended`;
     const detailText = this._detailsText(details);
-    if (detailText) message += ` (${detailText})`;
+    if (detailText) {
+      message += ` (${detailText})`;
+    }
     return [MAJOR_BORDER, ...this._splitPlain(message), MAJOR_BORDER];
   }
 
@@ -146,7 +152,9 @@ export class StructuredLogFormatter {
   summary(label, durationMs, itemDetails, position) {
     let message = `${this._text(label)} in ${this._count(durationMs)}ms`;
     const details = this._detailsText(itemDetails);
-    if (details) message += ` (${details})`;
+    if (details) {
+      message += ` (${details})`;
+    }
     return this._treeLines(message, position);
   }
 
@@ -165,10 +173,16 @@ export class StructuredLogFormatter {
   }
 
   _detailsText(details) {
-    if (details === undefined || details === null || details === '') return '';
+    if (details === undefined || details === null || details === '') {
+      return '';
+    }
     try {
-      if (Array.isArray(details)) return details.map((item) => this._text(item)).join('\n');
-      if (typeof details === 'object') return this._safeStringify(details);
+      if (Array.isArray(details)) {
+        return details.map((item) => this._text(item)).join('\n');
+      }
+      if (typeof details === 'object') {
+        return this._safeStringify(details);
+      }
       return String(details);
     } catch (_error) {
       return '[Unrenderable details]';
@@ -177,9 +191,15 @@ export class StructuredLogFormatter {
 
   _text(value) {
     try {
-      if (value === undefined) return 'undefined';
-      if (value === null) return 'null';
-      if (typeof value === 'object') return this._safeStringify(value);
+      if (value === undefined) {
+        return 'undefined';
+      }
+      if (value === null) {
+        return 'null';
+      }
+      if (typeof value === 'object') {
+        return this._safeStringify(value);
+      }
       return String(value);
     } catch (_error) {
       return '[Unrenderable details]';
@@ -197,7 +217,9 @@ export class StructuredLogFormatter {
   _treeLines(message, position = {}) {
     const lines = this._splitPlain(message);
     const firstPrefix = this.treePrefix(position);
-    if (!firstPrefix) return lines;
+    if (!firstPrefix) {
+      return lines;
+    }
     const continuation = firstPrefix.replace(/[├└]─ $/, '   ');
     return lines.map((line, index) => `${index === 0 ? firstPrefix : continuation}${line}`);
   }
