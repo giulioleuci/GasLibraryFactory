@@ -11,7 +11,8 @@ describe('ContextStepExecutor', () => {
       debug: jest.fn(),
       info: jest.fn(),
       warn: jest.fn(),
-      error: jest.fn()
+      error: jest.fn(),
+      logSummary: jest.fn()
     };
 
     // Mock provider registry
@@ -155,8 +156,8 @@ describe('ContextStepExecutor', () => {
       expect(mockProvider.provide).toHaveBeenCalledWith('testProvider', {
         resolvedParam1: 'resolvedValue1'
       });
-      expect(facade._logger.info).toHaveBeenCalledWith(
-        '[testProvider] Provider execution completed'
+      expect(facade._logger.info).not.toHaveBeenCalledWith(
+        expect.stringContaining('Provider execution completed')
       );
     });
 
@@ -330,11 +331,19 @@ describe('ContextStepExecutor', () => {
         .mockReturnValueOnce('result1')
         .mockReturnValueOnce('result3');
 
-      const result = executor.assemble(recipe);
+      jest.spyOn(Date, 'now').mockReturnValueOnce(100).mockReturnValueOnce(179);
+      const logPosition = { depth: 1, isLast: false, ancestorHasNext: [] };
+      const result = executor.assemble(recipe, {}, { logPosition });
 
       expect(result).toEqual({ p1: 'result1', p3: 'result3' });
       expect(executor._executeProvider).toHaveBeenCalledTimes(2);
-      expect(facade._logger.info).toHaveBeenCalledWith('[p2] Skipped (condition not met)');
+      expect(facade._logger.info).not.toHaveBeenCalledWith(expect.stringContaining('Skipped'));
+      expect(facade._logger.logSummary).toHaveBeenCalledWith(
+        '⚙️ Context Assembly completed',
+        79,
+        '2 providers executed, 1 skipped, 0 failed',
+        logPosition
+      );
     });
 
     it('should handle errors during execution and map to ContextEngineError', () => {
@@ -350,9 +359,11 @@ describe('ContextStepExecutor', () => {
         throw execError;
       });
 
+      jest.spyOn(Date, 'now').mockReturnValueOnce(100).mockReturnValueOnce(179);
       expect(() => executor.assemble(recipe)).toThrow(ContextEngineError);
+      expect(facade._logger.error).toHaveBeenCalledTimes(1);
       expect(facade._logger.error).toHaveBeenCalledWith(
-        '[p1] Provider execution failed: Provider failed'
+        '[p1] Provider execution failed after 79ms (0 providers executed, 0 skipped, 1 failed): Provider failed'
       );
     });
 
@@ -414,8 +425,8 @@ describe('ContextStepExecutor', () => {
 
       expect(mockProvider.provide).toHaveBeenCalledWith(sharedTarget, initialParams, options);
       expect(facade._dependencyResolver.resolveAll).not.toHaveBeenCalled();
-      expect(facade._logger.info).toHaveBeenCalledWith(
-        '[testProvider] Provider execution completed (mutate mode)'
+      expect(facade._logger.info).not.toHaveBeenCalledWith(
+        expect.stringContaining('Provider execution completed')
       );
     });
 
@@ -518,13 +529,21 @@ describe('ContextStepExecutor', () => {
         throw new Error('unexpected type ' + type);
       });
 
+      jest.spyOn(Date, 'now').mockReturnValueOnce(100).mockReturnValueOnce(179);
       const sharedTarget = {};
-      const result = executor.assembleInto(sharedTarget, recipe, {}, {});
+      const logPosition = { depth: 1, isLast: false, ancestorHasNext: [] };
+      const result = executor.assembleInto(sharedTarget, recipe, {}, { logPosition });
 
       expect(result).toBe(sharedTarget);
       expect(sharedTarget.focus.alunno.status.isBes).toBe(true);
       expect(studentProvider.provide).toHaveBeenCalled();
       expect(pianiProvider.provide).toHaveBeenCalled();
+      expect(facade._logger.logSummary).toHaveBeenCalledWith(
+        '⚙️ Context Assembly completed',
+        79,
+        '2 providers executed, 0 skipped, 0 failed',
+        logPosition
+      );
     });
 
     it('ignores provider return values entirely', () => {
@@ -557,7 +576,13 @@ describe('ContextStepExecutor', () => {
 
       expect(provider.provide).not.toHaveBeenCalled();
       expect(result).toEqual({ untouched: true });
-      expect(facade._logger.info).toHaveBeenCalledWith('[p1] Skipped (condition not met)');
+      expect(facade._logger.info).not.toHaveBeenCalledWith(expect.stringContaining('Skipped'));
+      expect(facade._logger.logSummary).toHaveBeenCalledWith(
+        '⚙️ Context Assembly completed',
+        expect.any(Number),
+        '0 providers executed, 1 skipped, 0 failed',
+        undefined
+      );
     });
 
     it('should wrap provider errors in ContextEngineError', () => {
@@ -572,7 +597,26 @@ describe('ContextStepExecutor', () => {
       };
       facade._providerRegistry.get.mockReturnValue(provider);
 
+      jest.spyOn(Date, 'now').mockReturnValueOnce(100).mockReturnValueOnce(179);
       expect(() => executor.assembleInto({}, recipe, {}, {})).toThrow(ContextEngineError);
+      expect(facade._logger.error).toHaveBeenCalledTimes(1);
+      expect(facade._logger.error).toHaveBeenCalledWith(
+        '[p1] Provider execution failed after 79ms (0 providers executed, 0 skipped, 1 failed): boom'
+      );
+    });
+
+    it('falls back to basic logger when semantic summary is unavailable', () => {
+      delete facade._logger.logSummary;
+      const recipe = { providers: [] };
+      facade._recipeParser.parse.mockReturnValue(recipe);
+
+      executor.assembleInto({}, recipe);
+
+      expect(facade._logger.info).toHaveBeenCalledWith(
+        expect.stringMatching(
+          /^Context assembly completed in \d+ms \(0 providers executed, 0 skipped, 0 failed\)$/
+        )
+      );
     });
   });
 });

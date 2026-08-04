@@ -92,8 +92,6 @@ export class ContextStepExecutor {
       }
     }
 
-    this.facade._logger.info(`[${providerName}] Provider execution completed`);
-
     return data;
   }
 
@@ -112,16 +110,16 @@ export class ContextStepExecutor {
     }
 
     const startTime = Date.now();
+    let executedProviders = 0;
+    let skippedProviders = 0;
+    let failedProviders = 0;
 
     try {
       // Parse and validate recipe
-      this.facade._logger.info('Starting context assembly...');
       const validatedRecipe = this.facade._recipeParser.parse(recipe);
 
       // Initialize result context
       const context = {};
-      let executedProviders = 0;
-      let skippedProviders = 0;
 
       // Execute providers sequentially
       for (const providerConfig of validatedRecipe.providers) {
@@ -136,7 +134,6 @@ export class ContextStepExecutor {
           );
 
           if (!shouldExecute) {
-            this.facade._logger.info(`[${providerName}] Skipped (condition not met)`);
             skippedProviders++;
             continue;
           }
@@ -148,8 +145,12 @@ export class ContextStepExecutor {
           context[providerName] = result;
           executedProviders++;
         } catch (error) {
+          failedProviders++;
+          const durationMs = Date.now() - startTime;
           this.facade._logger.error(
-            `[${providerName}] Provider execution failed: ${error.message}`
+            `[${providerName}] Provider execution failed after ${durationMs}ms ` +
+              `(${executedProviders} providers executed, ${skippedProviders} skipped, ` +
+              `${failedProviders} failed): ${error.message}`
           );
           throw new ContextEngineError(`Provider '${providerName}' failed: ${error.message}`, {
             providerName,
@@ -160,21 +161,27 @@ export class ContextStepExecutor {
       }
 
       const durationMs = Date.now() - startTime;
-
-      this.facade._logger.info(
-        `Context assembly completed in ${durationMs}ms ` +
-          `(${executedProviders} executed, ${skippedProviders} skipped)`
+      this._logAssemblySummary(
+        durationMs,
+        executedProviders,
+        skippedProviders,
+        failedProviders,
+        options.logPosition
       );
 
       return context;
     } catch (error) {
       const durationMs = Date.now() - startTime;
 
-      this.facade._logger.error(`Context assembly failed after ${durationMs}ms: ${error.message}`);
-
       if (error instanceof ContextEngineError) {
         throw error;
       }
+
+      this.facade._logger.error(
+        `Context assembly failed after ${durationMs}ms ` +
+          `(${executedProviders} providers executed, ${skippedProviders} skipped, ` +
+          `${failedProviders} failed): ${error.message}`
+      );
 
       throw new ContextEngineError(`Context assembly failed: ${error.message}`, {
         originalError: error
@@ -240,7 +247,28 @@ export class ContextStepExecutor {
       }
     }
 
-    this.facade._logger.info(`[${providerName}] Provider execution completed (mutate mode)`);
+  }
+
+  _logAssemblySummary(
+    durationMs,
+    executedProviders,
+    skippedProviders,
+    failedProviders,
+    logPosition
+  ) {
+    const details =
+      `${executedProviders} providers executed, ` +
+      `${skippedProviders} skipped, ${failedProviders} failed`;
+    if (typeof this.facade._logger.logSummary === 'function') {
+      this.facade._logger.logSummary(
+        '⚙️ Context Assembly completed',
+        durationMs,
+        details,
+        logPosition
+      );
+    } else {
+      this.facade._logger.info(`Context assembly completed in ${durationMs}ms (${details})`);
+    }
   }
 
   /**
@@ -297,13 +325,12 @@ export class ContextStepExecutor {
     }
 
     const startTime = Date.now();
+    let executedProviders = 0;
+    let skippedProviders = 0;
+    let failedProviders = 0;
 
     try {
-      this.facade._logger.info('Starting mutation-mode context assembly...');
       const validatedRecipe = this.facade._recipeParser.parse(recipe);
-
-      let executedProviders = 0;
-      let skippedProviders = 0;
 
       for (const providerConfig of validatedRecipe.providers) {
         const providerName = providerConfig.name;
@@ -319,7 +346,6 @@ export class ContextStepExecutor {
           );
 
           if (!shouldExecute) {
-            this.facade._logger.info(`[${providerName}] Skipped (condition not met)`);
             skippedProviders++;
             continue;
           }
@@ -327,8 +353,12 @@ export class ContextStepExecutor {
           this._executeMutatingProvider(providerConfig, sharedTarget, initialParams, options);
           executedProviders++;
         } catch (error) {
+          failedProviders++;
+          const durationMs = Date.now() - startTime;
           this.facade._logger.error(
-            `[${providerName}] Provider execution failed: ${error.message}`
+            `[${providerName}] Provider execution failed after ${durationMs}ms ` +
+              `(${executedProviders} providers executed, ${skippedProviders} skipped, ` +
+              `${failedProviders} failed): ${error.message}`
           );
           throw new ContextEngineError(`Provider '${providerName}' failed: ${error.message}`, {
             providerName,
@@ -339,23 +369,27 @@ export class ContextStepExecutor {
       }
 
       const durationMs = Date.now() - startTime;
-
-      this.facade._logger.info(
-        `Mutation-mode context assembly completed in ${durationMs}ms ` +
-          `(${executedProviders} executed, ${skippedProviders} skipped)`
+      this._logAssemblySummary(
+        durationMs,
+        executedProviders,
+        skippedProviders,
+        failedProviders,
+        options.logPosition
       );
 
       return sharedTarget;
     } catch (error) {
       const durationMs = Date.now() - startTime;
 
-      this.facade._logger.error(
-        `Mutation-mode context assembly failed after ${durationMs}ms: ${error.message}`
-      );
-
       if (error instanceof ContextEngineError) {
         throw error;
       }
+
+      this.facade._logger.error(
+        `Mutation-mode context assembly failed after ${durationMs}ms ` +
+          `(${executedProviders} providers executed, ${skippedProviders} skipped, ` +
+          `${failedProviders} failed): ${error.message}`
+      );
 
       throw new ContextEngineError(`Mutation-mode context assembly failed: ${error.message}`, {
         originalError: error
