@@ -110,15 +110,32 @@ export class Pipeline {
       this._logger.logPipelineStep(stepName, status, details, position);
       return;
     }
-    const envelope =
-      details && typeof details === 'object' && !Array.isArray(details) ? details : {};
-    const reason = envelope.reason !== undefined ? envelope.reason : details;
-    const duration = Number.isFinite(envelope.durationMs) ? envelope.durationMs : 0;
-    const fallbackDetails =
-      status === 'EXECUTED'
-        ? `completed in ${duration}ms`
-        : reason || (status === 'SKIPPED' ? 'condition not met' : 'step failed');
-    const message = `[${this._name}] ${stepName}: ${status} (${fallbackDetails})`;
+    const isEnvelope = Boolean(
+      details &&
+      typeof details === 'object' &&
+      !Array.isArray(details) &&
+      (Object.prototype.hasOwnProperty.call(details, 'content') ||
+        Object.prototype.hasOwnProperty.call(details, 'durationMs') ||
+        Object.prototype.hasOwnProperty.call(details, 'reason'))
+    );
+    const envelope = isEnvelope ? details : {};
+    const content = isEnvelope ? envelope.content : details;
+    const reason =
+      envelope.reason !== undefined
+        ? envelope.reason
+        : status === 'SKIPPED'
+          ? 'condition not met'
+          : 'step failed';
+    const duration =
+      Number.isFinite(envelope.durationMs) && envelope.durationMs >= 0 ? envelope.durationMs : null;
+    const fallbackDetails = this._fallbackDetailText(status === 'EXECUTED' ? content : reason);
+    const displayStatus = status === 'ERROR' ? 'FAILED' : status;
+    const timedStatus =
+      status !== 'SKIPPED' && duration !== null
+        ? `${displayStatus} in ${duration}ms`
+        : displayStatus;
+    const body = fallbackDetails ? `${fallbackDetails} (${timedStatus})` : timedStatus;
+    const message = `[${this._name}] [${stepName}] ${body}`;
     if (status === 'ERROR') {
       this._logger.error(message);
     } else if (status === 'SKIPPED') {
@@ -126,6 +143,23 @@ export class Pipeline {
     } else {
       this._logger.info(message);
     }
+  }
+
+  _fallbackDetailText(details) {
+    if (details === undefined || details === null || details === '') {
+      return '';
+    }
+    if (Array.isArray(details)) {
+      return details.join('\n');
+    }
+    if (typeof details === 'object') {
+      try {
+        return JSON.stringify(details);
+      } catch (_error) {
+        return '[Unrenderable details]';
+      }
+    }
+    return String(details);
   }
 
   _logPipelineSummary(context, prefix = '') {
@@ -374,7 +408,7 @@ export class Pipeline {
         status === 'completed' ? 'EXECUTED' : status === 'skipped' ? 'SKIPPED' : 'ERROR';
       const details =
         status === 'skipped'
-          ? { reason: result.skipReason || 'condition not met', durationMs: result.durationMs || 0 }
+          ? { reason: result.skipReason || 'condition not met' }
           : status === 'failed'
             ? { reason: result.error?.message || 'step failed', durationMs: result.durationMs || 0 }
             : { content: result.logDetails, durationMs: result.durationMs || 0 };

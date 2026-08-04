@@ -320,7 +320,7 @@ describe('Pipeline - Comprehensive Test Suite', () => {
         2,
         'ComposeEmail',
         'SKIPPED',
-        { reason: 'condition not met', durationMs: 0 },
+        { reason: 'condition not met' },
         { depth: 2, isLast: false, ancestorHasNext: [true] }
       );
       expect(logger.logPipelineStep).toHaveBeenNthCalledWith(
@@ -400,7 +400,7 @@ describe('Pipeline - Comprehensive Test Suite', () => {
       );
     });
 
-    it('falls back to basic logger methods when semantic APIs are unavailable', () => {
+    it('renders content-first executed, skipped, and thrown failure fallbacks', () => {
       const basicLogger = {
         debug: jest.fn(),
         info: jest.fn(),
@@ -408,17 +408,71 @@ describe('Pipeline - Comprehensive Test Suite', () => {
         error: jest.fn()
       };
       pipeline = new Pipeline(basicLogger, null, { name: 'Basic' });
-      pipeline.addStep(mockStep).execute();
+      pipeline
+        .addStep({
+          getName: () => 'Detailed',
+          execute: () => ({
+            success: true,
+            skipped: false,
+            durationMs: 10,
+            logDetails: 'PDP_DSA_Rossi_Mario_2026'
+          })
+        })
+        .addStep({
+          getName: () => 'Skipped',
+          execute: () => ({
+            success: true,
+            skipped: true,
+            skipReason: 'condition not met',
+            durationMs: 0
+          })
+        })
+        .addStep({
+          getName: () => 'NoDetails',
+          execute: () => ({ success: true, skipped: false, durationMs: 3 })
+        })
+        .addStep({
+          getName: () => 'Explode',
+          execute: () => {
+            throw new Error('boom');
+          }
+        })
+        .execute();
 
-      expect(basicLogger.info).toHaveBeenCalledWith('[Basic] Starting pipeline (1 steps)');
+      expect(basicLogger.info).toHaveBeenCalledWith('[Basic] Starting pipeline (4 steps)');
       expect(basicLogger.info).toHaveBeenCalledWith(
-        expect.stringMatching(/^\[Basic\] TestStep: EXECUTED \(completed in 10ms\)$/)
+        '[Basic] [Detailed] PDP_DSA_Rossi_Mario_2026 (EXECUTED in 10ms)'
       );
-      expect(basicLogger.info).toHaveBeenCalledWith(
-        expect.stringMatching(
-          /^\[Basic\] Pipeline completed in \d+ms \(1 executed, 0 skipped, 0 failed\)$/
-        )
+      expect(basicLogger.warn).toHaveBeenCalledWith(
+        '[Basic] [Skipped] condition not met (SKIPPED)'
       );
+      expect(basicLogger.info).toHaveBeenCalledWith('[Basic] [NoDetails] EXECUTED in 3ms');
+      expect(basicLogger.error).toHaveBeenCalledWith('[Basic] [Explode] boom (FAILED in 0ms)');
+    });
+
+    it('omits skipped timing through the real Pipeline and formatter path', () => {
+      const realLogger = new LoggerService();
+      const emitted = [];
+      global.Logger = {
+        log: jest.fn((line) => emitted.push(line)),
+        getLog: jest.fn(() => emitted.join('\n')),
+        clear: jest.fn()
+      };
+      pipeline = new Pipeline(realLogger, null, { name: 'SkipPipeline' });
+      pipeline.addStep({
+        getName: () => 'ComposeEmail',
+        execute: () => ({
+          success: true,
+          skipped: true,
+          skipReason: 'condition not met',
+          durationMs: 0
+        })
+      });
+
+      pipeline.execute();
+
+      expect(emitted).toContain('  └─ ⚠️ [ComposeEmail] condition not met (SKIPPED)');
+      expect(emitted.join('\n')).not.toContain('SKIPPED in');
     });
 
     it('passes successful details and scopes nested ordinary messages below the step', () => {
