@@ -21,6 +21,7 @@ import { StepExecutionError } from './internal/errors/StepExecutionError';
  * @typedef {Object} StepExecutionResult
  * @property {boolean} success - True if step completed or continueOnError was active.
  * @property {boolean} skipped - True if shouldExecute() returned false.
+ * @property {string} [skipReason] - Stable reason when skipped is true.
  * @property {number} durationMs - Total execution time in milliseconds.
  * @property {Error} [error] - Captured error if continueOnError is true.
  *
@@ -213,10 +214,10 @@ export class Step {
     try {
       // Check if step should execute
       if (!this.shouldExecute(context)) {
-        this._logger.info(`[${this._name}] Skipped (condition not met)`);
         return {
           success: true,
           skipped: true,
+          skipReason: 'condition not met',
           durationMs: Date.now() - startTime
         };
       }
@@ -224,13 +225,10 @@ export class Step {
       // Validate context before execution
       this.verifyContext(context);
 
-      this._logger.debug(`[${this._name}] Executing...`);
-
       // Execute the step logic
       this._executeLogic(context);
 
       const durationMs = Date.now() - startTime;
-      this._logger.debug(`[${this._name}] Completed in ${durationMs}ms`);
 
       return {
         success: true,
@@ -240,12 +238,8 @@ export class Step {
     } catch (error) {
       const durationMs = Date.now() - startTime;
 
-      // Log the error
-      this._logger.error(`[${this._name}] Failed after ${durationMs}ms: ${error.message}`);
-
-      // If continueOnError is true, return success but log the error
+      // If continueOnError is true, return the error for Pipeline to report.
       if (this._continueOnError) {
-        this._logger.warn(`[${this._name}] Continuing despite error (continueOnError=true)`);
         return {
           success: true,
           skipped: false,

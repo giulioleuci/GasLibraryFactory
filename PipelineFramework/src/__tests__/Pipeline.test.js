@@ -269,6 +269,145 @@ describe('Pipeline - Comprehensive Test Suite', () => {
       };
     });
 
+    function semanticLogger() {
+      return {
+        ...mocks.logger,
+        logPipelineStart: jest.fn(),
+        logPipelineStep: jest.fn(),
+        logSummary: jest.fn(),
+        logStep: jest.fn()
+      };
+    }
+
+    it('emits ordered semantic start, step, and summary events with tree positions', () => {
+      const logger = semanticLogger();
+      const logPosition = { depth: 1, isLast: false, ancestorHasNext: [] };
+      pipeline = new Pipeline(logger, null, { name: 'NotificaPipeline', logPosition });
+      pipeline
+        .addStep({
+          getName: () => 'ResolveContext',
+          execute: () => ({ success: true, skipped: false, durationMs: 12 })
+        })
+        .addStep({
+          getName: () => 'ComposeEmail',
+          execute: () => ({
+            success: true,
+            skipped: true,
+            skipReason: 'condition not met',
+            durationMs: 0
+          })
+        })
+        .addStep({
+          getName: () => 'SendEmail',
+          execute: () => ({ success: true, skipped: false, durationMs: 5 })
+        });
+
+      pipeline.execute();
+
+      expect(logger.logPipelineStart).toHaveBeenCalledWith(
+        'NotificaPipeline',
+        3,
+        logPosition
+      );
+      expect(logger.logPipelineStep).toHaveBeenNthCalledWith(
+        2,
+        'ComposeEmail',
+        'SKIPPED',
+        'condition not met',
+        { depth: 2, isLast: false, ancestorHasNext: [true] }
+      );
+      expect(logger.logPipelineStep).toHaveBeenNthCalledWith(
+        3,
+        'SendEmail',
+        'EXECUTED',
+        'completed in 5ms',
+        { depth: 2, isLast: true, ancestorHasNext: [true] }
+      );
+      expect(logger.logSummary).toHaveBeenCalledWith(
+        '⏹️ Pipeline completed',
+        expect.any(Number),
+        '2 executed, 1 skipped, 0 failed',
+        { depth: 1, isLast: true, ancestorHasNext: [] }
+      );
+    });
+
+    it('emits one ERROR step and failed summary when a step throws', () => {
+      const logger = semanticLogger();
+      pipeline = new Pipeline(logger, null, { name: 'Failing' });
+      pipeline.addStep({
+        getName: () => 'Explode',
+        execute: () => {
+          throw new Error('boom');
+        }
+      });
+
+      const result = pipeline.execute();
+
+      expect(result.getSummary().failedSteps).toBe(1);
+      expect(logger.logPipelineStep).toHaveBeenCalledWith(
+        'Explode',
+        'ERROR',
+        'boom',
+        { depth: 1, isLast: true, ancestorHasNext: [true] }
+      );
+      expect(logger.logSummary).toHaveBeenCalledWith(
+        '⏹️ Pipeline completed',
+        expect.any(Number),
+        '0 executed, 0 skipped, 1 failed',
+        { depth: 0, isLast: true, ancestorHasNext: [] }
+      );
+    });
+
+    it('emits start and summary for dry run and zero-step pipelines', () => {
+      const dryLogger = semanticLogger();
+      const dryPipeline = new Pipeline(dryLogger, null, { name: 'Dry', dryRun: true });
+      dryPipeline.addStep(mockStep).execute();
+      expect(dryLogger.logPipelineStart).toHaveBeenCalledWith('Dry', 1, {
+        depth: 0,
+        isLast: false,
+        ancestorHasNext: []
+      });
+      expect(dryLogger.logSummary).toHaveBeenCalledWith(
+        '⏹️ Pipeline completed',
+        expect.any(Number),
+        'dry run; 0 executed, 0 skipped, 0 failed',
+        { depth: 0, isLast: true, ancestorHasNext: [] }
+      );
+
+      const emptyLogger = semanticLogger();
+      new Pipeline(emptyLogger, null, { name: 'Empty' }).execute();
+      expect(emptyLogger.logPipelineStart).toHaveBeenCalledWith('Empty', 0, {
+        depth: 0,
+        isLast: false,
+        ancestorHasNext: []
+      });
+      expect(emptyLogger.logSummary).toHaveBeenCalledWith(
+        '⏹️ Pipeline completed',
+        expect.any(Number),
+        '0 executed, 0 skipped, 0 failed',
+        { depth: 0, isLast: true, ancestorHasNext: [] }
+      );
+    });
+
+    it('falls back to basic logger methods when semantic APIs are unavailable', () => {
+      const basicLogger = {
+        debug: jest.fn(),
+        info: jest.fn(),
+        warn: jest.fn(),
+        error: jest.fn()
+      };
+      pipeline = new Pipeline(basicLogger, null, { name: 'Basic' });
+      pipeline.addStep(mockStep).execute();
+
+      expect(basicLogger.info).toHaveBeenCalledWith('[Basic] Starting pipeline (1 steps)');
+      expect(basicLogger.info).toHaveBeenCalledWith(
+        expect.stringMatching(/^\[Basic\] TestStep: EXECUTED \(completed in 10ms\)$/)
+      );
+      expect(basicLogger.info).toHaveBeenCalledWith(
+        expect.stringMatching(/^\[Basic\] Pipeline completed in \d+ms \(1 executed, 0 skipped, 0 failed\)$/)
+      );
+    });
+
     it('should execute pipeline with no steps', () => {
       const result = pipeline.execute({ test: 'data' });
 

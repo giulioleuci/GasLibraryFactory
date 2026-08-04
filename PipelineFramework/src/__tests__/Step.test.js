@@ -280,9 +280,13 @@ describe('Step - Comprehensive Test Suite', () => {
 
       const result = step.execute(context);
 
-      expect(result.success).toBe(true);
-      expect(result.skipped).toBe(true);
+      expect(result).toMatchObject({
+        success: true,
+        skipped: true,
+        skipReason: 'condition not met'
+      });
       expect(step.executionCount).toBe(0);
+      expect(mocks.logger.info).not.toHaveBeenCalledWith(expect.stringContaining('Skipped'));
     });
 
     it('should validate context before execution', () => {
@@ -303,6 +307,7 @@ describe('Step - Comprehensive Test Suite', () => {
       const failingStep = new FailingStep('failing', mocks.logger);
 
       expect(() => failingStep.execute(context)).toThrow(StepExecutionError);
+      expect(mocks.logger.error).not.toHaveBeenCalled();
     });
 
     it('should continue on error if continueOnError is true', () => {
@@ -321,6 +326,8 @@ describe('Step - Comprehensive Test Suite', () => {
       expect(result.success).toBe(true);
       expect(result.error).toBeDefined();
       expect(result.error.message).toBe('Test error');
+      expect(mocks.logger.error).not.toHaveBeenCalled();
+      expect(mocks.logger.warn).not.toHaveBeenCalled();
     });
 
     it('should measure execution duration', () => {
@@ -330,10 +337,12 @@ describe('Step - Comprehensive Test Suite', () => {
       expect(typeof result.durationMs).toBe('number');
     });
 
-    it('should log execution details', () => {
+    it('should leave routine execution logging to Pipeline', () => {
       step.execute(context);
 
-      expect(mocks.logger.debug).toHaveBeenCalled();
+      expect(mocks.logger.debug).not.toHaveBeenCalledWith(expect.stringContaining('Executing'));
+      expect(mocks.logger.debug).not.toHaveBeenCalledWith(expect.stringContaining('Completed'));
+      expect(mocks.logger.info).not.toHaveBeenCalled();
     });
 
     it('should not throw error if step is already StepExecutionError', () => {

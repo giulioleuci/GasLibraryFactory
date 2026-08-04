@@ -49,6 +49,7 @@ export class Pipeline {
     this._monitor = options.monitor || null;
     this._jobId = options.jobId || null;
     this._dryRun = options.dryRun || false;
+    this._logPosition = this._normalizeLogPosition(options.logPosition);
     this._steps = [];
     this._hooks = {
       beforeStep: [],
@@ -65,6 +66,67 @@ export class Pipeline {
    */
   _isDryRun(options = {}) {
     return options.dryRun !== undefined ? Boolean(options.dryRun) : Boolean(this._dryRun);
+  }
+
+  _normalizeLogPosition(position) {
+    const value = position && typeof position === 'object' ? position : {};
+    return {
+      depth: Math.max(0, Number.isFinite(value.depth) ? value.depth : 0),
+      isLast: Boolean(value.isLast),
+      ancestorHasNext: Array.isArray(value.ancestorHasNext) ? value.ancestorHasNext.slice() : []
+    };
+  }
+
+  _stepLogPosition(index) {
+    return {
+      depth: this._logPosition.depth + 1,
+      isLast: index === this._steps.length - 1,
+      ancestorHasNext: [...this._logPosition.ancestorHasNext, true]
+    };
+  }
+
+  _summaryLogPosition() {
+    return { ...this._logPosition, isLast: true };
+  }
+
+  _logPipelineStart() {
+    if (typeof this._logger.logPipelineStart === 'function') {
+      this._logger.logPipelineStart(this._name, this._steps.length, this._logPosition);
+    } else {
+      this._logger.info(`[${this._name}] Starting pipeline (${this._steps.length} steps)`);
+    }
+  }
+
+  _logPipelineStep(stepName, status, details, position) {
+    if (typeof this._logger.logPipelineStep === 'function') {
+      this._logger.logPipelineStep(stepName, status, details, position);
+      return;
+    }
+    const message = `[${this._name}] ${stepName}: ${status}${details ? ` (${details})` : ''}`;
+    if (status === 'ERROR') this._logger.error(message);
+    else if (status === 'SKIPPED') this._logger.warn(message);
+    else this._logger.info(message);
+  }
+
+  _logPipelineSummary(context, prefix = '') {
+    const summary = context.getSummary();
+    let details =
+      `${summary.completedSteps} executed, ${summary.skippedSteps} skipped, ` +
+      `${summary.failedSteps} failed`;
+    if (prefix) details = `${prefix}; ${details}`;
+    if (summary.stopRequested) details += `; stopped: ${summary.stopReason}`;
+    if (typeof this._logger.logSummary === 'function') {
+      this._logger.logSummary(
+        '⏹️ Pipeline completed',
+        context.getTotalDuration(),
+        details,
+        this._summaryLogPosition()
+      );
+    } else {
+      this._logger.info(
+        `[${this._name}] Pipeline completed in ${context.getTotalDuration()}ms (${details})`
+      );
+    }
   }
 
   /** @returns {string} */
@@ -199,6 +261,7 @@ export class Pipeline {
     const context = new PipelineContext(initialData);
     const dryRun = this._isDryRun(options);
     let pipelineSuccess = true;
+    this._logPipelineStart();
 
     if (dryRun) {
       const stepNames = this._steps.map((s) => s.getName());
@@ -209,14 +272,21 @@ export class Pipeline {
       );
       context.markCompleted();
       this._invokeHooks(this._hooks.onComplete, context, true);
+      this._logPipelineSummary(context, 'dry run');
       return context;
     }
 
-    this._logger.info(`[${this._name}] Starting pipeline (${this._steps.length} steps)`);
-
-    for (const step of this._steps) {
+    for (let stepIndex = 0; stepIndex < this._steps.length; stepIndex++) {
+      const step = this._steps[stepIndex];
       if (context.shouldStop()) {
-        this._logger.info(`[${this._name}] Stop requested: ${context.getStopReason()}`);
+        if (typeof this._logger.logStep === 'function') {
+          this._logger.logStep(
+            `⏹️ Stop requested: ${context.getStopReason()}`,
+            this._stepLogPosition(stepIndex)
+          );
+        } else {
+          this._logger.info(`[${this._name}] Stop requested: ${context.getStopReason()}`);
+        }
         break;
       }
 
@@ -238,6 +308,12 @@ export class Pipeline {
         pipelineSuccess = false;
         this._invokeHooks(this._hooks.onError, step, context, error);
         context.recordStepExecution(stepName, 'failed', 0, { error: error.message });
+        this._logPipelineStep(
+          stepName,
+          'ERROR',
+          error.message || 'step failed',
+          this._stepLogPosition(stepIndex)
+        );
 
         if (this._monitor && this._jobId && typeof this._monitor.logStepComplete === 'function') {
           try {
@@ -266,6 +342,21 @@ export class Pipeline {
         result.error ? { error: result.error.message } : {}
       );
 
+      const semanticStatus =
+        status === 'completed' ? 'EXECUTED' : status === 'skipped' ? 'SKIPPED' : 'ERROR';
+      const details =
+        status === 'skipped'
+          ? result.skipReason || 'condition not met'
+          : status === 'failed'
+            ? result.error?.message || 'step failed'
+            : `completed in ${result.durationMs || 0}ms`;
+      this._logPipelineStep(
+        stepName,
+        semanticStatus,
+        details,
+        this._stepLogPosition(stepIndex)
+      );
+
       if (this._monitor && this._jobId) {
         try {
           if (status === 'skipped' && typeof this._monitor.logStepSkipped === 'function') {
@@ -292,7 +383,7 @@ export class Pipeline {
     context.markCompleted();
     this._invokeHooks(this._hooks.onComplete, context, pipelineSuccess);
 
-    this._logger.info(`[${this._name}] Pipeline completed in ${context.getTotalDuration()}ms`);
+    this._logPipelineSummary(context);
 
     return context;
   }
