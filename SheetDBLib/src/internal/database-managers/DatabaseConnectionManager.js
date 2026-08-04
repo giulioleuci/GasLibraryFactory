@@ -95,6 +95,9 @@ export class DatabaseConnectionManager {
     }
 
     try {
+      Object.keys(this.facade.tables).forEach((tableName) => {
+        this.facade.tables[tableName].flush();
+      });
       this._spreadsheetService.flushBatch();
       const duration = Date.now() - this.facade._transaction.startTime;
       this._logger.info(`Transaction committed successfully (${duration}ms)`);

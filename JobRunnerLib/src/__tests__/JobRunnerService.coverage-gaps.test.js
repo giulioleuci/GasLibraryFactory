@@ -135,10 +135,10 @@ describe('JobRunnerService - Coverage Gap Tests', () => {
       const result = service.run('suspendTest', 'testType', {}, callback, false);
 
       expect(result).toBeNull();
-      expect(mockLogger.logJobSuspended).toHaveBeenCalledWith(
-        'suspendTest',
-        'state saved; automatic resume scheduled'
-      );
+      expect(mockLogger.logJobSuspended).toHaveBeenCalledWith('suspendTest', {
+        reason: 'state saved; automatic resume scheduled',
+        durationMs: expect.any(Number)
+      });
     });
 
     it('should log when job completes successfully (returns result)', () => {
@@ -160,7 +160,9 @@ describe('JobRunnerService - Coverage Gap Tests', () => {
       const result = service.run('completeTest', 'testType', {}, callback, false);
 
       expect(result).toEqual({ success: true, data: 'complete' });
-      expect(mockLogger.logJobEnd).toHaveBeenCalledWith('completeTest', true);
+      expect(mockLogger.logJobEnd).toHaveBeenCalledWith('completeTest', true, {
+        durationMs: expect.any(Number)
+      });
     });
   });
 

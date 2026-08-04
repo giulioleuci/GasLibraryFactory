@@ -25,6 +25,17 @@ class TestStep extends Step {
   }
 }
 
+class DetailedStep extends Step {
+  _executeLogic(context) {
+    context.set('generatedName', 'PDP_DSA_Rossi_Mario_2026');
+    this.logger.info('nested service detail');
+  }
+
+  _getLogDetails(context) {
+    return context.get('generatedName');
+  }
+}
+
 describe('Step - Comprehensive Test Suite', () => {
   let mocks;
 
@@ -271,6 +282,58 @@ describe('Step - Comprehensive Test Suite', () => {
       expect(result.skipped).toBe(false);
       expect(result.durationMs).toBeGreaterThanOrEqual(0);
       expect(context.get('output')).toBe(6);
+    });
+
+    it('returns details computed after successful step logic', () => {
+      const detailedStep = new DetailedStep('GenerateName', mocks.logger);
+
+      expect(detailedStep.execute(context)).toMatchObject({
+        success: true,
+        skipped: false,
+        logDetails: 'PDP_DSA_Rossi_Mario_2026'
+      });
+    });
+
+    it('does not call the success details hook for skipped steps', () => {
+      const detailedStep = new DetailedStep('GenerateName', mocks.logger, {
+        shouldExecuteCondition: () => false
+      });
+      const detailsSpy = jest.spyOn(detailedStep, '_getLogDetails');
+
+      expect(detailedStep.execute(context).skipped).toBe(true);
+      expect(detailsSpy).not.toHaveBeenCalled();
+    });
+
+    it('does not call the success details hook when step logic fails', () => {
+      class FailingDetailedStep extends DetailedStep {
+        _executeLogic() {
+          throw new Error('logic failed');
+        }
+      }
+      const failingStep = new FailingDetailedStep('GenerateName', mocks.logger, {
+        continueOnError: true
+      });
+      const detailsSpy = jest.spyOn(failingStep, '_getLogDetails');
+
+      expect(failingStep.execute(context).error.message).toBe('logic failed');
+      expect(detailsSpy).not.toHaveBeenCalled();
+    });
+
+    it('warns and omits details when the success details hook fails', () => {
+      class BrokenDetailsStep extends DetailedStep {
+        _getLogDetails() {
+          throw new Error('details failed');
+        }
+      }
+      const detailedStep = new BrokenDetailsStep('GenerateName', mocks.logger);
+
+      const result = detailedStep.execute(context);
+
+      expect(result).toMatchObject({ success: true, skipped: false });
+      expect(result).not.toHaveProperty('logDetails');
+      expect(mocks.logger.warn).toHaveBeenCalledWith(
+        '[GenerateName] Unable to collect log details: details failed'
+      );
     });
 
     it('should skip execution if shouldExecute returns false', () => {

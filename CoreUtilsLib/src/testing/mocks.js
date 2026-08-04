@@ -26,6 +26,7 @@ export class LoggerServiceMock {
     this.logPipelineStart = jest.fn().mockReturnThis();
     this.logPipelineStep = jest.fn().mockReturnThis();
     this.logSummary = jest.fn().mockReturnThis();
+    this.withPosition = jest.fn((_position, callback) => callback());
     this.setLevel = jest.fn().mockReturnThis();
     this.getLevel = jest.fn(() => 'INFO');
     this.child = jest.fn(() => this);
@@ -134,6 +135,7 @@ export class LoggerServiceMock {
     this.logPipelineStart.mockClear();
     this.logPipelineStep.mockClear();
     this.logSummary.mockClear();
+    this.withPosition.mockClear();
     this.setLevel.mockClear();
     this.getLevel.mockClear();
     this.child.mockClear();

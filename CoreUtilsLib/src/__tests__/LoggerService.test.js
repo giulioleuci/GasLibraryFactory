@@ -683,7 +683,7 @@ describe('LoggerService', () => {
       logger.logPipelineStep('Failed', 'ERROR', 'boom', {});
 
       expect(Logger.log).toHaveBeenCalledTimes(1);
-      expect(Logger.log).toHaveBeenCalledWith('❌ [Failed]: ERROR (boom)');
+      expect(Logger.log).toHaveBeenCalledWith('❌ [Failed] boom (FAILED)');
     });
 
     it('does not let malformed optional details break emission', () => {
@@ -712,10 +712,90 @@ describe('LoggerService', () => {
         })
       ).toBe(logger);
       expect(Logger.log).toHaveBeenCalledWith(
-        '  └─ ⚠️ [[MAIL] Compose]: SKIPPED (condition not met)'
+        '  └─ ⚠️ [[MAIL] Compose] condition not met (SKIPPED)'
       );
       expect(child.logBatchStart(1)).toBe(logger);
       expect(Logger.log).toHaveBeenCalledWith('📑 [PROCESSING BATCH] (1 Item in queue)');
+    });
+  });
+
+  describe('scoped tree positions', () => {
+    const outer = { depth: 1, isLast: false, ancestorHasNext: [] };
+    const inner = { depth: 2, isLast: false, ancestorHasNext: [true] };
+
+    it('returns the callback value and restores the root position', () => {
+      const result = logger.withPosition(inner, () => {
+        logger.info('nested');
+        return 42;
+      });
+
+      expect(result).toBe(42);
+      expect(Logger.log).toHaveBeenCalledWith('  │    ├─ [INFO] nested');
+      logger.info('root');
+      expect(Logger.log).toHaveBeenLastCalledWith('[INFO] root');
+    });
+
+    it('uses the innermost scope and restores nested positions', () => {
+      logger.withPosition(outer, () => {
+        logger.info('outer-before');
+        logger.withPosition(inner, () => logger.warn('inner'));
+        logger.info('outer-after');
+      });
+
+      expect(Logger.log.mock.calls.map(([line]) => line)).toEqual([
+        '  ├─ [INFO] outer-before',
+        '  │    ├─ [WARN] inner',
+        '  ├─ [INFO] outer-after'
+      ]);
+    });
+
+    it('restores the prior scope when the callback throws', () => {
+      expect(() =>
+        logger.withPosition(inner, () => {
+          throw new Error('boom');
+        })
+      ).toThrow('boom');
+
+      logger.error('root');
+      expect(Logger.log).toHaveBeenLastCalledWith('[ERROR] root');
+    });
+
+    it('prefixes every line emitted by every ordinary logging method', () => {
+      logger.setLevel('DEBUG');
+      logger.withPosition(inner, () => {
+        logger.debug('debug\ncontinued');
+        logger.info('info');
+        logger.warn('warn');
+        logger.error('error');
+        logger.log('INFO', 'dynamic');
+      });
+
+      expect(Logger.log.mock.calls.map(([line]) => line)).toEqual([
+        '  │    ├─ [DEBUG] debug',
+        '  │       continued',
+        '  │    ├─ [INFO] info',
+        '  │    ├─ [WARN] warn',
+        '  │    ├─ [ERROR] error',
+        '  │    ├─ [INFO] dynamic'
+      ]);
+    });
+
+    it('lets explicit semantic positions override inherited scope', () => {
+      logger.withPosition(inner, () => {
+        logger.logStep('implicit');
+        logger.logStep('explicit', outer);
+      });
+
+      expect(Logger.log.mock.calls.map(([line]) => line)).toEqual([
+        '  │    ├─ implicit',
+        '  ├─ explicit'
+      ]);
+    });
+
+    it('exposes the same scope through child loggers', () => {
+      const child = logger.child('MAIL');
+      expect(child.withPosition(inner, () => child.info('nested'))).toBe(logger);
+      expect(Logger.log).toHaveBeenCalledWith('  │    ├─ [INFO] [MAIL] nested');
     });
   });
 

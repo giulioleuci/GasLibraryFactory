@@ -200,6 +200,13 @@ export class CapturingLogger {
     return this;
   }
 
+  withPosition(position, callback) {
+    if (typeof this._realLogger.withPosition === 'function') {
+      return this._realLogger.withPosition(position, callback);
+    }
+    return callback();
+  }
+
   _semantic(method, args, level, message, status) {
     this._capture(level, message, { method, status });
     if (typeof this._realLogger[method] === 'function') {

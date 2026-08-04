@@ -6,7 +6,7 @@
  */
 
 /**
- * @typedef {string|string[]|Object<string, string|number|boolean|null|undefined>} LogDetails
+ * @typedef {string|string[]|Object<string, string|number|boolean|null|undefined|Array<string|number|boolean|null>>} LogDetails
  */
 
 const MAJOR_BORDER = '='.repeat(70);
@@ -81,6 +81,22 @@ export class StructuredLogFormatter {
     let message = isSuccess
       ? `${status} Job '${this._text(jobName)}' completed successfully`
       : `${status} Job '${this._text(jobName)}' failed`;
+    if (this._isDetailEnvelope(details)) {
+      const content = this._detailsText(
+        details.reason !== undefined ? details.reason : details.content
+      );
+      const duration = this._duration(details.durationMs);
+      if (content) {
+        message += `: ${content}`;
+      }
+      const terminalStatus = isSuccess ? 'COMPLETED' : 'FAILED';
+      if (duration !== null) {
+        message += ` (${terminalStatus} in ${duration}ms)`;
+      } else if (content) {
+        message += ` (${terminalStatus})`;
+      }
+      return [MAJOR_BORDER, ...this._splitPlain(message), MAJOR_BORDER];
+    }
     const detailText = this._detailsText(details);
     if (detailText) {
       message += ` (${detailText})`;
@@ -91,6 +107,21 @@ export class StructuredLogFormatter {
   /** @returns {string[]} */
   jobSuspended(jobName, details) {
     let message = `⏸️ [SUSPENDED] Job '${this._text(jobName)}' suspended`;
+    if (this._isDetailEnvelope(details)) {
+      const content = this._detailsText(
+        details.reason !== undefined ? details.reason : details.content
+      );
+      const duration = this._duration(details.durationMs);
+      if (content) {
+        message += `: ${content}`;
+      }
+      if (duration !== null) {
+        message += ` (SUSPENDED after ${duration}ms)`;
+      } else if (content) {
+        message += ' (SUSPENDED)';
+      }
+      return [MAJOR_BORDER, ...this._splitPlain(message), MAJOR_BORDER];
+    }
     const detailText = this._detailsText(details);
     if (detailText) {
       message += ` (${detailText})`;
@@ -137,25 +168,47 @@ export class StructuredLogFormatter {
       ? status
       : this._text(status || 'UNKNOWN');
     const icon = STEP_ICONS[normalizedStatus] || ITEM_ICONS.GENERIC;
-    const detailText = this._detailsText(details);
-    let message = `${icon} [${this._text(stepName)}]: ${normalizedStatus}`;
+    const envelope = this._isDetailEnvelope(details) ? details : null;
+    const detailText = this._detailsText(
+      envelope ? (envelope.reason !== undefined ? envelope.reason : envelope.content) : details
+    );
+    const duration = envelope ? this._duration(envelope.durationMs) : null;
+    const displayStatus = normalizedStatus === 'ERROR' ? 'FAILED' : normalizedStatus;
+    const timedStatus = duration === null ? displayStatus : `${displayStatus} in ${duration}ms`;
+    let message = `${icon} [${this._text(stepName)}]`;
     if (detailText) {
-      message +=
-        normalizedStatus === 'EXECUTED' && detailText.indexOf('completed in ') === 0
-          ? ` ${detailText.substring('completed '.length)}`
-          : ` (${detailText})`;
+      message += ` ${detailText} (${timedStatus})`;
+    } else {
+      message += ` ${timedStatus}`;
     }
     return this._treeLines(message, position);
   }
 
   /** @returns {string[]} */
   summary(label, durationMs, itemDetails, position) {
-    let message = `${this._text(label)} in ${this._count(durationMs)}ms`;
+    let message = `${this._text(label)}:`;
     const details = this._detailsText(itemDetails);
     if (details) {
-      message += ` (${details})`;
+      message += ` ${details} (COMPLETED in ${this._count(durationMs)}ms)`;
+    } else {
+      message += ` COMPLETED in ${this._count(durationMs)}ms`;
     }
     return this._treeLines(message, position);
+  }
+
+  _isDetailEnvelope(details) {
+    return Boolean(
+      details &&
+      typeof details === 'object' &&
+      !Array.isArray(details) &&
+      (Object.prototype.hasOwnProperty.call(details, 'content') ||
+        Object.prototype.hasOwnProperty.call(details, 'durationMs') ||
+        Object.prototype.hasOwnProperty.call(details, 'reason'))
+    );
+  }
+
+  _duration(value) {
+    return Number.isFinite(value) && value >= 0 ? value : null;
   }
 
   _resumeDetails(details) {
@@ -178,9 +231,15 @@ export class StructuredLogFormatter {
     }
     try {
       if (Array.isArray(details)) {
+        if (details.length === 0) {
+          return '';
+        }
         return details.map((item) => this._text(item)).join('\n');
       }
       if (typeof details === 'object') {
+        if (Object.keys(details).length === 0) {
+          return '';
+        }
         return this._safeStringify(details);
       }
       return String(details);

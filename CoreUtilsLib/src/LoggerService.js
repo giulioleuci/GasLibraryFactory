@@ -40,6 +40,7 @@ export class LoggerService {
     };
 
     this._structured = new StructuredLogFormatter(this._safeStringify.bind(this));
+    this._positionStack = [];
   }
 
   /**
@@ -177,6 +178,40 @@ export class LoggerService {
     return formattedMessage;
   }
 
+  _currentPosition() {
+    return this._positionStack.length > 0
+      ? this._positionStack[this._positionStack.length - 1]
+      : undefined;
+  }
+
+  _resolvePosition(position) {
+    return position === undefined ? this._currentPosition() : position;
+  }
+
+  _emit(level, message, context = null) {
+    if (!this._isLevelActive(level)) {
+      return this;
+    }
+    const evaluatedMessage = this._evaluateMessage(message);
+    const evaluatedContext = context !== null ? this._evaluateMessage(context) : null;
+    const formatted = this._formatMessage(level, evaluatedMessage, evaluatedContext);
+    const position = this._currentPosition();
+    if (position === undefined) {
+      Logger.log(formatted);
+      return this;
+    }
+    return this._writeStructured(level, this._structured.step(formatted, position));
+  }
+
+  withPosition(position, callback) {
+    this._positionStack.push(position);
+    try {
+      return callback();
+    } finally {
+      this._positionStack.pop();
+    }
+  }
+
   /**
    * Log a DEBUG message with optional context and lazy evaluation.
    * @param {string|Object|Function} message - Content or callback.
@@ -184,13 +219,7 @@ export class LoggerService {
    * @returns {LoggerService} Fluent instance for chaining.
    */
   debug(message, context = null) {
-    if (!this._isLevelActive('DEBUG')) {
-      return this;
-    }
-    const evaluatedMessage = this._evaluateMessage(message);
-    const evaluatedContext = context !== null ? this._evaluateMessage(context) : null;
-    Logger.log(this._formatMessage('DEBUG', evaluatedMessage, evaluatedContext));
-    return this;
+    return this._emit('DEBUG', message, context);
   }
 
   /**
@@ -200,13 +229,7 @@ export class LoggerService {
    * @returns {LoggerService} Fluent instance for chaining.
    */
   info(message, context = null) {
-    if (!this._isLevelActive('INFO')) {
-      return this;
-    }
-    const evaluatedMessage = this._evaluateMessage(message);
-    const evaluatedContext = context !== null ? this._evaluateMessage(context) : null;
-    Logger.log(this._formatMessage('INFO', evaluatedMessage, evaluatedContext));
-    return this;
+    return this._emit('INFO', message, context);
   }
 
   /**
@@ -216,13 +239,7 @@ export class LoggerService {
    * @returns {LoggerService} Fluent instance for chaining.
    */
   warn(message, context = null) {
-    if (!this._isLevelActive('WARN')) {
-      return this;
-    }
-    const evaluatedMessage = this._evaluateMessage(message);
-    const evaluatedContext = context !== null ? this._evaluateMessage(context) : null;
-    Logger.log(this._formatMessage('WARN', evaluatedMessage, evaluatedContext));
-    return this;
+    return this._emit('WARN', message, context);
   }
 
   /**
@@ -232,13 +249,7 @@ export class LoggerService {
    * @returns {LoggerService} Fluent instance for chaining.
    */
   error(message, context = null) {
-    if (!this._isLevelActive('ERROR')) {
-      return this;
-    }
-    const evaluatedMessage = this._evaluateMessage(message);
-    const evaluatedContext = context !== null ? this._evaluateMessage(context) : null;
-    Logger.log(this._formatMessage('ERROR', evaluatedMessage, evaluatedContext));
-    return this;
+    return this._emit('ERROR', message, context);
   }
 
   /**
@@ -269,9 +280,7 @@ export class LoggerService {
     if (this._logLevels[upperLevel] === undefined || !this._isLevelActive(upperLevel)) {
       return this;
     }
-    const evaluatedMessage = this._evaluateMessage(message);
-    Logger.log(this._formatMessage(upperLevel, evaluatedMessage));
-    return this;
+    return this._emit(upperLevel, message);
   }
 
   /** @private */
@@ -323,14 +332,17 @@ export class LoggerService {
 
   /** Emit a generic tree step. @returns {LoggerService} */
   logStep(message, position) {
-    return this._writeStructured('INFO', this._structured.step(message, position));
+    return this._writeStructured(
+      'INFO',
+      this._structured.step(message, this._resolvePosition(position))
+    );
   }
 
   /** Start a pipeline trace. @returns {LoggerService} */
   logPipelineStart(pipelineName, totalSteps, position) {
     return this._writeStructured(
       'INFO',
-      this._structured.pipelineStart(pipelineName, totalSteps, position)
+      this._structured.pipelineStart(pipelineName, totalSteps, this._resolvePosition(position))
     );
   }
 
@@ -339,7 +351,7 @@ export class LoggerService {
     const level = status === 'ERROR' ? 'ERROR' : status === 'SKIPPED' ? 'WARN' : 'INFO';
     return this._writeStructured(
       level,
-      this._structured.pipelineStep(stepName, status, details, position)
+      this._structured.pipelineStep(stepName, status, details, this._resolvePosition(position))
     );
   }
 
@@ -347,7 +359,7 @@ export class LoggerService {
   logSummary(label, durationMs, itemDetails, position) {
     return this._writeStructured(
       'INFO',
-      this._structured.summary(label, durationMs, itemDetails, position)
+      this._structured.summary(label, durationMs, itemDetails, this._resolvePosition(position))
     );
   }
 
@@ -407,7 +419,8 @@ export class LoggerService {
       logPipelineStep: (stepName, status, details, position) =>
         parentLogger.logPipelineStep(prefixed(stepName), status, details, position),
       logSummary: (label, durationMs, itemDetails, position) =>
-        parentLogger.logSummary(prefixed(label), durationMs, itemDetails, position)
+        parentLogger.logSummary(prefixed(label), durationMs, itemDetails, position),
+      withPosition: (position, callback) => parentLogger.withPosition(position, callback)
     };
   }
 }

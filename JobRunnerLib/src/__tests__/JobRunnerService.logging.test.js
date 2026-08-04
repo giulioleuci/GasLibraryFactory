@@ -40,7 +40,8 @@ describe('JobRunnerService - Logging Features', () => {
       logJobStart: jest.fn(),
       logJobResume: jest.fn(),
       logJobEnd: jest.fn(),
-      logJobSuspended: jest.fn()
+      logJobSuspended: jest.fn(),
+      withPosition: jest.fn((_position, callback) => callback())
     };
 
     utils = {
@@ -175,7 +176,9 @@ describe('JobRunnerService - Logging Features', () => {
       const capturedQueue = service._createQueue.mock.results[0].value;
       expect(capturedQueue).toBe(mockQueue);
       expect(logger.logJobStart).toHaveBeenCalledWith('job1', 'testJob');
-      expect(logger.logJobEnd).toHaveBeenCalledWith('job1', true);
+      expect(logger.logJobEnd).toHaveBeenCalledWith('job1', true, {
+        durationMs: expect.any(Number)
+      });
     });
 
     it('should use normal logger when no logging config provided', () => {
@@ -213,7 +216,10 @@ describe('JobRunnerService - Logging Features', () => {
       }).toThrow('Job failed');
 
       expect(mockUiService.createSidebar).toHaveBeenCalled();
-      expect(logger.logJobEnd).toHaveBeenCalledWith('job1', false, 'Job failed');
+      expect(logger.logJobEnd).toHaveBeenCalledWith('job1', false, {
+        reason: 'Job failed',
+        durationMs: expect.any(Number)
+      });
     });
 
     it('should NOT display logs when job is suspended (not completed)', () => {
@@ -225,10 +231,10 @@ describe('JobRunnerService - Logging Features', () => {
       service.run('job1', 'testJob', {}, jobHandlerCallback, false, 25 * 60 * 1000, loggingConfig);
 
       expect(mockUiService.createSidebar).not.toHaveBeenCalled();
-      expect(logger.logJobSuspended).toHaveBeenCalledWith(
-        'job1',
-        'state saved; automatic resume scheduled'
-      );
+      expect(logger.logJobSuspended).toHaveBeenCalledWith('job1', {
+        reason: 'state saved; automatic resume scheduled',
+        durationMs: expect.any(Number)
+      });
       expect(logger.logJobEnd).not.toHaveBeenCalledWith('job1', true, expect.anything());
     });
 
@@ -262,7 +268,10 @@ describe('JobRunnerService - Logging Features', () => {
 
       service.run('job1', 'testJob', {}, jobHandlerCallback);
 
-      expect(logger.logJobEnd).toHaveBeenCalledWith('job1', false, 'cancelled');
+      expect(logger.logJobEnd).toHaveBeenCalledWith('job1', false, {
+        reason: 'cancelled',
+        durationMs: expect.any(Number)
+      });
       expect(logger.logJobSuspended).not.toHaveBeenCalled();
     });
 
@@ -272,7 +281,10 @@ describe('JobRunnerService - Logging Features', () => {
 
       service.run('job1', 'testJob', {}, jobHandlerCallback);
 
-      expect(logger.logJobEnd).toHaveBeenCalledWith('job1', false, 'failed');
+      expect(logger.logJobEnd).toHaveBeenCalledWith('job1', false, {
+        reason: 'failed',
+        durationMs: expect.any(Number)
+      });
       expect(logger.logJobSuspended).not.toHaveBeenCalled();
     });
   });
@@ -308,11 +320,90 @@ describe('JobRunnerService - Logging Features', () => {
         'testJob',
         expect.objectContaining({ checkpoint: 'nextIndex: 4', percentage: 40 })
       );
-      expect(logger.logJobSuspended).toHaveBeenCalledWith(
-        'job1',
-        'state saved; automatic resume scheduled'
-      );
+      expect(logger.logJobSuspended).toHaveBeenCalledWith('job1', {
+        reason: 'state saved; automatic resume scheduled',
+        durationMs: expect.any(Number)
+      });
       expect(logger.logJobEnd).not.toHaveBeenCalledWith('job1', true, expect.anything());
+    });
+  });
+
+  describe('optional definitions and terminal timing', () => {
+    const jobHandlerCallback = (queue) => {
+      queue.registerJobHandler('dynamic', function* () {
+        return { success: true };
+      });
+    };
+
+    it('runs a dynamic job without strict definition retrieval or error logging', () => {
+      const getDefinitionSpy = jest.spyOn(registry, 'getDefinition');
+      const jobExistsSpy = jest.spyOn(registry, 'jobExists');
+      logger.error.mockClear();
+
+      service.run('dynamic-name', 'dynamic', {}, jobHandlerCallback);
+
+      expect(jobExistsSpy).toHaveBeenCalledWith('dynamic-name');
+      expect(getDefinitionSpy).not.toHaveBeenCalled();
+      expect(logger.error).not.toHaveBeenCalled();
+    });
+
+    it('reports 275ms for successful completion', () => {
+      jest.spyOn(Date, 'now').mockReturnValueOnce(1000).mockReturnValue(1275);
+
+      service.run('dynamic-name', 'dynamic', {}, jobHandlerCallback);
+
+      expect(logger.logJobEnd).toHaveBeenCalledWith('dynamic-name', true, {
+        durationMs: 275
+      });
+    });
+
+    it('reports 275ms for suspension', () => {
+      jest.spyOn(Date, 'now').mockReturnValueOnce(1000).mockReturnValue(1275);
+      mockQueue.execute.mockReturnValue(null);
+      mockQueue.getStatus.mockReturnValue({ state: 'to_resume', percentage: 40 });
+
+      service.run('dynamic-name', 'dynamic', {}, jobHandlerCallback);
+
+      expect(logger.logJobSuspended).toHaveBeenCalledWith('dynamic-name', {
+        reason: 'state saved; automatic resume scheduled',
+        durationMs: 275
+      });
+    });
+
+    it.each(['cancelled', 'failed'])('reports 275ms for %s status', (state) => {
+      jest.spyOn(Date, 'now').mockReturnValueOnce(1000).mockReturnValue(1275);
+      mockQueue.execute.mockReturnValue(null);
+      mockQueue.getStatus.mockReturnValue({ state, percentage: 40 });
+
+      service.run('dynamic-name', 'dynamic', {}, jobHandlerCallback);
+
+      expect(logger.logJobEnd).toHaveBeenCalledWith('dynamic-name', false, {
+        reason: state,
+        durationMs: 275
+      });
+    });
+
+    it('reports 275ms when execution throws', () => {
+      jest.spyOn(Date, 'now').mockReturnValueOnce(1000).mockReturnValue(1275);
+      mockQueue.execute.mockImplementation(() => {
+        throw new Error('exploded');
+      });
+
+      expect(() => service.run('dynamic-name', 'dynamic', {}, jobHandlerCallback)).toThrow(
+        'exploded'
+      );
+      expect(logger.logJobEnd).toHaveBeenCalledWith('dynamic-name', false, {
+        reason: 'exploded',
+        durationMs: 275
+      });
+    });
+
+    it('lets CapturingLogger preserve the scoped logger surface', () => {
+      const capturingLogger = new CapturingLogger(logger);
+      const position = { depth: 1, isLast: false, ancestorHasNext: [] };
+
+      expect(capturingLogger.withPosition(position, () => 42)).toBe(42);
+      expect(logger.withPosition).toHaveBeenCalledWith(position, expect.any(Function));
     });
   });
 

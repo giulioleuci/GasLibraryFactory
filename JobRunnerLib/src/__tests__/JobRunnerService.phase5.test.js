@@ -368,11 +368,10 @@ describe('JobRunnerService - Phase 5 Coverage Tests', () => {
       }).toThrow('Job execution failed');
 
       // Verify terminal failure was emitted once through the semantic channel
-      expect(logger.logJobEnd).toHaveBeenCalledWith(
-        'error-job',
-        false,
-        'Job execution failed'
-      );
+      expect(logger.logJobEnd).toHaveBeenCalledWith('error-job', false, {
+        reason: 'Job execution failed',
+        durationMs: expect.any(Number)
+      });
     });
   });
 
@@ -649,13 +648,15 @@ describe('JobRunnerService - Phase 5 Coverage Tests', () => {
 
       // If job was suspended (returned null), verify logging
       if (result === null) {
-        expect(logger.logJobSuspended).toHaveBeenCalledWith(
-          'long-job',
-          'state saved; automatic resume scheduled'
-        );
+        expect(logger.logJobSuspended).toHaveBeenCalledWith('long-job', {
+          reason: 'state saved; automatic resume scheduled',
+          durationMs: expect.any(Number)
+        });
       } else {
         // Job completed successfully
-        expect(logger.logJobEnd).toHaveBeenCalledWith('long-job', true);
+        expect(logger.logJobEnd).toHaveBeenCalledWith('long-job', true, {
+          durationMs: expect.any(Number)
+        });
       }
     });
   });

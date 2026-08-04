@@ -88,6 +88,15 @@ export class Pipeline {
     return { ...this._logPosition, isLast: true };
   }
 
+  _executionLogPosition(index) {
+    const stepPosition = this._stepLogPosition(index);
+    return {
+      depth: stepPosition.depth + 1,
+      isLast: false,
+      ancestorHasNext: [...stepPosition.ancestorHasNext, !stepPosition.isLast]
+    };
+  }
+
   _logPipelineStart() {
     if (typeof this._logger.logPipelineStart === 'function') {
       this._logger.logPipelineStart(this._name, this._steps.length, this._logPosition);
@@ -101,7 +110,15 @@ export class Pipeline {
       this._logger.logPipelineStep(stepName, status, details, position);
       return;
     }
-    const message = `[${this._name}] ${stepName}: ${status}${details ? ` (${details})` : ''}`;
+    const envelope =
+      details && typeof details === 'object' && !Array.isArray(details) ? details : {};
+    const reason = envelope.reason !== undefined ? envelope.reason : details;
+    const duration = Number.isFinite(envelope.durationMs) ? envelope.durationMs : 0;
+    const fallbackDetails =
+      status === 'EXECUTED'
+        ? `completed in ${duration}ms`
+        : reason || (status === 'SKIPPED' ? 'condition not met' : 'step failed');
+    const message = `[${this._name}] ${stepName}: ${status} (${fallbackDetails})`;
     if (status === 'ERROR') {
       this._logger.error(message);
     } else if (status === 'SKIPPED') {
@@ -310,7 +327,11 @@ export class Pipeline {
 
       let result;
       try {
-        result = this._executeStep(step, context);
+        const executeStep = () => this._executeStep(step, context);
+        result =
+          typeof this._logger.withPosition === 'function'
+            ? this._logger.withPosition(this._executionLogPosition(stepIndex), executeStep)
+            : executeStep();
       } catch (error) {
         pipelineSuccess = false;
         this._invokeHooks(this._hooks.onError, step, context, error);
@@ -318,7 +339,7 @@ export class Pipeline {
         this._logPipelineStep(
           stepName,
           'ERROR',
-          error.message || 'step failed',
+          { reason: error.message || 'step failed', durationMs: 0 },
           this._stepLogPosition(stepIndex)
         );
 
@@ -353,10 +374,10 @@ export class Pipeline {
         status === 'completed' ? 'EXECUTED' : status === 'skipped' ? 'SKIPPED' : 'ERROR';
       const details =
         status === 'skipped'
-          ? result.skipReason || 'condition not met'
+          ? { reason: result.skipReason || 'condition not met', durationMs: result.durationMs || 0 }
           : status === 'failed'
-            ? result.error?.message || 'step failed'
-            : `completed in ${result.durationMs || 0}ms`;
+            ? { reason: result.error?.message || 'step failed', durationMs: result.durationMs || 0 }
+            : { content: result.logDetails, durationMs: result.durationMs || 0 };
       this._logPipelineStep(stepName, semanticStatus, details, this._stepLogPosition(stepIndex));
 
       if (this._monitor && this._jobId) {

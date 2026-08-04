@@ -319,6 +319,73 @@ describe('DatabaseService - Comprehensive Test Suite', () => {
     });
 
     describe('commit()', () => {
+      it('drains every table queue before flushing the spreadsheet batch', () => {
+        const callOrder = [];
+        db.tables = {
+          LOG_FOLD: {
+            _rowsCache: [],
+            _invalidateInternalCache: jest.fn(),
+            flush: jest.fn(() => {
+              callOrder.push('LOG_FOLD.flush');
+              return 1;
+            })
+          },
+          LOG_DOCS: {
+            _rowsCache: [],
+            _invalidateInternalCache: jest.fn(),
+            flush: jest.fn(() => {
+              callOrder.push('LOG_DOCS.flush');
+              return 1;
+            })
+          }
+        };
+        mocks.spreadsheetService.flushBatch.mockImplementation(() => {
+          callOrder.push('spreadsheet.flushBatch');
+        });
+
+        db.beginTransaction();
+        db.commit();
+
+        expect(callOrder).toEqual(['LOG_FOLD.flush', 'LOG_DOCS.flush', 'spreadsheet.flushBatch']);
+        expect(db.inTransaction()).toBe(false);
+      });
+
+      it('rolls back and skips the spreadsheet flush when a table queue fails', () => {
+        const callOrder = [];
+        db.tables = {
+          LOG_FOLD: {
+            _rowsCache: [],
+            _invalidateInternalCache: jest.fn(),
+            flush: jest.fn(() => {
+              callOrder.push('LOG_FOLD.flush');
+              return 1;
+            })
+          },
+          LOG_DOCS: {
+            _rowsCache: [],
+            _invalidateInternalCache: jest.fn(),
+            flush: jest.fn(() => {
+              callOrder.push('LOG_DOCS.flush');
+              throw new Error('table flush failed');
+            })
+          }
+        };
+
+        db.beginTransaction();
+        mocks.logger.info.mockClear();
+
+        expect(() => db.commit()).toThrow('Transaction commit failed: table flush failed');
+        expect(callOrder).toEqual(['LOG_FOLD.flush', 'LOG_DOCS.flush']);
+        expect(mocks.spreadsheetService.flushBatch).not.toHaveBeenCalled();
+        expect(mocks.logger.info).not.toHaveBeenCalledWith(
+          expect.stringContaining('Transaction committed successfully')
+        );
+        expect(mocks.logger.error).toHaveBeenCalledWith(
+          'Transaction commit failed: table flush failed'
+        );
+        expect(db.inTransaction()).toBe(true);
+      });
+
       it('should commit transaction successfully', () => {
         db.beginTransaction();
 

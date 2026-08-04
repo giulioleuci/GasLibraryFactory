@@ -47,39 +47,39 @@ export class JobRunnerExecutionController {
     );
   }
 
-  _logTerminal(logger, jobName, result, status) {
+  _logTerminal(logger, jobName, result, status, durationMs) {
     const state = status && status.state;
     if (state === 'cancelled') {
       this._semantic(
         logger,
         'logJobEnd',
-        [jobName, false, 'cancelled'],
+        [jobName, false, { reason: 'cancelled', durationMs }],
         'error',
-        `Job ${jobName} cancelled`
+        `Job ${jobName} cancelled after ${durationMs}ms`
       );
     } else if (state === 'failed' || state === 'error') {
       this._semantic(
         logger,
         'logJobEnd',
-        [jobName, false, state],
+        [jobName, false, { reason: state, durationMs }],
         'error',
-        `Job ${jobName} failed (${state})`
+        `Job ${jobName} failed (${state}) after ${durationMs}ms`
       );
     } else if (result === null) {
       this._semantic(
         logger,
         'logJobSuspended',
-        [jobName, 'state saved; automatic resume scheduled'],
+        [jobName, { reason: 'state saved; automatic resume scheduled', durationMs }],
         'warn',
-        `Job ${jobName} suspended; automatic resume scheduled`
+        `Job ${jobName} suspended; automatic resume scheduled after ${durationMs}ms`
       );
     } else {
       this._semantic(
         logger,
         'logJobEnd',
-        [jobName, true],
+        [jobName, true, { durationMs }],
         'info',
-        `Job ${jobName} completed successfully`
+        `Job ${jobName} completed successfully in ${durationMs}ms`
       );
     }
   }
@@ -130,6 +130,7 @@ export class JobRunnerExecutionController {
       effectiveLogger = capturingLogger;
       this._logger.debug('MyJobRunnerService.run: Capturing logger enabled');
     }
+    const startedAt = Date.now();
     this._logJobStart(effectiveLogger, jobName, jobType);
 
     const queue = this.facade._createQueue();
@@ -143,7 +144,9 @@ export class JobRunnerExecutionController {
     };
     jobHandlerRegistryCallback(queue, services);
 
-    const jobDefinition = this._jobDefinitionRegistry.getDefinition(jobName);
+    const jobDefinition = this._jobDefinitionRegistry.jobExists(jobName)
+      ? this._jobDefinitionRegistry.getDefinition(jobName)
+      : null;
     if (jobDefinition) {
       parameters.jobDefinition = jobDefinition;
       effectiveLogger.debug(`MyJobRunnerService.run: Job definition found for '${jobName}'`);
@@ -156,7 +159,7 @@ export class JobRunnerExecutionController {
     try {
       result = queue.execute(jobName, jobType, parameters, forceRestart);
       const status = this._status(queue, jobName, result);
-      this._logTerminal(effectiveLogger, jobName, result, status);
+      this._logTerminal(effectiveLogger, jobName, result, status, Date.now() - startedAt);
       jobCompleted =
         result !== null ||
         status.state === 'cancelled' ||
@@ -167,7 +170,7 @@ export class JobRunnerExecutionController {
       this._semantic(
         effectiveLogger,
         'logJobEnd',
-        [jobName, false, err.message],
+        [jobName, false, { reason: err.message, durationMs: Date.now() - startedAt }],
         'error',
         `Job ${jobName} failed: ${err.message}`
       );
@@ -187,6 +190,7 @@ export class JobRunnerExecutionController {
   }
 
   resume(jobName, jobHandlerRegistryCallback, maxDurationMs = 25 * 60 * 1000) {
+    const startedAt = Date.now();
     if (!jobName) {
       const triggerId = this.facade._getCurrentTriggerId();
       if (triggerId) {
@@ -247,7 +251,9 @@ export class JobRunnerExecutionController {
     };
     jobHandlerRegistryCallback(queue, services);
 
-    const jobDefinition = this._jobDefinitionRegistry.getDefinition(jobName);
+    const jobDefinition = this._jobDefinitionRegistry.jobExists(jobName)
+      ? this._jobDefinitionRegistry.getDefinition(jobName)
+      : null;
     const parameters = { services: services };
     if (jobDefinition) {
       parameters.jobDefinition = jobDefinition;
@@ -256,13 +262,13 @@ export class JobRunnerExecutionController {
     try {
       const result = queue.execute(jobName, jobType, parameters, false);
       const status = this._status(queue, jobName, result);
-      this._logTerminal(this._logger, jobName, result, status);
+      this._logTerminal(this._logger, jobName, result, status, Date.now() - startedAt);
       return result;
     } catch (error) {
       this._semantic(
         this._logger,
         'logJobEnd',
-        [jobName, false, error.message],
+        [jobName, false, { reason: error.message, durationMs: Date.now() - startedAt }],
         'error',
         `Job ${jobName} failed while resuming: ${error.message}`
       );

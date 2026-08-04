@@ -23,6 +23,7 @@ import { StepExecutionError } from './internal/errors/StepExecutionError';
  * @property {boolean} skipped - True if shouldExecute() returned false.
  * @property {string} [skipReason] - Stable reason when skipped is true.
  * @property {number} durationMs - Total execution time in milliseconds.
+ * @property {*} [logDetails] - Optional success details for pipeline observability.
  * @property {Error} [error] - Captured error if continueOnError is true.
  *
  * @example
@@ -202,6 +203,16 @@ export class Step {
   }
 
   /**
+   * Returns optional success details for pipeline observability.
+   * @param {PipelineContext} _context - Completed execution context.
+   * @returns {*|null} Scalar, short scalar array, or null when no detail is available.
+   * @protected
+   */
+  _getLogDetails(_context) {
+    return null;
+  }
+
+  /**
    * Orchestrates the step lifecycle: condition check, validation, logic execution, and error handling.
    *
    * @param {PipelineContext} context - Active pipeline execution context.
@@ -229,12 +240,17 @@ export class Step {
       this._executeLogic(context);
 
       const durationMs = Date.now() - startTime;
-
-      return {
+      const result = {
         success: true,
         skipped: false,
         durationMs
       };
+      try {
+        result.logDetails = this._getLogDetails(context);
+      } catch (detailError) {
+        this._logger.warn(`[${this._name}] Unable to collect log details: ${detailError.message}`);
+      }
+      return result;
     } catch (error) {
       const durationMs = Date.now() - startTime;
 

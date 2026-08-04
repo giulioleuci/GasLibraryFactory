@@ -78,6 +78,31 @@ describe('StructuredLogFormatter', () => {
     ]);
   });
 
+  it('renders content-first timed job terminal envelopes', () => {
+    expect(formatter.jobEnd('dynamic-name', true, { durationMs: 275 })).toEqual([
+      '======================================================================',
+      "🏁 [COMPLETED] Job 'dynamic-name' completed successfully (COMPLETED in 275ms)",
+      '======================================================================'
+    ]);
+    expect(
+      formatter.jobEnd('dynamic-name', false, { reason: 'cancelled', durationMs: 275 })
+    ).toEqual([
+      '======================================================================',
+      "❌ [FAILED] Job 'dynamic-name' failed: cancelled (FAILED in 275ms)",
+      '======================================================================'
+    ]);
+    expect(
+      formatter.jobSuspended('dynamic-name', {
+        reason: 'state saved; automatic resume scheduled',
+        durationMs: 275
+      })
+    ).toEqual([
+      '======================================================================',
+      "⏸️ [SUSPENDED] Job 'dynamic-name' suspended: state saved; automatic resume scheduled (SUSPENDED after 275ms)",
+      '======================================================================'
+    ]);
+  });
+
   it.each([
     [1, undefined, '📑 [PROCESSING BATCH] (1 Item in queue)'],
     [3, undefined, '📑 [PROCESSING BATCH] (3 Items in queue)'],
@@ -105,44 +130,90 @@ describe('StructuredLogFormatter', () => {
     ]);
   });
 
-  it('renders exact skipped pipeline step', () => {
+  it('renders content-first pipeline steps with timing after the status', () => {
     expect(
-      formatter.pipelineStep('ComposeEmail', 'SKIPPED', 'condition not met', {
-        depth: 2,
-        isLast: true,
-        ancestorHasNext: [true]
-      })
-    ).toEqual(['  │    └─ ⚠️ [ComposeEmail]: SKIPPED (condition not met)']);
+      formatter.pipelineStep(
+        'GenerateName',
+        'EXECUTED',
+        { content: 'PDP_DSA_Rossi_Mario_2026', durationMs: 4 },
+        { depth: 2, isLast: false, ancestorHasNext: [true] }
+      )
+    ).toEqual(['  │    ├─ ✅ [GenerateName] PDP_DSA_Rossi_Mario_2026 (EXECUTED in 4ms)']);
+
+    expect(
+      formatter.pipelineStep(
+        'AnalyzeContext',
+        'EXECUTED',
+        { durationMs: 0 },
+        { depth: 2, isLast: false, ancestorHasNext: [true] }
+      )
+    ).toEqual(['  │    ├─ ✅ [AnalyzeContext] EXECUTED in 0ms']);
   });
 
-  it('renders every pipeline status and normalizes unknown status', () => {
+  it('renders exact skipped and failed pipeline reasons from the detail envelope', () => {
+    expect(
+      formatter.pipelineStep(
+        'ComposeEmail',
+        'SKIPPED',
+        { reason: 'condition not met' },
+        {
+          depth: 2,
+          isLast: true,
+          ancestorHasNext: [true]
+        }
+      )
+    ).toEqual(['  │    └─ ⚠️ [ComposeEmail] condition not met (SKIPPED)']);
+
+    expect(
+      formatter.pipelineStep(
+        'SendEmail',
+        'ERROR',
+        { reason: 'network', durationMs: 9 },
+        { depth: 1, isLast: false, ancestorHasNext: [] }
+      )
+    ).toEqual(['  ├─ ❌ [SendEmail] network (FAILED in 9ms)']);
+  });
+
+  it('preserves legacy scalar, array, object, empty, and unknown pipeline details', () => {
     const position = { depth: 1, isLast: false, ancestorHasNext: [] };
     expect(formatter.pipelineStep('Load', 'EXECUTED', 'completed in 12ms', position)).toEqual([
-      '  ├─ ✅ [Load]: EXECUTED in 12ms'
+      '  ├─ ✅ [Load] completed in 12ms (EXECUTED)'
     ]);
-    expect(formatter.pipelineStep('Send', 'ERROR', 'network', position)).toEqual([
-      '  ├─ ❌ [Send]: ERROR (network)'
+    expect(formatter.pipelineStep('Validate', 'SKIPPED', ['missing', 2], position)).toEqual([
+      '  ├─ ⚠️ [Validate] missing',
+      '     2 (SKIPPED)'
+    ]);
+    expect(formatter.pipelineStep('Send', 'ERROR', { code: 503 }, position)).toEqual([
+      '  ├─ ❌ [Send] {"code":503} (FAILED)'
     ]);
     expect(formatter.pipelineStep('Other', 'UNKNOWN', undefined, position)).toEqual([
-      '  ├─ 📦 [Other]: UNKNOWN'
+      '  ├─ 📦 [Other] UNKNOWN'
+    ]);
+    expect(formatter.pipelineStep('Empty', 'EXECUTED', {}, position)).toEqual([
+      '  ├─ ✅ [Empty] EXECUTED'
     ]);
   });
 
   it('repeats tree indentation for multiline details', () => {
     expect(
-      formatter.pipelineStep('Validate', 'ERROR', 'first\nsecond', {
-        depth: 2,
-        isLast: false,
-        ancestorHasNext: [true]
-      })
-    ).toEqual(['  │    ├─ ❌ [Validate]: ERROR (first', '  │       second)']);
+      formatter.pipelineStep(
+        'Validate',
+        'ERROR',
+        { reason: 'first\nsecond' },
+        {
+          depth: 2,
+          isLast: false,
+          ancestorHasNext: [true]
+        }
+      )
+    ).toEqual(['  │    ├─ ❌ [Validate] first', '  │       second (FAILED)']);
   });
 
   it('safely renders circular object details', () => {
     const details = { name: 'root' };
     details.self = details;
     expect(formatter.summary('Done', 5, details)).toEqual([
-      'Done in 5ms ({"name":"root","self":"[Circular reference]"})'
+      'Done: {"name":"root","self":"[Circular reference]"} (COMPLETED in 5ms)'
     ]);
   });
 
@@ -158,7 +229,7 @@ describe('StructuredLogFormatter', () => {
     expect(formatter.jobEnd('job-1', false, broken)[1]).toContain('[Unrenderable details]');
   });
 
-  it('renders pipeline start, generic step, and summary positions', () => {
+  it('renders pipeline start, generic step, and content-first summary positions', () => {
     expect(
       formatter.pipelineStart('NotificaPipeline', 3, {
         depth: 1,
@@ -170,11 +241,12 @@ describe('StructuredLogFormatter', () => {
       '  ├─ saved'
     ]);
     expect(
-      formatter.summary('⏹️ Pipeline completed', 2599, 'No email sent', {
+      formatter.summary('Document generated', 8572, 'PDP_DSA_Rossi_Mario_2026', {
         depth: 1,
         isLast: true,
         ancestorHasNext: []
       })
-    ).toEqual(['  └─ ⏹️ Pipeline completed in 2599ms (No email sent)']);
+    ).toEqual(['  └─ Document generated: PDP_DSA_Rossi_Mario_2026 (COMPLETED in 8572ms)']);
+    expect(formatter.summary('Done', 0, undefined)).toEqual(['Done: COMPLETED in 0ms']);
   });
 });

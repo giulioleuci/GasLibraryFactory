@@ -7,7 +7,20 @@
 
 import { Pipeline } from '../Pipeline';
 import { PipelineContext } from '../PipelineContext';
+import { Step } from '../Step';
+import { LoggerService } from '@CoreUtilsLib';
 import { MockFactory } from '../../../test/fakes';
+
+class DetailedStep extends Step {
+  _executeLogic(context) {
+    context.set('generatedName', 'PDP_DSA_Rossi_Mario_2026');
+    this.logger.info('nested service detail');
+  }
+
+  _getLogDetails(context) {
+    return context.get('generatedName');
+  }
+}
 
 describe('Pipeline - Comprehensive Test Suite', () => {
   let mocks;
@@ -307,14 +320,14 @@ describe('Pipeline - Comprehensive Test Suite', () => {
         2,
         'ComposeEmail',
         'SKIPPED',
-        'condition not met',
+        { reason: 'condition not met', durationMs: 0 },
         { depth: 2, isLast: false, ancestorHasNext: [true] }
       );
       expect(logger.logPipelineStep).toHaveBeenNthCalledWith(
         3,
         'SendEmail',
         'EXECUTED',
-        'completed in 5ms',
+        { content: undefined, durationMs: 5 },
         { depth: 2, isLast: true, ancestorHasNext: [true] }
       );
       expect(logger.logSummary).toHaveBeenCalledWith(
@@ -338,11 +351,16 @@ describe('Pipeline - Comprehensive Test Suite', () => {
       const result = pipeline.execute();
 
       expect(result.getSummary().failedSteps).toBe(1);
-      expect(logger.logPipelineStep).toHaveBeenCalledWith('Explode', 'ERROR', 'boom', {
-        depth: 1,
-        isLast: true,
-        ancestorHasNext: [true]
-      });
+      expect(logger.logPipelineStep).toHaveBeenCalledWith(
+        'Explode',
+        'ERROR',
+        { reason: 'boom', durationMs: 0 },
+        {
+          depth: 1,
+          isLast: true,
+          ancestorHasNext: [true]
+        }
+      );
       expect(logger.logSummary).toHaveBeenCalledWith(
         '⏹️ Pipeline completed',
         expect.any(Number),
@@ -400,6 +418,39 @@ describe('Pipeline - Comprehensive Test Suite', () => {
         expect.stringMatching(
           /^\[Basic\] Pipeline completed in \d+ms \(1 executed, 0 skipped, 0 failed\)$/
         )
+      );
+    });
+
+    it('passes successful details and scopes nested ordinary messages below the step', () => {
+      const realLogger = new LoggerService();
+      const emitted = [];
+      global.Logger = {
+        log: jest.fn((line) => emitted.push(line)),
+        getLog: jest.fn(() => emitted.join('\n')),
+        clear: jest.fn()
+      };
+      pipeline = new Pipeline(realLogger, null, { name: 'GenerateDocument' });
+      pipeline.addStep(new DetailedStep('GenerateName', realLogger));
+      const semanticSpy = jest.spyOn(realLogger, 'logPipelineStep');
+
+      pipeline.execute();
+
+      expect(semanticSpy).toHaveBeenCalledWith(
+        'GenerateName',
+        'EXECUTED',
+        {
+          content: 'PDP_DSA_Rossi_Mario_2026',
+          durationMs: expect.any(Number)
+        },
+        { depth: 1, isLast: true, ancestorHasNext: [true] }
+      );
+      const nestedLine = emitted.find((line) => line.includes('nested service detail'));
+      const stepLine = emitted.find((line) => line.includes('[GenerateName]'));
+      expect(nestedLine).toMatch(/^  │    ├─ \[INFO\] nested service detail$/);
+      expect(stepLine).toMatch(/^  └─ ✅ \[GenerateName\]/);
+      expect(nestedLine.indexOf('[INFO]')).toBeGreaterThan(stepLine.indexOf('✅'));
+      expect(emitted.filter((line) => line.includes('nested service detail'))).not.toContain(
+        '[INFO] nested service detail'
       );
     });
 

@@ -212,7 +212,9 @@ describe('JobRunnerService (Stateful Library Pattern)', () => {
 
       // Depending on implementation, this might be null (cleaned up)
       // or might contain final state. Check logs for cleanup messages.
-      expect(logger.logJobEnd).toHaveBeenCalledWith(jobName, true);
+      expect(logger.logJobEnd).toHaveBeenCalledWith(jobName, true, {
+        durationMs: expect.any(Number)
+      });
     });
   });
 
@@ -323,7 +325,9 @@ describe('JobRunnerService (Stateful Library Pattern)', () => {
         checkpoint: '2',
         percentage: 40
       });
-      expect(logger.logJobEnd).toHaveBeenCalledWith(jobName, true);
+      expect(logger.logJobEnd).toHaveBeenCalledWith(jobName, true, {
+        durationMs: expect.any(Number)
+      });
     });
   });
 
@@ -382,7 +386,10 @@ describe('JobRunnerService (Stateful Library Pattern)', () => {
       }).toThrow('Job failed at step 2');
 
       // Error should be logged
-      expect(logger.logJobEnd).toHaveBeenCalledWith('error-job', false, 'Job failed at step 2');
+      expect(logger.logJobEnd).toHaveBeenCalledWith('error-job', false, {
+        reason: 'Job failed at step 2',
+        durationMs: expect.any(Number)
+      });
     });
 
     /**

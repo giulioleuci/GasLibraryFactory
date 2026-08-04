@@ -467,7 +467,10 @@ describe('Cross-Cutting Concern: Logger Propagation', () => {
       expect(mockLogger.logPipelineStep).toHaveBeenCalledWith(
         'structured',
         'EXECUTED',
-        expect.any(String),
+        {
+          content: null,
+          durationMs: expect.any(Number)
+        },
         expect.any(Object)
       );
     });

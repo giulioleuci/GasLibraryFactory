@@ -373,7 +373,9 @@ describe('JobDefinitionRegistry - Comprehensive Test Suite', () => {
     });
 
     it('should return false for non-existing job', () => {
+      mockLogger.clear();
       expect(registry.jobExists('nonExistentJob')).toBe(false);
+      expect(mockLogger.hasLog('ERROR', /not found in registry/i)).toBe(false);
     });
 
     it('should return false for empty string', () => {
