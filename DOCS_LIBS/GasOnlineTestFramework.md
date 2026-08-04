@@ -117,6 +117,19 @@
    */
 ```
 ---
+#### METHOD: TestContext.buildSampleSpreadsheetById
+- **Scope:** instance
+- **LLM Call Syntax:** `const result = testContext.buildSampleSpreadsheetById(spreadsheetId);`
+- **Pure JSDoc:**
+```javascript
+/**
+   * Opens an existing spreadsheet by ID, resets it to a clean single-sheet baseline,
+   * and wraps it in a {@link SampleSpreadsheetBuilder} for sample-data construction.
+   * @param {string} spreadsheetId Existing spreadsheet ID.
+   * @returns {SampleSpreadsheetBuilder}
+   */
+```
+---
 #### METHOD: TestContext.resetDocument
 - **Scope:** instance
 - **LLM Call Syntax:** `testContext.resetDocument();`
@@ -618,4 +631,3 @@ operations, so library consumers building sample test data never call
 ```
 ---
 <br>
-

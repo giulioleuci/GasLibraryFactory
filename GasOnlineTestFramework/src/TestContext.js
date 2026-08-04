@@ -192,6 +192,19 @@ export class TestContext {
   }
 
   /**
+   * Opens an existing spreadsheet by ID, resets it to a clean single-sheet baseline,
+   * and wraps it in a {@link SampleSpreadsheetBuilder} for sample-data construction.
+   * @param {string} spreadsheetId Existing spreadsheet ID.
+   * @returns {SampleSpreadsheetBuilder}
+   */
+  buildSampleSpreadsheetById(spreadsheetId) {
+    this._trackApiCall();
+    const spreadsheet = SpreadsheetApp.openById(spreadsheetId);
+    this.resetSpreadsheet(spreadsheet);
+    return new SampleSpreadsheetBuilder(spreadsheet);
+  }
+
+  /**
    * Restores the test document to a baseline state by clearing all body content.
    */
   resetDocument() {

@@ -10,6 +10,38 @@ function makeFolder(id, name) {
   };
 }
 
+function makeSpreadsheet(id, sheetNames) {
+  const sheets = sheetNames.map((name) => ({
+    name,
+    getName: () => name,
+    setName: jest.fn((nextName) => {
+      name = nextName;
+    }),
+    clear: jest.fn(function clear() {
+      return this;
+    }),
+    clearContents: jest.fn(function clearContents() {
+      return this;
+    }),
+    clearFormats: jest.fn(function clearFormats() {
+      return this;
+    }),
+    clearNotes: jest.fn(function clearNotes() {
+      return this;
+    }),
+    getProtections: jest.fn(() => [])
+  }));
+  return {
+    getId: () => id,
+    getSheets: jest.fn(() => sheets),
+    getProtections: jest.fn(() => []),
+    getNamedRanges: jest.fn(() => []),
+    deleteSheet: jest.fn((sheet) => {
+      sheets.splice(sheets.indexOf(sheet), 1);
+    })
+  };
+}
+
 describe('TestContext.getOrCreateNamedFolder', () => {
   let ctx;
 
@@ -181,6 +213,10 @@ describe('TestContext.resetDocument', () => {
 });
 
 describe('TestContext.buildSampleSpreadsheet', () => {
+  beforeEach(() => {
+    global.SpreadsheetApp.ProtectionType = { RANGE: 'RANGE', SHEET: 'SHEET' };
+  });
+
   test('returns a SampleSpreadsheetBuilder wrapping the reused-or-created spreadsheet', () => {
     const ctx = new TestContext();
     const fakeSheets = [{ getName: () => 'Sheet1' }];
@@ -197,5 +233,17 @@ describe('TestContext.buildSampleSpreadsheet', () => {
     expect(ctx.getOrCreateNamedSpreadsheet).toHaveBeenCalledWith('SAMPLE_DB', null);
     expect(ctx.resetSpreadsheet).toHaveBeenCalledWith(fakeSs);
     expect(builder.getUrl()).toBe('https://sheets/ss-1');
+  });
+
+  it('opens, resets, and wraps spreadsheet by ID', () => {
+    const spreadsheet = makeSpreadsheet('bound-master-id', ['MASTER', 'stale']);
+    global.SpreadsheetApp.openById = jest.fn(() => spreadsheet);
+
+    const builder = new TestContext().buildSampleSpreadsheetById('bound-master-id');
+
+    expect(global.SpreadsheetApp.openById).toHaveBeenCalledWith('bound-master-id');
+    expect(builder.id).toBe('bound-master-id');
+    expect(spreadsheet.getSheets()).toHaveLength(1);
+    expect(spreadsheet.getSheets()[0].getName()).toBe('Sheet1');
   });
 });
