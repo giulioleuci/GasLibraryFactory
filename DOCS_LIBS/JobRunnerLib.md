@@ -1,5 +1,12 @@
 # API Reference: JobRunnerLib
 
+## Dynamic job definition contract
+
+Registered `JobDefinition` metadata is optional for dynamic jobs. A job created
+at runtime may execute or resume from persisted state without a matching
+`JobDefinitionRegistry` entry; definition-derived settings are applied only when
+a definition exists.
+
 ## CLASS: QueueStateManager
 **File Path:** `JobRunnerLib/src/QueueStateManager.js`
 **Constructor Usage:** `const instance = new QueueStateManager();`
@@ -1329,12 +1336,36 @@ and UI replay.
    */
 ```
 ---
+#### METHOD: CapturingLogger.withPosition
+- **Scope:** instance
+- **LLM Call Syntax:** `capturingLogger.withPosition(position, callback);`
+- **Pure JSDoc:**
+```javascript
+/** Method withPosition */
+```
+---
+#### METHOD: CapturingLogger.if
+- **Scope:** instance
+- **LLM Call Syntax:** `capturingLogger.if(typeof this._realLogger.withPosition);`
+- **Pure JSDoc:**
+```javascript
+/** Method if */
+```
+---
 #### METHOD: CapturingLogger.if
 - **Scope:** instance
 - **LLM Call Syntax:** `capturingLogger.if(typeof this._realLogger[method]);`
 - **Pure JSDoc:**
 ```javascript
 /** Method if */
+```
+---
+#### METHOD: CapturingLogger.while
+- **Scope:** instance
+- **LLM Call Syntax:** `capturingLogger.while(result.length && result[result.length - 1]);`
+- **Pure JSDoc:**
+```javascript
+/** Method while */
 ```
 ---
 #### METHOD: CapturingLogger.logJobStart
@@ -1812,6 +1843,22 @@ and UI replay.
 
 #### METHOD: JobRunnerExecutionController.if
 - **Scope:** instance
+- **LLM Call Syntax:** `jobRunnerExecutionController.if(typeof logger[method]);`
+- **Pure JSDoc:**
+```javascript
+/** Method if */
+```
+---
+#### METHOD: JobRunnerExecutionController.if
+- **Scope:** instance
+- **LLM Call Syntax:** `jobRunnerExecutionController.if(typeof logger[level]);`
+- **Pure JSDoc:**
+```javascript
+/** Method if */
+```
+---
+#### METHOD: JobRunnerExecutionController.if
+- **Scope:** instance
 - **LLM Call Syntax:** `jobRunnerExecutionController.if(state);`
 - **Pure JSDoc:**
 ```javascript
@@ -1834,12 +1881,76 @@ and UI replay.
 /** Method if */
 ```
 ---
+#### METHOD: JobRunnerExecutionController.if
+- **Scope:** instance
+- **LLM Call Syntax:** `jobRunnerExecutionController.if(typeof queue.getStatus);`
+- **Pure JSDoc:**
+```javascript
+/** Method if */
+```
+---
 #### METHOD: JobRunnerExecutionController.run
 - **Scope:** instance
 - **LLM Call Syntax:** `jobRunnerExecutionController.run(jobName, jobType, parameters, jobHandlerRegistryCallback, forceRestart, maxDurationMs, loggingConfig);`
 - **Pure JSDoc:**
 ```javascript
 /** Method run */
+```
+---
+#### METHOD: JobRunnerExecutionController.if
+- **Scope:** instance
+- **LLM Call Syntax:** `jobRunnerExecutionController.if(!jobName || typeof jobName !);`
+- **Pure JSDoc:**
+```javascript
+/** Method if */
+```
+---
+#### METHOD: JobRunnerExecutionController.if
+- **Scope:** instance
+- **LLM Call Syntax:** `jobRunnerExecutionController.if(!jobType || typeof jobType !);`
+- **Pure JSDoc:**
+```javascript
+/** Method if */
+```
+---
+#### METHOD: JobRunnerExecutionController.if
+- **Scope:** instance
+- **LLM Call Syntax:** `jobRunnerExecutionController.if(!parameters || typeof parameters !);`
+- **Pure JSDoc:**
+```javascript
+/** Method if */
+```
+---
+#### METHOD: JobRunnerExecutionController.if
+- **Scope:** instance
+- **LLM Call Syntax:** `jobRunnerExecutionController.if(typeof jobHandlerRegistryCallback !);`
+- **Pure JSDoc:**
+```javascript
+/** Method if */
+```
+---
+#### METHOD: JobRunnerExecutionController.if
+- **Scope:** instance
+- **LLM Call Syntax:** `jobRunnerExecutionController.if(typeof forceRestart !);`
+- **Pure JSDoc:**
+```javascript
+/** Method if */
+```
+---
+#### METHOD: JobRunnerExecutionController.if
+- **Scope:** instance
+- **LLM Call Syntax:** `jobRunnerExecutionController.if(typeof maxDurationMs !);`
+- **Pure JSDoc:**
+```javascript
+/** Method if */
+```
+---
+#### METHOD: JobRunnerExecutionController.if
+- **Scope:** instance
+- **LLM Call Syntax:** `jobRunnerExecutionController.if(loggingConfig);`
+- **Pure JSDoc:**
+```javascript
+/** Method if */
 ```
 ---
 #### METHOD: JobRunnerExecutionController.if
@@ -1874,6 +1985,14 @@ and UI replay.
 /** Method catch */
 ```
 ---
+#### METHOD: JobRunnerExecutionController.if
+- **Scope:** instance
+- **LLM Call Syntax:** `jobRunnerExecutionController.if(error);`
+- **Pure JSDoc:**
+```javascript
+/** Method if */
+```
+---
 #### METHOD: JobRunnerExecutionController.resume
 - **Scope:** instance
 - **LLM Call Syntax:** `jobRunnerExecutionController.resume(jobName, jobHandlerRegistryCallback, maxDurationMs);`
@@ -1898,6 +2017,54 @@ and UI replay.
 /** Method if */
 ```
 ---
+#### METHOD: JobRunnerExecutionController.if
+- **Scope:** instance
+- **LLM Call Syntax:** `jobRunnerExecutionController.if(!jobName);`
+- **Pure JSDoc:**
+```javascript
+/** Method if */
+```
+---
+#### METHOD: JobRunnerExecutionController.if
+- **Scope:** instance
+- **LLM Call Syntax:** `jobRunnerExecutionController.if(maxDurationMs);`
+- **Pure JSDoc:**
+```javascript
+/** Method if */
+```
+---
+#### METHOD: JobRunnerExecutionController.if
+- **Scope:** instance
+- **LLM Call Syntax:** `jobRunnerExecutionController.if(!jobType);`
+- **Pure JSDoc:**
+```javascript
+/** Method if */
+```
+---
+#### METHOD: JobRunnerExecutionController.if
+- **Scope:** instance
+- **LLM Call Syntax:** `jobRunnerExecutionController.if(resumeState && resumeState.nextIndex !);`
+- **Pure JSDoc:**
+```javascript
+/** Method if */
+```
+---
+#### METHOD: JobRunnerExecutionController.if
+- **Scope:** instance
+- **LLM Call Syntax:** `jobRunnerExecutionController.if(resumeState && resumeState.position !);`
+- **Pure JSDoc:**
+```javascript
+/** Method if */
+```
+---
+#### METHOD: JobRunnerExecutionController.if
+- **Scope:** instance
+- **LLM Call Syntax:** `jobRunnerExecutionController.if(jobDefinition);`
+- **Pure JSDoc:**
+```javascript
+/** Method if */
+```
+---
 #### METHOD: JobRunnerExecutionController.catch
 - **Scope:** instance
 - **LLM Call Syntax:** `jobRunnerExecutionController.catch(error);`
@@ -1907,4 +2074,3 @@ and UI replay.
 ```
 ---
 <br>
-

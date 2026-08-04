@@ -1,5 +1,12 @@
 # API Reference: SheetDBLib
 
+## Transaction persistence contract
+
+A successful `commit()` drains every registered table's pending insert, update,
+and delete queues by calling each table's `flush()` before the spreadsheet batch
+is flushed. The transaction is marked complete only after those queued writes
+have reached the batch flush seam.
+
 ## CLASS: TableService
 **File Path:** `SheetDBLib/src/TableService.js`
 **Constructor Usage:** `const instance = new TableService();`
@@ -3590,4 +3597,3 @@ export const MemberSourceType = Object.freeze({
 ```
 ---
 <br>
-

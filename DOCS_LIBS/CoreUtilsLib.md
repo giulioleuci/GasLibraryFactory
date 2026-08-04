@@ -1,5 +1,27 @@
 # API Reference: CoreUtilsLib
 
+## Structured logging contracts
+
+```ts
+type TreePosition = {
+  depth: number;
+  isLast: boolean;
+  ancestorHasNext?: boolean[];
+};
+
+type LogDetailScalar = string | number | boolean | null | undefined;
+type LogDetails =
+  | string
+  | LogDetailScalar[]
+  | Record<string, LogDetailScalar | LogDetailScalar[]>;
+
+withPosition<T>(position: TreePosition, callback: () => T): T;
+```
+
+`LoggerService.withPosition()` applies the supplied tree position to logs emitted
+by the callback, returns the callback result unchanged, and restores the previous
+position after the callback completes or throws.
+
 ## CLASS: MyService
 **File Path:** `CoreUtilsLib/src/interfaces.js`
 **Constructor Usage:** `const instance = new MyService();`
@@ -945,6 +967,7 @@ frozen immutability, richer payloads) on top of this contract.
     };
 
     this._structured = new StructuredLogFormatter(this._safeStringify.bind(this));
+    this._positionStack = [];
   }
 
   /**
@@ -1061,6 +1084,22 @@ frozen immutability, richer payloads) on top of this contract.
 /** Method if */
 ```
 ---
+#### METHOD: LoggerService.if
+- **Scope:** instance
+- **LLM Call Syntax:** `loggerService.if(position);`
+- **Pure JSDoc:**
+```javascript
+/** Method if */
+```
+---
+#### METHOD: LoggerService.withPosition
+- **Scope:** instance
+- **LLM Call Syntax:** `loggerService.withPosition(position, callback);`
+- **Pure JSDoc:**
+```javascript
+/** Method withPosition */
+```
+---
 #### METHOD: LoggerService.debug
 - **Scope:** instance
 - **LLM Call Syntax:** `const result = loggerService.debug(message, context);`
@@ -1135,6 +1174,14 @@ frozen immutability, richer payloads) on top of this contract.
    * @param {string|Object|Function} message - Content or callback.
    * @returns {LoggerService} Fluent instance for chaining.
    */
+```
+---
+#### METHOD: LoggerService.for
+- **Scope:** instance
+- **LLM Call Syntax:** `loggerService.for(const line of lines);`
+- **Pure JSDoc:**
+```javascript
+/** Method for */
 ```
 ---
 #### METHOD: LoggerService.logJobStart
@@ -1310,6 +1357,7 @@ frozen immutability, richer payloads) on top of this contract.
     };
 
     this._structured = new StructuredLogFormatter(this._safeStringify.bind(this));
+    this._positionStack = [];
   }
 
   /**
@@ -1426,6 +1474,22 @@ frozen immutability, richer payloads) on top of this contract.
 /** Method if */
 ```
 ---
+#### METHOD: LoggerService.if
+- **Scope:** instance
+- **LLM Call Syntax:** `loggerService.if(position);`
+- **Pure JSDoc:**
+```javascript
+/** Method if */
+```
+---
+#### METHOD: LoggerService.withPosition
+- **Scope:** instance
+- **LLM Call Syntax:** `loggerService.withPosition(position, callback);`
+- **Pure JSDoc:**
+```javascript
+/** Method withPosition */
+```
+---
 #### METHOD: LoggerService.debug
 - **Scope:** instance
 - **LLM Call Syntax:** `const result = loggerService.debug(message, context);`
@@ -1500,6 +1564,14 @@ frozen immutability, richer payloads) on top of this contract.
    * @param {string|Object|Function} message - Content or callback.
    * @returns {LoggerService} Fluent instance for chaining.
    */
+```
+---
+#### METHOD: LoggerService.for
+- **Scope:** instance
+- **LLM Call Syntax:** `loggerService.for(const line of lines);`
+- **Pure JSDoc:**
+```javascript
+/** Method for */
 ```
 ---
 #### METHOD: LoggerService.logJobStart
@@ -4120,6 +4192,7 @@ High-fidelity mock for LoggerService with jest.fn() instrumentation and method c
     this.logPipelineStart.mockClear();
     this.logPipelineStep.mockClear();
     this.logSummary.mockClear();
+    this.withPosition.mockClear();
     this.setLevel.mockClear();
     this.getLevel.mockClear();
     this.child.mockClear();
@@ -4171,7 +4244,7 @@ High-fidelity mock for LoggerService with jest.fn() instrumentation and method c
 /
 
 /**
-@typedef {string|string[]|Object<string, string|number|boolean|null|undefined>} LogDetails
+@typedef {string|string[]|Object<string, string|number|boolean|null|undefined|Array<string|number|boolean|null>>} LogDetails
 /
 
 const MAJOR_BORDER = '='.repeat(70);
@@ -4203,7 +4276,7 @@ const STEP_ICONS = {
  */
 
 /**
- * @typedef {string|string[]|Object<string, string|number|boolean|null|undefined>} LogDetails
+ * @typedef {string|string[]|Object<string, string|number|boolean|null|undefined|Array<string|number|boolean|null>>} LogDetails
  */
 
 const MAJOR_BORDER = '='.repeat(70);
@@ -5945,4 +6018,3 @@ const validator = new ConfigValidator();
 ```
 ---
 <br>
-

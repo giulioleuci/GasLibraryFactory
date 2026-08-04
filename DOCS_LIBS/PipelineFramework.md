@@ -1,5 +1,26 @@
 # API Reference: PipelineFramework
 
+## Pipeline observability contracts
+
+```ts
+type LogDetailScalar = string | number | boolean | null | undefined;
+type LogDetails =
+  | string
+  | LogDetailScalar[]
+  | Record<string, LogDetailScalar | LogDetailScalar[]>;
+
+type PipelineStepDetails = {
+  content?: LogDetails;
+  durationMs?: number;
+  reason?: string;
+};
+```
+
+Successful step execution may expose content-first details through
+`Step._getLogDetails(context)` and `StepExecutionResult.logDetails`. The pipeline
+passes those details to the logger as `PipelineStepDetails.content`, alongside
+timing or failure/skip reasons when applicable.
+
 ## CLASS: for
 **File Path:** `PipelineFramework/index.js`
 **Constructor Usage:** `const instance = new for();`
@@ -50,6 +71,7 @@ Manages context validation, conditional execution, error handling, and performan
 @property {boolean} skipped - True if shouldExecute() returned false.
 @property {string} [skipReason] - Stable reason when skipped is true.
 @property {number} durationMs - Total execution time in milliseconds.
+@property {*} [logDetails] - Optional success details for pipeline observability.
 @property {Error} [error] - Captured error if continueOnError is true.
 
 @example
@@ -87,6 +109,7 @@ import { StepExecutionError } from './internal/errors/StepExecutionError';
  * @property {boolean} skipped - True if shouldExecute() returned false.
  * @property {string} [skipReason] - Stable reason when skipped is true.
  * @property {number} durationMs - Total execution time in milliseconds.
+ * @property {*} [logDetails] - Optional success details for pipeline observability.
  * @property {Error} [error] - Captured error if continueOnError is true.
  *
  * @example
@@ -464,7 +487,6 @@ timing, flags, and graceful termination signals.
 /
 
 import { PipelineContext } from './PipelineContext';
-import { PipelineError } from './internal/errors/PipelineError';
 
 /**
 Orchestrator for sequential step execution with shared context and lifecycle hooks.
@@ -480,7 +502,6 @@ Orchestrator for sequential step execution with shared context and lifecycle hoo
  */
 
 import { PipelineContext } from './PipelineContext';
-import { PipelineError } from './internal/errors/PipelineError';
 
 /**
  * Orchestrator for sequential step execution with shared context and lifecycle hooks.
@@ -1977,4 +1998,3 @@ import { ConsumerStep } from '../ConsumerStep';
 ```
 
 <br>
-
