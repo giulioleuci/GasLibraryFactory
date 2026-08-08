@@ -77,6 +77,45 @@ class _DocumentProcessor {
     ]);
   }
 
+  /**
+   * @description Computes the `[index, index+length)` ranges of every
+   * `{{#expr}}`/`{{^expr}}` conditional section that will be discarded
+   * WHOLESALE (`kind: 'section'` ops only — never `kind: 'marker'`, which
+   * only removes the two marker paragraphs and keeps its content live). Any
+   * of the other 4 structural directives (`tablerow_loop`/`tablecol_loop`/
+   * `bullet_list`/`number_list`/`{{table[...]}}`) whose marker falls inside
+   * one of these ranges must never be analyzed or natively executed — the
+   * whole span, including that directive's own data resolution, is about to
+   * be deleted anyway, so running it first would be wasted work at best (a
+   * spurious "not a valid array" warning at worst) for a data source the
+   * template author expects to be legitimately absent while the guard is
+   * false. Deliberately recomputed against whatever `structure` is CURRENT
+   * at each call site (mirroring the existing deleteRow
+   * "recompute against latest structure" pattern below) since an earlier
+   * native mutation elsewhere in the document shifts character offsets that
+   * a stale computation would get wrong.
+   * @param {Object} currentStructure `{tables, textMatches}` snapshot to scan.
+   * @param {Object} context Data context.
+   * @returns {Array<[number, number]>} Half-open `[start, end)` ranges.
+   * @private
+   */
+  _computeFalsyConditionalRanges(currentStructure, context) {
+    return this._analyzeConditionalSections(currentStructure.textMatches, context)
+      .filter((op) => op.kind === 'section')
+      .map((op) => [op.index, op.index + op.length]);
+  }
+
+  /**
+   * @description True if `index` falls inside any of `ranges`.
+   * @param {Array<[number, number]>} ranges Half-open `[start, end)` ranges.
+   * @param {number} index Character offset to test.
+   * @returns {boolean}
+   * @private
+   */
+  _isInsideAnyRange(ranges, index) {
+    return ranges.some(([start, end]) => index >= start && index < end);
+  }
+
   process(documentId, context) {
     this.logger.info(
       `Starting document processing with Reverse-Order Strategy for document: ${documentId}`
@@ -84,7 +123,16 @@ class _DocumentProcessor {
     let structure = this.documentService.scanDocumentStructure(documentId, ['{{']);
     const structuralOps = [];
 
+    // Tables whose own `.index` falls inside a conditional section that will
+    // be discarded wholesale are skipped entirely — see
+    // `_computeFalsyConditionalRanges` for why this must happen before ANY
+    // of the other 4 directives' analyze/execute passes, not just before the
+    // final text-substitution pass.
+    let falsyRanges = this._computeFalsyConditionalRanges(structure, context);
     for (const table of structure.tables) {
+      if (this._isInsideAnyRange(falsyRanges, table.index)) {
+        continue;
+      }
       structuralOps.push(...this._analyzeColumnLoops(table, context));
       structuralOps.push(...this._analyzeRowLoops(table, context));
     }
@@ -121,8 +169,15 @@ class _DocumentProcessor {
     // `{{table[source=...]}}` directives (ref REPORT_GLF.md B7): each
     // insertion changes element indices, so these run before the remaining
     // batch ops (which were index-computed against the structure above) and
-    // trigger a rescan for them.
-    const tableInsertOps = this._analyzeTableInsertions(structure.textMatches, context);
+    // trigger a rescan for them. Recompute the falsy-conditional exclusion
+    // against the CURRENT (possibly just-rescanned) structure — see
+    // `_computeFalsyConditionalRanges` — and skip any `{{table[...]}}`
+    // marker inside one, same reasoning as the table-loop gate above.
+    falsyRanges = this._computeFalsyConditionalRanges(structure, context);
+    const tableInsertCandidates = structure.textMatches.filter(
+      (tm) => !this._isInsideAnyRange(falsyRanges, tm.elementIndex)
+    );
+    const tableInsertOps = this._analyzeTableInsertions(tableInsertCandidates, context);
     if (tableInsertOps.length > 0) {
       for (const op of tableInsertOps) {
         this._executeTableInsertOperation(documentId, op);
@@ -130,8 +185,13 @@ class _DocumentProcessor {
       structure = this.documentService.scanDocumentStructure(documentId, ['{{']);
     }
 
+    // Recomputed again for the same reason before the list-loop pass — a
+    // just-executed table insertion may have rescanned `structure`.
+    falsyRanges = this._computeFalsyConditionalRanges(structure, context);
     const remainingTextMatches = structure.textMatches.filter(
-      (tm) => tm.type !== 'TABLE_TEXT' || !processedTableIndices.has(tm.tableIndex)
+      (tm) =>
+        (tm.type !== 'TABLE_TEXT' || !processedTableIndices.has(tm.tableIndex)) &&
+        !this._isInsideAnyRange(falsyRanges, tm.elementIndex)
     );
     const listLoopOps = this._analyzeListLoops(remainingTextMatches, context);
     // Paragraphs a list loop already natively rendered (Paragraph.copy() per
@@ -155,6 +215,25 @@ class _DocumentProcessor {
       }
     }
 
+    // `{{#expr}}...{{/expr}}` / `{{^expr}}...{{/expr}}` conditional sections
+    // (ref generic 5th structural directive, alongside tablerow_loop/
+    // tablecol_loop/bullet_list/number_list): resolved against the same
+    // post-rescan `structure` the deleteRow ops below also use, for the same
+    // reason — any earlier native mutation's effect on real character
+    // offsets must be reflected here. Each op's own [index, index+length)
+    // span is exactly what gets removed, so it doubles as the exclusion
+    // range for the generic substitution pass below (a marker paragraph, or
+    // a whole discarded block, must never also be handed to
+    // _analyzeTextSubstitutions). Computed BEFORE the deleteRow loop so its
+    // `kind: 'section'` (whole-block-discarded) ranges can gate that loop
+    // too — a table entirely inside an already-falsy conditional must not
+    // have its own row-loop analyzed here either, same reasoning as the two
+    // earlier table-loop/table-insert/list-loop gates above.
+    const conditionalOps = this._analyzeConditionalSections(structure.textMatches, context);
+    falsyRanges = conditionalOps
+      .filter((op) => op.kind === 'section')
+      .map((op) => [op.index, op.index + op.length]);
+
     // `deleteRow` ops (built by _analyzeRowLoops for a table whose row-loop
     // data source isn't an array) are keyed by the table's character-offset
     // tableIndex, and only converted to Advanced-API deleteContentRange
@@ -168,8 +247,11 @@ class _DocumentProcessor {
     // a stale pre-mutation snapshot. When no list-loop ops ran, `structure`
     // here is the same reference as before this block, so this is not an
     // extra rescan and behavior for that case is unchanged.
-    const batchOps = [];
+    const batchOps = [...conditionalOps];
     for (const table of structure.tables) {
+      if (this._isInsideAnyRange(falsyRanges, table.index)) {
+        continue;
+      }
       const rowOps = this._analyzeRowLoops(table, context);
       for (const op of rowOps) {
         if (op.type === 'deleteRow') {
@@ -177,18 +259,6 @@ class _DocumentProcessor {
         }
       }
     }
-    // `{{#expr}}...{{/expr}}` / `{{^expr}}...{{/expr}}` conditional sections
-    // (ref generic 5th structural directive, alongside tablerow_loop/
-    // tablecol_loop/bullet_list/number_list): resolved against the same
-    // post-rescan `structure` as the deleteRow ops above, for the same
-    // reason — any earlier native mutation's effect on real character
-    // offsets must be reflected here. Each op's own [index, index+length)
-    // span is exactly what gets removed, so it doubles as the exclusion
-    // range for the generic substitution pass below (a marker paragraph, or
-    // a whole discarded block, must never also be handed to
-    // _analyzeTextSubstitutions).
-    const conditionalOps = this._analyzeConditionalSections(structure.textMatches, context);
-    batchOps.push(...conditionalOps);
     const conditionalRanges = conditionalOps.map((op) => [op.index, op.index + op.length]);
 
     const finalTextMatches = structure.textMatches.filter(

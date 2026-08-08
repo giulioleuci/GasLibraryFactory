@@ -81,7 +81,7 @@ describe('DocumentProcessor - {{#expr}}/{{^expr}} conditional-section directive'
       const ops = processor._analyzeConditionalSections(textMatches, context);
 
       expect(ops).toEqual([
-        { type: 'conditionalDelete', index: 18, length: 50 + closeText.length - 18 }
+        { type: 'conditionalDelete', index: 18, length: 50 + closeText.length - 18, kind: 'section' }
       ]);
     });
 
@@ -97,8 +97,8 @@ describe('DocumentProcessor - {{#expr}}/{{^expr}} conditional-section directive'
       const ops = processor._analyzeConditionalSections(textMatches, context);
 
       expect(ops).toEqual([
-        { type: 'conditionalDelete', index: 18, length: openText.length },
-        { type: 'conditionalDelete', index: 50, length: closeText.length }
+        { type: 'conditionalDelete', index: 18, length: openText.length, kind: 'marker' },
+        { type: 'conditionalDelete', index: 50, length: closeText.length, kind: 'marker' }
       ]);
     });
 
@@ -112,7 +112,9 @@ describe('DocumentProcessor - {{#expr}}/{{^expr}} conditional-section directive'
 
       const ops = processor._analyzeConditionalSections(textMatches, { items: [] });
 
-      expect(ops).toEqual([{ type: 'conditionalDelete', index: 5, length: 30 + closeText.length - 5 }]);
+      expect(ops).toEqual([
+        { type: 'conditionalDelete', index: 5, length: 30 + closeText.length - 5, kind: 'section' }
+      ]);
     });
 
     it('handles negated {{^expr}}: removes the whole block when expr is truthy', () => {
@@ -127,7 +129,7 @@ describe('DocumentProcessor - {{#expr}}/{{^expr}} conditional-section directive'
       const ops = processor._analyzeConditionalSections(textMatches, context);
 
       expect(ops).toEqual([
-        { type: 'conditionalDelete', index: 12, length: 60 + closeText.length - 12 }
+        { type: 'conditionalDelete', index: 12, length: 60 + closeText.length - 12, kind: 'section' }
       ]);
     });
 
@@ -143,8 +145,8 @@ describe('DocumentProcessor - {{#expr}}/{{^expr}} conditional-section directive'
       const ops = processor._analyzeConditionalSections(textMatches, context);
 
       expect(ops).toEqual([
-        { type: 'conditionalDelete', index: 12, length: openText.length },
-        { type: 'conditionalDelete', index: 60, length: closeText.length }
+        { type: 'conditionalDelete', index: 12, length: openText.length, kind: 'marker' },
+        { type: 'conditionalDelete', index: 60, length: closeText.length, kind: 'marker' }
       ]);
     });
 
@@ -179,6 +181,86 @@ describe('DocumentProcessor - {{#expr}}/{{^expr}} conditional-section directive'
       const ops = processor._analyzeConditionalSections(textMatches, { x: 1 });
 
       expect(ops).toEqual([]);
+    });
+
+    describe('nesting (overlap safety)', () => {
+      // Shared layout for all 3 nesting cases: outer wraps inner directly,
+      // no other content in between.
+      //   0:  {{#outer}}   (11 chars incl. \n)
+      //   20: {{#inner}}   (11 chars incl. \n)
+      //   40: {{/inner}}   (11 chars incl. \n)
+      //   60: {{/outer}}   (11 chars incl. \n)
+      const outerOpen = '{{#outer}}\n';
+      const outerClose = '{{/outer}}\n';
+      const innerOpen = '{{#inner}}\n';
+      const innerClose = '{{/inner}}\n';
+      const nestedTextMatches = [
+        { type: 'TEXT', elementIndex: 0, text: outerOpen },
+        { type: 'TEXT', elementIndex: 20, text: innerOpen },
+        { type: 'TEXT', elementIndex: 40, text: innerClose },
+        { type: 'TEXT', elementIndex: 60, text: outerClose }
+      ];
+
+      it('outer falsy + inner falsy: emits a single whole-span op for the outer block only (inner is subsumed, not independently emitted)', () => {
+        const ops = processor._analyzeConditionalSections(nestedTextMatches, {
+          outer: false,
+          inner: false
+        });
+
+        expect(ops).toEqual([
+          { type: 'conditionalDelete', index: 0, length: 60 + outerClose.length, kind: 'section' }
+        ]);
+      });
+
+      it('outer falsy + inner truthy: still emits a single whole-span outer op only (inner is never independently resolved/emitted)', () => {
+        const ops = processor._analyzeConditionalSections(nestedTextMatches, {
+          outer: false,
+          inner: true
+        });
+
+        expect(ops).toEqual([
+          { type: 'conditionalDelete', index: 0, length: 60 + outerClose.length, kind: 'section' }
+        ]);
+      });
+
+      it('outer truthy + inner falsy: emits the outer marker-only ops plus a disjoint whole-span op for the inner block, never overlapping', () => {
+        const ops = processor._analyzeConditionalSections(nestedTextMatches, {
+          outer: true,
+          inner: false
+        });
+
+        expect(ops).toEqual([
+          { type: 'conditionalDelete', index: 0, length: outerOpen.length, kind: 'marker' },
+          { type: 'conditionalDelete', index: 60, length: outerClose.length, kind: 'marker' },
+          { type: 'conditionalDelete', index: 20, length: 40 + innerClose.length - 20, kind: 'section' }
+        ]);
+
+        // Regression guard for the overlap bug itself: no two emitted ranges
+        // may intersect, whatever the fix's internal shape ends up being.
+        const ranges = ops.map((op) => [op.index, op.index + op.length]);
+        for (let i = 0; i < ranges.length; i++) {
+          for (let j = i + 1; j < ranges.length; j++) {
+            const [aStart, aEnd] = ranges[i];
+            const [bStart, bEnd] = ranges[j];
+            const overlaps = aStart < bEnd && bStart < aEnd;
+            expect(overlaps).toBe(false);
+          }
+        }
+      });
+
+      it('outer truthy + inner truthy: emits marker-only ops for both, all 4 ranges mutually disjoint', () => {
+        const ops = processor._analyzeConditionalSections(nestedTextMatches, {
+          outer: true,
+          inner: true
+        });
+
+        expect(ops).toEqual([
+          { type: 'conditionalDelete', index: 0, length: outerOpen.length, kind: 'marker' },
+          { type: 'conditionalDelete', index: 60, length: outerClose.length, kind: 'marker' },
+          { type: 'conditionalDelete', index: 20, length: innerOpen.length, kind: 'marker' },
+          { type: 'conditionalDelete', index: 40, length: innerClose.length, kind: 'marker' }
+        ]);
+      });
     });
   });
 
@@ -247,6 +329,68 @@ describe('DocumentProcessor - {{#expr}}/{{^expr}} conditional-section directive'
 
       expect(mockDocumentService._executeBatchUpdate).toHaveBeenCalledWith('doc1', [
         { deleteContentRange: { range: { startIndex: 18, endIndex: 50 + closeText.length } } }
+      ]);
+    });
+
+    it('a bullet_list nested inside a falsy {{#expr}} block never resolves its data source or gets substituted (no execution, not just cosmetic pruning)', () => {
+      const openText = '{{#showList}}\n';
+      const listText = '{{#bullet_list:items}}{{nome}}{{/bullet_list}}\n';
+      const closeText = '{{/showList}}\n';
+      mockDocumentService.scanDocumentStructure.mockReturnValue({
+        tables: [],
+        textMatches: [
+          { type: 'TEXT', elementIndex: 0, text: openText },
+          { type: 'TEXT', elementIndex: 20, text: listText },
+          { type: 'TEXT', elementIndex: 80, text: closeText }
+        ]
+      });
+
+      // `items` is deliberately absent from context: the template author
+      // expects it to be legitimately absent while `showList` is false, so
+      // resolving it at all (and finding it missing) would be wrong.
+      processor.process('doc1', { showList: false });
+
+      // The bullet_list's own data-source path must never be looked up.
+      expect(mockMustache._lookupValue).not.toHaveBeenCalledWith(
+        ['name', 'items'],
+        expect.anything()
+      );
+      // Nor should its item template ever reach the generic renderer.
+      expect(mockMustache.render).not.toHaveBeenCalledWith(listText, expect.anything());
+      // The whole block (markers + the untouched bullet_list paragraph) is
+      // removed as a single span, not a leftover literal-text paragraph.
+      expect(mockDocumentService._executeBatchUpdate).toHaveBeenCalledWith('doc1', [
+        { deleteContentRange: { range: { startIndex: 0, endIndex: 80 + closeText.length } } }
+      ]);
+    });
+
+    it('a tablerow_loop nested inside a falsy {{#expr}} block never analyzes its table (no spurious "not a valid array" warning, no deleteRow request)', () => {
+      const openText = '{{#showTable}}\n';
+      const closeText = '{{/showTable}}\n';
+      mockDocumentService.scanDocumentStructure.mockReturnValue({
+        tables: [
+          {
+            index: 20,
+            rows: [{ index: 25, cells: [{ index: 30, text: '{{#tablerow_loop:items}}' }] }]
+          }
+        ],
+        textMatches: [
+          { type: 'TEXT', elementIndex: 0, text: openText },
+          { type: 'TEXT', elementIndex: 40, text: closeText }
+        ]
+      });
+
+      // `items` is deliberately absent: with the guard false, the row-loop's
+      // "not a valid array" fallback must never fire for it.
+      processor.process('doc1', { showTable: false });
+
+      expect(mockLogger.warn).not.toHaveBeenCalled();
+      const requests = mockDocumentService._executeBatchUpdate.mock.calls[0][1];
+      expect(requests).not.toEqual(
+        expect.arrayContaining([expect.objectContaining({ deleteTableRow: expect.anything() })])
+      );
+      expect(requests).toEqual([
+        { deleteContentRange: { range: { startIndex: 0, endIndex: 40 + closeText.length } } }
       ]);
     });
 

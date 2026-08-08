@@ -210,28 +210,27 @@ export class DocumentProcessorTagScanner {
   /**
    * @description Scans paragraph-level text matches for the generic
    * `{{#expr}}...{{/expr}}` / `{{^expr}}...{{/expr}}` conditional-section
-   * directive: a paragraph whose entire (trimmed of surrounding whitespace)
-   * text is exactly an opening marker is paired with the next matching
-   * `{{/expr}}` closing-marker paragraph, and `expr` is resolved against
-   * `context` with standard Mustache truthiness (falsy/`null`/empty array =>
-   * section false), exactly like `_renderSection`/`_renderInverted` in the
-   * Mustache facade. Reserved directive names (`tablerow_loop:`/
-   * `tablecol_loop:`/`bullet_list:`/`number_list:`) are left untouched here —
-   * they are handled by their own dedicated `_analyze*` methods.
+   * directive and builds a nesting-aware tree of matched open/close marker
+   * pairs (a paragraph whose entire, whitespace-trimmed text is exactly an
+   * opening marker is paired with the next matching `{{/expr}}` closing
+   * marker at the SAME nesting depth; any pair fully between them becomes a
+   * child of that pair, not a sibling). Reserved directive names
+   * (`tablerow_loop:`/`tablecol_loop:`/`bullet_list:`/`number_list:`) are
+   * left untouched here — they are handled by their own dedicated
+   * `_analyze*` methods.
    * @param {Array<Object>} textMatches Scanned text runs (`scanDocumentStructure().textMatches`).
    * @param {Object} context Data context.
-   * @returns {Array<{type: 'conditionalDelete', index: number, length: number}>}
-   *   One `deleteContentRange`-shaped op per removed span, in document order:
-   *   a single op spanning the whole block (markers + content) when the
-   *   section evaluates false, or two ops (one per marker paragraph only)
-   *   when it evaluates true and the content is kept in place.
+   * @returns {Array<{type: 'conditionalDelete', index: number, length: number, kind: 'section'|'marker'}>}
+   *   One `deleteContentRange`-shaped op per removed span, in document order,
+   *   produced by resolving the tree top-down via `_resolveConditionalSectionNode`
+   *   (see there for the false-vs-true/overlap-avoidance rules).
    */
   _analyzeConditionalSections(textMatches, context) {
     const RESERVED_PREFIXES = ['tablerow_loop:', 'tablecol_loop:', 'bullet_list:', 'number_list:'];
     const openRe = /^{{([#^])([^}]+)}}\s*$/;
     const closeRe = /^{{\/([^}]+)}}\s*$/;
-    const operations = [];
     const stack = [];
+    const roots = [];
 
     for (const textMatch of textMatches) {
       if (textMatch.type !== 'TEXT' && textMatch.type !== 'TABLE_TEXT') {
@@ -248,8 +247,9 @@ export class DocumentProcessorTagScanner {
         stack.push({
           symbol: openMatch[1],
           expr,
-          elementIndex: textMatch.elementIndex,
-          length: text.length
+          openIndex: textMatch.elementIndex,
+          openLength: text.length,
+          children: []
         });
         continue;
       }
@@ -264,27 +264,70 @@ export class DocumentProcessorTagScanner {
         continue;
       }
       stack.pop();
+      top.closeIndex = textMatch.elementIndex;
+      top.closeLength = text.length;
 
-      const dummyToken = ['name', top.expr];
-      const value = this.facade.mustache._lookupValue(dummyToken, new _MustacheContext(context));
-      const isTruthy = Boolean(value) && !(Array.isArray(value) && value.length === 0);
-      const showContent = top.symbol === '#' ? isTruthy : !isTruthy;
-
-      const openIndex = top.elementIndex;
-      const openLength = top.length;
-      const closeIndex = textMatch.elementIndex;
-      const closeLength = text.length;
-
-      if (showContent) {
-        operations.push({ type: 'conditionalDelete', index: openIndex, length: openLength });
-        operations.push({ type: 'conditionalDelete', index: closeIndex, length: closeLength });
+      if (stack.length > 0) {
+        stack[stack.length - 1].children.push(top);
       } else {
-        operations.push({
-          type: 'conditionalDelete',
-          index: openIndex,
-          length: closeIndex + closeLength - openIndex
-        });
+        roots.push(top);
       }
+    }
+
+    const operations = [];
+    for (const root of roots) {
+      operations.push(...this._resolveConditionalSectionNode(root, context));
+    }
+    return operations;
+  }
+
+  /**
+   * @description Resolves one matched `{{#expr}}`/`{{^expr}}` node (and,
+   * recursively, its nested children) against `context` with standard
+   * Mustache truthiness (falsy/`null`/empty array => section false), exactly
+   * like `_renderSection`/`_renderInverted` in the Mustache facade.
+   *
+   * The false/discarded branch NEVER recurses into `node.children`: the one
+   * `kind: 'section'` op it emits already spans
+   * `[node.openIndex, node.closeIndex + node.closeLength)`, which fully
+   * contains any nested conditional's own range — recursing would emit a
+   * second, overlapping `deleteContentRange` request for a sub-span already
+   * covered by this one, breaking the "Reverse-Order Strategy"'s
+   * non-overlapping-ranges invariant (deleting the inner, higher-index range
+   * first would shift/invalidate the outer op's stale `endIndex`). The
+   * true/kept branch only removes its own two marker paragraphs
+   * (`kind: 'marker'`, each a single disjoint paragraph span that can never
+   * overlap a nested op), so it's safe — and necessary, since the reserved-4
+   * directives gate in `DocumentProcessor.process()` only skip content inside
+   * a `kind: 'section'` range — to resolve nested children independently.
+   * @param {{symbol: '#'|'^', expr: string, openIndex: number, openLength: number, closeIndex: number, closeLength: number, children: Array<Object>}} node
+   * @param {Object} context Data context.
+   * @returns {Array<{type: 'conditionalDelete', index: number, length: number, kind: 'section'|'marker'}>}
+   * @private
+   */
+  _resolveConditionalSectionNode(node, context) {
+    const dummyToken = ['name', node.expr];
+    const value = this.facade.mustache._lookupValue(dummyToken, new _MustacheContext(context));
+    const isTruthy = Boolean(value) && !(Array.isArray(value) && value.length === 0);
+    const showContent = node.symbol === '#' ? isTruthy : !isTruthy;
+
+    if (!showContent) {
+      return [
+        {
+          type: 'conditionalDelete',
+          index: node.openIndex,
+          length: node.closeIndex + node.closeLength - node.openIndex,
+          kind: 'section'
+        }
+      ];
+    }
+
+    const operations = [
+      { type: 'conditionalDelete', index: node.openIndex, length: node.openLength, kind: 'marker' },
+      { type: 'conditionalDelete', index: node.closeIndex, length: node.closeLength, kind: 'marker' }
+    ];
+    for (const child of node.children) {
+      operations.push(...this._resolveConditionalSectionNode(child, context));
     }
     return operations;
   }
