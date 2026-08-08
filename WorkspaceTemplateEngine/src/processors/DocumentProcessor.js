@@ -48,6 +48,7 @@ class _DocumentProcessor {
           '_analyzeListLoops',
           '_analyzeTextSubstitutions',
           '_analyzeTableInsertions',
+          '_analyzeConditionalSections',
           '_parseTableParams',
           '_parseExpression',
           '_parseFilterArgs',
@@ -68,6 +69,7 @@ class _DocumentProcessor {
           '_convertOperationToRequests',
           '_createTextSubstitutionRequests',
           '_createDeleteRowRequests',
+          '_createDeleteRangeRequests',
           '_executeTableInsertOperation',
           '_flushDocumentChanges'
         ]
@@ -175,10 +177,25 @@ class _DocumentProcessor {
         }
       }
     }
+    // `{{#expr}}...{{/expr}}` / `{{^expr}}...{{/expr}}` conditional sections
+    // (ref generic 5th structural directive, alongside tablerow_loop/
+    // tablecol_loop/bullet_list/number_list): resolved against the same
+    // post-rescan `structure` as the deleteRow ops above, for the same
+    // reason — any earlier native mutation's effect on real character
+    // offsets must be reflected here. Each op's own [index, index+length)
+    // span is exactly what gets removed, so it doubles as the exclusion
+    // range for the generic substitution pass below (a marker paragraph, or
+    // a whole discarded block, must never also be handed to
+    // _analyzeTextSubstitutions).
+    const conditionalOps = this._analyzeConditionalSections(structure.textMatches, context);
+    batchOps.push(...conditionalOps);
+    const conditionalRanges = conditionalOps.map((op) => [op.index, op.index + op.length]);
+
     const finalTextMatches = structure.textMatches.filter(
       (tm) =>
         (tm.type !== 'TABLE_TEXT' || !processedTableIndices.has(tm.tableIndex)) &&
-        !renderedElementIndices.has(tm.elementIndex)
+        !renderedElementIndices.has(tm.elementIndex) &&
+        !conditionalRanges.some(([start, end]) => tm.elementIndex >= start && tm.elementIndex < end)
     );
     batchOps.push(...this._analyzeTextSubstitutions(finalTextMatches, context));
     batchOps.sort((a, b) => b.index - a.index);

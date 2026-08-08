@@ -207,6 +207,88 @@ export class DocumentProcessorTagScanner {
     return operations;
   }
 
+  /**
+   * @description Scans paragraph-level text matches for the generic
+   * `{{#expr}}...{{/expr}}` / `{{^expr}}...{{/expr}}` conditional-section
+   * directive: a paragraph whose entire (trimmed of surrounding whitespace)
+   * text is exactly an opening marker is paired with the next matching
+   * `{{/expr}}` closing-marker paragraph, and `expr` is resolved against
+   * `context` with standard Mustache truthiness (falsy/`null`/empty array =>
+   * section false), exactly like `_renderSection`/`_renderInverted` in the
+   * Mustache facade. Reserved directive names (`tablerow_loop:`/
+   * `tablecol_loop:`/`bullet_list:`/`number_list:`) are left untouched here —
+   * they are handled by their own dedicated `_analyze*` methods.
+   * @param {Array<Object>} textMatches Scanned text runs (`scanDocumentStructure().textMatches`).
+   * @param {Object} context Data context.
+   * @returns {Array<{type: 'conditionalDelete', index: number, length: number}>}
+   *   One `deleteContentRange`-shaped op per removed span, in document order:
+   *   a single op spanning the whole block (markers + content) when the
+   *   section evaluates false, or two ops (one per marker paragraph only)
+   *   when it evaluates true and the content is kept in place.
+   */
+  _analyzeConditionalSections(textMatches, context) {
+    const RESERVED_PREFIXES = ['tablerow_loop:', 'tablecol_loop:', 'bullet_list:', 'number_list:'];
+    const openRe = /^{{([#^])([^}]+)}}\s*$/;
+    const closeRe = /^{{\/([^}]+)}}\s*$/;
+    const operations = [];
+    const stack = [];
+
+    for (const textMatch of textMatches) {
+      if (textMatch.type !== 'TEXT' && textMatch.type !== 'TABLE_TEXT') {
+        continue;
+      }
+      const text = textMatch.text || '';
+
+      const openMatch = text.match(openRe);
+      if (openMatch) {
+        const expr = openMatch[2].trim();
+        if (RESERVED_PREFIXES.some((prefix) => expr.startsWith(prefix))) {
+          continue;
+        }
+        stack.push({
+          symbol: openMatch[1],
+          expr,
+          elementIndex: textMatch.elementIndex,
+          length: text.length
+        });
+        continue;
+      }
+
+      const closeMatch = text.match(closeRe);
+      if (!closeMatch || stack.length === 0) {
+        continue;
+      }
+      const closeExpr = closeMatch[1].trim();
+      const top = stack[stack.length - 1];
+      if (closeExpr !== top.expr) {
+        continue;
+      }
+      stack.pop();
+
+      const dummyToken = ['name', top.expr];
+      const value = this.facade.mustache._lookupValue(dummyToken, new _MustacheContext(context));
+      const isTruthy = Boolean(value) && !(Array.isArray(value) && value.length === 0);
+      const showContent = top.symbol === '#' ? isTruthy : !isTruthy;
+
+      const openIndex = top.elementIndex;
+      const openLength = top.length;
+      const closeIndex = textMatch.elementIndex;
+      const closeLength = text.length;
+
+      if (showContent) {
+        operations.push({ type: 'conditionalDelete', index: openIndex, length: openLength });
+        operations.push({ type: 'conditionalDelete', index: closeIndex, length: closeLength });
+      } else {
+        operations.push({
+          type: 'conditionalDelete',
+          index: openIndex,
+          length: closeIndex + closeLength - openIndex
+        });
+      }
+    }
+    return operations;
+  }
+
   _analyzeTextSubstitutions(textMatches, context) {
     const operations = [];
     const seenIndices = new Set();

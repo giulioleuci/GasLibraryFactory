@@ -267,6 +267,8 @@ export class DocumentProcessorInjector {
         return []; // Handled via Standard API
       case 'deleteRow':
         return this.facade._createDeleteRowRequests(op);
+      case 'conditionalDelete':
+        return this.facade._createDeleteRangeRequests(op);
       case 'listLoop':
         return []; // Handled via Standard API
       case 'columnLoop':
@@ -341,6 +343,29 @@ export class DocumentProcessorInjector {
       }
     }
     return requests;
+  }
+
+  /**
+   * @description Builds a single `deleteContentRange` request spanning
+   * `[op.index, op.index + op.length)`, deleting that span in full — including
+   * any paragraph-terminating `\n` characters inside it, which is what
+   * physically removes paragraph structure rather than just clearing text.
+   * Shared paragraph-splice primitive for the generic `{{#expr}}`/`{{^expr}}`
+   * conditional-section directive (see `_analyzeConditionalSections`):
+   * `op.length` is either the marker paragraph's own raw length (marker-only
+   * removal, content kept) or the full open-marker-to-close-marker span
+   * (whole-block removal, content discarded).
+   * @param {{index: number, length: number}} op Conditional-delete operation.
+   * @returns {Array<Object>} Single-element `deleteContentRange` request array.
+   */
+  _createDeleteRangeRequests(op) {
+    return [
+      {
+        deleteContentRange: {
+          range: { startIndex: op.index, endIndex: op.index + op.length }
+        }
+      }
+    ];
   }
 
   _createDeleteRowRequests(op) {
