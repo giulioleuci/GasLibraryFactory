@@ -1,11 +1,11 @@
 {
     "schema_version": 2,
-    "commit": "84225c6ad31844e2d633f7bf3e5f0b819ce7ff9c",
-    "indexed_at": "2026-08-04T15:29:05Z",
+    "commit": "dbdafb151e9a20a015b7210c6f0b36b2f9d6dc5b",
+    "indexed_at": "2026-08-08T08:07:22Z",
     "project": "home-giulio-Desktop-ALDO-implementing-GasLibraryFactory",
-    "nodes": 8277,
-    "edges": 18098,
-    "original_size": 27525120,
-    "compressed_size": 4594674,
+    "nodes": 8315,
+    "edges": 18191,
+    "original_size": 27721728,
+    "compressed_size": 4620485,
     "compression_level": 3
 }
