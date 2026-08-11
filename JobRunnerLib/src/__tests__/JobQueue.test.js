@@ -690,6 +690,32 @@ describe('JobExecutor', () => {
   });
 
   describe('Timeout Handling', () => {
+    it('should persist the first checkpoint before evaluating an already-expired timeout', () => {
+      const getTime = jest.spyOn(Date.prototype, 'getTime').mockReturnValue(51);
+      let advancedPastFirstCheckpoint = false;
+      function* checkpointedJob() {
+        yield { percentage: 50, nextIndex: 1, processed: ['first'] };
+        advancedPastFirstCheckpoint = true;
+        yield { percentage: 100, nextIndex: 2, processed: ['first', 'second'] };
+      }
+
+      try {
+        const result = executor.execute(checkpointedJob, {}, 0, 50);
+
+        expect(result).toEqual({ done: false });
+        expect(stateManager.getState()).toBe('to_resume');
+        expect(stateManager.loadResumeState()).toEqual({
+          percentage: 50,
+          nextIndex: 1,
+          processed: ['first']
+        });
+        expect(advancedPastFirstCheckpoint).toBe(false);
+        expect(triggerService.getTriggerCount()).toBe(1);
+      } finally {
+        getTime.mockRestore();
+      }
+    });
+
     it('should handle timeout exception', () => {
       function* timeoutJob() {
         yield { percentage: 50 };
