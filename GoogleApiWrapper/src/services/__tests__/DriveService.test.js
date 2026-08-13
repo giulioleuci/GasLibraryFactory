@@ -495,6 +495,91 @@ describe('DriveService - Comprehensive Test Suite', () => {
     });
   });
 
+  describe('getPermissions() Method', () => {
+    it('returns complete permission evidence and follows pagination', () => {
+      global.Drive = {
+        Permissions: {
+          list: jest
+            .fn()
+            .mockReturnValueOnce({
+              permissions: [
+                {
+                  id: 'permission-1',
+                  type: 'user',
+                  role: 'writer',
+                  emailAddress: 'docente@school.test',
+                  deleted: false
+                }
+              ],
+              nextPageToken: 'page-2'
+            })
+            .mockReturnValueOnce({
+              permissions: [
+                {
+                  id: 'permission-2',
+                  type: 'group',
+                  role: 'reader',
+                  emailAddress: 'cdc@school.test',
+                  deleted: false
+                }
+              ]
+            })
+        }
+      };
+
+      const result = service.getPermissions('file-1');
+
+      expect(result).toEqual([
+        {
+          id: 'permission-1',
+          type: 'user',
+          role: 'writer',
+          emailAddress: 'docente@school.test',
+          deleted: false
+        },
+        {
+          id: 'permission-2',
+          type: 'group',
+          role: 'reader',
+          emailAddress: 'cdc@school.test',
+          deleted: false
+        }
+      ]);
+      expect(global.Drive.Permissions.list).toHaveBeenNthCalledWith(
+        2,
+        'file-1',
+        expect.objectContaining({ pageToken: 'page-2' })
+      );
+    });
+
+    it('returns an id-to-permissions map for multiple resources', () => {
+      global.Drive = {
+        Permissions: {
+          list: jest.fn((fileId) => ({
+            permissions: [{ id: `${fileId}-permission`, type: 'user', role: 'reader' }]
+          }))
+        }
+      };
+
+      expect(service.getPermissions(['file-1', 'folder-1'])).toEqual({
+        'file-1': [{ id: 'file-1-permission', type: 'user', role: 'reader' }],
+        'folder-1': [{ id: 'folder-1-permission', type: 'user', role: 'reader' }]
+      });
+    });
+
+    it('propagates auth/quota/network failures without fail-soft conversion', () => {
+      global.Drive = {
+        Permissions: {
+          list: jest.fn(() => {
+            throw new Error('Drive auth denied');
+          })
+        }
+      };
+
+      expect(() => service.getPermissions('file-1')).toThrow('Drive auth denied');
+    });
+  });
+
   // ===================================================================
   // getFileOwnerEmail() METHOD
   // ===================================================================

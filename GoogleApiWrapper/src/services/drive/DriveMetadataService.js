@@ -158,6 +158,44 @@ export class DriveMetadataService {
   }
 
   /**
+   * @description Reads current Drive permissions for one or more files/folders.
+   * This uncached evidence API always hits Drive, preserves raw permission
+   * records, follows pagination, and propagates auth/quota/network errors.
+   * @param {string|string[]} fileIds Resource ID(s) whose permissions must be read back.
+   * @returns {Object[]|Object<string, Object[]>} Permission records for one ID, or an ID map.
+   * @throws {ServiceError} On any Drive permission lookup failure.
+   */
+  getPermissions(fileIds) {
+    const isSingleId = !Array.isArray(fileIds);
+    const ids = isSingleId ? [fileIds] : fileIds;
+    const results = {};
+
+    ids.forEach((fileId) => {
+      const permissions = [];
+      let pageToken = null;
+      do {
+        const options = {
+          fields:
+            'nextPageToken,permissions(id,type,role,emailAddress,domain,deleted,displayName,permissionDetails)',
+          pageSize: 100,
+          supportsAllDrives: true
+        };
+        if (pageToken) options.pageToken = pageToken;
+        const page = this._exceptionService.executeWithRetry(
+          () => Drive.Permissions.list(fileId, options),
+          {},
+          3
+        );
+        if (Array.isArray(page.permissions)) permissions.push(...page.permissions);
+        pageToken = page.nextPageToken || null;
+      } while (pageToken);
+      results[fileId] = permissions;
+    });
+
+    return isSingleId ? results[fileIds] : results;
+  }
+
+  /**
    * @description Returns the email address of a Drive file's owner, reusing `getFiles`'
    * caching/retry behaviour (the `owners` field is already part of its default field set).
    * @param {string} fileId Resource ID.
