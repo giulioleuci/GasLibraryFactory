@@ -473,6 +473,26 @@ describe('DriveService - Comprehensive Test Suite', () => {
 
       expect(() => service.getFiles('fileId1', { strict: true })).toThrow('Drive quota exceeded');
     });
+
+    it('refreshes partial cached metadata for a strict MIME lookup', () => {
+      cache.get.mockReturnValueOnce(JSON.stringify({ id: 'fileId1' }));
+      global.Drive = {
+        Files: {
+          get: jest.fn(() => ({
+            id: 'fileId1',
+            mimeType: 'application/vnd.google-apps.spreadsheet'
+          }))
+        }
+      };
+
+      const result = service.getFiles('fileId1', { fields: 'id,mimeType', strict: true });
+
+      expect(result).toEqual({
+        id: 'fileId1',
+        mimeType: 'application/vnd.google-apps.spreadsheet'
+      });
+      expect(global.Drive.Files.get).toHaveBeenCalledWith('fileId1', { fields: 'id,mimeType' });
+    });
   });
 
   // ===================================================================

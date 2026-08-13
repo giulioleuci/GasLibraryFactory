@@ -98,6 +98,7 @@ export class DriveMetadataService {
     const idsArray = isSingleId ? [fileIds] : fileIds;
     const fields =
       options.fields || 'id,name,mimeType,parents,modifiedTime,createdTime,webViewLink,size,owners';
+    const requiredFields = options.strict === true ? fields.split(',').map((field) => field.trim()) : [];
 
     // Check cache first
     const cacheResults = {};
@@ -109,7 +110,16 @@ export class DriveMetadataService {
 
       if (cached) {
         try {
-          cacheResults[fileId] = JSON.parse(cached);
+          const cachedMetadata = JSON.parse(cached);
+          if (
+            requiredFields.every((field) =>
+              Object.prototype.hasOwnProperty.call(cachedMetadata, field)
+            )
+          ) {
+            cacheResults[fileId] = cachedMetadata;
+          } else {
+            uncachedIds.push(fileId);
+          }
         } catch (_e) {
           uncachedIds.push(fileId);
         }
