@@ -449,6 +449,30 @@ describe('DriveService - Comprehensive Test Suite', () => {
       expect(result.fileId1).toBeDefined();
       expect(result.fileId2).toBeDefined();
     });
+
+    it('keeps the default fail-soft contract when metadata lookup fails', () => {
+      global.Drive = {
+        Files: {
+          get: jest.fn(() => {
+            throw new Error('Drive quota exceeded');
+          })
+        }
+      };
+
+      expect(service.getFiles('fileId1')).toBeNull();
+    });
+
+    it('propagates metadata lookup failures when strict mode is requested', () => {
+      global.Drive = {
+        Files: {
+          get: jest.fn(() => {
+            throw new Error('Drive quota exceeded');
+          })
+        }
+      };
+
+      expect(() => service.getFiles('fileId1', { strict: true })).toThrow('Drive quota exceeded');
+    });
   });
 
   // ===================================================================

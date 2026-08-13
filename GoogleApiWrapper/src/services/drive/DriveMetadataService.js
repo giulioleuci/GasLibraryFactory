@@ -89,6 +89,7 @@ export class DriveMetadataService {
    * @param {string|string[]} fileIds Resource ID(s) to fetch.
    * @param {Object} [options={}] Operation settings.
    * @param {string} [options.fields] Comma-separated fields to retrieve (defaults to comprehensive metadata set).
+   * @param {boolean} [options.strict=false] Propagate metadata lookup failures instead of returning null for failed IDs.
    * @returns {Object|Object<string, Object>} Metadata object (single) or ID-to-Metadata map (batch).
    * @throws {ServiceError} On execution failure.
    */
@@ -135,6 +136,9 @@ export class DriveMetadataService {
         const cacheKey = this._generateCacheKey(this._cachePrefix, fileId, 'get');
         this._cache.put(cacheKey, JSON.stringify(fileMetadata), this._cacheExpirationTime);
       } catch (error) {
+        if (options.strict === true) {
+          throw error;
+        }
         cacheResults[fileId] = null;
         this._logger.warn(`Failed to get file ${fileId}: ${error.message}`);
       }
