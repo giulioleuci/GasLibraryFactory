@@ -658,6 +658,86 @@ describe('SpreadsheetService - Comprehensive Test Suite', () => {
   });
 
   // ===================================================================
+  // deleteColumn() METHOD - COLUMN DELETION
+  // ===================================================================
+
+  describe('deleteColumn() Method', () => {
+    beforeEach(() => {
+      mockSheets.Spreadsheets.get.mockReturnValue({
+        spreadsheetId: 'sheet123',
+        properties: { title: 'Test Spreadsheet' },
+        sheets: [
+          {
+            properties: {
+              title: 'Sheet1',
+              sheetId: 123,
+              index: 0,
+              hidden: false
+            }
+          }
+        ]
+      });
+    });
+
+    it('should delete a one-based column with the Sheets COLUMNS request', () => {
+      service.deleteColumn('sheet123', 'Sheet1', 4);
+
+      expect(mockSheets.Spreadsheets.batchUpdate).toHaveBeenCalledWith(
+        {
+          requests: [
+            {
+              deleteDimension: {
+                range: {
+                  sheetId: 123,
+                  dimension: 'COLUMNS',
+                  startIndex: 3,
+                  endIndex: 4
+                }
+              }
+            }
+          ]
+        },
+        'sheet123'
+      );
+    });
+
+    it('should reject a missing sheet before mutating the spreadsheet', () => {
+      expect(() => service.deleteColumn('sheet123', 'MissingSheet', 4)).toThrow(
+        "Sheet 'MissingSheet' not found in spreadsheet sheet123"
+      );
+      expect(mockSheets.Spreadsheets.batchUpdate).not.toHaveBeenCalled();
+    });
+
+    it.each([0, -1, 1.5, NaN])(
+      'should reject invalid column index %s before mutating the spreadsheet',
+      (columnIndex) => {
+        expect(() => service.deleteColumn('sheet123', 'Sheet1', columnIndex)).toThrow(
+          'columnIndex must be a positive integer'
+        );
+        expect(mockSheets.Spreadsheets.batchUpdate).not.toHaveBeenCalled();
+      }
+    );
+
+    it('should execute the deletion through the retry wrapper with three attempts', () => {
+      service.deleteColumn('sheet123', 'Sheet1', 4);
+
+      expect(exceptionService.executeWithRetry).toHaveBeenCalledWith(
+        expect.any(Function),
+        { spreadsheetId: 'sheet123' },
+        3
+      );
+    });
+
+    it('should clear cached sheet metadata after a successful deletion', () => {
+      service.deleteColumn('sheet123', 'Sheet1', 4);
+
+      service._getCachedSheetMetadata('sheet123');
+
+      expect(mockSheets.Spreadsheets.get).toHaveBeenCalledTimes(2);
+    });
+  });
+
+  // ===================================================================
   // createSheets() METHOD - SHEET CREATION
   // ===================================================================
 

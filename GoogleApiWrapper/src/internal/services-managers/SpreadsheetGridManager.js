@@ -3,6 +3,9 @@
  * @description Manager for structural and formatting changes (sheets, widths, formats, protections).
  */
 
+/**
+ * Manages structural and formatting changes for Google Sheets grids.
+ */
 export class SpreadsheetGridManager {
   constructor(facade) {
     this.facade = facade;
@@ -130,6 +133,43 @@ export class SpreadsheetGridManager {
             dimension: 'ROWS',
             startIndex: rowIndex - 1,
             endIndex: rowIndex
+          }
+        }
+      }
+    ];
+    const result = this.facade._executeWithRetry(
+      () => Sheets.Spreadsheets.batchUpdate({ requests }, spreadsheetId),
+      { spreadsheetId },
+      3
+    );
+    this.facade._clearSheetMetadataCache(spreadsheetId);
+    return result;
+  }
+
+  /**
+   * Deletes one column using a one-based column index.
+   * @param {string} spreadsheetId Spreadsheet identifier.
+   * @param {string} sheetName Target sheet title.
+   * @param {number} columnIndex One-based column index to delete.
+   * @returns {*} Sheets batch-update result.
+   */
+  deleteColumn(spreadsheetId, sheetName, columnIndex) {
+    if (!Number.isInteger(columnIndex) || columnIndex < 1) {
+      throw new Error('columnIndex must be a positive integer');
+    }
+    const sheets = this.facade._getCachedSheetMetadata(spreadsheetId);
+    const sheetMeta = sheets.find((s) => s.properties.title === sheetName);
+    if (!sheetMeta) {
+      throw new Error(`Sheet '${sheetName}' not found in spreadsheet ${spreadsheetId}`);
+    }
+    const requests = [
+      {
+        deleteDimension: {
+          range: {
+            sheetId: sheetMeta.properties.sheetId,
+            dimension: 'COLUMNS',
+            startIndex: columnIndex - 1,
+            endIndex: columnIndex
           }
         }
       }

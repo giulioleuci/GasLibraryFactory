@@ -68,6 +68,7 @@ export class SpreadsheetService extends GoogleService {
           'createSheets',
           'deleteSheets',
           'deleteRow',
+          'deleteColumn',
           'deleteRows',
           'expandSheetGrid',
           'getProtectedRanges',
