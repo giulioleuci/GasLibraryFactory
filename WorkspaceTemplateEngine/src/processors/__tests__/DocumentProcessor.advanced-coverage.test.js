@@ -588,7 +588,7 @@ describe('DocumentProcessor - Advanced Coverage Tests (Reverse-Order Strategy)',
       processor.process('doc123', context);
 
       expect(mockDocumentService._executeBatchUpdate).toHaveBeenCalled();
-      expect(mockLogger.info).toHaveBeenCalledWith('Batch update completed successfully');
+      expect(mockLogger.debug).toHaveBeenCalledWith('Batch update completed successfully');
     });
 
     it('should handle document with no substitutions needed', () => {

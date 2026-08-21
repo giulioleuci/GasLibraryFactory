@@ -425,6 +425,11 @@ export class JobQueue {
         stateManager.releaseLock(); // Ensure lock is cleared
       }
 
+      // Read state BEFORE tryAcquireRunning() below, which unconditionally
+      // overwrites it to 'running' — reading after would make first-run
+      // detection always see a truthy state and skip saveType().
+      const jobState = stateManager.getState();
+
       // JRL-C001: Use atomic lock acquisition to prevent race conditions
       if (!stateManager.tryAcquireRunning()) {
         this._logger.warn(`Job ${jobName} already running or lock acquisition failed.`);
@@ -432,7 +437,6 @@ export class JobQueue {
       }
 
       // Save job metadata if this is first run
-      const jobState = stateManager.getState();
       if (!jobState || forceRestart) {
         stateManager.saveType(jobType);
         stateManager.saveConfiguration(this._config);

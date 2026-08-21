@@ -1016,7 +1016,7 @@ describe('DocumentService - Comprehensive Test Suite', () => {
 
       expect(mockDocs.Documents.batchUpdate).toHaveBeenCalledWith({ requests: requests }, 'doc123');
       expect(result).toEqual({ replies: [] });
-      expect(logger.info).toHaveBeenCalledWith(
+      expect(logger.debug).toHaveBeenCalledWith(
         'Executing batch update with 1 requests on document doc123'
       );
     });

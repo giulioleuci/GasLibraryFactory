@@ -297,7 +297,7 @@ describe('DatabaseService - Comprehensive Test Suite', () => {
       it('should log transaction start', () => {
         db.beginTransaction();
 
-        expect(mocks.logger.info).toHaveBeenCalledWith(
+        expect(mocks.logger.debug).toHaveBeenCalledWith(
           expect.stringContaining('Transaction started')
         );
       });
@@ -377,7 +377,7 @@ describe('DatabaseService - Comprehensive Test Suite', () => {
         expect(() => db.commit()).toThrow('Transaction commit failed: table flush failed');
         expect(callOrder).toEqual(['LOG_FOLD.flush', 'LOG_DOCS.flush']);
         expect(mocks.spreadsheetService.flushBatch).not.toHaveBeenCalled();
-        expect(mocks.logger.info).not.toHaveBeenCalledWith(
+        expect(mocks.logger.debug).not.toHaveBeenCalledWith(
           expect.stringContaining('Transaction committed successfully')
         );
         expect(mocks.logger.error).toHaveBeenCalledWith(
@@ -428,7 +428,7 @@ describe('DatabaseService - Comprehensive Test Suite', () => {
         db.beginTransaction();
         db.commit();
 
-        expect(mocks.logger.info).toHaveBeenCalledWith(
+        expect(mocks.logger.debug).toHaveBeenCalledWith(
           expect.stringContaining('Transaction committed successfully')
         );
       });

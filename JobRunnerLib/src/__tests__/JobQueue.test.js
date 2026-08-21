@@ -1179,6 +1179,25 @@ describe('JobQueue', () => {
       expect(stateManager.loadType()).toBe('test');
     });
 
+    it('should save job metadata on a plain first run (no force restart)', () => {
+      // Regression test: tryAcquireRunning() writes state 'running' before
+      // execute()'s first-run check reads getState(), which used to make
+      // `!jobState` always false and skip saveType() outside forceRestart —
+      // breaking resume() for any job that suspends on its very first run
+      // (loadType() would return null, resume() throws "Unable to determine
+      // job type").
+      function* testJob() {
+        yield { percentage: 100 };
+        return { done: true };
+      }
+
+      queue.registerJobHandler('test', testJob);
+      queue.execute('job1', 'test', {}, false);
+
+      const stateManager = new JobStateManager('job1', propertiesService, utils, lockService);
+      expect(stateManager.loadType()).toBe('test');
+    });
+
     it('should prevent concurrent execution with lock', () => {
       function* longJob() {
         // Simulate long-running job

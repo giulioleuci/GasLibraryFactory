@@ -129,7 +129,7 @@ export class DocumentBatchUpdateHandler {
     }
 
     try {
-      this._logger.info(
+      this._logger.debug(
         `Executing batch update with ${requests.length} requests on document ${documentId}`
       );
 

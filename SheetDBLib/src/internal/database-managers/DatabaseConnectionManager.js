@@ -85,7 +85,7 @@ export class DatabaseConnectionManager {
     }
 
     this.facade._inTransaction = true;
-    this._logger.info('Transaction started');
+    this._logger.debug('Transaction started');
     return this.facade;
   }
 
@@ -100,7 +100,7 @@ export class DatabaseConnectionManager {
       });
       this._spreadsheetService.flushBatch();
       const duration = Date.now() - this.facade._transaction.startTime;
-      this._logger.info(`Transaction committed successfully (${duration}ms)`);
+      this._logger.debug(`Transaction committed successfully (${duration}ms)`);
       this.facade._transaction = null;
       this.facade._inTransaction = false;
       return this.facade;

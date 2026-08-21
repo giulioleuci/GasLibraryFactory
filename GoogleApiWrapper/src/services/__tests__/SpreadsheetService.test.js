@@ -243,7 +243,7 @@ describe('SpreadsheetService - Comprehensive Test Suite', () => {
 
       service.updateRanges('sheet123', update);
 
-      expect(logger.info).toHaveBeenCalledWith(
+      expect(logger.debug).toHaveBeenCalledWith(
         expect.stringContaining('Updated 50 cells across 10 rows')
       );
     });

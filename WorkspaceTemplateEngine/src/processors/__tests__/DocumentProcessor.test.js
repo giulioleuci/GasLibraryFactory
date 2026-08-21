@@ -199,7 +199,7 @@ describe('DocumentProcessor - Core Functionality Tests (Reverse-Order Strategy)'
       processor.process('doc123', {});
 
       expect(mockDocumentService.scanDocumentStructure).toHaveBeenCalledWith('doc123', ['{{']);
-      expect(mockLogger.info).toHaveBeenCalledWith(
+      expect(mockLogger.debug).toHaveBeenCalledWith(
         'Starting document processing with Reverse-Order Strategy for document: doc123'
       );
       expect(mockLogger.info).toHaveBeenCalledWith('No batch operations to execute');
@@ -890,7 +890,10 @@ describe('DocumentProcessor - Core Functionality Tests (Reverse-Order Strategy)'
 
       expect(mockDocumentService.scanDocumentStructure).toHaveBeenCalledWith('doc123', ['{{']);
       expect(mockDocumentService._executeBatchUpdate).toHaveBeenCalled();
-      expect(mockLogger.info).toHaveBeenCalledWith('Batch update completed successfully');
+      expect(mockLogger.debug).toHaveBeenCalledWith(
+        expect.stringContaining('Executing batch update with')
+      );
+      expect(mockLogger.debug).toHaveBeenCalledWith('Batch update completed successfully');
     });
 
     it('should respect all security limits', () => {

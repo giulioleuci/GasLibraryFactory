@@ -48,7 +48,7 @@ export class SpreadsheetRangeManager {
       { spreadsheetId, rangeCount: data.length },
       3
     );
-    this._logger.info(
+    this._logger.debug(
       `Updated ${result.totalUpdatedCells} cells across ${result.totalUpdatedRows} rows`
     );
     return {

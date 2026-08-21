@@ -117,7 +117,7 @@ class _DocumentProcessor {
   }
 
   process(documentId, context) {
-    this.logger.info(
+    this.logger.debug(
       `Starting document processing with Reverse-Order Strategy for document: ${documentId}`
     );
     let structure = this.documentService.scanDocumentStructure(documentId, ['{{']);
@@ -276,9 +276,9 @@ class _DocumentProcessor {
     }
 
     if (batchRequests.length > 0) {
-      this.logger.info(`Executing batch update with ${batchRequests.length} requests`);
+      this.logger.debug(`Executing batch update with ${batchRequests.length} requests`);
       this.documentService._executeBatchUpdate(documentId, batchRequests);
-      this.logger.info(`Batch update completed successfully`);
+      this.logger.debug(`Batch update completed successfully`);
     } else {
       this.logger.info(`No batch operations to execute`);
     }
