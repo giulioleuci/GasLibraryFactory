@@ -21,11 +21,13 @@ export { Aggregate } from './src/Aggregate.js';
 
 // Specification pattern
 export { Specification } from './src/specifications/Specification.js';
+export { EqualityFieldSpec } from './src/specifications/EqualityFieldSpec.js';
 export { FieldSpecification } from './src/specifications/FieldSpecification.js';
 export { ExpressionSpecification } from './src/specifications/ExpressionSpecification.js';
 export { FunctionSpecification } from './src/specifications/FunctionSpecification.js';
 export { CompositeSpecification } from './src/specifications/CompositeSpecification.js';
 export { SpecificationBuilder } from './src/specifications/SpecificationBuilder.js';
+export { assertSpecificationContract } from './src/testing/specificationContract.js';
 
 // Mapping and hydration
 export { EntityMapper } from './src/internal/mapping/EntityMapper.js';
