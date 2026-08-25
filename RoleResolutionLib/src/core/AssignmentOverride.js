@@ -1,4 +1,4 @@
-import { parseDate } from '../internal/DateParsing.js';
+import { parseDate } from '@CoreUtilsLib/src/utils/DateUtils.js';
 import { AssignmentCandidate } from './AssignmentCandidate.js';
 import { cloneAndFreeze } from '../internal/ImmutableValue.js';
 import { InconsistentAssignmentOverrideError } from '../internal/errors/RoleResolutionError.js';

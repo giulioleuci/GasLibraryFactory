@@ -3,13 +3,13 @@
  * Orchestrates Mustache rendering, structural document expansion, and batch spreadsheet updates.
  * @class
  * @example
- * const service = new MyPlaceholderService({ logger, mustache });
+ * const service = new PlaceholderService({ logger, mustache });
  * service.processDocument(docId, { items: [{ name: 'A' }] });
  */
 import { DocumentProcessor } from './processors/DocumentProcessor.js';
 import { SheetProcessor } from './processors/SheetProcessor.js';
 
-export class MyPlaceholderService {
+export class PlaceholderService {
   /**
    * @description Dependency injection manifest for PlaceholderService.
    * @returns {Object} DI configuration object.
@@ -20,7 +20,7 @@ export class MyPlaceholderService {
       name: 'placeholderService',
       dependencies: ['logger', 'mustache'],
       isSingleton: true,
-      factory: (logger, mustache) => new MyPlaceholderService({ logger, mustache })
+      factory: (logger, mustache) => new PlaceholderService({ logger, mustache })
     };
   }
 
@@ -43,7 +43,7 @@ export class MyPlaceholderService {
 
     // Validate required dependencies
     if (!this.mustache) {
-      throw new Error('MyPlaceholderService requires a MyMustache instance');
+      throw new Error('PlaceholderService requires a MyMustache instance');
     }
 
     // Initialize processors with filter options (WTE-H006)
@@ -53,7 +53,7 @@ export class MyPlaceholderService {
     this.documentProcessor = new DocumentProcessor(this, processorOptions);
     this.sheetProcessor = new SheetProcessor(this);
 
-    this.logger.debug('MyPlaceholderService (Facade) initialized.');
+    this.logger.debug('PlaceholderService (Facade) initialized.');
   }
 
   /**
@@ -174,5 +174,5 @@ export class MyPlaceholderService {
   }
 }
 
-// Export alias for backwards compatibility
-export { MyPlaceholderService as PlaceholderService };
+/** @deprecated nome storico, rimosso alla prossima release. */
+export { PlaceholderService as MyPlaceholderService };

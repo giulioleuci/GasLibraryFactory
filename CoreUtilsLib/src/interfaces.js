@@ -46,7 +46,7 @@
  * @returns {boolean} True if the object satisfies the interface contract.
  * @throws {Error} If the object is null/non-object or is missing required methods.
  */
-export function validateInterfaceShape(obj, iface) {
+function validateInterfaceShape(obj, iface) {
   if (!obj || typeof obj !== 'object') {
     throw new Error(`${iface.name}: implementation must be a non-null object`);
   }

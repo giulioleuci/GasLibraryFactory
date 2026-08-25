@@ -18,15 +18,6 @@ import {
 
 export class StringUtils {
   /**
-   * Checks if a string is null, undefined, empty, or consists only of whitespace.
-   * @param {string} str String to evaluate.
-   * @returns {boolean} True if string lacks non-whitespace content.
-   */
-  isEmpty(str) {
-    return !str || (typeof str === 'string' && str.trim().length === 0);
-  }
-
-  /**
    * Truncates string to maximum length, appending a suffix if content exceeds limit.
    * @param {string} str Input string.
    * @param {number} maxLength Total allowed length including suffix.

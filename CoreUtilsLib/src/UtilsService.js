@@ -8,6 +8,7 @@ import { IdGenerator } from './utils/IdGenerator.js';
 import { DateUtils } from './utils/DateUtils.js';
 import { StringUtils } from './utils/StringUtils.js';
 import { SystemUtils } from './utils/SystemUtils.js';
+import { isEmpty } from './facades/LodashFacade.js';
 
 export class MyUtilsService {
   static get MILLIS_PER_DAY() {
@@ -48,6 +49,7 @@ export class MyUtilsService {
         this[name] = manager[name].bind(manager);
       });
     });
+    this.isEmpty = isEmpty;
   }
 }
 

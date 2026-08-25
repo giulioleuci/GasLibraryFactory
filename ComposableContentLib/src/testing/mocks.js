@@ -48,22 +48,3 @@ export class BlockRegistryMock {
     this.size = jest.fn(() => this._blocks.size);
   }
 }
-
-/**
- * High-fidelity Jest mock for RendererRegistry.
- * @class
- */
-export class RendererRegistryMock {
-  /**
-   * Initializes mock with internal storage and Jest spy functions.
-   */
-  constructor() {
-    this._renderers = new Map();
-    this.registerRenderer = jest.fn((format, renderer) => {
-      this._renderers.set(format, renderer);
-      return this;
-    });
-    this.getRenderer = jest.fn((format) => this._renderers.get(format));
-    this.hasRenderer = jest.fn((format) => this._renderers.has(format));
-  }
-}

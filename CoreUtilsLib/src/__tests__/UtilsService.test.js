@@ -153,10 +153,11 @@ describe('UtilsService', () => {
   // ============================================================================
 
   describe('parseDate', () => {
-    it('should return Date object as-is if valid', () => {
+    it('should clone a valid Date object', () => {
       const date = new Date('2025-01-15');
       const result = utils.parseDate(date);
-      expect(result).toBe(date);
+      expect(result).toEqual(date);
+      expect(result).not.toBe(date);
     });
 
     it('should return null for invalid Date object', () => {
@@ -615,8 +616,8 @@ describe('UtilsService', () => {
       expect(utils.isEmpty('')).toBe(true);
     });
 
-    it('should return true for whitespace string', () => {
-      expect(utils.isEmpty('   ')).toBe(true);
+    it('should use collection emptiness for whitespace strings', () => {
+      expect(utils.isEmpty('   ')).toBe(false);
     });
 
     it('should return true for null', () => {
@@ -633,6 +634,11 @@ describe('UtilsService', () => {
 
     it('should return false for string with content and whitespace', () => {
       expect(utils.isEmpty('  hello  ')).toBe(false);
+    });
+
+    it('should handle empty Map and Set values', () => {
+      expect(utils.isEmpty(new Map())).toBe(true);
+      expect(utils.isEmpty(new Set())).toBe(true);
     });
   });
 

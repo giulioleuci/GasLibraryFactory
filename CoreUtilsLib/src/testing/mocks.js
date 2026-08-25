@@ -222,11 +222,3 @@ export class CacheInterfaceMock {
     this._clear = this.removeAll;
   }
 }
-
-/**
- * Mock for CacheUtils static utilities.
- */
-export const CacheUtilsMock = {
-  generateKey: jest.fn((prefix, ...parts) => [prefix, ...parts].filter(Boolean).join('_')),
-  generateHashKey: jest.fn((prefix, obj) => `${prefix}_hash_${JSON.stringify(obj).length}`)
-};

@@ -13,7 +13,7 @@ import { DatabaseSchemaExplorer } from './internal/database-managers/DatabaseSch
 import { DatabaseTableRegistry } from './internal/database-managers/DatabaseTableRegistry.js';
 import { DatabaseMetaDataHandler } from './internal/database-managers/DatabaseMetaDataHandler.js';
 
-export class MyDatabaseService {
+export class DatabaseService {
   constructor(spreadsheetId, logger, utils, cache, exceptionService = null, options = {}) {
     this._spreadsheetId = spreadsheetId;
     this._logger = logger;
@@ -85,4 +85,5 @@ export class MyDatabaseService {
   }
 }
 
-export { MyDatabaseService as DatabaseService };
+/** @deprecated nome storico, rimosso alla prossima release. */
+export { DatabaseService as MyDatabaseService };

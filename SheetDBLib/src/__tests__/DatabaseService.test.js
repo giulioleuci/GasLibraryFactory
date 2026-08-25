@@ -5,7 +5,7 @@
 // Coverage: Initialization, table management, query builder integration
 // ===================================================================
 
-import { DatabaseService } from '../DatabaseService';
+import { DatabaseService, MyDatabaseService } from '../DatabaseService';
 import { SpreadsheetService } from '@GoogleApiWrapper';
 import { MockFactory } from '../../../test/fakes/MockFactory';
 import { SchemaValidator } from '@GasSchemaValidatorLib';
@@ -18,6 +18,11 @@ jest.mock('@GoogleApiWrapper', () => ({
 describe('DatabaseService - Comprehensive Test Suite', () => {
   let mocks;
   let spreadsheetService;
+
+  it('uses DatabaseService as the primary name and keeps the deprecated alias', () => {
+    expect(DatabaseService.name).toBe('DatabaseService');
+    expect(MyDatabaseService).toBe(DatabaseService);
+  });
 
   beforeEach(() => {
     global.resetGasMocks();

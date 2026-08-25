@@ -1,5 +1,5 @@
 import { AssignmentSlot } from './AssignmentSlot.js';
-import { parseDate } from '../internal/DateParsing.js';
+import { parseDate } from '@CoreUtilsLib/src/utils/DateUtils.js';
 import { cloneAndFreeze } from '../internal/ImmutableValue.js';
 import { RoleValidationError } from '../internal/errors/RoleResolutionError.js';
 

@@ -6,7 +6,7 @@
 import { Scope } from '../../core/Scope.js';
 import { RoutingPolicy, isValidRoutingPolicy } from '../routing/RoutingPolicy.js';
 import { cloneDeep } from '@CoreUtilsLib';
-import { parseDate } from '../DateParsing.js';
+import { parseDate } from '@CoreUtilsLib/src/utils/DateUtils.js';
 
 export class DelegationState {
   constructor(definition) {

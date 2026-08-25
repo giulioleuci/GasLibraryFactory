@@ -304,11 +304,11 @@ describe('UtilitiesService - Comprehensive Test Suite', () => {
     });
   });
 
-  describe('formatDate() - Date Formatting', () => {
+  describe('formatDateNative() - Date Formatting', () => {
     it('should format date with timezone and format', () => {
       const utilities = new UtilitiesService(mocks.logger);
       const date = new Date('2024-12-28');
-      const result = utilities.formatDate(date, 'GMT', 'yyyy-MM-dd');
+      const result = utilities.formatDateNative(date, 'GMT', 'yyyy-MM-dd');
 
       expect(result).toBe('2024-12-28');
       expect(mockGasUtilities.formatDate).toHaveBeenCalledWith(date, 'GMT', 'yyyy-MM-dd');
@@ -316,7 +316,7 @@ describe('UtilitiesService - Comprehensive Test Suite', () => {
 
     it('should log formatted date', () => {
       const utilities = new UtilitiesService(mocks.logger);
-      utilities.formatDate(new Date(), 'GMT', 'yyyy-MM-dd');
+      utilities.formatDateNative(new Date(), 'GMT', 'yyyy-MM-dd');
 
       expect(mocks.logger.debug).toHaveBeenCalledWith(expect.stringContaining('Formatted date:'));
     });
@@ -328,7 +328,7 @@ describe('UtilitiesService - Comprehensive Test Suite', () => {
 
       const utilities = new UtilitiesService(mocks.logger);
 
-      expect(() => utilities.formatDate(null, 'GMT', 'yyyy')).toThrow('Invalid date');
+      expect(() => utilities.formatDateNative(null, 'GMT', 'yyyy')).toThrow('Invalid date');
     });
   });
 
@@ -692,7 +692,7 @@ describe('UtilitiesService - Comprehensive Test Suite', () => {
     it('should support generating timestamp filenames', () => {
       mockGasUtilities.formatDate.mockReturnValue('2024-12-28_143000');
 
-      const timestamp = utilities.formatDate(new Date(), 'GMT', 'yyyy-MM-dd_HHmmss');
+      const timestamp = utilities.formatDateNative(new Date(), 'GMT', 'yyyy-MM-dd_HHmmss');
       const filename = `report_${timestamp}.csv`;
 
       expect(filename).toBe('report_2024-12-28_143000.csv');

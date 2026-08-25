@@ -5,16 +5,16 @@
  */
 
 import { BlockResult } from './BlockResult.js';
+import { isEmpty } from '@CoreUtilsLib';
 
 /**
  * @description Abstract base class defining the execution contract for content blocks.
- * Subclasses implement data extraction, empty state evaluation, and template resolution.
+ * Subclasses implement data extraction and template resolution.
  * @class
  * @abstract
  * @example
  * class HeaderBlock extends ContentBlock {
  *   getData(ctx) { return { title: ctx.get('title') }; }
- *   isEmpty(data) { return !data.title; }
  *   getTemplateId(format) { return `header_${format}`; }
  * }
  */
@@ -67,18 +67,8 @@ export class ContentBlock {
    * @returns {Object} Extracted data dictionary.
    * @abstract
    */
-  getData(context) {
+  getData(_context) {
     throw new Error('ContentBlock.getData() must be implemented by subclass');
-  }
-
-  /**
-   * @description Evaluates if the extracted data represents an empty state.
-   * @param {Object} data Output from getData().
-   * @returns {boolean} True if empty.
-   * @abstract
-   */
-  isEmpty(data) {
-    throw new Error('ContentBlock.isEmpty() must be implemented by subclass');
   }
 
   /**
@@ -87,7 +77,7 @@ export class ContentBlock {
    * @returns {string} Template ID.
    * @abstract
    */
-  getTemplateId(format) {
+  getTemplateId(_format) {
     throw new Error('ContentBlock.getTemplateId() must be implemented by subclass');
   }
 
@@ -107,7 +97,7 @@ export class ContentBlock {
       const data = this.getData(context);
 
       // 2. Check if empty
-      const empty = this.isEmpty(data);
+      const empty = isEmpty(data);
 
       // 3. Handle empty behavior
       if (empty && this.definition.hidesWhenEmpty()) {
@@ -160,7 +150,7 @@ export class ContentBlock {
    * @returns {Object} Metadata dictionary.
    * @protected
    */
-  _getMetadata(data) {
+  _getMetadata(_data) {
     return {
       blockType: this.getTypeId(),
       blockName: this.getName()
@@ -201,7 +191,6 @@ export class SimpleContentBlock extends ContentBlock {
    * @param {BlockDefinition} definition Immutable type specification.
    * @param {Object} config Configuration payload.
    * @param {Function} config.dataExtractor Strategy for `getData`.
-   * @param {Function} [config.emptyChecker] Strategy for `isEmpty`.
    * @param {Object} config.templates Format-to-TemplateId mapping.
    * @throws {Error} If dataExtractor or templates are missing.
    */
@@ -223,13 +212,6 @@ export class SimpleContentBlock extends ContentBlock {
     this._dataExtractor = config.dataExtractor;
 
     /**
-     * Empty checker function.
-     * @type {Function}
-     * @private
-     */
-    this._emptyChecker = config.emptyChecker || (() => false);
-
-    /**
      * Template IDs by format.
      * @type {Object}
      * @private
@@ -244,15 +226,6 @@ export class SimpleContentBlock extends ContentBlock {
    */
   getData(context) {
     return this._dataExtractor(context);
-  }
-
-  /**
-   * @description Executes the injected empty checker function.
-   * @param {Object} data Extracted payload.
-   * @returns {boolean} True if empty.
-   */
-  isEmpty(data) {
-    return this._emptyChecker(data);
   }
 
   /**

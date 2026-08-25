@@ -14,6 +14,36 @@ const _FORMAT_REGEXES = Object.fromEntries(
   ])
 );
 
+const _parseGoogleSheetsDate = (serialNumber) =>
+  new Date(new Date(1899, 11, 30).getTime() + serialNumber * 24 * 60 * 60 * 1000);
+
+/**
+ * Universal date parser shared by CoreUtilsLib consumers.
+ * @param {Date|string|number|null|undefined} input Multi-format date input.
+ * @returns {Date|null} Parsed Date object or null for invalid inputs.
+ */
+export function parseDate(input) {
+  if (!input && input !== 0) {
+    return null;
+  }
+  if (input instanceof Date) {
+    const copy = new Date(input.getTime());
+    return isNaN(copy.getTime()) ? null : copy;
+  }
+  if (typeof input === 'string') {
+    const date = new Date(input);
+    return isNaN(date.getTime()) ? null : date;
+  }
+  if (typeof input === 'number') {
+    if (input > 0 && input < 100000) {
+      return _parseGoogleSheetsDate(input);
+    }
+    const date = new Date(input);
+    return isNaN(date.getTime()) ? null : date;
+  }
+  return null;
+}
+
 export class DateUtils {
   /**
    * Milliseconds in one day (86,400,000).
@@ -61,33 +91,7 @@ export class DateUtils {
    * @returns {Date|null} Parsed Date object or null for invalid inputs.
    */
   parseDate(input) {
-    if (!input && input !== 0) {
-      return null;
-    }
-
-    // Already a Date object
-    if (input instanceof Date) {
-      return isNaN(input.getTime()) ? null : input;
-    }
-
-    // String input
-    if (typeof input === 'string') {
-      const date = new Date(input);
-      return isNaN(date.getTime()) ? null : date;
-    }
-
-    // Number input
-    if (typeof input === 'number') {
-      // Check if it's a Google Sheets serial number (typically < 100000)
-      if (input > 0 && input < 100000) {
-        return this.parseGoogleSheetsDate(input);
-      }
-      // Otherwise treat as timestamp
-      const date = new Date(input);
-      return isNaN(date.getTime()) ? null : date;
-    }
-
-    return null;
+    return parseDate(input);
   }
 
   /**
@@ -96,10 +100,7 @@ export class DateUtils {
    * @returns {Date} Parsed Date object.
    */
   parseGoogleSheetsDate(serialNumber) {
-    // Google Sheets epoch: December 30, 1899
-    const epoch = new Date(1899, 11, 30);
-    const millisPerDay = DateUtils.MILLIS_PER_DAY;
-    return new Date(epoch.getTime() + serialNumber * millisPerDay);
+    return _parseGoogleSheetsDate(serialNumber);
   }
 
   /**

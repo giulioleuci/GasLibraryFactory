@@ -33,15 +33,6 @@ export function isValidColumnType(value) {
 }
 
 /**
- * @function getColumnTypes
- * @description Retrieves all supported type strings.
- * @returns {string[]} Array of ColumnType values.
- */
-export function getColumnTypes() {
-  return Object.values(ColumnType);
-}
-
-/**
  * @function coerceToType
  * @description Enforces type conversion logic based on ColumnType mapping.
  * @param {*} value - Raw input.

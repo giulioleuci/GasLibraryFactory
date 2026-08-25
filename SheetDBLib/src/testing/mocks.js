@@ -5,53 +5,7 @@
  */
 
 import { TableSearchEngine } from '../TableSearchEngine.js';
-
-/**
- * @class AdvancedQueryBuilderMock
- * @description High-fidelity Jest-based mock for AdvancedQueryBuilder.
- * Simulates fluent API chaining and provides methods to inject return data for distributed or local query tests.
- *
- * @example
- * const mock = new AdvancedQueryBuilderMock().setReturnData([{ id: 1 }]);
- */
-export class AdvancedQueryBuilderMock {
-  constructor() {
-    this.select = jest.fn().mockReturnThis();
-    this.from = jest.fn().mockReturnThis();
-    this.where = jest.fn().mockReturnThis();
-    this.andWhere = jest.fn().mockReturnThis();
-    this.orWhere = jest.fn().mockReturnThis();
-    this.orderBy = jest.fn().mockReturnThis();
-    this.groupBy = jest.fn().mockReturnThis();
-    this.limit = jest.fn().mockReturnThis();
-    this.offset = jest.fn().mockReturnThis();
-
-    // Joins
-    this.innerJoin = jest.fn().mockReturnThis();
-    this.leftJoin = jest.fn().mockReturnThis();
-    this.rightJoin = jest.fn().mockReturnThis();
-    this.fullOuterJoin = jest.fn().mockReturnThis();
-
-    // Execution
-    this.execute = jest.fn(() => []);
-    this.count = jest.fn(() => 0);
-    this.sum = jest.fn(() => 0);
-    this.avg = jest.fn(() => 0);
-    this.min = jest.fn(() => null);
-    this.max = jest.fn(() => null);
-  }
-
-  /**
-   * @description Injects data into the execute() mock and updates count() based on array length.
-   * @param {Object[]} data - Collection of records to return.
-   * @returns {AdvancedQueryBuilderMock} Current instance for chaining.
-   */
-  setReturnData(data) {
-    this.execute.mockReturnValue(data);
-    this.count.mockReturnValue(data.length);
-    return this;
-  }
-}
+import { AdvancedQueryBuilder } from '../query/AdvancedQueryBuilder.js';
 
 /**
  * @class TableServiceMock
@@ -159,7 +113,11 @@ export class DatabaseServiceMock {
     this._cache = cache;
     this._exceptionService = exceptionService;
 
-    this._builder = new AdvancedQueryBuilderMock();
+    this._builder = new AdvancedQueryBuilder(this);
+    this._builder._validator.validateTable = jest.fn();
+    this._builder._validator.validateJoin = jest.fn();
+    jest.spyOn(this._builder, 'from');
+    jest.spyOn(this._builder, 'where');
     this.select = jest.fn(() => this._builder);
     this.getTable = jest.fn((name) => this.tables[name] || new TableServiceMock(name));
     this.createTable = jest.fn((name) => this.tables[name] || new TableServiceMock(name));

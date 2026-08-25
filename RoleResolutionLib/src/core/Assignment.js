@@ -6,7 +6,7 @@
 
 import { Scope } from './Scope.js';
 import { cloneDeep } from '@CoreUtilsLib';
-import { parseDate } from '../internal/DateParsing.js';
+import { parseDate } from '@CoreUtilsLib/src/utils/DateUtils.js';
 
 /**
  * @class Assignment
@@ -85,8 +85,7 @@ export class Assignment {
   /**
    * @function _parseDate
    * @description Normalizes Date objects or ISO strings. Delegates to the
-   * shared internal DateParsing helper (dedupe of the duplicate previously
-   * kept in sync manually with DelegationState).
+   * shared CoreUtilsLib date parser.
    * @param {Date|string|null} value - Raw input.
    * @returns {Date|null} Valid Date or null if unparseable.
    * @private

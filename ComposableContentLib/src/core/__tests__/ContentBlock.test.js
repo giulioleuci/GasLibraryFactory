@@ -6,14 +6,11 @@
 import { ContentBlock, SimpleContentBlock } from '../ContentBlock.js';
 import { BlockDefinition } from '../BlockDefinition.js';
 import { BlockResult } from '../BlockResult.js';
-import { MockFactory } from '../../../../test/fakes';
 
 describe('ContentBlock', () => {
   let mockDefinition;
-  let mocks;
 
   beforeEach(() => {
-    mocks = MockFactory.createAllJest();
     mockDefinition = new BlockDefinition({
       id: 'test_block',
       name: 'Test Block',
@@ -92,9 +89,6 @@ describe('ContentBlock', () => {
 
       expect(() => block.getData({})).toThrow(
         'ContentBlock.getData() must be implemented by subclass'
-      );
-      expect(() => block.isEmpty({})).toThrow(
-        'ContentBlock.isEmpty() must be implemented by subclass'
       );
       expect(() => block.getTemplateId('html')).toThrow(
         'ContentBlock.getTemplateId() must be implemented by subclass'
@@ -175,6 +169,31 @@ describe('ContentBlock', () => {
       expect(result.isVisible).toBe(false);
       expect(result.isEmpty).toBe(true);
       expect(result.metadata.hiddenReason).toBe('empty');
+      expect(mockRenderer.render).not.toHaveBeenCalled();
+    });
+
+    it('should use the shared value emptiness check', () => {
+      const hideDef = new BlockDefinition({
+        id: 'shared_empty_block',
+        name: 'Shared Empty Block',
+        emptyBehavior: 'HIDE'
+      });
+
+      class TestBlock extends ContentBlock {
+        getData() {
+          return new Map();
+        }
+        isEmpty() {
+          return false;
+        }
+        getTemplateId() {
+          return 'temp';
+        }
+      }
+
+      const result = new TestBlock(hideDef).evaluate('instance-1', {}, 'html', mockRenderer);
+
+      expect(result.isVisible).toBe(false);
       expect(mockRenderer.render).not.toHaveBeenCalled();
     });
 
@@ -339,7 +358,6 @@ describe('SimpleContentBlock', () => {
     it('should initialize with valid config', () => {
       const config = {
         dataExtractor: () => ({}),
-        emptyChecker: () => false,
         templates: { html: 'temp_html' }
       };
 
@@ -347,19 +365,7 @@ describe('SimpleContentBlock', () => {
 
       expect(block.definition).toBe(mockDefinition);
       expect(typeof block._dataExtractor).toBe('function');
-      expect(typeof block._emptyChecker).toBe('function');
       expect(block._templates).toEqual(config.templates);
-    });
-
-    it('should default emptyChecker to returning false', () => {
-      const config = {
-        dataExtractor: () => ({}),
-        templates: { html: 'temp_html' }
-      };
-
-      const block = new SimpleContentBlock(mockDefinition, config);
-
-      expect(block._emptyChecker()).toBe(false);
     });
 
     it('should throw if dataExtractor is missing or invalid', () => {
@@ -389,15 +395,12 @@ describe('SimpleContentBlock', () => {
   describe('methods', () => {
     let block;
     let dataExtractorMock;
-    let emptyCheckerMock;
 
     beforeEach(() => {
       dataExtractorMock = jest.fn().mockReturnValue({ val: 1 });
-      emptyCheckerMock = jest.fn().mockReturnValue(false);
 
       block = new SimpleContentBlock(mockDefinition, {
         dataExtractor: dataExtractorMock,
-        emptyChecker: emptyCheckerMock,
         templates: {
           html: 'html_template',
           text: 'text_template'
@@ -413,17 +416,6 @@ describe('SimpleContentBlock', () => {
 
         expect(data).toEqual({ val: 1 });
         expect(dataExtractorMock).toHaveBeenCalledWith(context);
-      });
-    });
-
-    describe('isEmpty', () => {
-      it('should call emptyChecker with data', () => {
-        const data = { val: 1 };
-
-        const isEmpty = block.isEmpty(data);
-
-        expect(isEmpty).toBe(false);
-        expect(emptyCheckerMock).toHaveBeenCalledWith(data);
       });
     });
 

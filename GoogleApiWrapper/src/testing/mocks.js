@@ -4,45 +4,7 @@
  * @version 1.0.0
  */
 
-/**
- * @class MenuBuilderMock
- * @description High-fidelity mock for MenuBuilder. Supports fluent chaining and Jest tracking.
- */
-export class MenuBuilderMock {
-  constructor() {
-    this.addItem = jest.fn().mockReturnThis();
-    this.addSeparator = jest.fn().mockReturnThis();
-    this.addSubMenu = jest.fn().mockReturnThis();
-    this.addToUi = jest.fn();
-  }
-}
-
-/**
- * @class SidebarBuilderMock
- * @description High-fidelity mock for SidebarBuilder. Supports fluent chaining and Jest tracking.
- */
-export class SidebarBuilderMock {
-  constructor() {
-    this.setTitle = jest.fn().mockReturnThis();
-    this.setTemplate = jest.fn().mockReturnThis();
-    this.show = jest.fn();
-  }
-}
-
-/**
- * @class DialogBuilderMock
- * @description High-fidelity mock for DialogBuilder. Supports fluent chaining and Jest tracking.
- */
-export class DialogBuilderMock {
-  constructor() {
-    this.setTitle = jest.fn().mockReturnThis();
-    this.setTemplate = jest.fn().mockReturnThis();
-    this.setWidth = jest.fn().mockReturnThis();
-    this.setHeight = jest.fn().mockReturnThis();
-    this.showModal = jest.fn();
-    this.showModeless = jest.fn();
-  }
-}
+import { DocumentBuilder } from '../services/DocumentBuilder.js';
 
 /**
  * @class SpreadsheetServiceMock
@@ -147,100 +109,17 @@ export class PropertiesServiceMock {
 }
 
 /**
- * @class DocumentBuilderMock
- * @description High-fidelity mock for DocumentBuilder. Supports fluent API chaining and operation queue tracking.
- */
-export class DocumentBuilderMock {
-  constructor(documentId, service) {
-    this.documentId = documentId;
-    this.service = service;
-    this.operations = [];
-  }
-
-  appendParagraph = jest.fn((text, options) => {
-    this.operations.push({ type: 'appendParagraph', text, options });
-    return this;
-  });
-
-  setText = jest.fn((text) => {
-    this.operations.push({ type: 'setText', text });
-    return this;
-  });
-
-  createTable = jest.fn((data, options) => {
-    this.operations.push({ type: 'createTable', data, options });
-    return this;
-  });
-
-  addHeader = jest.fn((text) => {
-    this.operations.push({ type: 'addHeader', text });
-    return this;
-  });
-
-  addFooter = jest.fn((text) => {
-    this.operations.push({ type: 'addFooter', text });
-    return this;
-  });
-
-  replaceText = jest.fn((searchPattern, replacement) => {
-    this.operations.push({ type: 'replaceText', searchPattern, replacement });
-    return this;
-  });
-
-  exportPDF = jest.fn((fileName, destinationFolderId) => {
-    this.operations.push({ type: 'exportPDF', fileName, destinationFolderId });
-    return this;
-  });
-
-  execute = jest.fn(() => {
-    const standardResults = [];
-    const nonBatchResults = [];
-
-    // Track what would have happened
-    this.operations.forEach((op) => {
-      if (op.type === 'createTable') {
-        standardResults.push({
-          operation: 'createTable',
-          result: {
-            success: true,
-            rows: (op.data || []).length,
-            columns: ((op.data && op.data[0]) || []).length
-          }
-        });
-      } else if (op.type === 'exportPDF') {
-        nonBatchResults.push({
-          operation: 'exportPDF',
-          result: { id: 'pdf123', name: op.fileName }
-        });
-      } else if (op.type === 'addHeader' || op.type === 'addFooter') {
-        standardResults.push({ operation: op.type, result: { success: true } });
-      }
-    });
-
-    const result = {
-      success: true,
-      batchResult: { replies: [] },
-      standardResults: standardResults,
-      tableResults: standardResults.filter((r) => r.operation === 'createTable'),
-      nonBatchResults: nonBatchResults
-    };
-    this.operations = [];
-    return result;
-  });
-}
-
-/**
  * @class DocumentServiceMock
  * @description High-fidelity mock for DocumentService. Supports builder pattern and structural document analysis.
  */
 export class DocumentServiceMock {
   constructor() {
-    this.document = jest.fn((id) => new DocumentBuilderMock(id, this));
+    this.document = jest.fn((id) => new DocumentBuilder(id, this));
 
     this.createDocument = jest.fn((name) => ({
       documentId: 'new-doc-id',
       getId: () => 'new-doc-id',
-      builder: new DocumentBuilderMock('new-doc-id', this)
+      builder: new DocumentBuilder('new-doc-id', this)
     }));
 
     this.getDocument = jest.fn((ids) => {

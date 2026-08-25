@@ -5,7 +5,7 @@
 // Using centralized MockFactory
 // ===================================================================
 
-import { PlaceholderService } from '../PlaceholderService';
+import { MyPlaceholderService, PlaceholderService } from '../PlaceholderService';
 import { MockFactory } from '../../../test/fakes/MockFactory';
 import { DocumentService } from '@GoogleApiWrapper';
 
@@ -21,6 +21,11 @@ describe('PlaceholderService - Comprehensive Test Suite', () => {
   let mocks;
   let mockLogger;
   let mockMustache;
+
+  it('uses PlaceholderService as the primary name and keeps the deprecated alias', () => {
+    expect(PlaceholderService.name).toBe('PlaceholderService');
+    expect(MyPlaceholderService).toBe(PlaceholderService);
+  });
 
   beforeEach(() => {
     global.resetGasMocks();

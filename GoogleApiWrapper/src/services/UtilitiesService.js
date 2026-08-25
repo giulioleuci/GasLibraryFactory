@@ -157,7 +157,7 @@ export class UtilitiesService {
    * @param {string} format Java simple date format pattern.
    * @returns {string}
    */
-  formatDate(date, timeZone, format) {
+  formatDateNative(date, timeZone, format) {
     try {
       const formatted = global.Utilities.formatDate(date, timeZone, format);
       this._logger.debug(`Formatted date: ${formatted}`);
