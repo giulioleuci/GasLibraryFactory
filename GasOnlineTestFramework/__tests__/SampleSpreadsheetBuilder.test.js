@@ -9,6 +9,7 @@ function makeSheet(name, header) {
       getValues: jest.fn(() => [values[0]])
     })),
     getLastColumn: jest.fn(() => header.length),
+    getLastRow: jest.fn(() => values.filter((row) => row.length > 0).length),
     appendRow: jest.fn((row) => values.push(row))
   };
 }
@@ -53,6 +54,31 @@ test('appendRow maps a keyed row onto the sheet header order', () => {
 test('appendRow throws for a missing sheet', () => {
   const builder = new SampleSpreadsheetBuilder(makeSpreadsheet());
   expect(() => builder.appendRow('NOPE', {})).toThrow(/NOPE/);
+});
+
+test('appendRows scrive un solo blocco e fa un solo flush', () => {
+  const ss = makeSpreadsheet();
+  const builder = new SampleSpreadsheetBuilder(ss);
+  builder.addSheet('T', ['A', 'B']);
+  jest.clearAllMocks();
+
+  builder.appendRows('T', [{ A: 1, B: 2 }, { A: 3 }]);
+
+  const sheet = ss.getSheetByName('T');
+  expect(sheet.getRange).toHaveBeenCalledTimes(1);
+  expect(sheet.getRange).toHaveBeenCalledWith(2, 1, 2, 2);
+  expect(sheet.getRange.mock.results[0].value.setValues).toHaveBeenCalledWith([
+    [1, 2],
+    [3, '']
+  ]);
+  expect(SpreadsheetApp.flush).toHaveBeenCalledTimes(1);
+});
+
+test('appendRows su elenco vuoto non tocca il foglio', () => {
+  const ss = makeSpreadsheet();
+  const builder = new SampleSpreadsheetBuilder(ss);
+  builder.appendRows('T', []);
+  expect(ss.getSheetByName).not.toHaveBeenCalled();
 });
 
 test('getUrl delegates to the underlying spreadsheet', () => {

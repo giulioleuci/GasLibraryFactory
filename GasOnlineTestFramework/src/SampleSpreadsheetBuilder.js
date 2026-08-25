@@ -72,6 +72,34 @@ export class SampleSpreadsheetBuilder {
   }
 
   /**
+   * @description Appends many rows in one setValues call, with a single flush at
+   * the end. Mirrors {@link appendRow}'s header-order matching, without paying a
+   * getSheetByName + appendRow + flush round-trip per row.
+   * @param {string} sheetName
+   * @param {Array<Object<string,*>>} rows Values keyed by header name.
+   * @throws {Error} If the named sheet does not exist.
+   */
+  appendRows(sheetName, rows) {
+    if (rows.length === 0) return;
+    const sheet = this.spreadsheet.getSheetByName(sheetName);
+    if (sheet === null) {
+      throw new Error(
+        `Sheet "${sheetName}" not found in spreadsheet "${this.spreadsheet.getName()}".`
+      );
+    }
+    const headerRow = this._headersBySheet.get(sheetName) || [];
+    const values = rows.map((row) =>
+      headerRow.map((header) =>
+        row[String(header)] !== undefined ? row[String(header)] : ''
+      )
+    );
+    sheet
+      .getRange(sheet.getLastRow() + 1, 1, values.length, headerRow.length)
+      .setValues(values);
+    SpreadsheetApp.flush();
+  }
+
+  /**
    * @description Public URL of the underlying spreadsheet.
    * @returns {string}
    */
