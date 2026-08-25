@@ -199,6 +199,16 @@ describe('QueryTranslator - Comprehensive Test Suite', () => {
       expect(mockQueryBuilder.where).toHaveBeenCalledWith('status', '=', 'active');
       expect(spec.toQuery).not.toHaveBeenCalled();
     });
+
+    it('legge toQueryObject una sola volta tra validate e translate', () => {
+      const spec = new PlainCriteriaSpecification({ status: 'active' });
+      const criteriaSpy = jest.spyOn(spec, 'toQueryObject');
+
+      expect(translator.validate(spec).valid).toBe(true);
+      translator.translate(spec, mockQueryBuilder);
+
+      expect(criteriaSpy).toHaveBeenCalledTimes(1);
+    });
   });
 
   describe('Edge Cases', () => {

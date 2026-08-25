@@ -65,6 +65,18 @@ describe('FieldSpecification - Comprehensive Test Suite', () => {
   // ===================================================================
 
   describe('Equals Operator', () => {
+    it('espone criteri di uguaglianza come oggetto query', () => {
+      const spec = new FieldSpecification('name', 'equals', 'John Doe');
+
+      expect(spec.toQueryObject()).toEqual({ name: 'John Doe' });
+    });
+
+    it('non espone come oggetto query gli operatori non di uguaglianza', () => {
+      const spec = new FieldSpecification('age', 'greaterThan', 18);
+
+      expect(spec.toQueryObject()).toBeNull();
+    });
+
     it('should match equal values', () => {
       const spec = new FieldSpecification('name', 'equals', 'John Doe');
 

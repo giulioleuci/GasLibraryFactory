@@ -193,6 +193,14 @@ export class FieldSpecification extends Specification {
   }
 
   /**
+   * Exposes an exact equality criterion for query-object pushdown.
+   * @returns {Record<string, unknown>|null} Equality criterion or null for other operators.
+   */
+  toQueryObject() {
+    return this._operator === 'equals' ? { [this._field]: this._value } : null;
+  }
+
+  /**
    * Maps the relational criteria to SheetDBLib query builder instructions.
    * @param {Object} queryBuilder Database query constructor.
    * @returns {Object} The configured query builder.

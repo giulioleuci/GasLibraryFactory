@@ -75,12 +75,37 @@ export class Specification {
   }
 
   /**
-   * Heuristically determines if the specification possesses a supported database mapping.
+   * Percorso rapido di pushdown per specification domain-pure.
+   *
+   * Restituisce un oggetto di uguaglianze `{colonna: valore}` quando la regola è
+   * interamente esprimibile come uguaglianze, `null` quando serve la valutazione
+   * in memoria. Alternativa a `toQuery(queryBuilder)`: permette al layer di
+   * dominio di restare libero da qualsiasi import di query builder.
+   *
+   * INVARIANTE — quando restituisce un oggetto non-null, il filtro deve essere
+   * ESATTAMENTE equivalente a isSatisfiedBy(). Repository.find() applica UNO SOLO
+   * dei due: se divergono, il risultato è silenziosamente sbagliato, senza errori.
+   * Nel dubbio, restituire null.
+   *
+   * @returns {Record<string, unknown>|null}
+   */
+  toQueryObject() {
+    return null;
+  }
+
+  /**
+   * Uses the static query-object path first, then probes genuine toQuery overrides.
    * @returns {boolean} True if the specification can be expressed as a database query.
    */
   canBeTranslatedToQuery() {
+    if (this.toQueryObject() !== null) {
+      return true;
+    }
+    if (Object.getPrototypeOf(this).toQuery === Specification.prototype.toQuery) {
+      return false;
+    }
+
     try {
-      // Try to call toQuery with a mock query builder
       const mockBuilder = {
         where: () => mockBuilder,
         andWhere: () => mockBuilder,

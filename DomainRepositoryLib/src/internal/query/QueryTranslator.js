@@ -12,6 +12,7 @@ export class QueryTranslator {
    */
   constructor(logger = null) {
     this.logger = logger || new LoggerService();
+    this._queryObjectCriteriaCache = new WeakMap();
   }
 
   /**
@@ -30,12 +31,12 @@ export class QueryTranslator {
       throw new SpecificationException('Query builder is required', 'QueryTranslator');
     }
 
-    if (this._hasQueryObjectCriteria(specification)) {
+    if (this._queryObjectCriteria(specification) !== null) {
       try {
         this.logger.debug(
           `Translating specification via toQueryObject(): ${specification.constructor.name}`
         );
-        return this._applyQueryObject(specification.toQueryObject(), queryBuilder);
+        return this._applyQueryObject(specification, queryBuilder);
       } catch (error) {
         if (error instanceof SpecificationException) {
           throw error;
@@ -47,6 +48,8 @@ export class QueryTranslator {
         );
       }
     }
+
+    this._queryObjectCriteriaCache.delete(specification);
 
     // Check if the specification can be translated
     if (
@@ -76,29 +79,35 @@ export class QueryTranslator {
   }
 
   /**
-   * Detects whether a specification exposes an equality-criteria fast path via
-   * `toQueryObject()`, used by specs that keep the domain layer free of any
-   * SheetDBLib/query-builder import (e.g. ALDO's domain `Specification<T>`).
+   * Reads and caches the equality-criteria fast path until translation.
    * @private
    * @param {Object} specification Candidate specification.
-   * @returns {boolean} True if a non-null criteria object is available.
+   * @returns {Record<string, unknown>|null} Equality criteria or null.
    */
-  _hasQueryObjectCriteria(specification) {
-    return (
-      typeof specification.toQueryObject === 'function' &&
-      specification.toQueryObject() !== null &&
-      specification.toQueryObject() !== undefined
-    );
+  _queryObjectCriteria(specification) {
+    if (this._queryObjectCriteriaCache.has(specification)) {
+      return this._queryObjectCriteriaCache.get(specification);
+    }
+
+    const criteria =
+      typeof specification.toQueryObject === 'function'
+        ? specification.toQueryObject()
+        : null;
+    const normalized = criteria === null || criteria === undefined ? null : criteria;
+    this._queryObjectCriteriaCache.set(specification, normalized);
+    return normalized;
   }
 
   /**
    * Applies a plain equality-criteria object (`{column: value}`) to a query builder.
    * @private
-   * @param {Record<string, unknown>} criteria Equality filters.
+   * @param {Object} specification Candidate specification.
    * @param {Object} queryBuilder database query constructor.
    * @returns {Object} The configured query builder.
    */
-  _applyQueryObject(criteria, queryBuilder) {
+  _applyQueryObject(specification, queryBuilder) {
+    const criteria = this._queryObjectCriteria(specification);
+    this._queryObjectCriteriaCache.delete(specification);
     for (const [column, value] of Object.entries(criteria)) {
       queryBuilder.where(column, '=', value);
     }
@@ -115,7 +124,7 @@ export class QueryTranslator {
       return { valid: false, reason: 'Specification is null or undefined' };
     }
 
-    if (this._hasQueryObjectCriteria(specification)) {
+    if (this._queryObjectCriteria(specification) !== null) {
       return { valid: true, reason: null };
     }
 
@@ -123,6 +132,7 @@ export class QueryTranslator {
       typeof specification.canBeTranslatedToQuery !== 'function' ||
       !specification.canBeTranslatedToQuery()
     ) {
+      this._queryObjectCriteriaCache.delete(specification);
       return {
         valid: false,
         reason: `${specification.constructor.name} cannot be translated to a database query`
