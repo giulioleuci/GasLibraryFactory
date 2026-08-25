@@ -172,7 +172,7 @@ describe('ContentBlock', () => {
       expect(mockRenderer.render).not.toHaveBeenCalled();
     });
 
-    it('should use the shared value emptiness check', () => {
+    it('should use the shared value emptiness check by default', () => {
       const hideDef = new BlockDefinition({
         id: 'shared_empty_block',
         name: 'Shared Empty Block',
@@ -182,9 +182,6 @@ describe('ContentBlock', () => {
       class TestBlock extends ContentBlock {
         getData() {
           return new Map();
-        }
-        isEmpty() {
-          return false;
         }
         getTemplateId() {
           return 'temp';
@@ -377,6 +374,25 @@ describe('SimpleContentBlock', () => {
 
       const result = block.evaluate('simple-1', {}, 'html', renderer);
 
+      expect(result.isEmpty).toBe(true);
+      expect(result.isVisible).toBe(false);
+      expect(renderer.render).not.toHaveBeenCalled();
+    });
+
+    it('should dispatch evaluation to the configured empty checker', () => {
+      const data = { items: [] };
+      const emptyChecker = jest.fn((value) => value.items.length === 0);
+      const renderer = { render: jest.fn() };
+      const block = new SimpleContentBlock(mockDefinition, {
+        dataExtractor: () => data,
+        emptyChecker,
+        templates: { html: 'temp_html' }
+      });
+
+      const result = block.evaluate('simple-1', {}, 'html', renderer);
+
+      expect(emptyChecker).toHaveBeenCalledTimes(1);
+      expect(emptyChecker).toHaveBeenCalledWith(data);
       expect(result.isEmpty).toBe(true);
       expect(result.isVisible).toBe(false);
       expect(renderer.render).not.toHaveBeenCalled();

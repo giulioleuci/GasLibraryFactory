@@ -9,7 +9,8 @@ import { isEmpty } from '@CoreUtilsLib';
 
 /**
  * @description Abstract base class defining the execution contract for content blocks.
- * Subclasses implement data extraction and template resolution.
+ * Subclasses implement data extraction and template resolution and may customize empty-state
+ * evaluation.
  * @class
  * @abstract
  * @example
@@ -72,6 +73,16 @@ export class ContentBlock {
   }
 
   /**
+   * @description Evaluates whether extracted data is empty using the shared value semantics.
+   * Subclasses may override this method for domain-specific payload shapes.
+   * @param {*} data Output from getData().
+   * @returns {boolean} True if empty.
+   */
+  isEmpty(data) {
+    return isEmpty(data);
+  }
+
+  /**
    * @description Resolves the format-specific template identifier for this block.
    * @param {string} format Target rendering format.
    * @returns {string} Template ID.
@@ -97,7 +108,7 @@ export class ContentBlock {
       const data = this.getData(context);
 
       // 2. Check if empty
-      const empty = isEmpty(data);
+      const empty = this.isEmpty(data);
 
       // 3. Handle empty behavior
       if (empty && this.definition.hidesWhenEmpty()) {
@@ -191,6 +202,7 @@ export class SimpleContentBlock extends ContentBlock {
    * @param {BlockDefinition} definition Immutable type specification.
    * @param {Object} config Configuration payload.
    * @param {Function} config.dataExtractor Strategy for `getData`.
+   * @param {Function} [config.emptyChecker] Optional strategy for `isEmpty`.
    * @param {Object} config.templates Format-to-TemplateId mapping.
    * @throws {Error} If dataExtractor or templates are missing.
    */
@@ -212,6 +224,13 @@ export class SimpleContentBlock extends ContentBlock {
     this._dataExtractor = config.dataExtractor;
 
     /**
+     * Empty checker function. Defaults to the shared value semantics.
+     * @type {Function}
+     * @private
+     */
+    this._emptyChecker = config.emptyChecker || isEmpty;
+
+    /**
      * Template IDs by format.
      * @type {Object}
      * @private
@@ -226,6 +245,15 @@ export class SimpleContentBlock extends ContentBlock {
    */
   getData(context) {
     return this._dataExtractor(context);
+  }
+
+  /**
+   * @description Executes the configured empty checker function.
+   * @param {*} data Extracted payload.
+   * @returns {boolean} True if empty.
+   */
+  isEmpty(data) {
+    return this._emptyChecker(data);
   }
 
   /**
