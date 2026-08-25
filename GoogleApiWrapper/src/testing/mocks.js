@@ -114,6 +114,11 @@ export class PropertiesServiceMock {
  */
 export class DocumentServiceMock {
   constructor() {
+    this._logger = {
+      debug: jest.fn(),
+      warn: jest.fn(),
+      error: jest.fn()
+    };
     this.document = jest.fn((id) => new DocumentBuilder(id, this));
 
     this.createDocument = jest.fn((name) => ({
@@ -192,6 +197,13 @@ export class DocumentServiceMock {
 
     this._executeBatchUpdate = jest.fn(() => ({ replies: [] }));
     this._executeExportPDF = jest.fn(() => ({ id: 'new-pdf-id' }));
+    this._createTableWithStandardAPI = jest.fn((_documentId, op) => ({
+      success: true,
+      rows: op.data.length,
+      columns: op.data[0] ? op.data[0].length : 0
+    }));
+    this._addHeaderWithStandardAPI = jest.fn(() => ({ success: true }));
+    this._addFooterWithStandardAPI = jest.fn(() => ({ success: true }));
   }
 }
 

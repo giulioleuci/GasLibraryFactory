@@ -54,6 +54,9 @@ const PUBLIC_METHODS = [
 ];
 
 test('exposes all 50 public methods statically on the prototype', () => {
-  expect(PUBLIC_METHODS).toHaveLength(50);
-  PUBLIC_METHODS.forEach((name) => expect(typeof SystemUtils.prototype[name]).toBe('function'));
+  const actualMethods = Object.getOwnPropertyNames(SystemUtils.prototype)
+    .filter((name) => name !== 'constructor')
+    .sort();
+
+  expect(actualMethods).toEqual([...PUBLIC_METHODS].sort());
 });

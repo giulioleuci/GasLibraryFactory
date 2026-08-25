@@ -368,6 +368,20 @@ describe('SimpleContentBlock', () => {
       expect(block._templates).toEqual(config.templates);
     });
 
+    it('should use the shared emptiness check when no callback is configured', () => {
+      const renderer = { render: jest.fn() };
+      const block = new SimpleContentBlock(mockDefinition, {
+        dataExtractor: () => ({}),
+        templates: { html: 'temp_html' }
+      });
+
+      const result = block.evaluate('simple-1', {}, 'html', renderer);
+
+      expect(result.isEmpty).toBe(true);
+      expect(result.isVisible).toBe(false);
+      expect(renderer.render).not.toHaveBeenCalled();
+    });
+
     it('should throw if dataExtractor is missing or invalid', () => {
       expect(() => new SimpleContentBlock(mockDefinition, { templates: {} })).toThrow(
         'SimpleContentBlock requires a dataExtractor function'
@@ -416,6 +430,21 @@ describe('SimpleContentBlock', () => {
 
         expect(data).toEqual({ val: 1 });
         expect(dataExtractorMock).toHaveBeenCalledWith(context);
+      });
+    });
+
+    describe('shared emptiness dispatch', () => {
+      it('should evaluate extracted collection data with the shared checker', () => {
+        const context = { value: 'unused' };
+        const renderer = { render: jest.fn() };
+        dataExtractorMock.mockReturnValue(new Set());
+
+        const result = block.evaluate('simple-1', context, 'html', renderer);
+
+        expect(dataExtractorMock).toHaveBeenCalledWith(context);
+        expect(result.isEmpty).toBe(true);
+        expect(result.isVisible).toBe(false);
+        expect(renderer.render).not.toHaveBeenCalled();
       });
     });
 
