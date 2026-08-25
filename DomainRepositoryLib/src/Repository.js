@@ -137,7 +137,7 @@ export class Repository {
       if (validation.valid) {
         // Use database filtering
         const query = this.database.select(['*']).from(this.tableName);
-        this.queryTranslator.translate(specification, query);
+        this.queryTranslator.translate(specification, query, validation);
         rows = query.execute();
       } else {
         // Load all and filter in-memory

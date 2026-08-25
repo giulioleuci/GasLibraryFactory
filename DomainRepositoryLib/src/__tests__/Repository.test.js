@@ -9,6 +9,8 @@ import { Repository } from '../Repository';
 import { Entity } from '../Entity';
 import { FieldSpecification } from '../specifications/FieldSpecification';
 import { FunctionSpecification } from '../specifications/FunctionSpecification';
+import { Specification } from '../specifications/Specification';
+import { QueryTranslator } from '../internal/query/QueryTranslator';
 import { EntityNotFoundException } from '../internal/errors/EntityNotFoundException';
 import { MockFactory } from '../../../test/fakes/MockFactory';
 
@@ -362,6 +364,54 @@ describe('Repository - Comprehensive Test Suite', () => {
       expect(entities.length).toBe(1);
       expect(entities[0].value).toBe(100);
       expect(mockTable.getAllRows).toHaveBeenCalled();
+    });
+
+    it('evaluates toQueryObject once for equality pushdown in the full find pipeline', () => {
+      const spec = new FieldSpecification('status', 'equals', 'active');
+      const criteriaSpy = jest.spyOn(spec, 'toQueryObject');
+      const query = {
+        where: jest.fn().mockReturnThis(),
+        execute: jest.fn().mockReturnValue([])
+      };
+      mockDatabase.select.mockReturnValue({ from: jest.fn().mockReturnValue(query) });
+      repository.queryTranslator = new QueryTranslator(mocks.logger);
+
+      repository.find(spec);
+
+      expect(criteriaSpy).toHaveBeenCalledTimes(1);
+    });
+
+    it('evaluates toQueryObject once for in-memory fallback in the full find pipeline', () => {
+      class InMemorySpecification extends Specification {
+        isSatisfiedBy(entity) {
+          return entity.value > 50;
+        }
+      }
+      const spec = new InMemorySpecification();
+      const criteriaSpy = jest.spyOn(spec, 'toQueryObject');
+      mockTable.getAllRows.mockReturnValue([
+        { id: 'ID1', name: 'Test1', status: 'active', value: 100 }
+      ]);
+      repository.queryTranslator = new QueryTranslator(mocks.logger);
+
+      repository.find(spec);
+
+      expect(criteriaSpy).toHaveBeenCalledTimes(1);
+    });
+
+    it('evaluates toQueryObject once for legacy toQuery translation in the full find pipeline', () => {
+      const spec = new FieldSpecification('value', 'greaterThan', 50);
+      const criteriaSpy = jest.spyOn(spec, 'toQueryObject');
+      const query = {
+        where: jest.fn().mockReturnThis(),
+        execute: jest.fn().mockReturnValue([])
+      };
+      mockDatabase.select.mockReturnValue({ from: jest.fn().mockReturnValue(query) });
+      repository.queryTranslator = new QueryTranslator(mocks.logger);
+
+      repository.find(spec);
+
+      expect(criteriaSpy).toHaveBeenCalledTimes(1);
     });
   });
 

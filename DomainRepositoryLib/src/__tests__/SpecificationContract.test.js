@@ -23,9 +23,10 @@ test('la base restituisce null di default', () => {
 
 test('canBeTranslatedToQuery non lancia per le spec in memoria', () => {
   const spec = new InMemoryOnly();
-  const throwSpy = jest.spyOn(spec, 'toQuery');
+  const throwSpy = jest.spyOn(Specification.prototype, 'toQuery');
   expect(spec.canBeTranslatedToQuery()).toBe(false);
   expect(throwSpy).not.toHaveBeenCalled();
+  throwSpy.mockRestore();
 });
 
 test('una spec con toQueryObject è traducibile senza passare da toQuery', () => {
@@ -46,4 +47,15 @@ test('le spec toQuery-based restano sul percorso toQuery', () => {
 
   expect(calls).toEqual([['ANNO', '>', 3]]);
   expect(spec.canBeTranslatedToQuery()).toBe(true);
+});
+
+test('riconosce un override toQuery assegnato come proprietà di istanza', () => {
+  class InstanceQuerySpecification extends InMemoryOnly {
+    constructor() {
+      super();
+      this.toQuery = (builder) => builder.where('X', '>', 3);
+    }
+  }
+
+  expect(new InstanceQuerySpecification().canBeTranslatedToQuery()).toBe(true);
 });

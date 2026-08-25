@@ -12,17 +12,17 @@ export class QueryTranslator {
    */
   constructor(logger = null) {
     this.logger = logger || new LoggerService();
-    this._queryObjectCriteriaCache = new WeakMap();
   }
 
   /**
    * Applies domain specification filters to a database query builder.
    * @param {Object} specification domain filter criteria.
    * @param {Object} queryBuilder database query constructor.
+   * @param {{valid:boolean, reason:string|null, queryObjectCriteria:Record<string, unknown>|null}|null} [validation=null] Optional analysis already produced for this operation.
    * @returns {Object} The configured query builder.
    * @throws {SpecificationException} If specification is null, queryBuilder is missing, or translation is unsupported.
    */
-  translate(specification, queryBuilder) {
+  translate(specification, queryBuilder, validation = null) {
     if (!specification) {
       throw new SpecificationException('Specification is required', 'QueryTranslator');
     }
@@ -31,12 +31,22 @@ export class QueryTranslator {
       throw new SpecificationException('Query builder is required', 'QueryTranslator');
     }
 
-    if (this._queryObjectCriteria(specification) !== null) {
+    const analysis = validation || this.validate(specification);
+
+    if (!analysis.valid) {
+      throw new SpecificationException(
+        `Specification ${specification.constructor.name} cannot be translated to a database query`,
+        'QueryTranslator',
+        { specification: specification.toString() }
+      );
+    }
+
+    if (analysis.queryObjectCriteria !== null) {
       try {
         this.logger.debug(
           `Translating specification via toQueryObject(): ${specification.constructor.name}`
         );
-        return this._applyQueryObject(specification, queryBuilder);
+        return this._applyQueryObject(analysis.queryObjectCriteria, queryBuilder);
       } catch (error) {
         if (error instanceof SpecificationException) {
           throw error;
@@ -47,20 +57,6 @@ export class QueryTranslator {
           { specification: specification.toString(), error: error.message }
         );
       }
-    }
-
-    this._queryObjectCriteriaCache.delete(specification);
-
-    // Check if the specification can be translated
-    if (
-      typeof specification.canBeTranslatedToQuery !== 'function' ||
-      !specification.canBeTranslatedToQuery()
-    ) {
-      throw new SpecificationException(
-        `Specification ${specification.constructor.name} cannot be translated to a database query`,
-        'QueryTranslator',
-        { specification: specification.toString() }
-      );
     }
 
     try {
@@ -79,35 +75,27 @@ export class QueryTranslator {
   }
 
   /**
-   * Reads and caches the equality-criteria fast path until translation.
+   * Reads the equality-criteria fast path once for the current operation.
    * @private
    * @param {Object} specification Candidate specification.
    * @returns {Record<string, unknown>|null} Equality criteria or null.
    */
   _queryObjectCriteria(specification) {
-    if (this._queryObjectCriteriaCache.has(specification)) {
-      return this._queryObjectCriteriaCache.get(specification);
-    }
-
     const criteria =
       typeof specification.toQueryObject === 'function'
         ? specification.toQueryObject()
         : null;
-    const normalized = criteria === null || criteria === undefined ? null : criteria;
-    this._queryObjectCriteriaCache.set(specification, normalized);
-    return normalized;
+    return criteria === null || criteria === undefined ? null : criteria;
   }
 
   /**
    * Applies a plain equality-criteria object (`{column: value}`) to a query builder.
    * @private
-   * @param {Object} specification Candidate specification.
+   * @param {Record<string, unknown>} criteria Equality criteria.
    * @param {Object} queryBuilder database query constructor.
    * @returns {Object} The configured query builder.
    */
-  _applyQueryObject(specification, queryBuilder) {
-    const criteria = this._queryObjectCriteria(specification);
-    this._queryObjectCriteriaCache.delete(specification);
+  _applyQueryObject(criteria, queryBuilder) {
     for (const [column, value] of Object.entries(criteria)) {
       queryBuilder.where(column, '=', value);
     }
@@ -117,29 +105,34 @@ export class QueryTranslator {
   /**
    * Evaluates if a given specification possesses a supported mapping to database query structures.
    * @param {Object} specification Criteria to validate.
-   * @returns {{valid:boolean, reason:string|null}} Validation outcome and failure explanation.
+   * @returns {{valid:boolean, reason:string|null, queryObjectCriteria:Record<string, unknown>|null}} Validation outcome and the criterion evaluation for this operation.
    */
   validate(specification) {
     if (!specification) {
-      return { valid: false, reason: 'Specification is null or undefined' };
+      return {
+        valid: false,
+        reason: 'Specification is null or undefined',
+        queryObjectCriteria: null
+      };
     }
 
-    if (this._queryObjectCriteria(specification) !== null) {
-      return { valid: true, reason: null };
+    const queryObjectCriteria = this._queryObjectCriteria(specification);
+    if (queryObjectCriteria !== null) {
+      return { valid: true, reason: null, queryObjectCriteria };
     }
 
     if (
       typeof specification.canBeTranslatedToQuery !== 'function' ||
-      !specification.canBeTranslatedToQuery()
+      !specification.canBeTranslatedToQuery(queryObjectCriteria)
     ) {
-      this._queryObjectCriteriaCache.delete(specification);
       return {
         valid: false,
-        reason: `${specification.constructor.name} cannot be translated to a database query`
+        reason: `${specification.constructor.name} cannot be translated to a database query`,
+        queryObjectCriteria
       };
     }
 
-    return { valid: true, reason: null };
+    return { valid: true, reason: null, queryObjectCriteria };
   }
 
   /**

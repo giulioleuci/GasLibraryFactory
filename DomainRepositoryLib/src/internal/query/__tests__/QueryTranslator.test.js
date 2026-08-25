@@ -200,14 +200,27 @@ describe('QueryTranslator - Comprehensive Test Suite', () => {
       expect(spec.toQuery).not.toHaveBeenCalled();
     });
 
-    it('legge toQueryObject una sola volta tra validate e translate', () => {
+    it('riusa il criterio portato dalla validazione nella traduzione', () => {
+      const spec = new PlainCriteriaSpecification({ status: 'active' });
+      const criteriaSpy = jest.spyOn(spec, 'toQueryObject');
+
+      const validation = translator.validate(spec);
+      expect(validation.valid).toBe(true);
+      translator.translate(spec, mockQueryBuilder, validation);
+
+      expect(criteriaSpy).toHaveBeenCalledTimes(1);
+    });
+
+    it('una validate standalone non conserva criteri obsoleti per la traduzione successiva', () => {
       const spec = new PlainCriteriaSpecification({ status: 'active' });
       const criteriaSpy = jest.spyOn(spec, 'toQueryObject');
 
       expect(translator.validate(spec).valid).toBe(true);
+      spec.criteria = { status: 'inactive' };
       translator.translate(spec, mockQueryBuilder);
 
-      expect(criteriaSpy).toHaveBeenCalledTimes(1);
+      expect(criteriaSpy).toHaveBeenCalledTimes(2);
+      expect(mockQueryBuilder.where).toHaveBeenCalledWith('status', '=', 'inactive');
     });
   });
 

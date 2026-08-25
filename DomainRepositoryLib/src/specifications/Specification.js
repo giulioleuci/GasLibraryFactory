@@ -97,11 +97,11 @@ export class Specification {
    * Uses the static query-object path first, then probes genuine toQuery overrides.
    * @returns {boolean} True if the specification can be expressed as a database query.
    */
-  canBeTranslatedToQuery() {
-    if (this.toQueryObject() !== null) {
+  canBeTranslatedToQuery(queryObjectCriteria = this.toQueryObject()) {
+    if (queryObjectCriteria !== null && queryObjectCriteria !== undefined) {
       return true;
     }
-    if (Object.getPrototypeOf(this).toQuery === Specification.prototype.toQuery) {
+    if (this.toQuery === Specification.prototype.toQuery) {
       return false;
     }
 
