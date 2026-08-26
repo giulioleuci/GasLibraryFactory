@@ -1,11 +1,13 @@
 import * as DomainRepositoryLib from '../../index.js';
 
 test('esporta assertSpecificationContract', () => {
-  expect(DomainRepositoryLib.assertSpecificationContract).toEqual(expect.any(Function));
+  const { name, length } = DomainRepositoryLib.assertSpecificationContract;
+  expect({ name, length }).toEqual({ name: 'assertSpecificationContract', length: 3 });
 });
 
 test('esporta EqualityFieldSpec', () => {
-  expect(DomainRepositoryLib.EqualityFieldSpec).toEqual(expect.any(Function));
+  const { name, length } = DomainRepositoryLib.EqualityFieldSpec;
+  expect({ name, length }).toEqual({ name: 'EqualityFieldSpec', length: 3 });
 });
 
 test('cattura una spec che fa contenimento in memoria e uguaglianza in query', () => {
