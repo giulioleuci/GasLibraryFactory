@@ -54,9 +54,11 @@ describe('FieldSpecification - Comprehensive Test Suite', () => {
         'notLike'
       ];
 
-      operators.forEach((op) => {
-        expect(() => new FieldSpecification('field', op, 'value')).not.toThrow();
-      });
+      const specs = operators.map((operator) => new FieldSpecification('field', operator, 'value'));
+
+      expect(specs.map(({ _field, _operator, _value }) => [_field, _operator, _value])).toEqual(
+        operators.map((operator) => ['field', operator, 'value'])
+      );
     });
   });
 
