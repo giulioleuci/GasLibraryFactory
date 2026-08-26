@@ -135,7 +135,7 @@ describe('Integration Test 7: Resilience-Database Retry', () => {
       // Verify backoff delays occurred (ExceptionService uses exponential backoff)
       expect(mockUtils.sleep).toHaveBeenCalled();
       const sleepCalls = mockUtils.sleep.mock.calls;
-      expect(sleepCalls.length).toBeGreaterThan(0);
+      expect(sleepCalls).toHaveLength(2);
 
       // Verify exponential increase (each delay should be larger than previous)
       if (sleepCalls.length > 1) {
@@ -169,13 +169,17 @@ describe('Integration Test 7: Resilience-Database Retry', () => {
 
       // Verify retry logging
       const warnCalls = mockLogger.warn.mock.calls;
-      expect(warnCalls.length).toBeGreaterThan(0);
+      expect(warnCalls.map(([message]) => message)).toEqual([
+        '[Operation] Retry attempt 1 after error: Service unavailable: Please try again later',
+        '[Operation] Retry attempt 2 after error: Service unavailable: Please try again later',
+        '[RECOVERED] Operation after 3 attempts.'
+      ]);
 
       // Check that retry attempts were logged
       const retryLogs = warnCalls.filter(
         (call) => call[0] && typeof call[0] === 'string' && call[0].toLowerCase().includes('retry')
       );
-      expect(retryLogs.length).toBeGreaterThan(0);
+      expect(retryLogs).toHaveLength(2);
     });
   });
 
