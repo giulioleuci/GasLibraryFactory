@@ -8,6 +8,9 @@
 
 import { ExceptionService } from '../ExceptionService';
 import { ErrorClassifier } from '../handlers/ErrorClassifier';
+import { ErrorReporter } from '../handlers/ErrorReporter';
+import { RecoveryManager } from '../handlers/RecoveryManager';
+import { CircuitBreaker } from '../handlers/CircuitBreaker';
 import { testing as CoreUtilsTesting } from '@CoreUtilsLib';
 
 describe('ExceptionService - Comprehensive Test Suite', () => {
@@ -33,7 +36,7 @@ describe('ExceptionService - Comprehensive Test Suite', () => {
 
   describe('Constructor and Initialization', () => {
     it('should create instance with required dependencies', () => {
-      expect(exceptionService).toBeDefined();
+      expect(exceptionService).toBeInstanceOf(ExceptionService);
       expect(typeof exceptionService.logger.error).toBe('function');
       expect(typeof exceptionService.logger.warn).toBe('function');
       expect(typeof exceptionService.logger.debug).toBe('function');
@@ -41,9 +44,9 @@ describe('ExceptionService - Comprehensive Test Suite', () => {
     });
 
     it('should initialize internal components', () => {
-      expect(exceptionService.errorClassifier).toBeDefined();
-      expect(exceptionService.errorReporter).toBeDefined();
-      expect(exceptionService.recoveryManager).toBeDefined();
+      expect(exceptionService.errorClassifier).toBeInstanceOf(ErrorClassifier);
+      expect(exceptionService.errorReporter).toBeInstanceOf(ErrorReporter);
+      expect(exceptionService.recoveryManager).toBeInstanceOf(RecoveryManager);
     });
 
     it('should accept custom dependencies via dependency injection', () => {
@@ -63,7 +66,7 @@ describe('ExceptionService - Comprehensive Test Suite', () => {
         }
       });
 
-      expect(serviceWithCB.circuitBreaker).toBeDefined();
+      expect(serviceWithCB.circuitBreaker).toBeInstanceOf(CircuitBreaker);
     });
 
     it('should validate logger has required methods', () => {
@@ -137,12 +140,12 @@ describe('ExceptionService - Comprehensive Test Suite', () => {
     it('should accept null dependencies', () => {
       // Note: null dependencies is handled by default parameter = {}
       const service = new ExceptionService(logger, utils);
-      expect(service).toBeDefined();
+      expect(service).toBeInstanceOf(ExceptionService);
     });
 
     it('should accept undefined dependencies (default parameter)', () => {
       const service = new ExceptionService(logger, utils);
-      expect(service).toBeDefined();
+      expect(service).toBeInstanceOf(ExceptionService);
     });
 
     it('should have static constants defined', () => {
@@ -237,7 +240,13 @@ describe('ExceptionService - Comprehensive Test Suite', () => {
         return 'success';
       });
 
-      // Run multiple times to check jitter variation
+      const random = jest
+        .spyOn(Math, 'random')
+        .mockReturnValueOnce(0.1)
+        .mockReturnValueOnce(0.2)
+        .mockReturnValueOnce(0.3)
+        .mockReturnValueOnce(0.4);
+
       const sleepTimesSet1 = [];
       exceptionService.executeWithRetry(fn, {}, 3);
       sleepTimesSet1.push(...utils.sleep.mock.calls.map((call) => call[0]));
@@ -249,10 +258,10 @@ describe('ExceptionService - Comprehensive Test Suite', () => {
       const sleepTimesSet2 = [];
       exceptionService.executeWithRetry(fn, {}, 3);
       sleepTimesSet2.push(...utils.sleep.mock.calls.map((call) => call[0]));
+      random.mockRestore();
 
-      // Due to jitter, sleep times should vary (not guaranteed to be different every time, but likely)
-      expect(sleepTimesSet1).toBeDefined();
-      expect(sleepTimesSet2).toBeDefined();
+      expect(sleepTimesSet1).toEqual([2100, 4200]);
+      expect(sleepTimesSet2).toEqual([2300, 4400]);
     });
 
     it('should respect absolute max attempts safety limit', () => {
@@ -378,10 +387,16 @@ describe('ExceptionService - Comprehensive Test Suite', () => {
 
       expect(result.success).toBe(false);
       expect(result.result).toBeNull();
-      expect(result.attempts).toBeGreaterThan(0);
-      expect(result.error).toBeDefined();
+      expect(result.attempts).toBe(3);
+      expect(result.error).toEqual({
+        message: 'Operation failed',
+        type: 'UNKNOWN',
+        category: 'GENERIC',
+        recoverable: true,
+        originalMessage: 'Operation failed'
+      });
       expect(result.error.message).toBe('Operation failed');
-      expect(result.error.type).toBeDefined(); // Classified error type
+      expect(result.error.type).toBe('UNKNOWN');
     });
 
     it('should track recovery when function succeeds after retries', () => {
@@ -471,7 +486,7 @@ describe('ExceptionService - Comprehensive Test Suite', () => {
         }
       );
 
-      expect(result.error.type).toBeDefined();
+      expect(result.error.type).toBe('QUOTA_EXCEEDED');
       // Should classify as QUOTA error
     });
 
@@ -526,7 +541,7 @@ describe('ExceptionService - Comprehensive Test Suite', () => {
     it('should generate correlationId if not provided', () => {
       const fn = jest.fn(() => 'success');
       const result = exceptionService.executeWithAdvancedHandling(fn, {}, {});
-      expect(result.correlationId).toBeDefined();
+      expect(result.correlationId).toMatch(/^[A-Za-z0-9_-]{21}$/);
       expect(typeof result.correlationId).toBe('string');
     });
 
@@ -544,7 +559,7 @@ describe('ExceptionService - Comprehensive Test Suite', () => {
     });
 
     // NEW: Circuit breaker tests
-    it('should block request when circuit breaker is OPEN', () => {
+    it('should not retain circuit state when no cache is configured', () => {
       const serviceWithCB = new ExceptionService(logger, utils, {
         circuitBreakerConfig: {
           failureThreshold: 1,
@@ -581,10 +596,15 @@ describe('ExceptionService - Comprehensive Test Suite', () => {
         }
       );
 
-      // Circuit breaker behavior depends on implementation
-      // Just verify the result has expected structure
-      expect(result).toBeDefined();
-      expect(result.success).toBeDefined();
+      expect(result).toEqual({
+        success: true,
+        result: 'success',
+        attempts: 1,
+        recovered: false,
+        correlationId: expect.stringMatching(/^[A-Za-z0-9_-]{21}$/),
+        error: null
+      });
+      expect(result.success).toBe(true);
     });
 
     it('should record success in circuit breaker on successful execution', () => {
@@ -661,9 +681,7 @@ describe('ExceptionService - Comprehensive Test Suite', () => {
         throw new Error('Critical failure');
       });
 
-      expect(() => {
-        exceptionService.executeWithBypass(fn, {}, null);
-      }).not.toThrow();
+      expect(exceptionService.executeWithBypass(fn, {}, null)).toBeNull();
     });
 
     it('should still attempt retries before falling back', () => {
@@ -851,8 +869,12 @@ describe('ExceptionService - Comprehensive Test Suite', () => {
 
       const stats = exceptionService.getStatistics();
 
-      expect(stats).toBeDefined();
-      expect(stats.totalAttempts).toBeGreaterThan(0);
+      expect(stats).toEqual({
+        totalAttempts: 2,
+        recoveryRate: 0,
+        counters: { total: 2, recovered: 0, notRecovered: 2, byType: { UNKNOWN: 2 } }
+      });
+      expect(stats.totalAttempts).toBe(2);
     });
 
     it('should track recovery rate', () => {
@@ -874,7 +896,7 @@ describe('ExceptionService - Comprehensive Test Suite', () => {
 
       const stats = exceptionService.getStatistics();
 
-      expect(stats.recoveryRate).toBeGreaterThan(0);
+      expect(stats.recoveryRate).toBe(50);
       expect(stats.recoveryRate).toBeLessThanOrEqual(100);
     });
 
@@ -886,7 +908,7 @@ describe('ExceptionService - Comprehensive Test Suite', () => {
       exceptionService.executeWithBypass(fn, {}, null);
 
       let stats = exceptionService.getStatistics();
-      expect(stats.totalAttempts).toBeGreaterThan(0);
+      expect(stats.totalAttempts).toBe(1);
 
       exceptionService.resetStatistics();
 
@@ -903,9 +925,17 @@ describe('ExceptionService - Comprehensive Test Suite', () => {
 
       const summary = exceptionService.getErrorSummary();
 
-      expect(summary).toBeDefined();
-      expect(summary.counters).toBeDefined();
-      expect(summary.recoveryRate).toBeDefined();
+      expect(summary).toEqual({
+        counters: { total: 1, recovered: 0, notRecovered: 1, byType: { UNKNOWN: 1 } },
+        recoveryRate: 0
+      });
+      expect(summary.counters).toEqual({
+        total: 1,
+        recovered: 0,
+        notRecovered: 1,
+        byType: { UNKNOWN: 1 }
+      });
+      expect(summary.recoveryRate).toBe(0);
     });
 
     it('should print error analysis report', () => {
@@ -914,10 +944,7 @@ describe('ExceptionService - Comprehensive Test Suite', () => {
       });
       exceptionService.executeWithBypass(fn, {}, null);
 
-      // Should not throw
-      expect(() => {
-        exceptionService.printErrorAnalysis();
-      }).not.toThrow();
+      expect(exceptionService.printErrorAnalysis()).toBeUndefined();
 
       // Should log report header
       expect(logger.hasLog('WARN', /Error Analysis Report/)).toBe(true);
@@ -931,7 +958,7 @@ describe('ExceptionService - Comprehensive Test Suite', () => {
       exceptionService.executeWithBypass(fn, {}, null);
 
       const beforeReset = exceptionService.getErrorSummary();
-      expect(beforeReset.counters.total).toBeGreaterThan(0);
+      expect(beforeReset.counters.total).toBe(1);
 
       exceptionService.resetStatistics();
 
@@ -949,10 +976,15 @@ describe('ExceptionService - Comprehensive Test Suite', () => {
       const error = new Error('Service error: Database unavailable');
       const classification = exceptionService.classifyError(error);
 
-      expect(classification).toBeDefined();
-      expect(classification.type).toBeDefined();
-      expect(classification.category).toBeDefined();
-      expect(classification.recoverable).toBeDefined();
+      expect(classification).toEqual({
+        type: 'SERVICE_UNAVAILABLE',
+        category: 'SERVICE',
+        recoverable: true,
+        originalMessage: 'Service error: Database unavailable'
+      });
+      expect(classification.type).toBe('SERVICE_UNAVAILABLE');
+      expect(classification.category).toBe('SERVICE');
+      expect(classification.recoverable).toBe(true);
     });
 
     it('should throw error if error parameter is null', () => {
@@ -971,25 +1003,40 @@ describe('ExceptionService - Comprehensive Test Suite', () => {
       const stringError = 'Plain string error';
       const classification = exceptionService.classifyError(stringError);
 
-      expect(classification).toBeDefined();
-      expect(classification.type).toBeDefined();
+      expect(classification).toEqual({
+        type: 'UNKNOWN',
+        category: 'GENERIC',
+        recoverable: true,
+        originalMessage: 'Plain string error'
+      });
+      expect(classification.type).toBe('UNKNOWN');
     });
 
     it('should handle non-Error exceptions (object)', () => {
       const objectError = { code: 500, message: 'Server error' };
       const classification = exceptionService.classifyError(objectError);
 
-      expect(classification).toBeDefined();
-      expect(classification.type).toBeDefined();
+      expect(classification).toEqual({
+        type: 'UNKNOWN',
+        category: 'GENERIC',
+        recoverable: true,
+        originalMessage: '[object Object]'
+      });
+      expect(classification.type).toBe('UNKNOWN');
     });
 
     it('should handle Error instances', () => {
       const error = new Error('Standard error');
       const classification = exceptionService.classifyError(error);
 
-      expect(classification).toBeDefined();
-      expect(classification.type).toBeDefined();
-      expect(classification.category).toBeDefined();
+      expect(classification).toEqual({
+        type: 'UNKNOWN',
+        category: 'GENERIC',
+        recoverable: true,
+        originalMessage: 'Standard error'
+      });
+      expect(classification.type).toBe('UNKNOWN');
+      expect(classification.category).toBe('GENERIC');
     });
 
     it('should classify quota errors correctly', () => {
@@ -1093,7 +1140,13 @@ describe('ExceptionService - Comprehensive Test Suite', () => {
       const result = exceptionService.executeWithAdvancedHandling(fn, {}, {});
 
       expect(result.success).toBe(false);
-      expect(result.error).toBeDefined();
+      expect(result.error).toEqual({
+        message: '',
+        type: 'UNKNOWN',
+        category: 'GENERIC',
+        recoverable: true,
+        originalMessage: ''
+      });
     });
 
     it('should handle non-Error exceptions', () => {
@@ -1105,7 +1158,13 @@ describe('ExceptionService - Comprehensive Test Suite', () => {
       const result = exceptionService.executeWithAdvancedHandling(fn, {}, {});
 
       expect(result.success).toBe(false);
-      expect(result.error).toBeDefined();
+      expect(result.error).toEqual({
+        message: 'String error',
+        type: 'UNKNOWN',
+        category: 'GENERIC',
+        recoverable: true,
+        originalMessage: 'String error'
+      });
     });
 
     it('should handle object exceptions', () => {
@@ -1117,7 +1176,13 @@ describe('ExceptionService - Comprehensive Test Suite', () => {
       const result = exceptionService.executeWithAdvancedHandling(fn, {}, {});
 
       expect(result.success).toBe(false);
-      expect(result.error).toBeDefined();
+      expect(result.error).toEqual({
+        message: '[object Object]',
+        type: 'UNKNOWN',
+        category: 'GENERIC',
+        recoverable: true,
+        originalMessage: '[object Object]'
+      });
     });
   });
 
