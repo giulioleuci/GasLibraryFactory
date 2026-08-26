@@ -34,8 +34,11 @@ describe('QueryTranslator - Comprehensive Test Suite', () => {
       const spec = new FunctionSpecification((obj) => obj.age > 18);
       const result = translator.validate(spec);
 
-      expect(result.valid).toBe(false);
-      expect(result.reason).toBeDefined();
+      expect(result).toEqual({
+        valid: false,
+        reason: 'FunctionSpecification cannot be translated to a database query',
+        queryObjectCriteria: null
+      });
     });
 
     it('should validate simple composite AND', () => {
@@ -169,7 +172,11 @@ describe('QueryTranslator - Comprehensive Test Suite', () => {
     it('does not throw for a specification missing canBeTranslatedToQuery entirely', () => {
       const spec = new PlainCriteriaSpecification({ status: 'active' });
 
-      expect(() => translator.validate(spec)).not.toThrow();
+      expect(translator.validate(spec)).toEqual({
+        valid: true,
+        reason: null,
+        queryObjectCriteria: { status: 'active' }
+      });
     });
 
     it('translates single-field criteria into an equality where() call', () => {
