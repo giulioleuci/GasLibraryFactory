@@ -935,17 +935,17 @@ describe('ExpressionEvaluatorService (Logic Library Pattern)', () => {
 
     it('should compare numbers', () => {
       expect(evaluator._compare(5, 10)).toBeLessThan(0);
-      expect(evaluator._compare(10, 5)).toBeGreaterThan(0);
+      expect(evaluator._compare(10, 5)).toBe(5);
       expect(evaluator._compare(5, 5)).toBe(0);
     });
 
     it('should compare strings', () => {
       expect(evaluator._compare('apple', 'banana')).toBeLessThan(0);
-      expect(evaluator._compare('banana', 'apple')).toBeGreaterThan(0);
+      expect(Math.sign(evaluator._compare('banana', 'apple'))).toBe(1);
       expect(evaluator._compare('apple', 'apple')).toBe(0);
       // STRICT MODE: String comparison is now case-sensitive
       // In locale-aware comparison, 'Apple' > 'apple' (uppercase comes after lowercase)
-      expect(evaluator._compare('Apple', 'apple')).toBeGreaterThan(0);
+      expect(Math.sign(evaluator._compare('Apple', 'apple'))).toBe(1);
       expect(evaluator._compare('apple', 'Apple')).toBeLessThan(0);
     });
 
@@ -953,7 +953,7 @@ describe('ExpressionEvaluatorService (Logic Library Pattern)', () => {
       expect(evaluator._compare(false, false)).toBe(0);
       expect(evaluator._compare(true, true)).toBe(0);
       expect(evaluator._compare(false, true)).toBeLessThan(0);
-      expect(evaluator._compare(true, false)).toBeGreaterThan(0);
+      expect(evaluator._compare(true, false)).toBe(1);
     });
 
     it('should throw error for incompatible types in strict mode', () => {
