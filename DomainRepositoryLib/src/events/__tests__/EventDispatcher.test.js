@@ -99,7 +99,8 @@ describe('EventDispatcher - Comprehensive Test Suite', () => {
     it('should handle dispatching with no registered handlers', () => {
       const event = new DomainEvent('UnregisteredEvent', {});
 
-      expect(() => dispatcher.dispatch(event)).not.toThrow();
+      expect(dispatcher.dispatch(event)).toBeUndefined();
+      expect(dispatcher.getHandlers('UnregisteredEvent')).toEqual([]);
     });
 
     it('should pass correct event payload to handler', () => {
@@ -148,7 +149,8 @@ describe('EventDispatcher - Comprehensive Test Suite', () => {
     it('should handle removing non-existent handler', () => {
       const handler = jest.fn();
 
-      expect(() => dispatcher.off('NonExistentEvent', handler)).not.toThrow();
+      dispatcher.off('NonExistentEvent', handler);
+      expect(dispatcher.getHandlers('NonExistentEvent')).toEqual([]);
     });
   });
 
@@ -179,7 +181,8 @@ describe('EventDispatcher - Comprehensive Test Suite', () => {
 
       const event = new DomainEvent('TestEvent', {});
 
-      expect(() => dispatcher.dispatch(event)).not.toThrow();
+      dispatcher.dispatch(event);
+      expect(handler1).toHaveBeenCalledTimes(1);
       expect(handler2).toHaveBeenCalledTimes(1);
     });
 
