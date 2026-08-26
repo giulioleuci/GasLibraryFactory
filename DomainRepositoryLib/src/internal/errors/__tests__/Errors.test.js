@@ -36,7 +36,7 @@ describe('Domain Errors - Comprehensive Test Suite', () => {
     it('should have stack trace', () => {
       const error = new DomainException('Test');
 
-      expect(error.stack).toBeDefined();
+      expect(error.stack).toMatch(/^DomainException: Test\n/);
     });
   });
 
@@ -196,8 +196,10 @@ describe('Domain Errors - Comprehensive Test Suite', () => {
       const violations = ['Must have items', 'Total must be positive'];
       const error = new InvariantViolationException('Order', violations);
 
-      expect(error.message).toBeDefined();
-      expect(error.message.length).toBeGreaterThan(0);
+      expect(error.message).toBe(
+        'invariant violation in Order: Must have items, Total must be positive'
+      );
+      expect(error.message).toHaveLength(69);
     });
   });
 
@@ -205,7 +207,7 @@ describe('Domain Errors - Comprehensive Test Suite', () => {
     it('should handle null message', () => {
       const error = new DomainException(null);
 
-      expect(error.message).toBeDefined();
+      expect(error.message).toBe('null');
     });
 
     it('should handle empty string message', () => {
