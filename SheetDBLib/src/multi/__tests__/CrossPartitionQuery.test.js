@@ -241,8 +241,15 @@ describe('CrossPartitionQuery', () => {
     it('should be an alias for execute in GAS (synchronous)', () => {
       query.fromPartitions(['warehouse_milan']);
       const result = query.executeParallel();
-      expect(result).toBeDefined();
-      expect(result.records).toBeDefined();
+      const { executionTime, ...observableResult } = result;
+      expect(observableResult).toEqual({
+        records: [],
+        partitionResults: new Map([['warehouse_milan', []]]),
+        totalRecords: 0,
+        partitionsQueried: ['warehouse_milan'],
+        errors: new Map()
+      });
+      expect(executionTime).toBeGreaterThanOrEqual(0);
     });
   });
 
