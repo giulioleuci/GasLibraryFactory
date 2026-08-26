@@ -33,7 +33,7 @@ describe('ErrorReporter - Comprehensive Test Suite', () => {
     it('should create instance with valid logger', () => {
       const reporter = new ErrorReporter(logger);
 
-      expect(reporter).toBeDefined();
+      expect(reporter).toBeInstanceOf(ErrorReporter);
       expect(reporter._logger).toBe(logger);
     });
 
