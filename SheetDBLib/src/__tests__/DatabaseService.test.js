@@ -6,6 +6,7 @@
 // ===================================================================
 
 import { DatabaseService, MyDatabaseService } from '../DatabaseService';
+import { AdvancedQueryBuilder } from '../query/AdvancedQueryBuilder';
 import { SpreadsheetService } from '@GoogleApiWrapper';
 import { MockFactory } from '../../../test/fakes/MockFactory';
 import { SchemaValidator } from '@GasSchemaValidatorLib';
@@ -63,16 +64,16 @@ describe('DatabaseService - Comprehensive Test Suite', () => {
     it('should create instance with spreadsheet ID', () => {
       const db = new DatabaseService('TEST_SHEET_ID', mocks.logger, mocks.utils, mocks.cache);
 
-      expect(db).toBeDefined();
+      expect(db).toBeInstanceOf(DatabaseService);
       expect(db._spreadsheetId).toBe('TEST_SHEET_ID');
     });
 
     it('should initialize tables from spreadsheet', () => {
       const db = new DatabaseService('TEST_SHEET_ID', mocks.logger, mocks.utils, mocks.cache);
 
-      expect(db.tables).toBeDefined();
-      expect(db.tables['Users']).toBeDefined();
-      expect(db.tables['Orders']).toBeDefined();
+      expect(
+        Object.fromEntries(Object.entries(db.tables).map(([name, table]) => [name, table.sheetName]))
+      ).toEqual({ Users: 'Users', Orders: 'Orders' });
     });
 
     it('should use provided logger', () => {
@@ -128,7 +129,7 @@ describe('DatabaseService - Comprehensive Test Suite', () => {
     it('should access table by name', () => {
       const usersTable = db.tables['Users'];
 
-      expect(usersTable).toBeDefined();
+      expect(usersTable).toHaveProperty('sheetName', 'Users');
       expect(usersTable.sheetName).toBe('Users');
     });
 
@@ -160,20 +161,25 @@ describe('DatabaseService - Comprehensive Test Suite', () => {
     it('should create query builder with select()', () => {
       const query = db.select(['name', 'email']);
 
-      expect(query).toBeDefined();
+      expect(query).toBeInstanceOf(AdvancedQueryBuilder);
       expect(typeof query.from).toBe('function');
     });
 
     it('should support method chaining', () => {
       const query = db.select(['name']).from('Users').where('email', '=', 'test@test.com');
 
-      expect(query).toBeDefined();
+      expect(query).toMatchObject({
+        dbService: db,
+        selectedColumns: ['name'],
+        tableName: 'Users',
+        conditions: [{ field: 'email', operator: '=', value: 'test@test.com', type: 'AND' }]
+      });
     });
 
     it('should handle select with no columns (select all)', () => {
       const query = db.select();
 
-      expect(query).toBeDefined();
+      expect(query).toMatchObject({ dbService: db, selectedColumns: ['*'], tableName: null });
     });
   });
 
@@ -189,9 +195,7 @@ describe('DatabaseService - Comprehensive Test Suite', () => {
     });
 
     it('should save changes to spreadsheet', () => {
-      expect(() => {
-        db.save();
-      }).not.toThrow();
+      expect(db.save()).toBe(db);
     });
 
     it('should log save operation', () => {
@@ -219,8 +223,9 @@ describe('DatabaseService - Comprehensive Test Suite', () => {
 
       const db = new DatabaseService('TEST_SHEET_ID', mocks.logger, mocks.utils, mocks.cache);
 
-      expect(db.tables['Users-2024']).toBeDefined();
-      expect(db.tables['Orders (Archive)']).toBeDefined();
+      expect(
+        Object.fromEntries(Object.entries(db.tables).map(([name, table]) => [name, table.sheetName]))
+      ).toEqual({ 'Users-2024': 'Users-2024', 'Orders (Archive)': 'Orders (Archive)' });
     });
 
     it('should handle very long spreadsheet IDs', () => {
@@ -236,13 +241,12 @@ describe('DatabaseService - Comprehensive Test Suite', () => {
       // The test should check if logger is provided or use a default
       const db = new DatabaseService('TEST_SHEET_ID', mocks.logger, mocks.utils, mocks.cache);
 
-      expect(db).toBeDefined();
+      expect(db).toBeInstanceOf(DatabaseService);
     });
 
     it('should handle null utils gracefully', () => {
-      expect(() => {
-        new DatabaseService('TEST_SHEET_ID', mocks.logger, null, mocks.cache);
-      }).not.toThrow();
+      const db = new DatabaseService('TEST_SHEET_ID', mocks.logger, null, mocks.cache);
+      expect(db._utils).toBeNull();
     });
   });
 
@@ -274,7 +278,12 @@ describe('DatabaseService - Comprehensive Test Suite', () => {
         db.beginTransaction();
 
         expect(db.inTransaction()).toBe(true);
-        expect(db._transaction).toBeDefined();
+        const { startTime, ...transaction } = db._transaction;
+        expect(Number.isInteger(startTime)).toBe(true);
+        expect(transaction).toEqual({
+          savedStates: { Users: db.tables.Users._rowsCache, Orders: db.tables.Orders._rowsCache },
+          operations: []
+        });
       });
 
       it('should return this for method chaining', () => {
@@ -286,9 +295,10 @@ describe('DatabaseService - Comprehensive Test Suite', () => {
       it('should save current state of all tables', () => {
         db.beginTransaction();
 
-        expect(db._transaction.savedStates).toBeDefined();
-        expect(db._transaction.savedStates['Users']).toBeDefined();
-        expect(db._transaction.savedStates['Orders']).toBeDefined();
+        expect(db._transaction.savedStates).toEqual({
+          Users: db.tables.Users._rowsCache,
+          Orders: db.tables.Orders._rowsCache
+        });
       });
 
       it('should throw error if transaction already in progress', () => {
@@ -394,9 +404,7 @@ describe('DatabaseService - Comprehensive Test Suite', () => {
       it('should commit transaction successfully', () => {
         db.beginTransaction();
 
-        expect(() => {
-          db.commit();
-        }).not.toThrow();
+        expect(db.commit()).toBe(db);
 
         expect(db.inTransaction()).toBe(false);
       });
@@ -478,9 +486,7 @@ describe('DatabaseService - Comprehensive Test Suite', () => {
       it('should rollback transaction successfully', () => {
         db.beginTransaction();
 
-        expect(() => {
-          db.rollback();
-        }).not.toThrow();
+        expect(db.rollback()).toBe(db);
 
         expect(db.inTransaction()).toBe(false);
       });
@@ -594,18 +600,14 @@ describe('DatabaseService - Comprehensive Test Suite', () => {
         db.beginTransaction();
         db.commit();
 
-        expect(() => {
-          db.save();
-        }).not.toThrow();
+        expect(db.save()).toBe(db);
       });
 
       it('should allow save() after rollback', () => {
         db.beginTransaction();
         db.rollback();
 
-        expect(() => {
-          db.save();
-        }).not.toThrow();
+        expect(db.save()).toBe(db);
       });
     });
 
@@ -639,9 +641,7 @@ describe('DatabaseService - Comprehensive Test Suite', () => {
         delete db.tables['Users'];
 
         // Should not throw - gracefully skip missing tables
-        expect(() => {
-          db.rollback();
-        }).not.toThrow();
+        expect(db.rollback()).toBe(db);
       });
     });
   });
@@ -728,7 +728,7 @@ describe('DatabaseService - Comprehensive Test Suite', () => {
         }
       );
 
-      expect(db.tables['MASTER']).toBeDefined();
+      expect(db.tables.MASTER.sheetName).toBe('MASTER');
       expect(mocks.spreadsheetService.getSheetInfo).toHaveBeenCalledTimes(2);
       expect(mocks.utils.sleep).toHaveBeenCalledTimes(1);
     });
@@ -736,7 +736,10 @@ describe('DatabaseService - Comprehensive Test Suite', () => {
     it('does not retry when verifyTables is not provided', () => {
       const db = new DatabaseService('TEST_SHEET_ID', mocks.logger, mocks.utils, mocks.cache);
 
-      expect(db).toBeDefined();
+      expect(db.tables).toEqual(expect.objectContaining({
+        Users: expect.objectContaining({ sheetName: 'Users' }),
+        Orders: expect.objectContaining({ sheetName: 'Orders' })
+      }));
       expect(mocks.spreadsheetService.getSheetInfo).toHaveBeenCalledTimes(1);
       expect(mocks.utils.sleep).not.toHaveBeenCalled();
     });
@@ -753,7 +756,7 @@ describe('DatabaseService - Comprehensive Test Suite', () => {
         }
       );
 
-      expect(db.tables['Users']).toBeDefined();
+      expect(db.tables.Users.sheetName).toBe('Users');
       expect(mocks.spreadsheetService.getSheetInfo).toHaveBeenCalledTimes(1);
       expect(mocks.utils.sleep).not.toHaveBeenCalled();
     });
@@ -774,7 +777,7 @@ describe('DatabaseService - Comprehensive Test Suite', () => {
 
       expect(db.tables['MASTER']).toBeUndefined();
       expect(mocks.logger.warn).toHaveBeenCalledWith(expect.stringContaining('MASTER'));
-      expect(mocks.spreadsheetService.getSheetInfo.mock.calls.length).toBeGreaterThan(1);
+      expect(mocks.spreadsheetService.getSheetInfo).toHaveBeenCalledTimes(3);
     });
   });
 
@@ -796,8 +799,9 @@ describe('DatabaseService - Comprehensive Test Suite', () => {
 
       const db = new DatabaseService('TEST_SHEET_ID', mocks.logger, mocks.utils, mocks.cache);
 
-      expect(db.tables["John's Data"]).toBeDefined();
-      expect(db.tables["User's Profile"]).toBeDefined();
+      expect(
+        Object.fromEntries(Object.entries(db.tables).map(([name, table]) => [name, table.sheetName]))
+      ).toEqual({ "John's Data": "John's Data", "User's Profile": "User's Profile" });
     });
 
     it('should handle getRanges returning empty data', () => {
@@ -808,8 +812,9 @@ describe('DatabaseService - Comprehensive Test Suite', () => {
 
       const db = new DatabaseService('TEST_SHEET_ID', mocks.logger, mocks.utils, mocks.cache);
 
-      expect(db.tables['Users']).toBeDefined();
-      expect(db.tables['Orders']).toBeDefined();
+      expect(
+        Object.fromEntries(Object.entries(db.tables).map(([name, table]) => [name, table.sheetName]))
+      ).toEqual({ Users: 'Users', Orders: 'Orders' });
     });
 
     it('should handle getRanges with missing sheets', () => {
@@ -825,8 +830,9 @@ describe('DatabaseService - Comprehensive Test Suite', () => {
 
       const db = new DatabaseService('TEST_SHEET_ID', mocks.logger, mocks.utils, mocks.cache);
 
-      expect(db.tables['Users']).toBeDefined();
-      expect(db.tables['Orders']).toBeDefined();
+      expect(
+        Object.fromEntries(Object.entries(db.tables).map(([name, table]) => [name, table.sheetName]))
+      ).toEqual({ Users: 'Users', Orders: 'Orders' });
     });
 
     it('should log batch loading preparation', () => {
