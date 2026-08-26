@@ -14,7 +14,7 @@ describe('UtilsService', () => {
 
   describe('Export aliases', () => {
     it('should export UtilsService', () => {
-      expect(UtilsService).toBeDefined();
+      expect(typeof UtilsService).toBe('function');
     });
 
     it('should export MyUtilsService as alias', () => {
