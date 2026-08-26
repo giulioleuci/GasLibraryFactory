@@ -179,8 +179,8 @@ describe('Integration Test 10: Entity-ValueObject Mapping', () => {
       // Assert: Verify non-ValueObject fields remain unchanged
       expect(data.id).toBe('comp_3');
       expect(data.name).toBe('Simple Corp');
-      expect(data.createdAt).toBeDefined();
-      expect(data.updatedAt).toBeDefined();
+      expect(data.createdAt).toBe(company.createdAt.toISOString());
+      expect(data.updatedAt).toBe(company.updatedAt.toISOString());
     });
   });
 
