@@ -53,8 +53,8 @@ describe('Integration Test 12: Cache-Database Interaction', () => {
       const queryBuilder = new AdvancedQueryBuilder(mockDbService);
 
       // Assert
-      expect(queryBuilder._cache).toBeDefined();
-      expect(queryBuilder._cache).not.toBeNull();
+      expect(queryBuilder._cache).toBeInstanceOf(QueryCache);
+      expect(queryBuilder._cache.service).toBe(mockCacheService);
       expect(queryBuilder.useCache).toBe(true);
     });
 
@@ -91,7 +91,7 @@ describe('Integration Test 12: Cache-Database Interaction', () => {
       const queryCache = new QueryCache(mockCacheService);
 
       // Assert
-      expect(queryCache).toBeDefined();
+      expect(queryCache).toBeInstanceOf(QueryCache);
       expect(queryCache.service).toBe(mockCacheService);
       expect(queryCache.prefix).toBe('query_');
       expect(queryCache.expiration).toBe(300); // 5 minutes default
@@ -110,10 +110,7 @@ describe('Integration Test 12: Cache-Database Interaction', () => {
       const cacheKey = queryCache._generateKey(mockQuery);
 
       // Assert
-      expect(cacheKey).toBeDefined();
-      expect(typeof cacheKey).toBe('string');
-      expect(cacheKey).toMatch(/^query_/); // Should start with prefix
-      expect(cacheKey.length).toBeGreaterThan(6); // Prefix + hash
+      expect(cacheKey).toMatch(/^query_[0-9a-f]{64}$/);
     });
 
     test('should generate different keys for different queries', () => {
@@ -247,7 +244,7 @@ describe('Integration Test 12: Cache-Database Interaction', () => {
       const cache = queryBuilder._cache;
 
       // Assert
-      expect(cache).toBeDefined();
+      expect(cache).toBeInstanceOf(QueryCache);
       expect(cache.service).toBe(mockCacheService);
     });
 
@@ -271,13 +268,7 @@ describe('Integration Test 12: Cache-Database Interaction', () => {
       const mockQuery = { tableName: 'Users' };
       const mockResults = [{ id: 1 }];
 
-      // Act & Assert - Should not throw
-      expect(() => queryCache.get(mockQuery)).not.toThrow();
-      expect(() => queryCache.store(mockQuery, mockResults)).not.toThrow();
-      expect(() => queryCache.invalidateTable('Users')).not.toThrow();
-      expect(() => queryCache.clear()).not.toThrow();
-
-      // Verify operations return appropriate values
+      // Act & Assert
       expect(queryCache.get(mockQuery)).toBeNull();
       expect(queryCache.store(mockQuery, mockResults)).toBe(false);
       expect(queryCache.invalidateTable('Users')).toBe(false);
