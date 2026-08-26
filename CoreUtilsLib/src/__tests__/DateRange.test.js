@@ -16,7 +16,11 @@ describe('DateRange constructor', () => {
 
   test('accepts start === end', () => {
     const d = new Date('2026-01-01');
-    expect(() => new DateRange(d, d)).not.toThrow();
+    const range = new DateRange(d, d);
+
+    expect(range.start).toBe(d);
+    expect(range.end).toBe(d);
+    expect(range.durationInDays()).toBe(0);
   });
 
   test('defaults to an open-ended range when end is omitted or null', () => {
