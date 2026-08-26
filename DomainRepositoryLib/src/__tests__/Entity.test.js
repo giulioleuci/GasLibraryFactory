@@ -325,7 +325,10 @@ describe('Entity - Comprehensive Test Suite', () => {
       const entity = new TestEntity({ name: '', value: -10 });
 
       entity.validate();
-      expect(entity.getValidationErrors().length).toBeGreaterThan(0);
+      expect(entity.getValidationErrors()).toEqual([
+        { field: 'name', message: 'Name is required' },
+        { field: 'value', message: 'Value must be non-negative' }
+      ]);
 
       // Update the entity with valid data and validate again - this clears errors
       entity.name = faker.person.firstName();
@@ -348,7 +351,10 @@ describe('Entity - Comprehensive Test Suite', () => {
       } catch (e) {
         expect(e).toBeInstanceOf(ValidationException);
         expect(e.entityType).toBe('TestEntity');
-        expect(e.errors.length).toBeGreaterThan(0);
+        expect(e.errors).toEqual([
+          { field: 'name', message: 'Name is required' },
+          { field: 'value', message: 'Value must be non-negative' }
+        ]);
       }
     });
 
@@ -358,7 +364,8 @@ describe('Entity - Comprehensive Test Suite', () => {
         value: faker.number.int({ min: 1, max: 1000 })
       });
 
-      expect(() => entity.validateOrThrow()).not.toThrow();
+      entity.validateOrThrow();
+      expect(entity.getValidationErrors()).toEqual([]);
     });
 
     it('should re-validate and clear previous errors', () => {
@@ -368,7 +375,9 @@ describe('Entity - Comprehensive Test Suite', () => {
       });
 
       entity.validate();
-      expect(entity.getValidationErrors().length).toBeGreaterThan(0);
+      expect(entity.getValidationErrors()).toEqual([
+        { field: 'name', message: 'Name is required' }
+      ]);
 
       entity.name = faker.person.firstName();
       entity.validate();
@@ -467,7 +476,8 @@ describe('Entity - Comprehensive Test Suite', () => {
       });
 
       expect(entity.value).toBeNull();
-      expect(() => entity.validate()).not.toThrow();
+      expect(entity.validate()).toBe(true);
+      expect(entity.getValidationErrors()).toEqual([]);
     });
 
     it('should handle entity with undefined values', () => {
@@ -482,7 +492,7 @@ describe('Entity - Comprehensive Test Suite', () => {
     it('should handle empty data object', () => {
       const entity = new TestEntity({});
 
-      expect(entity.id).toBeDefined();
+      expect(entity.id).toBeNull();
       expect(entity.name).toBeUndefined();
     });
 
