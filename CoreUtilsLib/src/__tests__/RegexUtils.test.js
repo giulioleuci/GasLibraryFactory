@@ -90,29 +90,37 @@ describe('RegexUtils - Comprehensive Test Suite', () => {
   describe('validateSafety() - ReDoS Protection', () => {
     describe('Safe Patterns', () => {
       it('should accept simple character class patterns', () => {
-        expect(() => RegexUtils.validateSafety('^[a-z]+$')).not.toThrow();
+        RegexUtils.validateSafety('^[a-z]+$');
+        expect(() => RegexUtils.validateSafety('^([a-z]+)+$')).toThrow(/nested quantifiers/);
       });
 
       it('should accept email-like patterns', () => {
-        expect(() => RegexUtils.validateSafety('^[^@]+@[^@]+\\.[^@]+$')).not.toThrow();
+        RegexUtils.validateSafety('^[^@]+@[^@]+\\.[^@]+$');
+        expect(() => RegexUtils.validateSafety('^([^@]+)+@[^@]+\\.[^@]+$')).toThrow(
+          /nested quantifiers/
+        );
       });
 
       it('should accept digit patterns', () => {
-        expect(() => RegexUtils.validateSafety('\\d{3}-\\d{4}')).not.toThrow();
+        RegexUtils.validateSafety('\\d{3}-\\d{4}');
+        expect(() => RegexUtils.validateSafety('\\d{101}-\\d{4}')).toThrow(/too large/);
       });
 
       it('should accept word boundary patterns', () => {
-        expect(() => RegexUtils.validateSafety('\\bword\\b')).not.toThrow();
+        RegexUtils.validateSafety('\\bword\\b');
+        expect(() => RegexUtils.validateSafety('\\b(word+)+\\b')).toThrow(/nested quantifiers/);
       });
 
       it('should accept patterns with small quantifiers', () => {
-        expect(() => RegexUtils.validateSafety('a{1,10}')).not.toThrow();
-        expect(() => RegexUtils.validateSafety('a{100}')).not.toThrow();
+        RegexUtils.validateSafety('a{1,10}');
+        RegexUtils.validateSafety('a{100}');
+        expect(() => RegexUtils.validateSafety('a{101}')).toThrow(/too large/);
       });
 
       it('should accept patterns at max length limit', () => {
         const pattern = 'a'.repeat(500);
-        expect(() => RegexUtils.validateSafety(pattern)).not.toThrow();
+        RegexUtils.validateSafety(pattern);
+        expect(() => RegexUtils.validateSafety(`${pattern}a`)).toThrow(/too long/);
       });
     });
 
@@ -170,11 +178,13 @@ describe('RegexUtils - Comprehensive Test Suite', () => {
       });
 
       it('should accept {100} quantifier (boundary)', () => {
-        expect(() => RegexUtils.validateSafety('z{100}')).not.toThrow();
+        RegexUtils.validateSafety('z{100}');
+        expect(() => RegexUtils.validateSafety('z{101}')).toThrow(/too large/);
       });
 
       it('should accept {50,100} quantifier', () => {
-        expect(() => RegexUtils.validateSafety('a{50,100}')).not.toThrow();
+        RegexUtils.validateSafety('a{50,100}');
+        expect(() => RegexUtils.validateSafety('a{101,200}')).toThrow(/too large/);
       });
     });
 
@@ -187,11 +197,15 @@ describe('RegexUtils - Comprehensive Test Suite', () => {
 
       it('should not throw for alternation patterns', () => {
         // Alternation is a warning, not an error
-        expect(() => RegexUtils.validateSafety('(hello|world)+')).not.toThrow();
+        const logger = { warn: jest.fn() };
+        RegexUtils.validateSafety('(hello|world)+', logger);
+        expect(logger.warn).toHaveBeenCalledWith(expect.stringContaining('alternation'));
+        expect(() => RegexUtils.validateSafety('(hello+)+')).toThrow(/nested quantifiers/);
       });
 
       it('should work without logger', () => {
-        expect(() => RegexUtils.validateSafety('(a|b)+', null)).not.toThrow();
+        RegexUtils.validateSafety('(a|b)+', null);
+        expect(() => RegexUtils.validateSafety('(a+)+', null)).toThrow(/nested quantifiers/);
       });
     });
   });
@@ -478,7 +492,8 @@ describe('RegexUtils - Comprehensive Test Suite', () => {
 
     it('should handle quantifier at exact limit {100}', () => {
       const pattern = 'a{100}';
-      expect(() => RegexUtils.validateSafety(pattern)).not.toThrow();
+      RegexUtils.validateSafety(pattern);
+      expect(() => RegexUtils.validateSafety('a{101}')).toThrow(/too large/);
     });
 
     it('should reject quantifier just over limit {101}', () => {
