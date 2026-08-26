@@ -28,8 +28,7 @@ describe('MultiDatabaseError', () => {
 
     it('should include timestamp', () => {
       const error = new MultiDatabaseError('Test error');
-      expect(error.timestamp).toBeDefined();
-      expect(typeof error.timestamp).toBe('string');
+      expect(error.timestamp).toMatch(/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}\.\d{3}Z$/);
     });
   });
 
@@ -89,7 +88,10 @@ describe('MultiDatabaseError', () => {
       expect(error.message).toContain('Multiple partitions failed');
       expect(error.name).toBe('CrossPartitionQueryError');
       expect(error.partitionErrors).toBe(partitionErrors);
-      expect(error.details.partitionErrors).toBeDefined();
+      expect(error.details.partitionErrors).toEqual({
+        warehouse_milan: 'Query failed',
+        warehouse_rome: 'Timeout'
+      });
     });
 
     it('should handle empty partition errors', () => {
