@@ -347,11 +347,12 @@ describe('AdvancedQueryBuilder - Coverage Enhancement Tests', () => {
 
       const results = qb.select(['department']).from('Users').groupBy('department').execute();
 
-      expect(results).toEqual([
+      expect(results).toHaveLength(3);
+      expect(results).toEqual(expect.arrayContaining([
         { department: 'Engineering' },
         { department: 'Sales' },
         { department: 'Marketing' }
-      ]);
+      ]));
     });
   });
 
@@ -370,11 +371,12 @@ describe('AdvancedQueryBuilder - Coverage Enhancement Tests', () => {
         .groupBy('department')
         .execute();
 
-      expect(results).toEqual([
+      expect(results).toHaveLength(3);
+      expect(results).toEqual(expect.arrayContaining([
         { department: 'Engineering', employee_count: 3 },
         { department: 'Sales', employee_count: 2 },
         { department: 'Marketing', employee_count: 1 }
-      ]);
+      ]));
     });
 
     it('should group by multiple fields', () => {
@@ -387,13 +389,14 @@ describe('AdvancedQueryBuilder - Coverage Enhancement Tests', () => {
         .groupBy(['department', 'status'])
         .execute();
 
-      expect(results).toEqual([
+      expect(results).toHaveLength(5);
+      expect(results).toEqual(expect.arrayContaining([
         { department: 'Engineering', status: 'active', count: 2 },
         { department: 'Sales', status: 'active', count: 1 },
         { department: 'Engineering', status: 'inactive', count: 1 },
         { department: 'Marketing', status: 'active', count: 1 },
         { department: 'Sales', status: 'pending', count: 1 }
-      ]);
+      ]));
     });
 
     it('should handle groupBy with null values in grouping field', () => {
@@ -406,14 +409,15 @@ describe('AdvancedQueryBuilder - Coverage Enhancement Tests', () => {
         .groupBy('age')
         .execute();
 
-      expect(results).toEqual([
+      expect(results).toHaveLength(6);
+      expect(results).toEqual(expect.arrayContaining([
         { age: 25, count: 1 },
         { age: 28, count: 1 },
         { age: 30, count: 1 },
         { age: 32, count: 1 },
         { age: 35, count: 1 },
         { age: null, count: 1 }
-      ]);
+      ]));
     });
 
     it('should apply WHERE conditions before grouping', () => {
@@ -427,11 +431,12 @@ describe('AdvancedQueryBuilder - Coverage Enhancement Tests', () => {
         .groupBy('department')
         .execute();
 
-      expect(results).toEqual([
+      expect(results).toHaveLength(3);
+      expect(results).toEqual(expect.arrayContaining([
         { department: 'Engineering', active_count: 2 },
         { department: 'Sales', active_count: 1 },
         { department: 'Marketing', active_count: 1 }
-      ]);
+      ]));
     });
 
     it('should order grouped results', () => {
@@ -478,11 +483,12 @@ describe('AdvancedQueryBuilder - Coverage Enhancement Tests', () => {
         .groupBy('status')
         .execute();
 
-      expect(results).toEqual([
+      expect(results).toHaveLength(3);
+      expect(results).toEqual(expect.arrayContaining([
         { status: 'active', total_users: 4, avg_age: 28.75, total_salary: 270000 },
         { status: 'inactive', total_users: 1, avg_age: 35, total_salary: 80000 },
         { status: 'pending', total_users: 1, avg_age: null, total_salary: null }
-      ]);
+      ]));
     });
   });
 

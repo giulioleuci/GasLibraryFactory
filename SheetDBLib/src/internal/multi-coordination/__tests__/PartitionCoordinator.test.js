@@ -62,6 +62,7 @@ describe('PartitionCoordinator', () => {
 
     it('falls back to console when no logger is provided', () => {
       const coordinator = new PartitionCoordinator(createConfig(), {});
+      expect(coordinator._logger).toBe(console);
       expect(coordinator.getConnectedPartitions()).toEqual([]);
     });
   });

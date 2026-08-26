@@ -339,11 +339,13 @@ describe('TableService - Comprehensive Test Suite', () => {
         mocks.utils,
         sampleRawData
       );
-      // Reset generateUuid mock to return unique values instead of always same
-      mocks.utils.generateUuid.mockImplementation(() => `UUID_${Math.random()}`);
+      mocks.utils.generateUuid.mockReturnValue('UUID_DEFAULT');
     });
 
     it('should insert multiple rows efficiently', () => {
+      mocks.utils.generateUuid
+        .mockReturnValueOnce('UUID_DAVID')
+        .mockReturnValueOnce('UUID_DIANA');
       const newRows = [
         { name: 'David Lee', email: 'david@example.com', age: 28, status: 'active' },
         { name: 'Diana Prince', email: 'diana@example.com', age: 32, status: 'active' }
@@ -354,8 +356,7 @@ describe('TableService - Comprehensive Test Suite', () => {
       expect(results).toHaveLength(2);
       expect(results[0].name).toBe('David Lee');
       expect(results[1].name).toBe('Diana Prince');
-      expect(results.map((row) => /^UUID_0\.\d+$/.test(row.ID))).toEqual([true, true]);
-      expect(new Set(results.map((row) => row.ID)).size).toBe(2);
+      expect(results.map((row) => row.ID)).toEqual(['UUID_DAVID', 'UUID_DIANA']);
       expect(table._insertQueue).toHaveLength(2);
       expect(table._rowsCache).toHaveLength(5); // 3 original + 2 new
     });

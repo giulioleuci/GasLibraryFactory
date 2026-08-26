@@ -271,8 +271,9 @@ describe('AdvancedQueryBuilder - JOIN Operations', () => {
       // Book One has 1 review, Book Two has 1 review
       expect(results.length).toBe(2);
 
-      // Verify all three tables are joined
-      expect(results[0]).toEqual({
+      // Verify all three tables are joined without depending on execution order
+      const bookOne = results.find((row) => row['Books.id'] === 'b1');
+      expect(bookOne).toEqual({
         'Authors.id': '1',
         'Authors.name': 'John Doe',
         'Authors.country': 'USA',
