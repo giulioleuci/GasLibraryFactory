@@ -217,7 +217,11 @@ describe('Aggregate - Comprehensive Test Suite', () => {
       order.validateInvariants();
       const violations = order.getInvariantViolations();
 
-      expect(violations.length).toBeGreaterThan(0);
+      expect(violations).toEqual([
+        'Order must have a customer',
+        'Order must have at least one item',
+        'Order total must be positive'
+      ]);
       expect(violations.some((v) => v.includes('customer'))).toBe(true);
       expect(violations.some((v) => v.includes('at least one item'))).toBe(true);
     });
@@ -255,7 +259,8 @@ describe('Aggregate - Comprehensive Test Suite', () => {
       const order = new Order({ customerId: 'CUST123' });
       order.addItem('PROD1', 2, 10.99);
 
-      expect(() => order.validateInvariantsOrThrow()).not.toThrow();
+      order.validateInvariantsOrThrow();
+      expect(order.getInvariantViolations()).toEqual([]);
     });
 
     it('should re-validate and clear previous violations', () => {
