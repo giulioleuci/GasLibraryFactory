@@ -121,7 +121,8 @@ describe('PermissionService - Comprehensive Test Suite', () => {
       );
 
       expect(global.Drive.Permissions.create).toHaveBeenCalledTimes(4);
-      expect(result.successful).toBeDefined();
+      expect(result.successful).toHaveLength(4);
+      expect(result.failed).toEqual([]);
     });
 
     it('should disable email notifications by default', () => {
@@ -238,7 +239,8 @@ describe('PermissionService - Comprehensive Test Suite', () => {
       );
 
       expect(global.Drive.Permissions.create).toHaveBeenCalledTimes(6);
-      expect(result.successful).toBeDefined();
+      expect(result.successful).toHaveLength(6);
+      expect(result.failed).toEqual([]);
     });
   });
 
@@ -450,8 +452,10 @@ describe('PermissionService - Comprehensive Test Suite', () => {
     it('should get permissions for single file', () => {
       const result = service.getPermissions('fileId1');
 
-      expect(result).toBeDefined();
-      expect(Array.isArray(result)).toBe(true);
+      expect(result).toEqual([
+        { id: 'perm1', emailAddress: 'user1@example.com', role: 'reader' },
+        { id: 'perm2', emailAddress: 'user2@example.com', role: 'writer' }
+      ]);
     });
 
     it('should get permissions for multiple files', () => {
@@ -466,10 +470,10 @@ describe('PermissionService - Comprehensive Test Suite', () => {
 
       const result = service.getPermissions(['fileId1', 'fileId2']);
 
-      expect(result).toBeDefined();
-      expect(typeof result).toBe('object');
-      expect(result.fileId1).toBeDefined();
-      expect(result.fileId2).toBeDefined();
+      expect(result).toEqual({
+        fileId1: [{ id: 'perm1' }],
+        fileId2: [{ id: 'perm2' }]
+      });
     });
 
     it('should check cache before API call', () => {
@@ -487,7 +491,10 @@ describe('PermissionService - Comprehensive Test Suite', () => {
       // Should fall back to API call
       const result = service.getPermissions('fileId1');
 
-      expect(result).toBeDefined();
+      expect(result).toEqual([
+        { id: 'perm1', emailAddress: 'user1@example.com', role: 'reader' },
+        { id: 'perm2', emailAddress: 'user2@example.com', role: 'writer' }
+      ]);
     });
 
     it('should return from cache if all files cached', () => {
@@ -525,7 +532,8 @@ describe('PermissionService - Comprehensive Test Suite', () => {
       const result = service.shareWithUsers('folderId', teamEmails);
 
       expect(global.Drive.Permissions.create).toHaveBeenCalled();
-      expect(result.successful).toBeDefined();
+      expect(result.successful).toHaveLength(3);
+      expect(result.failed).toEqual([]);
     });
 
     it('should migrate permissions across files', () => {
