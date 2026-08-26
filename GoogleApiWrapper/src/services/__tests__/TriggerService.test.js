@@ -119,7 +119,7 @@ describe('TriggerService - Comprehensive Test Suite', () => {
     it('should create timed trigger with delay', () => {
       const triggerId = service.createTimedTrigger('myFunction', 60000);
 
-      expect(triggerId).toBeDefined();
+      expect(triggerId).toBe('trigger-1');
       expect(global.ScriptApp.newTrigger).toHaveBeenCalledWith('myFunction');
       expect(mockTriggers).toHaveLength(1);
     });
@@ -163,32 +163,32 @@ describe('TriggerService - Comprehensive Test Suite', () => {
       it('should create trigger for */1 * * * * (every 1 minute)', () => {
         const triggerId = service.createRecurringTrigger('myFunction', '*/1 * * * *');
 
-        expect(triggerId).toBeDefined();
+        expect(triggerId).toBe('trigger-1');
         expect(mockTriggers).toHaveLength(1);
       });
 
       it('should create trigger for */5 * * * * (every 5 minutes)', () => {
         const triggerId = service.createRecurringTrigger('myFunction', '*/5 * * * *');
 
-        expect(triggerId).toBeDefined();
+        expect(triggerId).toBe('trigger-1');
       });
 
       it('should create trigger for */10 * * * * (every 10 minutes)', () => {
         const triggerId = service.createRecurringTrigger('myFunction', '*/10 * * * *');
 
-        expect(triggerId).toBeDefined();
+        expect(triggerId).toBe('trigger-1');
       });
 
       it('should create trigger for */15 * * * * (every 15 minutes)', () => {
         const triggerId = service.createRecurringTrigger('myFunction', '*/15 * * * *');
 
-        expect(triggerId).toBeDefined();
+        expect(triggerId).toBe('trigger-1');
       });
 
       it('should create trigger for */30 * * * * (every 30 minutes)', () => {
         const triggerId = service.createRecurringTrigger('myFunction', '*/30 * * * *');
 
-        expect(triggerId).toBeDefined();
+        expect(triggerId).toBe('trigger-1');
       });
 
       it('should throw error for invalid minute interval (*/7)', () => {
@@ -202,25 +202,25 @@ describe('TriggerService - Comprehensive Test Suite', () => {
       it('should create trigger for 0 * * * * (every hour)', () => {
         const triggerId = service.createRecurringTrigger('myFunction', '0 * * * *');
 
-        expect(triggerId).toBeDefined();
+        expect(triggerId).toBe('trigger-1');
       });
 
       it('should create trigger for 0 */2 * * * (every 2 hours)', () => {
         const triggerId = service.createRecurringTrigger('myFunction', '0 */2 * * *');
 
-        expect(triggerId).toBeDefined();
+        expect(triggerId).toBe('trigger-1');
       });
 
       it('should create trigger for 0 */6 * * * (every 6 hours)', () => {
         const triggerId = service.createRecurringTrigger('myFunction', '0 */6 * * *');
 
-        expect(triggerId).toBeDefined();
+        expect(triggerId).toBe('trigger-1');
       });
 
       it('should create trigger for 0 */12 * * * (every 12 hours)', () => {
         const triggerId = service.createRecurringTrigger('myFunction', '0 */12 * * *');
 
-        expect(triggerId).toBeDefined();
+        expect(triggerId).toBe('trigger-1');
       });
 
       it('should throw error for invalid hour interval (*/3)', () => {
@@ -234,19 +234,19 @@ describe('TriggerService - Comprehensive Test Suite', () => {
       it('should create trigger for 0 9 * * * (daily at 9 AM)', () => {
         const triggerId = service.createRecurringTrigger('myFunction', '0 9 * * *');
 
-        expect(triggerId).toBeDefined();
+        expect(triggerId).toBe('trigger-1');
       });
 
       it('should create trigger for 0 0 * * * (daily at midnight)', () => {
         const triggerId = service.createRecurringTrigger('myFunction', '0 0 * * *');
 
-        expect(triggerId).toBeDefined();
+        expect(triggerId).toBe('trigger-1');
       });
 
       it('should create trigger for 0 23 * * * (daily at 11 PM)', () => {
         const triggerId = service.createRecurringTrigger('myFunction', '0 23 * * *');
 
-        expect(triggerId).toBeDefined();
+        expect(triggerId).toBe('trigger-1');
       });
     });
 
@@ -254,25 +254,25 @@ describe('TriggerService - Comprehensive Test Suite', () => {
       it('should create trigger for 0 9 * * 1 (Monday at 9 AM)', () => {
         const triggerId = service.createRecurringTrigger('myFunction', '0 9 * * 1');
 
-        expect(triggerId).toBeDefined();
+        expect(triggerId).toBe('trigger-1');
       });
 
       it('should create trigger for 0 14 * * 5 (Friday at 2 PM)', () => {
         const triggerId = service.createRecurringTrigger('myFunction', '0 14 * * 5');
 
-        expect(triggerId).toBeDefined();
+        expect(triggerId).toBe('trigger-1');
       });
 
       it('should create trigger for 0 8 * * 0 (Sunday at 8 AM)', () => {
         const triggerId = service.createRecurringTrigger('myFunction', '0 8 * * 0');
 
-        expect(triggerId).toBeDefined();
+        expect(triggerId).toBe('trigger-1');
       });
 
       it('should create trigger for 0 8 * * 7 (Sunday at 8 AM, alternative notation)', () => {
         const triggerId = service.createRecurringTrigger('myFunction', '0 8 * * 7');
 
-        expect(triggerId).toBeDefined();
+        expect(triggerId).toBe('trigger-1');
       });
     });
 
@@ -378,7 +378,7 @@ describe('TriggerService - Comprehensive Test Suite', () => {
 
       const triggerId = service.createTriggerAt('myFunction', tomorrow);
 
-      expect(triggerId).toBeDefined();
+      expect(triggerId).toBe('trigger-1');
       expect(mockTriggers).toHaveLength(1);
     });
 
@@ -413,20 +413,20 @@ describe('TriggerService - Comprehensive Test Suite', () => {
     it('should create trigger for valid interval (1 minute)', () => {
       const triggerId = service.createEveryMinutesTrigger('myFunction', 1);
 
-      expect(triggerId).toBeDefined();
+      expect(triggerId).toBe('trigger-1');
       expect(mockTriggers).toHaveLength(1);
     });
 
     it('should create trigger for 5 minutes', () => {
       const triggerId = service.createEveryMinutesTrigger('myFunction', 5);
 
-      expect(triggerId).toBeDefined();
+      expect(triggerId).toBe('trigger-1');
     });
 
     it('should create trigger for 30 minutes', () => {
       const triggerId = service.createEveryMinutesTrigger('myFunction', 30);
 
-      expect(triggerId).toBeDefined();
+      expect(triggerId).toBe('trigger-1');
     });
 
     it('should throw error for invalid interval', () => {
@@ -464,13 +464,13 @@ describe('TriggerService - Comprehensive Test Suite', () => {
     it('should create trigger for valid interval (1 hour)', () => {
       const triggerId = service.createEveryHoursTrigger('myFunction', 1);
 
-      expect(triggerId).toBeDefined();
+      expect(triggerId).toBe('trigger-1');
     });
 
     it('should create trigger for 12 hours', () => {
       const triggerId = service.createEveryHoursTrigger('myFunction', 12);
 
-      expect(triggerId).toBeDefined();
+      expect(triggerId).toBe('trigger-1');
     });
 
     it('should throw error for invalid interval', () => {
@@ -494,13 +494,13 @@ describe('TriggerService - Comprehensive Test Suite', () => {
     it('should create daily trigger at hour 0', () => {
       const triggerId = service.createDailyTrigger('myFunction', 0);
 
-      expect(triggerId).toBeDefined();
+      expect(triggerId).toBe('trigger-1');
     });
 
     it('should create daily trigger at hour 23', () => {
       const triggerId = service.createDailyTrigger('myFunction', 23);
 
-      expect(triggerId).toBeDefined();
+      expect(triggerId).toBe('trigger-1');
     });
 
     it('should throw error for hour < 0', () => {
@@ -536,7 +536,7 @@ describe('TriggerService - Comprehensive Test Suite', () => {
         9
       );
 
-      expect(triggerId).toBeDefined();
+      expect(triggerId).toBe('trigger-1');
     });
 
     it('should log debug message', () => {
@@ -615,7 +615,6 @@ describe('TriggerService - Comprehensive Test Suite', () => {
 
       const trigger = service.findTriggerById(triggerId);
 
-      expect(trigger).toBeDefined();
       expect(trigger.getUniqueId()).toBe(triggerId);
     });
 
@@ -843,12 +842,13 @@ describe('TriggerService - Comprehensive Test Suite', () => {
 
       const info = service.getTriggerInfo(triggerId);
 
-      expect(info).toBeDefined();
-      expect(info.id).toBe(triggerId);
-      expect(info.function).toBe('myFunction');
-      expect(info.type).toBe('time_based');
-      expect(info.event).toBe(global.ScriptApp.EventType.CLOCK);
-      expect(info.enabled).toBe(true);
+      expect(info).toEqual({
+        id: triggerId,
+        function: 'myFunction',
+        type: 'time_based',
+        event: global.ScriptApp.EventType.CLOCK,
+        enabled: true
+      });
     });
 
     it('should return null for non-existent trigger', () => {
