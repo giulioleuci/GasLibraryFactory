@@ -66,15 +66,19 @@ describe('SchemaResolver', () => {
     });
 
     it('continues to accept a valid template definition', () => {
-      expect(
-        () =>
-          new SchemaTemplate({
-            tableId: 'products',
-            fixedColumns: [{ name: 'id', primaryKey: true }],
-            dynamicColumns: [],
-            metadata: {}
-          })
-      ).not.toThrow();
+      const template = new SchemaTemplate({
+        tableId: 'products',
+        fixedColumns: [{ name: 'id', primaryKey: true }],
+        dynamicColumns: [],
+        metadata: {}
+      });
+
+      expect(template.toJSON()).toEqual({
+        tableId: 'products',
+        fixedColumns: [{ name: 'id', primaryKey: true }],
+        dynamicColumns: [],
+        metadata: {}
+      });
     });
   });
 
