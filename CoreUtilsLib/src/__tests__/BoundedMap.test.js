@@ -62,7 +62,11 @@ describe('BoundedMap - Comprehensive Test Suite', () => {
     });
 
     it('should accept null onEvict', () => {
-      expect(() => new BoundedMap(100, null)).not.toThrow();
+      const map = new BoundedMap(100, null);
+
+      expect(map.maxSize).toBe(100);
+      expect(map.evictionCount).toBe(0);
+      expect([...map]).toEqual([]);
     });
 
     it('should extend Map', () => {
@@ -182,8 +186,13 @@ describe('BoundedMap - Comprehensive Test Suite', () => {
       map.set('a', 1);
       map.set('b', 2);
 
-      expect(() => map.set('c', 3)).not.toThrow();
-      expect(map.has('c')).toBe(true);
+      expect(map.set('c', 3)).toBe(map);
+      expect([...map]).toEqual([
+        ['b', 2],
+        ['c', 3]
+      ]);
+      expect(map.evictionCount).toBe(1);
+      expect(onEvict).toHaveBeenCalledWith('a', 1);
     });
 
     it('should return this for chaining', () => {
