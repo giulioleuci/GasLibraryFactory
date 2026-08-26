@@ -77,7 +77,8 @@ describe('PropertiesService - Comprehensive Test Suite', () => {
 
     it('should get script properties on construction', () => {
       expect(global.PropertiesService.getScriptProperties).toHaveBeenCalled();
-      expect(service._properties).toBeDefined();
+      expect(typeof service._properties.getProperty).toBe('function');
+      expect(typeof service._properties.setProperty).toBe('function');
     });
   });
 
@@ -217,9 +218,7 @@ describe('PropertiesService - Comprehensive Test Suite', () => {
     });
 
     it('should handle empty object', () => {
-      expect(() => {
-        service.setProperties({});
-      }).not.toThrow();
+      service.setProperties({});
 
       expect(logger.debug).toHaveBeenCalledWith('Set 0 properties');
     });
@@ -259,9 +258,8 @@ describe('PropertiesService - Comprehensive Test Suite', () => {
     });
 
     it('should not throw when deleting non-existent property', () => {
-      expect(() => {
-        service.deleteProperty('nonexistent');
-      }).not.toThrow();
+      service.deleteProperty('nonexistent');
+      expect(service.getProperty('nonexistent')).toBeNull();
     });
 
     it('should log error and throw on failure', () => {
