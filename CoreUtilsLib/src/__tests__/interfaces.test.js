@@ -219,7 +219,13 @@ describe('Interface Definitions - Comprehensive Test Suite', () => {
     it('should have correct metadata', () => {
       expect(StepInterface.name).toBe('StepInterface');
       expect(StepInterface.requiredMethods).toEqual(['getName', 'execute']);
-      expect(StepInterface.executeReturnSchema).toBeDefined();
+      expect(StepInterface.executeReturnSchema).toEqual({
+        success: 'boolean (required)',
+        skipped: 'boolean (optional)',
+        durationMs: 'number (optional)',
+        error: 'Error (optional, present when success=false)',
+        data: 'any (optional, step output data)'
+      });
     });
 
     it('should validate a valid step', () => {
@@ -311,8 +317,8 @@ describe('Interface Definitions - Comprehensive Test Suite', () => {
         'SpreadsheetServiceInterface'
       ];
 
+      expect(Object.keys(InterfaceRegistry)).toEqual(expectedInterfaces);
       expectedInterfaces.forEach((name) => {
-        expect(InterfaceRegistry[name]).toBeDefined();
         expect(InterfaceRegistry[name].name).toBe(name);
       });
     });
