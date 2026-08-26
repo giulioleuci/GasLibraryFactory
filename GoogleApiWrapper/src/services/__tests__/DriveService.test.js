@@ -62,7 +62,7 @@ describe('DriveService - Comprehensive Test Suite', () => {
 
     it('should initialize without batch executor', () => {
       // The class no longer uses batch executor for all operations natively, but it's fine
-      expect(service).toBeDefined();
+      expect(service).toBeInstanceOf(DriveService);
     });
 
     it('should set cache configuration', () => {
@@ -84,7 +84,8 @@ describe('DriveService - Comprehensive Test Suite', () => {
       const result = service.deleteFiles('fileId1');
 
       expect(global.Drive.Files.update).toHaveBeenCalledWith({ trashed: true }, 'fileId1');
-      expect(result.successful).toBeDefined();
+      expect(result.successful).toHaveLength(1);
+      expect(result.failed).toEqual([]);
     });
 
     it('should delete multiple files in batch', () => {
@@ -168,7 +169,8 @@ describe('DriveService - Comprehensive Test Suite', () => {
       const result = service.copyFiles({ fileId: 'fileId1', name: 'Copy 1' });
 
       expect(global.Drive.Files.copy).toHaveBeenCalled();
-      expect(result.successful).toBeDefined();
+      expect(result.successful).toHaveLength(1);
+      expect(result.failed).toEqual([]);
     });
 
     it('should copy multiple files in batch', () => {
@@ -231,7 +233,8 @@ describe('DriveService - Comprehensive Test Suite', () => {
       const result = service.moveFiles({ fileId: 'fileId1', newParent: 'newParentId' });
 
       expect(global.Drive.Files.update).toHaveBeenCalled();
-      expect(result.successful).toBeDefined();
+      expect(result.successful).toHaveLength(1);
+      expect(result.failed).toEqual([]);
     });
 
     it('should move multiple files in batch', () => {
@@ -298,7 +301,8 @@ describe('DriveService - Comprehensive Test Suite', () => {
       const result = service.renameFiles({ fileId: 'fileId1', newName: 'New Name' });
 
       expect(global.Drive.Files.update).toHaveBeenCalled();
-      expect(result.successful).toBeDefined();
+      expect(result.successful).toHaveLength(1);
+      expect(result.failed).toEqual([]);
     });
 
     it('should rename multiple files in batch', () => {
@@ -341,7 +345,8 @@ describe('DriveService - Comprehensive Test Suite', () => {
       });
 
       expect(global.Drive.Files.update).toHaveBeenCalled();
-      expect(result.successful).toBeDefined();
+      expect(result.successful).toHaveLength(1);
+      expect(result.failed).toEqual([]);
     });
 
     it('should update multiple files metadata in batch', () => {
@@ -380,8 +385,7 @@ describe('DriveService - Comprehensive Test Suite', () => {
 
       const result = service.getFiles('fileId1');
 
-      expect(result).toBeDefined();
-      expect(result.id).toBe('fileId1');
+      expect(result).toEqual({ id: 'fileId1', name: 'File 1' });
     });
 
     it('should get multiple files info in batch', () => {
@@ -397,9 +401,10 @@ describe('DriveService - Comprehensive Test Suite', () => {
 
       const result = service.getFiles(['fileId1', 'fileId2']);
 
-      expect(result).toBeDefined();
-      expect(result.fileId1).toBeDefined();
-      expect(result.fileId2).toBeDefined();
+      expect(result).toEqual({
+        fileId1: { id: 'fileId1', name: 'File 1' },
+        fileId2: { id: 'fileId2', name: 'File 2' }
+      });
     });
 
     it('should check cache before API call', () => {
@@ -420,7 +425,7 @@ describe('DriveService - Comprehensive Test Suite', () => {
 
       const result = service.getFiles('fileId1');
 
-      expect(result).toBeDefined();
+      expect(result).toEqual({ id: 'fileId1' });
     });
 
     it('should cache successful API responses', () => {
@@ -446,8 +451,10 @@ describe('DriveService - Comprehensive Test Suite', () => {
       const result = service.getFiles(['fileId1', 'fileId2']);
 
       expect(global.Drive.Files.get).not.toHaveBeenCalled();
-      expect(result.fileId1).toBeDefined();
-      expect(result.fileId2).toBeDefined();
+      expect(result).toEqual({
+        fileId1: { id: 'fileId1' },
+        fileId2: { id: 'fileId2' }
+      });
     });
 
     it('keeps the default fail-soft contract when metadata lookup fails', () => {
