@@ -62,7 +62,7 @@ describe('LockService - Comprehensive Test Suite', () => {
         const lockService = new LockService(mocks.logger);
         const lock = lockService.getScriptLock();
 
-        expect(lock).toBeDefined();
+        expect(lock.constructor.name).toBe('Lock');
         expect(typeof lock.tryLock).toBe('function');
         expect(typeof lock.waitLock).toBe('function');
         expect(typeof lock.releaseLock).toBe('function');
@@ -93,7 +93,7 @@ describe('LockService - Comprehensive Test Suite', () => {
         const lockService = new LockService(mocks.logger);
         const lock = lockService.getScriptLock();
 
-        expect(lock).toBeDefined();
+        expect(lock.constructor.name).toBe('MockLock');
         expect(typeof lock.tryLock).toBe('function');
         expect(typeof lock.waitLock).toBe('function');
         expect(typeof lock.releaseLock).toBe('function');
@@ -114,7 +114,7 @@ describe('LockService - Comprehensive Test Suite', () => {
         const lockService = new LockService(mocks.logger);
         const lock = lockService.getUserLock();
 
-        expect(lock).toBeDefined();
+        expect(lock.constructor.name).toBe('Lock');
         expect(typeof lock.tryLock).toBe('function');
       });
 
@@ -142,7 +142,7 @@ describe('LockService - Comprehensive Test Suite', () => {
         const lockService = new LockService(mocks.logger);
         const lock = lockService.getUserLock();
 
-        expect(lock).toBeDefined();
+        expect(lock.constructor.name).toBe('MockLock');
         expect(lock.tryLock(1000)).toBe(true); // MockLock always succeeds
       });
     });
@@ -154,7 +154,7 @@ describe('LockService - Comprehensive Test Suite', () => {
         const lockService = new LockService(mocks.logger);
         const lock = lockService.getDocumentLock('doc-123');
 
-        expect(lock).toBeDefined();
+        expect(lock.constructor.name).toBe('Lock');
         expect(typeof lock.tryLock).toBe('function');
       });
 
@@ -182,7 +182,7 @@ describe('LockService - Comprehensive Test Suite', () => {
         const lockService = new LockService(mocks.logger);
         const lock = lockService.getDocumentLock('doc-123');
 
-        expect(lock).toBeDefined();
+        expect(lock.constructor.name).toBe('MockLock');
         expect(lock.tryLock(1000)).toBe(true);
       });
     });
@@ -386,7 +386,8 @@ describe('LockService - Comprehensive Test Suite', () => {
 
     describe('waitLock()', () => {
       it('should always succeed', () => {
-        expect(() => lock.waitLock(10000)).not.toThrow();
+        lock.waitLock(10000);
+        expect(lock.hasLock()).toBe(true);
       });
 
       it('should set acquired flag', () => {
@@ -565,7 +566,8 @@ describe('LockService - Comprehensive Test Suite', () => {
       const lock = lockService.getScriptLock();
 
       // Should not throw when releasing without acquiring
-      expect(() => lock.releaseLock()).not.toThrow();
+      lock.releaseLock();
+      expect(lock.hasLock()).toBe(false);
       expect(mockNativeLock.releaseLock).not.toHaveBeenCalled();
     });
 
