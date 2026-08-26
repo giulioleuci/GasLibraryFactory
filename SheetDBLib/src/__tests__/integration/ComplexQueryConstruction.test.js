@@ -7,6 +7,7 @@
 
 import { DatabaseService } from '@SheetDBLib';
 import { AdvancedQueryBuilder } from '@SheetDBLib/src/query/AdvancedQueryBuilder';
+import { QueryCache } from '@SheetDBLib/src/query/AdvancedQueryBuilder';
 
 /**
  * Test Scenario: Complex Query Construction
@@ -73,7 +74,6 @@ describe('Integration Test 9: Complex Query Construction', () => {
       // Assert - Check internal query structure
       expect(queryBuilder.tableName).toBe('Users');
       expect(queryBuilder.selectedColumns).toEqual(['name', 'email', 'age']);
-      expect(queryBuilder.conditions).toBeDefined();
       expect(queryBuilder.conditions).toHaveLength(3);
 
       // Verify each condition
@@ -171,10 +171,7 @@ describe('Integration Test 9: Complex Query Construction', () => {
       queryBuilder.from('Users').orderBy('createdAt', 'DESC');
 
       // Assert
-      expect(queryBuilder.orderByFields).toBeDefined();
-      expect(queryBuilder.orderByFields.length).toBeGreaterThan(0);
-      expect(queryBuilder.orderByFields[0].field).toBe('createdAt');
-      expect(queryBuilder.orderByFields[0].direction).toBe('DESC');
+      expect(queryBuilder.orderByFields).toEqual([{ field: 'createdAt', direction: 'DESC' }]);
     });
 
     test('should include limit in query object', () => {
@@ -249,8 +246,8 @@ describe('Integration Test 9: Complex Query Construction', () => {
       const queryBuilder = new AdvancedQueryBuilder(mockDbService);
 
       // Assert
-      expect(queryBuilder._cache).toBeDefined();
-      expect(queryBuilder._cache).not.toBeNull();
+      expect(queryBuilder._cache).toBeInstanceOf(QueryCache);
+      expect(queryBuilder._cache.service).toBe(mockCacheService);
       expect(queryBuilder.useCache).toBe(true);
     });
 
@@ -271,8 +268,10 @@ describe('Integration Test 9: Complex Query Construction', () => {
       const queryBuilder2 = new AdvancedQueryBuilder(mockDbService);
 
       // Assert - Both query builders should reference same cache service
-      expect(queryBuilder1._cache).toBeDefined();
-      expect(queryBuilder2._cache).toBeDefined();
+      expect(queryBuilder1._cache).toBeInstanceOf(QueryCache);
+      expect(queryBuilder2._cache).toBeInstanceOf(QueryCache);
+      expect(queryBuilder1._cache.service).toBe(mockCacheService);
+      expect(queryBuilder2._cache.service).toBe(mockCacheService);
       // Cache instances are created per query builder, which is expected
     });
   });
@@ -297,7 +296,7 @@ describe('Integration Test 9: Complex Query Construction', () => {
       // Act & Assert - Should not throw
       queryBuilder.select(['*']).from('Users');
 
-      expect(queryBuilder.conditions).toBeDefined();
+      expect(queryBuilder.conditions).toEqual([]);
     });
   });
 
