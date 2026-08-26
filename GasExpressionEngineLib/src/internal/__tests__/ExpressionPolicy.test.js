@@ -15,10 +15,17 @@ describe('ExpressionPolicy', () => {
   });
 
   test('allows evaluator-supported literals, identifiers, member access, comparisons, and logic', () => {
+    const comparison = parser.parse('user.age >= 18 && user.active');
+    assertAllowedExpressionAst(comparison, defaultPolicy);
     expect(() =>
-      assertAllowedExpressionAst(parser.parse('user.age >= 18 && user.active'), defaultPolicy)
-    ).not.toThrow();
-    expect(() => assertAllowedExpressionAst(parser.parse('[1, "two", true]'), defaultPolicy)).not.toThrow();
+      assertAllowedExpressionAst({ ...comparison, operator: '**' }, defaultPolicy)
+    ).toThrow('not allowed');
+
+    const literals = parser.parse('[1, "two", true]');
+    assertAllowedExpressionAst(literals, defaultPolicy);
+    expect(() => assertAllowedExpressionAst({ ...literals, type: 'AssignmentExpression' }, defaultPolicy)).toThrow(
+      'not allowed'
+    );
   });
 
   test('rejects assignments', () => {
