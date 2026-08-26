@@ -126,11 +126,16 @@ describe('ServiceFactory + GasResilienceLib Integration', () => {
     it('should cache result after execution', () => {
       cache.get.mockReturnValue(null);
       const service = new TestService(logger, cache, utils, exceptionService);
+      jest.spyOn(Date, 'now').mockReturnValue(1737676800000);
 
       const result = service.callWithCache('test-key', true);
 
       // _getOrExecute stores objects directly, not JSON strings
-      expect(cache.put).toHaveBeenCalledWith('test-key', expect.any(Object), 600);
+      expect(cache.put).toHaveBeenCalledWith(
+        'test-key',
+        { data: 'fresh', timestamp: 1737676800000 },
+        600
+      );
       expect(result.data).toBe('fresh');
     });
   });
@@ -290,10 +295,9 @@ describe('ServiceFactory + GasResilienceLib Integration', () => {
       const result = service.performAction({ test: true });
 
       expect(result.dryRun).toBe(true);
-      expect(logger.info).toHaveBeenCalledWith(
-        expect.stringContaining('[DRY-RUN]'),
-        expect.any(Object)
-      );
+      expect(logger.info).toHaveBeenCalledWith(expect.stringContaining('[DRY-RUN]'), {
+        test: true
+      });
     });
   });
 });
@@ -345,7 +349,7 @@ describe('ErrorHandler Integration', () => {
         fileId: '123'
       });
 
-      expect(error.context).toBeDefined();
+      expect(error.context).toEqual({ fileId: '123' });
       expect(error.serviceName).toBe('DriveService');
       expect(error.operation).toBe('createFile');
       expect(error.context.fileId).toBe('123');
