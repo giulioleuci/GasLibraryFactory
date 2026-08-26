@@ -43,7 +43,7 @@ describe('ExpressionEvaluatorService (Logic Library Pattern)', () => {
 
   describe('Constructor Validation', () => {
     it('should create an instance with required dependencies', () => {
-      expect(evaluator).toBeDefined();
+      expect(evaluator).toBeInstanceOf(ExpressionEvaluatorService);
       expect(evaluator.logger).toBe(logger);
       expect(evaluator.parser).toBe(parser);
       expect(evaluator.placeholderService).toBe(placeholderService);
@@ -185,7 +185,13 @@ describe('ExpressionEvaluatorService (Logic Library Pattern)', () => {
 
       // Should not throw, but log a warning
       expect(evaluator._hasCircularReference(obj)).toBe(false);
-      expect(logger.getLogsByLevel('WARN').length).toBeGreaterThan(0);
+      expect(logger.getLogsByLevel('WARN')).toEqual([
+        {
+          level: 'WARN',
+          message: 'Error checking circular reference: Access denied',
+          context: null
+        }
+      ]);
     });
   });
 
@@ -224,13 +230,29 @@ describe('ExpressionEvaluatorService (Logic Library Pattern)', () => {
 
     it('should log debug messages', () => {
       evaluator.evaluate('{{age}} > 18', { age: 21 });
-      expect(logger.getLogsByLevel('DEBUG').length).toBeGreaterThan(0);
+      expect(
+        logger
+          .getLogsByLevel('DEBUG')
+          .filter((log) => /^(Evaluating expression|Parsing expression|Preprocessed expression|AST generated successfully|Evaluation result)/.test(log.message))
+      ).toEqual([
+        { level: 'DEBUG', message: 'Evaluating expression: "{{age}} > 18"', context: null },
+        { level: 'DEBUG', message: 'Parsing expression: "{{age}} > 18"', context: null },
+        { level: 'DEBUG', message: 'Preprocessed expression: "age > 18"', context: null },
+        { level: 'DEBUG', message: 'AST generated successfully', context: null },
+        { level: 'DEBUG', message: 'Evaluation result: true', context: null }
+      ]);
     });
 
     it('should handle evaluation errors and re-throw', () => {
       // Invalid expression that will cause parsing error
       expect(() => evaluator.evaluate('{{age}} >> 18', { age: 21 })).toThrow();
-      expect(logger.getLogsByLevel('ERROR').length).toBeGreaterThan(0);
+      expect(logger.getLogsByLevel('ERROR')).toEqual([
+        {
+          level: 'ERROR',
+          message: "Error evaluating expression: Expression binary operator '>>' is not allowed",
+          context: null
+        }
+      ]);
     });
   });
 
@@ -284,13 +306,25 @@ describe('ExpressionEvaluatorService (Logic Library Pattern)', () => {
     it('should convert non-boolean results to boolean with warning', () => {
       const ast = { type: 'Literal', value: 'not a boolean' };
       expect(evaluator.evaluateAst(ast, {})).toBe(true); // truthy string
-      expect(logger.getLogsByLevel('WARN').length).toBeGreaterThan(0);
+      expect(logger.getLogsByLevel('WARN')).toEqual([
+        {
+          level: 'WARN',
+          message: 'Expression does not return a boolean -> not a boolean',
+          context: null
+        }
+      ]);
     });
 
     it('should handle evaluation errors', () => {
       const ast = { type: 'InvalidType' };
       expect(() => evaluator.evaluateAst(ast, {})).toThrow();
-      expect(logger.getLogsByLevel('ERROR').length).toBeGreaterThan(0);
+      expect(logger.getLogsByLevel('ERROR')).toEqual([
+        {
+          level: 'ERROR',
+          message: expect.stringMatching(/^Error evaluating AST:/),
+          context: null
+        }
+      ]);
     });
   });
 
@@ -428,7 +462,13 @@ describe('ExpressionEvaluatorService (Logic Library Pattern)', () => {
         right: { type: 'Literal', value: '\\d+' }
       };
       expect(evaluator.evaluateAst(ast, {})).toBe(false);
-      expect(logger.getLogsByLevel('WARN').length).toBeGreaterThan(0);
+      expect(logger.getLogsByLevel('WARN')).toEqual([
+        {
+          level: 'WARN',
+          message: '"match" operator applied to a non-string: number',
+          context: null
+        }
+      ]);
     });
 
     it('should throw error for MATCH operator with non-string right side', () => {
