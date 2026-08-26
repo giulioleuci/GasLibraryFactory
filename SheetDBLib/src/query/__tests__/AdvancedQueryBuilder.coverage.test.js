@@ -162,7 +162,12 @@ describe('AdvancedQueryBuilder - Coverage Enhancement Tests', () => {
         .andWhere('status', '=', 'active')
         .execute();
 
-      expect(results.length).toBeGreaterThan(0);
+      expect(results).toEqual([
+        { name: 'Alice', age: 30, department: 'Engineering' },
+        { name: 'Bob', age: 25, department: 'Sales' },
+        { name: 'David', age: 28, department: 'Marketing' },
+        { name: 'Eve', age: 32, department: 'Engineering' }
+      ]);
     });
 
     it('should handle sub-conditions in query evaluation', () => {
@@ -186,7 +191,12 @@ describe('AdvancedQueryBuilder - Coverage Enhancement Tests', () => {
         .where('Users.age', '>', 25)
         .execute();
 
-      expect(results.length).toBeGreaterThan(0);
+      expect(results).toEqual([
+        { 'Users.name': 'Alice', 'Users.age': 30 },
+        { 'Users.name': 'Charlie', 'Users.age': 35 },
+        { 'Users.name': 'David', 'Users.age': 28 },
+        { 'Users.name': 'Eve', 'Users.age': 32 }
+      ]);
     });
   });
 
@@ -222,7 +232,10 @@ describe('AdvancedQueryBuilder - Coverage Enhancement Tests', () => {
         .andWhere('status', '=', 'active')
         .execute();
 
-      expect(results.length).toBeGreaterThan(0);
+      expect(results).toEqual([
+        { name: 'Alice', department: 'Engineering' },
+        { name: 'Eve', department: 'Engineering' }
+      ]);
     });
 
     it('should handle select with array of fields', () => {
@@ -325,7 +338,7 @@ describe('AdvancedQueryBuilder - Coverage Enhancement Tests', () => {
       // Test method chaining
       const builder = qb.select(['department']).from('Users').groupBy('department');
 
-      expect(builder).toBeDefined();
+      expect(builder).toBe(qb);
       expect(typeof builder.execute).toBe('function');
     });
 
@@ -334,8 +347,11 @@ describe('AdvancedQueryBuilder - Coverage Enhancement Tests', () => {
 
       const results = qb.select(['department']).from('Users').groupBy('department').execute();
 
-      expect(results.length).toBeGreaterThan(0);
-      expect(Array.isArray(results)).toBe(true);
+      expect(results).toEqual([
+        { department: 'Engineering' },
+        { department: 'Sales' },
+        { department: 'Marketing' }
+      ]);
     });
   });
 
@@ -354,13 +370,11 @@ describe('AdvancedQueryBuilder - Coverage Enhancement Tests', () => {
         .groupBy('department')
         .execute();
 
-      expect(results.length).toBeGreaterThan(0);
-
-      // Find Engineering department
-      const engDept = results.find((r) => r.department === 'Engineering');
-      if (engDept && engDept.employee_count !== undefined) {
-        expect(engDept.employee_count).toBeGreaterThan(0); // At least some users
-      }
+      expect(results).toEqual([
+        { department: 'Engineering', employee_count: 3 },
+        { department: 'Sales', employee_count: 2 },
+        { department: 'Marketing', employee_count: 1 }
+      ]);
     });
 
     it('should group by multiple fields', () => {
@@ -370,10 +384,16 @@ describe('AdvancedQueryBuilder - Coverage Enhancement Tests', () => {
         .select(['department', 'status'])
         .from('Users')
         .count('ID', 'count')
-        .groupBy('department', 'status')
+        .groupBy(['department', 'status'])
         .execute();
 
-      expect(results.length).toBeGreaterThan(0);
+      expect(results).toEqual([
+        { department: 'Engineering', status: 'active', count: 2 },
+        { department: 'Sales', status: 'active', count: 1 },
+        { department: 'Engineering', status: 'inactive', count: 1 },
+        { department: 'Marketing', status: 'active', count: 1 },
+        { department: 'Sales', status: 'pending', count: 1 }
+      ]);
     });
 
     it('should handle groupBy with null values in grouping field', () => {
@@ -386,9 +406,14 @@ describe('AdvancedQueryBuilder - Coverage Enhancement Tests', () => {
         .groupBy('age')
         .execute();
 
-      // Should include a group for null age
-      const nullGroup = results.find((r) => r.age === null);
-      expect(nullGroup).toBeDefined();
+      expect(results).toEqual([
+        { age: 25, count: 1 },
+        { age: 28, count: 1 },
+        { age: 30, count: 1 },
+        { age: 32, count: 1 },
+        { age: 35, count: 1 },
+        { age: null, count: 1 }
+      ]);
     });
 
     it('should apply WHERE conditions before grouping', () => {
@@ -402,9 +427,11 @@ describe('AdvancedQueryBuilder - Coverage Enhancement Tests', () => {
         .groupBy('department')
         .execute();
 
-      expect(results.length).toBeGreaterThan(0);
-      // Check that grouping executed
-      expect(Array.isArray(results)).toBe(true);
+      expect(results).toEqual([
+        { department: 'Engineering', active_count: 2 },
+        { department: 'Sales', active_count: 1 },
+        { department: 'Marketing', active_count: 1 }
+      ]);
     });
 
     it('should order grouped results', () => {
@@ -418,9 +445,11 @@ describe('AdvancedQueryBuilder - Coverage Enhancement Tests', () => {
         .orderBy('count', 'DESC')
         .execute();
 
-      expect(results.length).toBeGreaterThan(0);
-      // Engineering should have most employees (3)
-      expect(results[0].department).toBe('Engineering');
+      expect(results).toEqual([
+        { department: 'Engineering', count: 3 },
+        { department: 'Sales', count: 2 },
+        { department: 'Marketing', count: 1 }
+      ]);
     });
 
     it('should limit grouped results', () => {
@@ -449,16 +478,11 @@ describe('AdvancedQueryBuilder - Coverage Enhancement Tests', () => {
         .groupBy('status')
         .execute();
 
-      expect(results.length).toBeGreaterThan(0);
-
-      const activeGroup = results.find((r) => r.status === 'active');
-      if (activeGroup) {
-        expect(activeGroup.status).toBe('active');
-        // Aggregation fields may or may not be implemented
-        if (activeGroup.total_users !== undefined) {
-          expect(activeGroup.total_users).toBeGreaterThan(0);
-        }
-      }
+      expect(results).toEqual([
+        { status: 'active', total_users: 4, avg_age: 28.75, total_salary: 270000 },
+        { status: 'inactive', total_users: 1, avg_age: 35, total_salary: 80000 },
+        { status: 'pending', total_users: 1, avg_age: null, total_salary: null }
+      ]);
     });
   });
 
@@ -472,8 +496,14 @@ describe('AdvancedQueryBuilder - Coverage Enhancement Tests', () => {
 
       const results = qb.select(['name']).from('Users').get();
 
-      expect(Array.isArray(results)).toBe(true);
-      expect(results.length).toBeGreaterThan(0);
+      expect(results.map((result) => result.name)).toEqual([
+        'Alice',
+        'Bob',
+        'Charlie',
+        'David',
+        'Eve',
+        'Frank'
+      ]);
     });
 
     it('should handle first() method', () => {
@@ -486,8 +516,7 @@ describe('AdvancedQueryBuilder - Coverage Enhancement Tests', () => {
         .orderBy('age', 'ASC')
         .first();
 
-      expect(result).toBeDefined();
-      expect(result.name).toBeDefined();
+      expect(result).toEqual({ name: 'Bob' });
     });
 
     it('should return null from first() when no results', () => {
@@ -561,8 +590,14 @@ describe('AdvancedQueryBuilder - Coverage Enhancement Tests', () => {
         .orderBy('nonexistent_field', 'ASC')
         .execute();
 
-      // Should not crash
-      expect(results.length).toBeGreaterThan(0);
+      expect(results.map((result) => result.name)).toEqual([
+        'Alice',
+        'Bob',
+        'Charlie',
+        'David',
+        'Eve',
+        'Frank'
+      ]);
     });
 
     it('should handle CONTAINS operator', () => {
@@ -587,8 +622,13 @@ describe('AdvancedQueryBuilder - Coverage Enhancement Tests', () => {
         .where('status', 'NOT IN', ['inactive', 'suspended'])
         .execute();
 
-      expect(results.length).toBeGreaterThan(0);
-      expect(results.every((r) => r.status !== 'inactive')).toBe(true);
+      expect(results).toEqual([
+        { name: 'Alice', status: 'active' },
+        { name: 'Bob', status: 'active' },
+        { name: 'David', status: 'active' },
+        { name: 'Eve', status: 'active' },
+        { name: 'Frank', status: 'pending' }
+      ]);
     });
   });
 });
