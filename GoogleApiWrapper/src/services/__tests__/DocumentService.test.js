@@ -386,8 +386,14 @@ describe('DocumentService - Comprehensive Test Suite', () => {
       builder.appendParagraph('Test');
       builder.execute();
 
-      expect(service._executeBatchUpdate.mock.calls[0][0]).toBe('doc123');
-      expect(service._executeBatchUpdate.mock.calls[0][1]).toHaveLength(1);
+      expect(service._executeBatchUpdate).toHaveBeenCalledWith('doc123', [
+        {
+          insertText: {
+            location: { index: 100000 },
+            text: 'Test\n'
+          }
+        }
+      ]);
     });
 
     it('should not call _executeBatchUpdate when no operations', () => {
