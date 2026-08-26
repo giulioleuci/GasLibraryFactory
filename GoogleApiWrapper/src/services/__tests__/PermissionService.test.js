@@ -121,8 +121,15 @@ describe('PermissionService - Comprehensive Test Suite', () => {
       );
 
       expect(global.Drive.Permissions.create).toHaveBeenCalledTimes(4);
-      expect(result.successful).toHaveLength(4);
-      expect(result.failed).toEqual([]);
+      expect(result).toEqual({
+        successful: [
+          { fileId: 'fileId1', permission: { id: 'perm1' }, statusCode: 200 },
+          { fileId: 'fileId1', permission: { id: 'perm1' }, statusCode: 200 },
+          { fileId: 'fileId2', permission: { id: 'perm1' }, statusCode: 200 },
+          { fileId: 'fileId2', permission: { id: 'perm1' }, statusCode: 200 }
+        ],
+        failed: []
+      });
     });
 
     it('should disable email notifications by default', () => {
