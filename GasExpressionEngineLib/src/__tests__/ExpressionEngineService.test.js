@@ -200,9 +200,15 @@ describe('ExpressionEngineService (Logic Library Pattern)', () => {
     });
 
     it('risolve gli indici array nei placeholder (limitazione JSEP superata)', () => {
-      const ctx = { items: [{ nome: 'Alice' }] };
+      const ctx = {
+        users: [
+          { name: 'Alice', age: 25 },
+          { name: 'Bob', age: 30 }
+        ]
+      };
 
-      expect(engine.evaluate('{{items[0].nome}}', ctx)).toBe(true);
+      expect(engine.evaluate('{{users.0.age}} == 25', ctx)).toBe(true);
+      expect(engine.evaluate("{{users.1.name}} == 'Bob'", ctx)).toBe(true);
     });
   });
 
