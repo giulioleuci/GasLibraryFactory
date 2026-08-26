@@ -77,17 +77,28 @@ describe('MailService - Simplified Test Suite', () => {
     it('should send email via GmailApp', () => {
       const result = service.send(email);
       expect(result.success).toBe(true);
-      expect(GmailApp.sendEmail).toHaveBeenCalledWith('a@b.com', 'Hi', 'Hello', expect.any(Object));
+      expect(GmailApp.sendEmail).toHaveBeenCalledWith('a@b.com', 'Hi', 'Hello', {
+        htmlBody: undefined,
+        cc: undefined,
+        bcc: undefined,
+        replyTo: undefined,
+        name: undefined,
+        noReply: undefined,
+        attachments: undefined
+      });
     });
 
     it('should handle array of recipients', () => {
       service.send({ ...email, to: ['a@b.com', 'c@d.com'] });
-      expect(GmailApp.sendEmail).toHaveBeenCalledWith(
-        'a@b.com,c@d.com',
-        'Hi',
-        'Hello',
-        expect.any(Object)
-      );
+      expect(GmailApp.sendEmail).toHaveBeenCalledWith('a@b.com,c@d.com', 'Hi', 'Hello', {
+        htmlBody: undefined,
+        cc: undefined,
+        bcc: undefined,
+        replyTo: undefined,
+        name: undefined,
+        noReply: undefined,
+        attachments: undefined
+      });
     });
 
     it('should use exception service if provided', () => {
