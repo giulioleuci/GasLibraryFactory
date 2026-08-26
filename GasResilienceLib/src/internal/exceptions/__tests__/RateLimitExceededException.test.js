@@ -107,9 +107,11 @@ describe('RateLimitExceededException - Comprehensive Test Suite', () => {
     it('should have stack trace', () => {
       const exception = new RateLimitExceededException('test', 5000);
 
-      expect(exception.stack).toBeDefined();
+      expect(exception.stack).toMatch(/^RateLimitExceededException: Rate limit exceeded/);
       expect(typeof exception.stack).toBe('string');
-      expect(exception.stack.length).toBeGreaterThan(0);
+      expect(exception.stack.split('\n')[0]).toBe(
+        "RateLimitExceededException: Rate limit exceeded for operation 'test'. Required wait time: 5000ms"
+      );
     });
 
     it('should include RateLimitExceededException in stack trace', () => {
