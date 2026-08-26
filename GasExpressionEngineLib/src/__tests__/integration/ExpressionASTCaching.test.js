@@ -80,14 +80,13 @@ describe('Integration Test 14: Expression AST Caching', () => {
       const ast = parseWithCache(expression);
 
       // Assert
-      expect(ast).toBeDefined();
-      expect(ast).toHaveProperty('type');
+      expect(ast).toMatchObject({ type: 'BinaryExpression', operator: '&&' });
       expect(astCache.has(expression)).toBe(true);
 
       // Verify cache logging
       const debugLogs = mockLogger.debug.mock.calls;
       const cacheLogs = debugLogs.filter((call) => call[0] && call[0].includes('AST cached'));
-      expect(cacheLogs.length).toBeGreaterThan(0);
+      expect(cacheLogs).toEqual([['AST cached for expression: 5 >= 18 && "active" == "active"...']]);
     });
 
     test('should generate cache key from expression string', () => {
@@ -114,9 +113,7 @@ describe('Integration Test 14: Expression AST Caching', () => {
 
       // Assert - AST should be a valid object
       const cachedAst = astCache.get(expression);
-      expect(cachedAst).toBeDefined();
-      expect(typeof cachedAst).toBe('object');
-      expect(cachedAst).toHaveProperty('type');
+      expect(cachedAst).toMatchObject({ type: 'BinaryExpression', operator: '>' });
     });
   });
 
@@ -133,8 +130,8 @@ describe('Integration Test 14: Expression AST Caching', () => {
       const ast2 = parseWithCache(expression);
 
       // Assert
-      expect(ast1).toBeDefined();
-      expect(ast2).toBeDefined();
+      expect(ast1).toMatchObject({ type: 'BinaryExpression', operator: '&&' });
+      expect(ast2).toMatchObject({ type: 'BinaryExpression', operator: '&&' });
       expect(ast1).toBe(ast2); // Same object reference
 
       // Parser should only be called once
@@ -143,7 +140,7 @@ describe('Integration Test 14: Expression AST Caching', () => {
       // Verify cache hit logging
       const debugLogs = mockLogger.debug.mock.calls;
       const cacheHitLogs = debugLogs.filter((call) => call[0] && call[0].includes('AST cache hit'));
-      expect(cacheHitLogs.length).toBeGreaterThan(0);
+      expect(cacheHitLogs).toEqual([['AST cache hit for expression: 25 >= 18 && "active" == "active"...']]);
     });
 
     test('should deserialize cached AST correctly', () => {
@@ -155,10 +152,9 @@ describe('Integration Test 14: Expression AST Caching', () => {
       const ast2 = parseWithCache(expression);
 
       // Assert - Both should be valid and identical
-      expect(ast1).toBeDefined();
-      expect(ast2).toBeDefined();
+      expect(ast1).toMatchObject({ type: 'BinaryExpression', operator: '*' });
+      expect(ast2).toMatchObject({ type: 'BinaryExpression', operator: '*' });
       expect(ast1).toBe(ast2);
-      expect(ast1.type).toBeDefined();
     });
   });
 
@@ -199,7 +195,9 @@ describe('Integration Test 14: Expression AST Caching', () => {
       const evictionLogs = debugLogs.filter(
         (call) => call[0] && call[0].includes('cache limit reached')
       );
-      expect(evictionLogs.length).toBeGreaterThan(0);
+      expect(evictionLogs).toEqual(
+        Array.from({ length: 10 }, () => ['AST cache limit reached, removed oldest entry'])
+      );
     });
   });
 
@@ -218,7 +216,7 @@ describe('Integration Test 14: Expression AST Caching', () => {
       const ast = parseWithCache(expression);
 
       // Assert
-      expect(ast).toBeDefined();
+      expect(ast).toMatchObject({ type: 'BinaryExpression', operator: '==' });
       expect(parseSpy).toHaveBeenCalledTimes(1);
       expect(astCache.has(expression)).toBe(true);
     });
