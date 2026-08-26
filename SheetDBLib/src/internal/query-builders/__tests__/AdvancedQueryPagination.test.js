@@ -37,11 +37,11 @@ describe('AdvancedQueryPagination', () => {
       const pagination = new AdvancedQueryPagination(facade);
       const comparator = pagination._createComparator();
       expect(comparator({ age: 1 }, { age: 2 })).toBeLessThan(0);
-      expect(comparator({ age: 2 }, { age: 1 })).toBeGreaterThan(0);
+      expect(comparator({ age: 2 }, { age: 1 })).toBe(1);
 
       facade.orderByFields[0].direction = 'DESC';
       const descComparator = pagination._createComparator();
-      expect(descComparator({ age: 1 }, { age: 2 })).toBeGreaterThan(0);
+      expect(descComparator({ age: 1 }, { age: 2 })).toBe(1);
     });
 
     it('sorts nulls first in ASC and last in DESC', () => {
@@ -50,7 +50,7 @@ describe('AdvancedQueryPagination', () => {
       );
       const comparator = pagination._createComparator();
       expect(comparator({ age: null }, { age: 5 })).toBeLessThan(0);
-      expect(comparator({ age: 5 }, { age: null })).toBeGreaterThan(0);
+      expect(comparator({ age: 5 }, { age: null })).toBe(1);
       expect(comparator({ age: undefined }, { age: 5 })).toBeLessThan(0);
     });
 
@@ -162,7 +162,7 @@ describe('AdvancedQueryPagination', () => {
       const pagination = new AdvancedQueryPagination(facade);
       const comparator = pagination._createComparator();
       const arr = [{ val: 1 }];
-      expect(() => pagination._quickSelect(arr, 0, 0, 1, comparator)).not.toThrow();
+      pagination._quickSelect(arr, 0, 0, 1, comparator);
       expect(arr).toEqual([{ val: 1 }]);
     });
 
