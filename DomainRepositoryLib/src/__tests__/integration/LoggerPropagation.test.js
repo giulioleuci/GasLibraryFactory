@@ -193,7 +193,7 @@ describe('Integration Test 15: Logger Propagation', () => {
 
     test('should use default logger if none provided', () => {
       const repo = new UserRepository(mockDatabase);
-      expect(repo.logger).toBeDefined();
+      expect(repo.queryTranslator.logger).toBe(repo.logger);
       // It should be an instance of LoggerService
       expect(repo.logger.constructor.name).toBe('LoggerService');
     });
