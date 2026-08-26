@@ -27,29 +27,70 @@ describe('ErrorClassifier - Comprehensive Test Suite', () => {
     it('should create instance with default patterns', () => {
       const classifier = new ErrorClassifier();
 
-      expect(classifier).toBeDefined();
-      expect(classifier._classifiers).toBeDefined();
-      expect(classifier._classificationCache).toBeDefined();
+      expect(classifier).toBeInstanceOf(ErrorClassifier);
+      expect(Object.keys(classifier._classifiers)).toEqual([
+        'AUTH_REQUIRED',
+        'SCRIPT_ERROR',
+        'TIMEOUT',
+        'QUOTA_EXCEEDED',
+        'PERMISSION_DENIED',
+        'SERVICE_UNAVAILABLE',
+        'NOT_FOUND',
+        'NETWORK_ERROR'
+      ]);
+      expect(classifier._classificationCache).toEqual(new Map());
     });
 
     it('should initialize with all default error patterns', () => {
       const classifier = new ErrorClassifier();
 
-      expect(classifier._classifiers.AUTH_REQUIRED).toBeDefined();
-      expect(classifier._classifiers.SCRIPT_ERROR).toBeDefined();
-      expect(classifier._classifiers.QUOTA_EXCEEDED).toBeDefined();
-      expect(classifier._classifiers.PERMISSION_DENIED).toBeDefined();
-      expect(classifier._classifiers.SERVICE_UNAVAILABLE).toBeDefined();
-      expect(classifier._classifiers.NOT_FOUND).toBeDefined();
-      expect(classifier._classifiers.TIMEOUT).toBeDefined();
-      expect(classifier._classifiers.NETWORK_ERROR).toBeDefined();
+      expect(classifier._classifiers.AUTH_REQUIRED).toEqual({
+        pattern: /authorization is required|access_token/i,
+        category: 'FATAL',
+        recoverable: false
+      });
+      expect(classifier._classifiers.SCRIPT_ERROR).toEqual({
+        pattern: /script error|syntax error|reference error|type error|is not a function/i,
+        category: 'FATAL',
+        recoverable: false
+      });
+      expect(classifier._classifiers.QUOTA_EXCEEDED).toEqual({
+        pattern: /quota|limit.*exceeded|too many (requests|times)|service invoked too many/i,
+        category: 'QUOTA',
+        recoverable: true
+      });
+      expect(classifier._classifiers.PERMISSION_DENIED).toEqual({
+        pattern: /permission.*(denied|to access)|unauthorized|you do not have permission/i,
+        category: 'PERMISSIONS',
+        recoverable: false
+      });
+      expect(classifier._classifiers.SERVICE_UNAVAILABLE).toEqual({
+        pattern: /service.*(unavailable|error|failed)|503/i,
+        category: 'SERVICE',
+        recoverable: true
+      });
+      expect(classifier._classifiers.NOT_FOUND).toEqual({
+        pattern: /not found|(?:^|\s)404(?:\s|$)/i,
+        category: 'NOT_FOUND',
+        recoverable: false
+      });
+      expect(classifier._classifiers.TIMEOUT).toEqual({
+        pattern: /timeout|time.*limit|execution.*time.*exceeded|exceeded.*time/i,
+        category: 'TIMEOUT',
+        recoverable: false
+      });
+      expect(classifier._classifiers.NETWORK_ERROR).toEqual({
+        pattern: /network.*error|connection.*(refused|failed)|failed to establish connection/i,
+        category: 'NETWORK',
+        recoverable: true
+      });
     });
 
     it('should accept ResilienceConfiguration', () => {
       const config = new ResilienceConfiguration();
       const classifier = new ErrorClassifier(config);
 
-      expect(classifier).toBeDefined();
+      expect(classifier).toBeInstanceOf(ErrorClassifier);
     });
 
     it('should use custom patterns from configuration', () => {
@@ -82,15 +123,11 @@ describe('ErrorClassifier - Comprehensive Test Suite', () => {
     });
 
     it('should accept null config', () => {
-      expect(() => {
-        new ErrorClassifier(null);
-      }).not.toThrow();
+      expect(new ErrorClassifier(null)).toBeInstanceOf(ErrorClassifier);
     });
 
     it('should accept undefined config', () => {
-      expect(() => {
-        new ErrorClassifier(undefined);
-      }).not.toThrow();
+      expect(new ErrorClassifier(undefined)).toBeInstanceOf(ErrorClassifier);
     });
 
     it('should initialize empty cache', () => {
@@ -306,7 +343,12 @@ describe('ErrorClassifier - Comprehensive Test Suite', () => {
       const error = { stack: 'Some stack trace' };
       const result = classifier.classify(error);
 
-      expect(result).toBeDefined();
+      expect(result).toEqual({
+        type: 'UNKNOWN',
+        category: 'GENERIC',
+        recoverable: true,
+        originalMessage: ''
+      });
       expect(result.originalMessage).toBe('');
     });
 
@@ -471,7 +513,7 @@ describe('ErrorClassifier - Comprehensive Test Suite', () => {
       const hash = classifier._hashString('');
 
       expect(typeof hash).toBe('string');
-      expect(hash.length).toBeGreaterThan(0);
+      expect(hash).toHaveLength(64);
     });
 
     it('should handle special characters', () => {
@@ -510,9 +552,7 @@ describe('ErrorClassifier - Comprehensive Test Suite', () => {
     it('should work with empty cache', () => {
       expect(classifier._classificationCache.size).toBe(0);
 
-      expect(() => {
-        classifier.clearCache();
-      }).not.toThrow();
+      expect(classifier.clearCache()).toBeUndefined();
 
       expect(classifier._classificationCache.size).toBe(0);
     });
