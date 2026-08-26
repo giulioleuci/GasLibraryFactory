@@ -695,7 +695,7 @@ describe('LoggerService', () => {
         }
       });
 
-      expect(() => logger.logJobEnd('job-1', false, details)).not.toThrow();
+      expect(logger.logJobEnd('job-1', false, details)).toBe(logger);
       expect(Logger.log.mock.calls.map(([line]) => line).join('\n')).toContain(
         '[Error accessing property]'
       );
