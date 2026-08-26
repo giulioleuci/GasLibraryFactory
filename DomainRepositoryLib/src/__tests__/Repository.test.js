@@ -11,6 +11,7 @@ import { FieldSpecification } from '../specifications/FieldSpecification';
 import { FunctionSpecification } from '../specifications/FunctionSpecification';
 import { Specification } from '../specifications/Specification';
 import { QueryTranslator } from '../internal/query/QueryTranslator';
+import { EntityMapper } from '../internal/mapping/EntityMapper';
 import { EntityNotFoundException } from '../internal/errors/EntityNotFoundException';
 import { MockFactory } from '../../../test/fakes/MockFactory';
 
@@ -115,13 +116,15 @@ describe('Repository - Comprehensive Test Suite', () => {
     it('should initialize with default logger if not provided', () => {
       const repo = new TestRepository(mockDatabase, null, mocks.cache);
 
-      expect(repo.logger).toBeDefined();
+      expect(repo.logger.constructor.name).toBe('LoggerService');
       expect(typeof repo.logger.info).toBe('function');
     });
 
     it('should initialize mapper and translator', () => {
-      expect(repository.entityMapper).toBeDefined();
-      expect(repository.queryTranslator).toBeDefined();
+      const repo = new TestRepository(mockDatabase, mocks.logger, mocks.cache);
+
+      expect(repo.entityMapper).toBeInstanceOf(EntityMapper);
+      expect(repo.queryTranslator).toBeInstanceOf(QueryTranslator);
     });
   });
 
