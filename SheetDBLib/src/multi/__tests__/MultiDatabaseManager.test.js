@@ -4,8 +4,10 @@
  */
 
 import { MultiDatabaseManager } from '../MultiDatabaseManager.js';
+import { CrossPartitionQuery } from '../CrossPartitionQuery.js';
 import { PartitionConfiguration } from '../PartitionConfiguration.js';
 import { DatabasePartition } from '../DatabasePartition.js';
+import { PartitionRouter } from '../PartitionRouter.js';
 import { PartitionNotFoundError, CrossPartitionDisabledError } from '../MultiDatabaseError.js';
 import { DatabaseService } from '../../DatabaseService.js';
 import { MockFactory } from '../../../../test/fakes';
@@ -74,7 +76,7 @@ describe('MultiDatabaseManager', () => {
   describe('getPartition', () => {
     it('should get partition by ID with lazy loading', () => {
       const db = manager.getPartition('warehouse_milan');
-      expect(db).toBeDefined();
+      expect(db.spreadsheetId).toBe('sheet-1');
       // Verify DatabaseService was called with the correct spreadsheet ID
       expect(DatabaseService).toHaveBeenCalledTimes(1);
       expect(DatabaseService.mock.calls[0][0]).toBe('sheet-1');
@@ -82,7 +84,7 @@ describe('MultiDatabaseManager', () => {
 
     it('should get partition by alias', () => {
       const db = manager.getPartition('current');
-      expect(db).toBeDefined();
+      expect(db.spreadsheetId).toBe('sheet-1');
     });
 
     it('should return cached connection on second access', () => {
@@ -108,7 +110,7 @@ describe('MultiDatabaseManager', () => {
   describe('getDefault', () => {
     it('should get default partition', () => {
       const db = manager.getDefault();
-      expect(db).toBeDefined();
+      expect(db.spreadsheetId).toBe('sheet-1');
     });
   });
 
@@ -246,7 +248,7 @@ describe('MultiDatabaseManager', () => {
   describe('query', () => {
     it('should return CrossPartitionQuery builder', () => {
       const query = manager.query('INVENTORY');
-      expect(query).toBeDefined();
+      expect(query).toBeInstanceOf(CrossPartitionQuery);
       expect(query.toString()).toContain('INVENTORY');
     });
 
@@ -274,7 +276,7 @@ describe('MultiDatabaseManager', () => {
   describe('getRouter', () => {
     it('should return router', () => {
       const router = manager.getRouter();
-      expect(router).toBeDefined();
+      expect(router).toBeInstanceOf(PartitionRouter);
     });
   });
 
