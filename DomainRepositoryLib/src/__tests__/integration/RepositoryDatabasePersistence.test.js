@@ -221,6 +221,7 @@ describe('Integration Test 2: Repository-Database Persistence', () => {
   describe('Insert Operations', () => {
     test('should insert new Entity when saving without ID', () => {
       // Arrange: Create new Entity
+      mockUtils.getUuid.mockReturnValue('test-uuid-alice');
       const user = new User({
         name: 'Alice Johnson',
         email: 'alice@test.com',
@@ -231,7 +232,7 @@ describe('Integration Test 2: Repository-Database Persistence', () => {
       const savedUser = repository.save(user);
 
       // Assert: Verify Entity has ID assigned
-      expect(savedUser.id).toBeDefined();
+      expect(savedUser.id).toBe('test-uuid-alice');
       expect(savedUser.id).not.toBeNull();
       expect(savedUser.name).toBe('Alice Johnson');
       expect(savedUser.email).toBe('alice@test.com');
@@ -355,6 +356,10 @@ describe('Integration Test 2: Repository-Database Persistence', () => {
   describe('Batch Operations', () => {
     test('should save multiple entities in batch', () => {
       // Arrange: Create multiple entities
+      mockUtils.getUuid
+        .mockReturnValueOnce('test-uuid-user-1')
+        .mockReturnValueOnce('test-uuid-user-2')
+        .mockReturnValueOnce('test-uuid-user-3');
       const users = [
         new User({ name: 'User 1', email: 'user1@test.com', age: 20 }),
         new User({ name: 'User 2', email: 'user2@test.com', age: 30 }),
@@ -366,9 +371,11 @@ describe('Integration Test 2: Repository-Database Persistence', () => {
 
       // Assert: Verify all saved
       expect(savedUsers).toHaveLength(3);
-      expect(savedUsers[0].id).toBeDefined();
-      expect(savedUsers[1].id).toBeDefined();
-      expect(savedUsers[2].id).toBeDefined();
+      expect(savedUsers.map((user) => user.id)).toEqual([
+        'test-uuid-user-1',
+        'test-uuid-user-2',
+        'test-uuid-user-3'
+      ]);
 
       // Verify in database
       const allUsers = repository.findAll();
@@ -397,6 +404,7 @@ describe('Integration Test 2: Repository-Database Persistence', () => {
 
     test('should successfully save valid entity', () => {
       // Arrange: Create valid Entity
+      mockUtils.getUuid.mockReturnValue('test-uuid-valid');
       const validUser = new User({
         name: 'Valid User',
         email: 'valid@test.com',
@@ -407,7 +415,7 @@ describe('Integration Test 2: Repository-Database Persistence', () => {
       const saved = repository.save(validUser);
 
       // Assert: Verify saved successfully
-      expect(saved.id).toBeDefined();
+      expect(saved.id).toBe('test-uuid-valid');
       expect(saved.name).toBe('Valid User');
     });
   });
