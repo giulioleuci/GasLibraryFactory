@@ -56,7 +56,7 @@ describe('Registry (generic storage primitive)', () => {
       });
       expect(() => r.register('x', 5)).toThrow('value must be a function');
       const fn = () => {};
-      expect(() => r.register('x', fn)).not.toThrow();
+      expect(r.register('x', fn)).toBe(false);
       expect(r.get('x')).toBe(fn);
     });
   });
