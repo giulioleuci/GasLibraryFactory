@@ -38,7 +38,7 @@ describe('RateLimiter - Comprehensive Test Suite', () => {
     it('should create instance with default configuration', () => {
       const limiter = new RateLimiter();
 
-      expect(limiter).toBeDefined();
+      expect(limiter).toBeInstanceOf(RateLimiter);
       expect(limiter._refillRate).toBe(1); // 60 per minute = 1 per second
       expect(limiter._burstCapacity).toBe(10);
       expect(limiter._autoRefill).toBe(true);
@@ -123,8 +123,8 @@ describe('RateLimiter - Comprehensive Test Suite', () => {
       const limiter1 = new RateLimiter({}, logger, null);
       const limiter2 = new RateLimiter({}, logger);
 
-      expect(limiter1).toBeDefined();
-      expect(limiter2).toBeDefined();
+      expect(limiter1).toBeInstanceOf(RateLimiter);
+      expect(limiter2).toBeInstanceOf(RateLimiter);
     });
 
     it('should initialize empty buckets and statistics', () => {
@@ -390,9 +390,8 @@ describe('RateLimiter - Comprehensive Test Suite', () => {
 
   describe('acquire() Method', () => {
     it('should acquire token successfully', () => {
-      expect(() => {
-        limiter.acquire('test-op');
-      }).not.toThrow();
+      limiter.acquire('test-op');
+      expect(limiter.getStats('test-op').requestCount).toBe(1);
     });
 
     it('should throw error when rate limit exceeded', () => {
@@ -406,9 +405,7 @@ describe('RateLimiter - Comprehensive Test Suite', () => {
     });
 
     it('should acquire multiple tokens', () => {
-      expect(() => {
-        limiter.acquire('test-op', 3);
-      }).not.toThrow();
+      limiter.acquire('test-op', 3);
 
       const stats = limiter.getStats('test-op');
       expect(stats.tokensAvailable).toBeCloseTo(7, 0);
@@ -458,9 +455,14 @@ describe('RateLimiter - Comprehensive Test Suite', () => {
     });
 
     it('should handle resetAll with no operations', () => {
-      expect(() => {
-        limiter.resetAll();
-      }).not.toThrow();
+      limiter.resetAll();
+      expect(limiter.getGlobalStats()).toEqual({
+        totalRequests: 0,
+        throttledRequests: 0,
+        totalWaitTime: 0,
+        throttleRate: '0%',
+        avgWaitTime: '0ms'
+      });
     });
   });
 
@@ -641,9 +643,7 @@ describe('RateLimiter - Comprehensive Test Suite', () => {
     });
 
     it('should handle operation names with special characters', () => {
-      expect(() => {
-        limiter.tryAcquire('api-call:sheets/v4/spreadsheets.get');
-      }).not.toThrow();
+      expect(limiter.tryAcquire('api-call:sheets/v4/spreadsheets.get')).toBe(true);
     });
 
     it('should handle concurrent operations on same bucket', () => {
