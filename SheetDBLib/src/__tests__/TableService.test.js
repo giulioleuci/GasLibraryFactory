@@ -354,8 +354,8 @@ describe('TableService - Comprehensive Test Suite', () => {
       expect(results).toHaveLength(2);
       expect(results[0].name).toBe('David Lee');
       expect(results[1].name).toBe('Diana Prince');
-      expect(results[0].ID).toBeDefined();
-      expect(results[1].ID).toBeDefined();
+      expect(results.map((row) => /^UUID_0\.\d+$/.test(row.ID))).toEqual([true, true]);
+      expect(new Set(results.map((row) => row.ID)).size).toBe(2);
       expect(table._insertQueue).toHaveLength(2);
       expect(table._rowsCache).toHaveLength(5); // 3 original + 2 new
     });
@@ -893,12 +893,11 @@ describe('TableService - Comprehensive Test Suite', () => {
       table.flush();
 
       // Virtual column should not be in the appendRows call
-      expect(mocks.spreadsheetService.appendRows).toHaveBeenCalledWith(
-        expect.any(String),
-        expect.objectContaining({
-          values: expect.not.arrayContaining([expect.arrayContaining(['virtual-value'])])
-        })
-      );
+      const [[spreadsheetId, { range, values }]] = mocks.spreadsheetService.appendRows.mock.calls;
+      expect(spreadsheetId).toBe('SPREADSHEET_ID_123');
+      expect(range).toBe("'Users'!A1");
+      expect(values).toHaveLength(1);
+      expect(values[0]).not.toContain('virtual-value');
     });
   });
 
@@ -964,7 +963,8 @@ describe('TableService - Comprehensive Test Suite', () => {
 
     it('should invalidate index when data changes', () => {
       table.createIndex('email');
-      expect(table._indices.email).toBeDefined();
+      expect(table._indices.email).toBeInstanceOf(Map);
+      expect(table._indices.email.get('alice@example.com')).toEqual([0]);
 
       table.insertRow({ name: 'New User', email: 'new@example.com' });
 
@@ -1142,7 +1142,8 @@ describe('TableService - Comprehensive Test Suite', () => {
 
       expect(table._dataLoaded).toBe(false);
       expect(table._rowsCache).toBeNull();
-      expect(table._indices.email).toBeDefined();
+      expect(table._indices.email).toBeInstanceOf(Map);
+      expect(table._indices.email.get('alice@example.com')).toEqual([0]);
     });
 
     it('should invalidate indices only when specified', () => {
@@ -1462,7 +1463,7 @@ describe('TableService - Comprehensive Test Suite', () => {
 
     it('should clear original data when cache is invalidated', () => {
       // Verify original data exists
-      expect(table._originalRowData.size).toBeGreaterThan(0);
+      expect(table._originalRowData.size).toBe(3);
 
       // Invalidate cache
       table._invalidateInternalCache({ data: true });
@@ -1504,17 +1505,13 @@ describe('TableService - Comprehensive Test Suite', () => {
       // Searching for 'Giusepe' should match 'Giuseppe'
       const results = table.fuzzySearch('Giusepe', ['name'], 0.3);
 
-      expect(results.length).toBeGreaterThan(0);
-      const names = results.map((r) => r.item.name);
-      expect(names).toContain('Giuseppe');
+      expect(results.map((result) => result.item.name)).toEqual(['Giuseppe']);
     });
 
     it('should search across multiple fields', () => {
       const results = table.fuzzySearch('rome', ['name', 'city'], 0.3);
 
-      expect(results.length).toBeGreaterThan(0);
-      const cities = results.map((r) => r.item.city);
-      expect(cities).toContain('Rome');
+      expect(results.map((result) => result.item.city)).toEqual(['Rome']);
     });
 
     it('should respect threshold parameter', () => {
@@ -1524,13 +1521,13 @@ describe('TableService - Comprehensive Test Suite', () => {
 
       // With lenient threshold, typo should match
       const lenientResults = table.fuzzySearch('Giusepe', ['name'], 0.5);
-      expect(lenientResults.length).toBeGreaterThan(0);
+      expect(lenientResults.map((result) => result.item.name)).toEqual(['Giuseppe']);
     });
 
     it('should return results with scores', () => {
       const results = table.fuzzySearch('Giovani', ['name'], 0.3);
 
-      expect(results.length).toBeGreaterThan(0);
+      expect(results.map((result) => result.item.name)).toEqual(['Giovanni']);
       results.forEach((result) => {
         expect(result).toHaveProperty('item');
         expect(result).toHaveProperty('score');
@@ -1571,9 +1568,15 @@ describe('TableService - Comprehensive Test Suite', () => {
       // Search in virtual column
       const results = table.fuzzySearch('Giuseppe from Rome', ['fullInfo'], 0.3);
 
-      expect(results.length).toBeGreaterThan(0);
-      expect(results[0].item.name).toBe('Giuseppe');
-      expect(results[0].item.city).toBe('Rome');
+      expect(results.map((result) => result.item)).toEqual([
+        {
+          ID: 'USER_001',
+          name: 'Giuseppe',
+          email: 'giuseppe@example.com',
+          city: 'Rome',
+          fullInfo: 'Giuseppe from Rome'
+        }
+      ]);
     });
 
     it('should return empty array when no matches found', () => {
@@ -1587,7 +1590,8 @@ describe('TableService - Comprehensive Test Suite', () => {
         includeMatches: true
       });
 
-      expect(results.length).toBeGreaterThan(0);
+      expect(results).toHaveLength(1);
+      expect(results[0].item.name).toBe('Francesco');
       // When includeMatches is true, Fuse.js includes match details
       expect(results[0]).toHaveProperty('matches');
     });
