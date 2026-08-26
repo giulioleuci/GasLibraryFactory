@@ -40,7 +40,12 @@ describe('AdvancedQueryBuilder - Comprehensive Test Suite', () => {
     it('should create instance with database reference', () => {
       const qb = new AdvancedQueryBuilder(mockDatabase);
 
-      expect(qb).toBeDefined();
+      expect(qb).toMatchObject({
+        dbService: mockDatabase,
+        selectedColumns: ['*'],
+        tableName: null,
+        conditions: []
+      });
     });
 
     it('should initialize with empty query state', () => {
@@ -217,7 +222,7 @@ describe('AdvancedQueryBuilder - Comprehensive Test Suite', () => {
         .orWhere('name', '=', 'Bob')
         .execute();
 
-      expect(results.length).toBeGreaterThan(0);
+      expect(results).toEqual([{ name: 'Alice' }, { name: 'Bob' }, { name: 'David' }]);
     });
   });
 
@@ -306,7 +311,20 @@ describe('AdvancedQueryBuilder - Comprehensive Test Suite', () => {
       expect(rows.map((row) => row.name)).toEqual(['Alice']);
       expect(fuzzySearchRows).toHaveBeenCalledTimes(1);
       expect(fuzzySearchRows).toHaveBeenCalledWith(
-        [{ row: expect.any(Object), value: 'Alice' }, { row: expect.any(Object), value: 'Bob' }, { row: expect.any(Object), value: 'David' }],
+        [
+          {
+            row: { 'Users.ID': '1', 'Users.name': 'Alice', 'Users.age': 30, 'Users.status': 'active' },
+            value: 'Alice'
+          },
+          {
+            row: { 'Users.ID': '2', 'Users.name': 'Bob', 'Users.age': 25, 'Users.status': 'active' },
+            value: 'Bob'
+          },
+          {
+            row: { 'Users.ID': '4', 'Users.name': 'David', 'Users.age': 28, 'Users.status': 'active' },
+            value: 'David'
+          }
+        ],
         'alce',
         ['value'],
         0.4
@@ -536,8 +554,7 @@ describe('AdvancedQueryBuilder - Comprehensive Test Suite', () => {
     it('should return first result', () => {
       const result = queryBuilder.select(['name']).from('Users').orderBy('name', 'ASC').first();
 
-      expect(result).toBeDefined();
-      expect(result.name).toBe('Alice');
+      expect(result).toEqual({ name: 'Alice' });
     });
 
     it('should return null if no results', () => {
@@ -1222,9 +1239,11 @@ describe('AdvancedQueryBuilder - Comprehensive Test Suite', () => {
         .where({ status: 'active' })
         .execute();
 
-      expect(results.length).toBeGreaterThan(0);
-      // All results should have name property
-      expect(results.every((r) => r.name)).toBe(true);
+      expect(results).toEqual([
+        { name: 'Alice', status: 'active' },
+        { name: 'Bob', status: 'active' },
+        { name: 'David', status: 'active' }
+      ]);
     });
 
     it('should support whereIn with validation', () => {
@@ -1297,7 +1316,7 @@ describe('AdvancedQueryBuilder - Comprehensive Test Suite', () => {
     it('should support or() alias for orWhere()', () => {
       const results = queryBuilder.from('Users').where('age', '<', 26).or('age', '>', 34).execute();
 
-      expect(results.length).toBeGreaterThan(0);
+      expect(results.map(({ name }) => name)).toEqual(['Bob', 'Charlie']);
     });
 
     it('should support get() alias for execute()', () => {
