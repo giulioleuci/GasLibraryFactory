@@ -312,7 +312,10 @@ describe('Integration Test 3: Specification-Query Translation', () => {
       const results = repository.find(spec);
 
       // Assert: Verify correct entities are returned
-      expect(results.length).toBeGreaterThan(0);
+      expect(results.map(({ id, price }) => ({ id, price }))).toEqual([
+        { id: 'prod_2', price: 25 },
+        { id: 'prod_4', price: 30 }
+      ]);
       expect(results.every((p) => p.price > 18)).toBe(true);
       expect(results).toContainEqual(expect.objectContaining({ name: 'Widget B' })); // price 25
       expect(results).toContainEqual(expect.objectContaining({ name: 'Tool D' })); // price 30
