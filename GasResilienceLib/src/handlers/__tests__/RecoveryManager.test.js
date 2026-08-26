@@ -32,7 +32,7 @@ describe('RecoveryManager - Comprehensive Test Suite', () => {
     it('should create instance with valid utils', () => {
       const manager = new RecoveryManager(utils);
 
-      expect(manager).toBeDefined();
+      expect(manager).toBeInstanceOf(RecoveryManager);
       expect(manager._utils).toBe(utils);
     });
 
@@ -77,24 +77,39 @@ describe('RecoveryManager - Comprehensive Test Suite', () => {
     });
 
     it('should accept null or undefined config', () => {
-      expect(() => {
-        new RecoveryManager(utils, null);
-      }).not.toThrow();
+      expect(new RecoveryManager(utils, null)).toBeInstanceOf(RecoveryManager);
 
-      expect(() => {
-        new RecoveryManager(utils, undefined);
-      }).not.toThrow();
+      expect(new RecoveryManager(utils, undefined)).toBeInstanceOf(RecoveryManager);
     });
 
     it('should initialize default strategies', () => {
       const manager = new RecoveryManager(utils);
 
-      expect(manager._strategies.DEFAULT).toBeDefined();
-      expect(manager._strategies.FATAL).toBeDefined();
-      expect(manager._strategies.QUOTA).toBeDefined();
-      expect(manager._strategies.SERVICE).toBeDefined();
-      expect(manager._strategies.NETWORK).toBeDefined();
-      expect(manager._strategies.PERMISSIONS).toBeDefined();
+      expect(manager._strategies.DEFAULT).toEqual({
+        action: 'RETRY_BACKOFF',
+        maxAttempts: 3,
+        interval: 2000
+      });
+      expect(manager._strategies.FATAL).toEqual({ action: 'NOTIFY_ADMIN', maxAttempts: 1 });
+      expect(manager._strategies.QUOTA).toEqual({
+        action: 'RETRY_BACKOFF_LONG',
+        maxAttempts: 3,
+        interval: 60000
+      });
+      expect(manager._strategies.SERVICE).toEqual({
+        action: 'RETRY_BACKOFF',
+        maxAttempts: 5,
+        interval: 5000
+      });
+      expect(manager._strategies.NETWORK).toEqual({
+        action: 'RETRY_IMMEDIATE',
+        maxAttempts: 3,
+        interval: 2000
+      });
+      expect(manager._strategies.PERMISSIONS).toEqual({
+        action: 'NOTIFY_ADMIN',
+        maxAttempts: 1
+      });
     });
 
     it('should use custom strategies from configuration', () => {
@@ -110,7 +125,11 @@ describe('RecoveryManager - Comprehensive Test Suite', () => {
 
       const manager = new RecoveryManager(utils, config);
 
-      expect(manager._strategies.CUSTOM_CATEGORY).toBeDefined();
+      expect(manager._strategies.CUSTOM_CATEGORY).toEqual({
+        action: 'RETRY_BACKOFF',
+        maxAttempts: 10,
+        interval: 3000
+      });
       expect(manager._strategies.CUSTOM_CATEGORY.maxAttempts).toBe(10);
       expect(manager._strategies.CUSTOM_CATEGORY.interval).toBe(3000);
     });
@@ -213,11 +232,13 @@ describe('RecoveryManager - Comprehensive Test Suite', () => {
         recoverable: true
       };
 
+      const random = jest.spyOn(Math, 'random').mockReturnValue(0.25);
       const result = manager.applyStrategy(classification, 1, 'RECOVERY');
+      random.mockRestore();
 
       expect(result).toBe(true);
       expect(utils.sleep).toHaveBeenCalledTimes(1);
-      expect(utils.sleep).toHaveBeenCalledWith(expect.any(Number));
+      expect(utils.sleep).toHaveBeenCalledWith(5250);
     });
 
     it('should return false for non-recoverable errors', () => {
