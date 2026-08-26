@@ -189,8 +189,10 @@ describe('SpecificationBuilder - Comprehensive Test Suite', () => {
         .greaterThan(80)
         .build();
 
-      // Due to operator precedence, this might need grouping
-      expect(spec).toBeDefined();
+      expect(spec.toString()).toBe(
+        '((age greaterThan 25 AND status equals inactive) OR score greaterThan 80)'
+      );
+      expect(spec.isSatisfiedBy(testObject)).toBe(true);
     });
 
     it('should handle mixed AND/OR operators', () => {
@@ -207,7 +209,10 @@ describe('SpecificationBuilder - Comprehensive Test Suite', () => {
         .like('%@example.com')
         .build();
 
-      expect(spec).toBeDefined();
+      expect(spec.toString()).toBe(
+        '(((age greaterThan 20 AND status equals active) OR score greaterThan 90) AND email like %@example.com)'
+      );
+      expect(spec.isSatisfiedBy(testObject)).toBe(true);
     });
   });
 
@@ -221,7 +226,7 @@ describe('SpecificationBuilder - Comprehensive Test Suite', () => {
     it('should create field builder with field()', () => {
       const builder = SpecificationBuilder.field('age');
 
-      expect(builder).toBeDefined();
+      expect(builder.constructor.name).toBe('FieldSpecificationBuilder');
       expect(typeof builder.equals).toBe('function');
     });
   });
@@ -230,7 +235,7 @@ describe('SpecificationBuilder - Comprehensive Test Suite', () => {
     it('should support method chaining', () => {
       const builder = SpecificationBuilder.field('age').greaterThan(25);
 
-      expect(builder).toBeDefined();
+      expect(builder).toBeInstanceOf(SpecificationBuilder);
       expect(typeof builder.build).toBe('function');
     });
 
@@ -257,13 +262,13 @@ describe('SpecificationBuilder - Comprehensive Test Suite', () => {
     it('should handle empty field name', () => {
       const spec = SpecificationBuilder.field('').equals('value').build();
 
-      expect(spec).toBeDefined();
+      expect(spec.toQueryObject()).toEqual({ '': 'value' });
     });
 
     it('should handle null values', () => {
       const spec = SpecificationBuilder.field('missing').equals(null).build();
 
-      expect(spec).toBeDefined();
+      expect(spec.toQueryObject()).toEqual({ missing: null });
     });
   });
 
