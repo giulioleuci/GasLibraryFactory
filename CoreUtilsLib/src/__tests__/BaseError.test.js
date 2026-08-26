@@ -20,7 +20,9 @@ describe('BaseError - Comprehensive Test Suite', () => {
   describe('BaseError', () => {
     describe('Constructor', () => {
       it('should create error with message only', () => {
+        jest.useFakeTimers().setSystemTime(new Date('2026-08-27T10:00:00.000Z'));
         const error = new BaseError('Something went wrong');
+        jest.useRealTimers();
 
         expect(error).toBeInstanceOf(Error);
         expect(error).toBeInstanceOf(BaseError);
@@ -28,7 +30,7 @@ describe('BaseError - Comprehensive Test Suite', () => {
         expect(error.name).toBe('BaseError');
         expect(error.context).toEqual({});
         expect(error.originalError).toBeNull();
-        expect(error.timestamp).toBeDefined();
+        expect(error.timestamp).toBe('2026-08-27T10:00:00.000Z');
       });
 
       it('should create error with message and context', () => {
@@ -66,8 +68,7 @@ describe('BaseError - Comprehensive Test Suite', () => {
 
       it('should have stack trace', () => {
         const error = new BaseError('Test');
-        expect(error.stack).toBeDefined();
-        expect(typeof error.stack).toBe('string');
+        expect(error.stack).toMatch(/^BaseError: Test\n/);
       });
     });
 
@@ -119,10 +120,11 @@ describe('BaseError - Comprehensive Test Suite', () => {
         const error = new BaseError('Wrapped', {}, originalError);
         const json = error.toJSON();
 
-        expect(json.originalError).toBeDefined();
-        expect(json.originalError.name).toBe('Error');
-        expect(json.originalError.message).toBe('Original error');
-        expect(json.originalError.stack).toBe(originalError.stack);
+        expect(json.originalError).toEqual({
+          name: 'Error',
+          message: 'Original error',
+          stack: originalError.stack
+        });
       });
 
       it('should be JSON serializable', () => {
