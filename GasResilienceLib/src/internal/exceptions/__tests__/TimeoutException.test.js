@@ -60,9 +60,9 @@ describe('TimeoutException - Comprehensive Test Suite', () => {
     it('should have stack trace', () => {
       const exception = new TimeoutException('Test');
 
-      expect(exception.stack).toBeDefined();
+      expect(exception.stack).toMatch(/^TimeoutException: Test\n/);
       expect(typeof exception.stack).toBe('string');
-      expect(exception.stack.length).toBeGreaterThan(0);
+      expect(exception.stack.split('\n')[0]).toBe('TimeoutException: Test');
     });
 
     it('should include TimeoutException in stack trace', () => {
