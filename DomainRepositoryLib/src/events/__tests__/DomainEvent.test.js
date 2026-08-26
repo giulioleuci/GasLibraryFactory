@@ -22,7 +22,9 @@ describe('DomainEvent - Comprehensive Test Suite', () => {
     it('should generate timestamp', () => {
       const event = new DomainEvent('TestEvent', {});
 
-      expect(event.occurredAt).toBeDefined();
+      expect(event.occurredAt.toISOString()).toMatch(
+        /^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}\.\d{3}Z$/
+      );
       expect(event.occurredAt).toBeInstanceOf(Date);
     });
 
@@ -136,7 +138,7 @@ describe('DomainEvent - Comprehensive Test Suite', () => {
       const json = JSON.stringify(event);
       const parsed = JSON.parse(json);
 
-      expect(parsed.occurredAt).toBeDefined();
+      expect(parsed.occurredAt).toBe(event.occurredAt.toISOString());
     });
   });
 
