@@ -193,8 +193,8 @@ describe('UiService - Comprehensive Test Suite', () => {
       const result = service.prompt('Title', 'Message');
 
       expect(mockUi.prompt).toHaveBeenCalledWith('Title', 'Message', undefined);
-      expect(result.getSelectedButton).toBeDefined();
-      expect(result.getResponseText).toBeDefined();
+      expect(result.getSelectedButton()).toBe('OK');
+      expect(result.getResponseText()).toBe('test response');
     });
 
     it('should show prompt with custom button set', () => {
