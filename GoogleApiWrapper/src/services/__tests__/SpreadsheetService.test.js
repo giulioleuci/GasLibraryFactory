@@ -1427,11 +1427,33 @@ describe('SpreadsheetService - Comprehensive Test Suite', () => {
       expect(() => service.protectRanges('sheet123', protectionRequests)).toThrow(apiError);
 
       expect(mockSheets.Spreadsheets.batchUpdate).toHaveBeenCalledTimes(1);
-      expect(
-        mockSheets.Spreadsheets.batchUpdate.mock.calls[0][0].requests.map(Object.keys)
-      ).toEqual([['addProtectedRange'], ['addProtectedRange']]);
-      expect(mockSheets.Spreadsheets.batchUpdate.mock.calls[0][1]).toBe('sheet123');
-      expect(mockSheets.Spreadsheets.batchUpdate.mock.calls[0][0].requests).toHaveLength(2);
+      expect(mockSheets.Spreadsheets.batchUpdate).toHaveBeenCalledWith(
+        {
+          requests: [
+            {
+              addProtectedRange: {
+                protectedRange: {
+                  range: { sheetId: 0, startColumnIndex: 0, endColumnIndex: 1 },
+                  description: 'Column A',
+                  warningOnly: false,
+                  requestingUserCanEdit: true
+                }
+              }
+            },
+            {
+              addProtectedRange: {
+                protectedRange: {
+                  range: { sheetId: 0, startColumnIndex: 1, endColumnIndex: 2 },
+                  description: 'Column B',
+                  warningOnly: false,
+                  requestingUserCanEdit: true
+                }
+              }
+            }
+          ]
+        },
+        'sheet123'
+      );
     });
 
     it('continues protecting later ranges and reports failures in best-effort mode', () => {
