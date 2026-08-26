@@ -30,6 +30,7 @@ export class CircuitBreaker {
     this._monitoringPeriod = config.monitoringPeriod || 120000; // 2 minutes
     this._logger = logger;
     this._cache = cache; // Store cache for persistence
+    this._memoryStates = new Map();
 
     // Validate configuration values
     if (this._failureThreshold < 1) {
@@ -66,9 +67,8 @@ export class CircuitBreaker {
    * @returns {Object} circuit state metadata.
    */
   _loadState(operationName) {
-    // If no cache available, return default state
     if (!this._cache) {
-      return {
+      return this._memoryStates.get(operationName) || {
         state: CircuitBreaker.STATE.CLOSED,
         failures: [],
         consecutiveSuccesses: 0,
@@ -107,8 +107,8 @@ export class CircuitBreaker {
    * @param {Object} state Serialized circuit metadata.
    */
   _saveState(operationName, state) {
-    // If no cache available, skip persistence
     if (!this._cache) {
+      this._memoryStates.set(operationName, state);
       return;
     }
 

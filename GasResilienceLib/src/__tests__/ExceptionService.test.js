@@ -559,7 +559,7 @@ describe('ExceptionService - Comprehensive Test Suite', () => {
     });
 
     // NEW: Circuit breaker tests
-    it('should not retain circuit state when no cache is configured', () => {
+    it('should block the next request after a threshold-1 failure without cache', () => {
       const serviceWithCB = new ExceptionService(logger, utils, {
         circuitBreakerConfig: {
           failureThreshold: 1,
@@ -567,26 +567,19 @@ describe('ExceptionService - Comprehensive Test Suite', () => {
         }
       });
 
-      // Cause circuit to open by failing multiple times
       const failingFn = jest.fn(() => {
         throw new Error('Failure');
       });
 
-      // Try multiple times to trip the circuit
-      try {
-        serviceWithCB.executeWithAdvancedHandling(
-          failingFn,
-          {},
-          {
-            operationName: 'TestOp',
-            maxAttempts: 1
-          }
-        );
-      } catch (e) {
-        // Expected to fail
-      }
+      serviceWithCB.executeWithAdvancedHandling(
+        failingFn,
+        {},
+        {
+          operationName: 'TestOp',
+          maxAttempts: 1
+        }
+      );
 
-      // If circuit breaker is enabled and OPEN, next request might be blocked
       const blockedFn = jest.fn(() => 'success');
       const result = serviceWithCB.executeWithAdvancedHandling(
         blockedFn,
@@ -597,14 +590,19 @@ describe('ExceptionService - Comprehensive Test Suite', () => {
       );
 
       expect(result).toEqual({
-        success: true,
-        result: 'success',
-        attempts: 1,
-        recovered: false,
+        success: false,
+        result: null,
+        attempts: 0,
         correlationId: expect.stringMatching(/^[A-Za-z0-9_-]{21}$/),
-        error: null
+        error: {
+          message: 'Circuit breaker is OPEN - operation blocked',
+          type: 'CIRCUIT_OPEN',
+          category: 'CIRCUIT_BREAKER',
+          recoverable: false,
+          originalMessage: 'Circuit breaker is OPEN'
+        }
       });
-      expect(result.success).toBe(true);
+      expect(blockedFn).not.toHaveBeenCalled();
     });
 
     it('should record success in circuit breaker on successful execution', () => {

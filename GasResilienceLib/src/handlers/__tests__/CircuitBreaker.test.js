@@ -923,13 +923,20 @@ describe('CircuitBreaker - Comprehensive Test Suite', () => {
       expect(breaker.getState('api3').failureCount).toBe(1);
     });
 
-    it('should work without cache (no persistence)', () => {
+    it('should retain state per instance without cache', () => {
       const noCacheBreaker = new CircuitBreaker({}, logger, null);
 
       noCacheBreaker.recordFailure('testOp');
       noCacheBreaker.recordSuccess('testOp');
 
       expect(noCacheBreaker.getState('testOp')).toEqual({
+        state: 'CLOSED',
+        failureCount: 1,
+        consecutiveSuccesses: 0,
+        lastFailureTime: 1700000000000,
+        nextAttemptTime: null
+      });
+      expect(new CircuitBreaker({}, logger, null).getState('testOp')).toEqual({
         state: 'CLOSED',
         failureCount: 0,
         consecutiveSuccesses: 0,
