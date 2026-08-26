@@ -43,7 +43,7 @@ describe('ExpressionParserService - JSEP Integration', () => {
     });
 
     it('should create instance with valid logger', () => {
-      expect(parser).toBeDefined();
+      expect(parser).toBeInstanceOf(ExpressionParserService);
       expect(parser.logger).toBe(logger);
       expect(parser.MAX_INPUT_LENGTH).toBe(10000);
     });
@@ -296,7 +296,7 @@ describe('ExpressionParserService - JSEP Integration', () => {
   describe('DI Configuration', () => {
     it('should have DI configuration', () => {
       const di = ExpressionParserService.di;
-      expect(di).toBeDefined();
+      expect(Object.keys(di).sort()).toEqual(['dependencies', 'factory', 'isSingleton', 'name']);
       expect(di.name).toBe('expressionParserService');
       expect(di.dependencies).toEqual(['logger']);
       expect(di.isSingleton).toBe(true);

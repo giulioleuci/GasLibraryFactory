@@ -231,9 +231,7 @@ describe('ErrorHelper - Comprehensive Test Suite', () => {
     it('should preserve stack traces', () => {
       const error = ErrorHelper.create('Component', 'Test error');
 
-      expect(error.stack).toBeDefined();
-      expect(typeof error.stack).toBe('string');
-      expect(error.stack).toContain('Component');
+      expect(error.stack).toEqual(expect.stringContaining('Component'));
     });
 
     it('should be usable in try-catch blocks', () => {
