@@ -32,7 +32,11 @@ describe('ServiceFactory', () => {
 
   describe('Configuration', () => {
     it('should have default configuration', () => {
-      expect(ServiceFactory._config).toBeDefined();
+      expect(ServiceFactory._config).toMatchObject({
+        logLevel: 'INFO',
+        cacheExpiration: 300,
+        mailRateLimitMs: 100
+      });
       expect(ServiceFactory._config.logLevel).toBe('INFO');
       expect(ServiceFactory._config.cacheExpiration).toBe(300);
       expect(ServiceFactory._config.mailRateLimitMs).toBe(100);
@@ -70,7 +74,6 @@ describe('ServiceFactory', () => {
       const logger = ServiceFactory.getLogger();
 
       expect(ServiceFactory._logger).not.toBeNull();
-      expect(logger).toBeDefined();
       expect(logger.constructor.name).toBe('LoggerService');
     });
 
@@ -85,7 +88,6 @@ describe('ServiceFactory', () => {
       const utils = ServiceFactory.getUtils();
 
       expect(ServiceFactory._utils).not.toBeNull();
-      expect(utils).toBeDefined();
       // UtilsService is exported as alias of MyUtilsService
       expect(utils.constructor.name).toBe('MyUtilsService');
     });
@@ -94,14 +96,14 @@ describe('ServiceFactory', () => {
       const cache = ServiceFactory.getCache();
 
       expect(ServiceFactory._cache).not.toBeNull();
-      expect(cache).toBeDefined();
+      expect(typeof cache.get).toBe('function');
+      expect(typeof cache.put).toBe('function');
     });
 
     it('should create exception service with dependencies', () => {
       const exceptionService = ServiceFactory.getExceptionService();
 
       expect(ServiceFactory._exceptionService).not.toBeNull();
-      expect(exceptionService).toBeDefined();
       expect(exceptionService.constructor.name).toBe('ExceptionService');
     });
   });
@@ -109,19 +111,16 @@ describe('ServiceFactory', () => {
   describe('Service Creation', () => {
     it('should create DriveService', () => {
       const service = ServiceFactory.getDriveService();
-      expect(service).toBeDefined();
       expect(service.constructor.name).toBe('DriveService');
     });
 
     it('should create DocumentService', () => {
       const service = ServiceFactory.getDocumentService();
-      expect(service).toBeDefined();
       expect(service.constructor.name).toBe('DocumentService');
     });
 
     it('should create SpreadsheetService', () => {
       const service = ServiceFactory.getSpreadsheetService();
-      expect(service).toBeDefined();
       expect(service.constructor.name).toBe('SpreadsheetService');
     });
 
@@ -129,7 +128,6 @@ describe('ServiceFactory', () => {
       // Reset to ensure fresh state
       ServiceFactory.reset();
       const service = ServiceFactory.getMailService();
-      expect(service).toBeDefined();
       expect(service.constructor.name).toBe('MailService');
       expect(service._rateLimitMs).toBe(100);
     });
@@ -138,26 +136,22 @@ describe('ServiceFactory', () => {
       // Reset to ensure fresh state
       ServiceFactory.reset();
       const service = ServiceFactory.getMailService({ rateLimitMs: 200 });
-      expect(service).toBeDefined();
       expect(service.constructor.name).toBe('MailService');
       expect(service._rateLimitMs).toBe(200);
     });
 
     it('should create PermissionService', () => {
       const service = ServiceFactory.getPermissionService();
-      expect(service).toBeDefined();
       expect(service.constructor.name).toBe('PermissionService');
     });
 
     it('should create PropertiesService', () => {
       const service = ServiceFactory.getPropertiesService();
-      expect(service).toBeDefined();
       expect(service.constructor.name).toBe('PropertiesService');
     });
 
     it('should create TriggerService', () => {
       const service = ServiceFactory.getTriggerService();
-      expect(service).toBeDefined();
       expect(service.constructor.name).toBe('TriggerService');
     });
 
@@ -235,9 +229,11 @@ describe('ServiceFactory', () => {
       const sheets = ServiceFactory.getSpreadsheetService();
 
       // All services should be created
-      expect(drive).toBeDefined();
-      expect(docs).toBeDefined();
-      expect(sheets).toBeDefined();
+      expect([drive.constructor.name, docs.constructor.name, sheets.constructor.name]).toEqual([
+        'DriveService',
+        'DocumentService',
+        'SpreadsheetService'
+      ]);
 
       // Shared dependencies should be the same instance
       const logger = ServiceFactory.getLogger();
