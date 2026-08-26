@@ -397,7 +397,7 @@ describe('OperatorHandler - Direct Unit Tests', () => {
       const a = new Date(2020, 0, 1);
       const b = new Date(2021, 0, 1);
       expect(handler._compare(a, b)).toBeLessThan(0);
-      expect(handler._compare(b, a)).toBeGreaterThan(0);
+      expect(Math.sign(handler._compare(b, a))).toBe(1);
       expect(handler._compare(a, new Date(2020, 0, 1))).toBe(0);
     });
 
@@ -413,13 +413,13 @@ describe('OperatorHandler - Direct Unit Tests', () => {
 
     it('compares numbers', () => {
       expect(handler._compare(1, 2)).toBeLessThan(0);
-      expect(handler._compare(2, 1)).toBeGreaterThan(0);
+      expect(handler._compare(2, 1)).toBe(1);
       expect(handler._compare(2, 2)).toBe(0);
     });
 
     it('compares strings via localeCompare', () => {
       expect(handler._compare('a', 'b')).toBeLessThan(0);
-      expect(handler._compare('b', 'a')).toBeGreaterThan(0);
+      expect(Math.sign(handler._compare('b', 'a'))).toBe(1);
       expect(handler._compare('a', 'a')).toBe(0);
     });
 
