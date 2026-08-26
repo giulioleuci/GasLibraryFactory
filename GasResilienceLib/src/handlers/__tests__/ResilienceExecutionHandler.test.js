@@ -66,7 +66,7 @@ describe('ResilienceExecutionHandler - Direct Unit Tests', () => {
     it('generates a non-empty string id', () => {
       const id = handler._generateCorrelationId();
       expect(typeof id).toBe('string');
-      expect(id.length).toBeGreaterThan(0);
+      expect(id).toMatch(/^[A-Za-z0-9_-]{21}$/);
     });
 
     it('generates distinct ids across calls', () => {
@@ -138,7 +138,7 @@ describe('ResilienceExecutionHandler - Direct Unit Tests', () => {
         result: 'result-value',
         attempts: 1,
         recovered: false,
-        correlationId: expect.any(String),
+        correlationId: expect.stringMatching(/^[A-Za-z0-9_-]{21}$/),
         error: null
       });
       expect(func).toHaveBeenCalledWith({ x: 1 });
@@ -150,8 +150,8 @@ describe('ResilienceExecutionHandler - Direct Unit Tests', () => {
 
     it('generates a correlationId when not provided', () => {
       const result = handler.executeWithAdvancedHandling(() => 'ok');
-      expect(result.correlationId).toEqual(expect.any(String));
-      expect(result.correlationId.length).toBeGreaterThan(0);
+      expect(result.correlationId).toMatch(/^[A-Za-z0-9_-]{21}$/);
+      expect(result.correlationId).toHaveLength(21);
     });
 
     it('uses the provided correlationId', () => {
@@ -212,7 +212,7 @@ describe('ResilienceExecutionHandler - Direct Unit Tests', () => {
         success: false,
         result: null,
         attempts: 0,
-        correlationId: expect.any(String),
+        correlationId: expect.stringMatching(/^[A-Za-z0-9_-]{21}$/),
         error: {
           message: 'Circuit breaker is OPEN - operation blocked',
           type: 'CIRCUIT_OPEN',
@@ -371,10 +371,11 @@ describe('ResilienceExecutionHandler - Direct Unit Tests', () => {
         result: 'delegated-value'
       }));
 
-      const value = handler.executeWithRetry(() => {}, {}, 3);
+      const operation = () => {};
+      const value = handler.executeWithRetry(operation, {}, 3);
 
       expect(facade.executeWithAdvancedHandling).toHaveBeenCalledWith(
-        expect.any(Function),
+        operation,
         {},
         { mode: 'RECOVERY', maxAttempts: 3 }
       );
@@ -406,9 +407,10 @@ describe('ResilienceExecutionHandler - Direct Unit Tests', () => {
 
     it('defaults parameters to {} and defaultValue to null when omitted', () => {
       facade.executeWithAdvancedHandling = jest.fn(() => ({ success: true, result: 'val' }));
-      const value = handler.executeWithBypass(() => {});
+      const operation = () => {};
+      const value = handler.executeWithBypass(operation);
       expect(facade.executeWithAdvancedHandling).toHaveBeenCalledWith(
-        expect.any(Function),
+        operation,
         {},
         { mode: 'LENIENT' }
       );
