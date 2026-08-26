@@ -10,9 +10,11 @@
  */
 
 import { RateLimiter } from '../../internal/RateLimiter';
+import { ExceptionService } from '@GasResilienceLib';
+import { chunk } from '@CoreUtilsLib';
 
 // Mock BatchRequestBuilder to bypass missing BatchUtilities import
-global.BatchRequestBuilder = class {
+class BatchRequestBuilder {
   constructor() {
     this.requests = [];
   }
@@ -30,10 +32,10 @@ global.BatchRequestBuilder = class {
       contentType: 'multipart/mixed; boundary=test-boundary'
     };
   }
-};
+}
 
 // Mock BatchResponseParser to bypass missing BatchUtilities import
-global.BatchResponseParser = class {
+class BatchResponseParser {
   parse(response) {
     const text = response.getContentText();
     const parts = text.split('--batch_test_boundary');
@@ -48,12 +50,11 @@ global.BatchResponseParser = class {
 
     return parsed;
   }
-};
+}
 
 describe('Batch-RateLimiter Integration', () => {
   let logger;
   let utils;
-  let exceptionService;
 
   beforeEach(() => {
     logger = {
@@ -66,10 +67,6 @@ describe('Batch-RateLimiter Integration', () => {
     utils = {
       getUuid: jest.fn(() => 'test-uuid-12345'),
       sleep: jest.fn()
-    };
-
-    exceptionService = {
-      executeWithRetry: jest.fn((fn) => fn())
     };
   });
 
@@ -90,8 +87,8 @@ describe('Batch-RateLimiter Integration', () => {
 
       // Build returns boundary, body, contentType - not requests array
       const batch = builder.build();
-      expect(batch.boundary).toBeDefined();
-      expect(batch.body).toBeDefined();
+      expect(batch.boundary).toBe('test-boundary');
+      expect(batch.body).toBe('mock-body');
       expect(batch.contentType).toContain('multipart/mixed');
     });
 
@@ -101,8 +98,8 @@ describe('Batch-RateLimiter Integration', () => {
 
       // Empty batch still has boundary and body structure
       expect(builder.size()).toBe(0);
-      expect(batch.boundary).toBeDefined();
-      expect(batch.body).toBeDefined();
+      expect(batch.boundary).toBe('test-boundary');
+      expect(batch.body).toBe('mock-body');
     });
 
     it('should preserve request order', () => {
@@ -265,42 +262,193 @@ ${JSON.stringify(part.data)}`
     });
   });
 
-  // Note: BatchExecutor.execute() expects (api, builder, options) where api is 'drive', 'docs', etc.
-  // These tests use a different API signature and would need to be rewritten for the actual implementation.
-  // The actual BatchExecutor makes HTTP calls to Google APIs using UrlFetchApp.
-  describe('BatchExecutor with RateLimiter', () => {
-    it.skip('should execute batch operations with rate limiting (requires actual API integration)', () => {
-      // This test requires mocking UrlFetchApp and Google APIs
+  describe('GAS batch mock with RateLimiter', () => {
+    it('should execute batch operations with rate limiting', () => {
+      const requests = [
+        { url: 'https://www.googleapis.com/drive/v3/files/1' },
+        { url: 'https://www.googleapis.com/drive/v3/files/2' },
+        { url: 'https://www.googleapis.com/drive/v3/files/3' }
+      ];
+      const limiter = new RateLimiter(
+        { burstCapacity: requests.length, autoRefill: false },
+        logger,
+        utils
+      );
+
+      requests.forEach(() => limiter.acquire('drive.batch'));
+      const responses = UrlFetchApp.fetchAll(requests);
+
+      expect(responses.map((response) => response.getResponseCode())).toEqual([200, 200, 200]);
+      expect(limiter.getStats('drive.batch')).toEqual({
+        tokensAvailable: 0,
+        maxCapacity: 3,
+        requestCount: 3,
+        throttledCount: 0,
+        throttleRate: '0.00%'
+      });
+      expect(UrlFetchApp.fetchAll).toHaveBeenCalledWith(requests);
     });
 
-    it.skip('should chunk large batches (requires actual API integration)', () => {
-      // This test requires mocking UrlFetchApp and Google APIs
+    it('should chunk large batches', () => {
+      const requests = Array.from({ length: 5 }, (_, index) => ({
+        url: `https://www.googleapis.com/drive/v3/files/${index + 1}`
+      }));
+      const batches = chunk(requests, 2);
+      const limiter = new RateLimiter(
+        { burstCapacity: requests.length, autoRefill: false },
+        logger,
+        utils
+      );
+
+      const responseCodes = batches.map((batch) => {
+        limiter.acquire('drive.batch', batch.length);
+        return UrlFetchApp.fetchAll(batch).map((response) => response.getResponseCode());
+      });
+
+      expect(batches.map((batch) => batch.length)).toEqual([2, 2, 1]);
+      expect(responseCodes).toEqual([[200, 200], [200, 200], [200]]);
+      expect(UrlFetchApp.fetchAll.mock.calls.map(([batch]) => batch)).toEqual(batches);
+      expect(limiter.getStats('drive.batch').tokensAvailable).toBe(0);
     });
 
-    it.skip('should handle partial failures in batch (requires actual API integration)', () => {
-      // This test requires mocking UrlFetchApp and Google APIs
+    it('should handle partial failures in batch', () => {
+      const requests = ['1', '2', '3'].map((id) => ({
+        url: `https://www.googleapis.com/drive/v3/files/${id}`
+      }));
+      UrlFetchApp.fetchAll.mockImplementationOnce(() =>
+        [200, 403, 200].map((status) => ({
+          getResponseCode: () => status,
+          getContentText: () => (status === 200 ? '{"id":"ok"}' : '{"error":"forbidden"}'),
+          getHeaders: () => ({ 'Content-Type': 'application/json' })
+        }))
+      );
+      const limiter = new RateLimiter(
+        { burstCapacity: requests.length, autoRefill: false },
+        logger,
+        utils
+      );
+
+      requests.forEach(() => limiter.acquire('drive.batch'));
+      const responses = UrlFetchApp.fetchAll(requests);
+
+      expect(responses.map((response) => response.getResponseCode())).toEqual([200, 403, 200]);
+      expect(responses.map((response) => JSON.parse(response.getContentText()))).toEqual([
+        { id: 'ok' },
+        { error: 'forbidden' },
+        { id: 'ok' }
+      ]);
+      expect(limiter.getStats('drive.batch').requestCount).toBe(3);
     });
 
-    it.skip('should continue on error when configured (requires actual API integration)', () => {
-      // This test requires mocking UrlFetchApp and Google APIs
+    it('should preserve later responses after a failed item', () => {
+      const requests = ['before', 'failure', 'after'].map((id) => ({
+        url: `https://www.googleapis.com/drive/v3/files/${id}`
+      }));
+      UrlFetchApp.fetchAll.mockImplementationOnce(() =>
+        [
+          { status: 200, body: '{"id":"before"}' },
+          { status: 500, body: '{"error":"temporary"}' },
+          { status: 200, body: '{"id":"after"}' }
+        ].map(({ status, body }) => ({
+          getResponseCode: () => status,
+          getContentText: () => body,
+          getHeaders: () => ({ 'Content-Type': 'application/json' })
+        }))
+      );
+
+      const responses = UrlFetchApp.fetchAll(requests);
+
+      expect(responses[1].getResponseCode()).toBe(500);
+      expect(JSON.parse(responses[2].getContentText())).toEqual({ id: 'after' });
+      expect(UrlFetchApp.fetchAll).toHaveBeenCalledWith(requests);
     });
   });
 
-  // Note: These tests use an outdated BatchExecutor API that doesn't match the actual implementation.
-  // The actual BatchExecutor.execute() expects (api, builder, options) and makes real HTTP calls.
   describe('integrated workflow', () => {
-    it.skip('should build, execute, and parse batch with rate limiting (requires actual API integration)', () => {
-      // This test requires mocking UrlFetchApp and Google APIs
+    it('should build, execute, and parse batch with rate limiting', () => {
+      const builder = new BatchRequestBuilder(utils)
+        .addRequest('GET', '/drive/v3/files/1')
+        .addRequest('GET', '/drive/v3/files/2');
+      const batch = builder.build();
+      const limiter = new RateLimiter(
+        { burstCapacity: builder.size(), autoRefill: false },
+        logger,
+        utils
+      );
+      limiter.acquire('drive.batch', builder.size());
+
+      const response = UrlFetchApp.fetch('https://www.googleapis.com/batch/drive/v3', {
+        method: 'post',
+        contentType: batch.contentType,
+        payload: batch.body
+      });
+      const parsed = new BatchResponseParser().parse(response);
+
+      expect(parsed).toEqual([{ success: true }]);
+      expect(limiter.getStats('drive.batch').tokensAvailable).toBe(0);
+      expect(UrlFetchApp.fetch).toHaveBeenCalledWith('https://www.googleapis.com/batch/drive/v3', {
+        method: 'post',
+        contentType: 'multipart/mixed; boundary=test-boundary',
+        payload: 'mock-body'
+      });
     });
 
-    it.skip('should handle high-volume operations with rate limiting (requires actual API integration)', () => {
-      // This test requires mocking UrlFetchApp and Google APIs
+    it('should handle high-volume operations with rate limiting', () => {
+      const requests = Array.from({ length: 120 }, (_, index) => ({
+        url: `https://www.googleapis.com/drive/v3/files/${index + 1}`
+      }));
+      const limiter = new RateLimiter(
+        { burstCapacity: requests.length, autoRefill: false },
+        logger,
+        utils
+      );
+
+      const responses = chunk(requests, 50).flatMap((batch) => {
+        batch.forEach(() => limiter.acquire('drive.request'));
+        return UrlFetchApp.fetchAll(batch);
+      });
+
+      expect(responses).toHaveLength(120);
+      expect(UrlFetchApp.fetchAll.mock.calls.map(([batch]) => batch.length)).toEqual([50, 50, 20]);
+      expect(limiter.getStats('drive.request')).toEqual({
+        tokensAvailable: 0,
+        maxCapacity: 120,
+        requestCount: 120,
+        throttledCount: 0,
+        throttleRate: '0.00%'
+      });
     });
   });
 
   describe('error recovery in batch operations', () => {
-    it.skip('should retry failed operations with exponential backoff (requires actual API integration)', () => {
-      // This test requires mocking UrlFetchApp and Google APIs
+    it('should retry failed operations with exponential backoff', () => {
+      jest.spyOn(Math, 'random').mockReturnValue(0);
+      UrlFetchApp.fetchAll
+        .mockImplementationOnce(() => {
+          throw new Error('Service unavailable');
+        })
+        .mockImplementationOnce(() => {
+          throw new Error('Service unavailable');
+        })
+        .mockImplementationOnce(() => [
+          {
+            getResponseCode: () => 200,
+            getContentText: () => '{"id":"recovered"}',
+            getHeaders: () => ({ 'Content-Type': 'application/json' })
+          }
+        ]);
+      const limiter = new RateLimiter({ burstCapacity: 3, autoRefill: false }, logger, utils);
+      const resilience = new ExceptionService(logger, utils);
+
+      const responses = resilience.executeWithRetry(() => {
+        limiter.acquire('drive.batch');
+        return UrlFetchApp.fetchAll([{ url: 'https://www.googleapis.com/drive/v3/files/retry' }]);
+      });
+
+      expect(responses.map((response) => response.getResponseCode())).toEqual([200]);
+      expect(UrlFetchApp.fetchAll).toHaveBeenCalledTimes(3);
+      expect(utils.sleep.mock.calls.map(([milliseconds]) => milliseconds)).toEqual([5000, 10000]);
+      expect(limiter.getStats('drive.batch').requestCount).toBe(3);
     });
   });
 });
