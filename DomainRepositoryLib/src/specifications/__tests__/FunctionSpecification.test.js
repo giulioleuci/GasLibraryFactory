@@ -218,7 +218,7 @@ describe('FunctionSpecification - Comprehensive Test Suite', () => {
 
       const str = spec.toString();
       expect(str).toContain('Function');
-      expect(str).toBeDefined();
+      expect(str).toBe('Function(custom predicate)');
     });
   });
 
