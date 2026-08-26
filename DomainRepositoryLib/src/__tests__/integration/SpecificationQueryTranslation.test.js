@@ -324,6 +324,9 @@ describe('Integration Test 3: Specification-Query Translation', () => {
     test('should translate equality specification', () => {
       // Arrange: Test FieldSpecification('status', '==', 'active')
       const spec = new FieldSpecification('status', 'equals', 'active');
+      const criteriaSpy = jest.spyOn(spec, 'toQueryObject');
+      const validateSpy = jest.spyOn(repository.queryTranslator, 'validate');
+      const translateSpy = jest.spyOn(repository.queryTranslator, 'translate');
 
       // Act
       const results = repository.find(spec);
@@ -331,6 +334,12 @@ describe('Integration Test 3: Specification-Query Translation', () => {
       // Assert
       expect(results.length).toBe(4); // prod_1, prod_2, prod_4, prod_5
       expect(results.every((p) => p.status === 'active')).toBe(true);
+      expect(criteriaSpy).toHaveBeenCalledTimes(1);
+      expect(translateSpy).toHaveBeenCalledWith(
+        spec,
+        databaseService.select.mock.results[0].value,
+        validateSpy.mock.results[0].value
+      );
     });
 
     test('should translate IN specification', () => {

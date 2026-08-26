@@ -356,6 +356,7 @@ describe('Integration Test 2: Repository-Database Persistence', () => {
   describe('Batch Operations', () => {
     test('should save multiple entities in batch', () => {
       // Arrange: Create multiple entities
+      const expectedIds = ['test-uuid-user-1', 'test-uuid-user-2', 'test-uuid-user-3'];
       mockUtils.getUuid
         .mockReturnValueOnce('test-uuid-user-1')
         .mockReturnValueOnce('test-uuid-user-2')
@@ -371,15 +372,13 @@ describe('Integration Test 2: Repository-Database Persistence', () => {
 
       // Assert: Verify all saved
       expect(savedUsers).toHaveLength(3);
-      expect(savedUsers.map((user) => user.id)).toEqual([
-        'test-uuid-user-1',
-        'test-uuid-user-2',
-        'test-uuid-user-3'
-      ]);
+      expect(savedUsers.map((user) => user.id)).toEqual(expectedIds);
+      expect(databaseService.tables['Users']._testData.map((row) => row.id)).toEqual(expectedIds);
 
       // Verify in database
       const allUsers = repository.findAll();
-      expect(allUsers).toHaveLength(3);
+      expect(allUsers.map((user) => user.id)).toEqual(expectedIds);
+      expect(databaseService.tables['Users'].insertRows).toHaveBeenCalledTimes(1);
     });
 
     test('should return empty array when saving empty array', () => {

@@ -178,7 +178,7 @@ describe('SpecificationBuilder - Comprehensive Test Suite', () => {
       expect(spec.isSatisfiedBy(testObject)).toBe(true);
     });
 
-    it('should build A AND (B OR C)', () => {
+    it('should build left-associative A AND B OR C', () => {
       const spec = SpecificationBuilder.field('age')
         .greaterThan(25)
         .and()
