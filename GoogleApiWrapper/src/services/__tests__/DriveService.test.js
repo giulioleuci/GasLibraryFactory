@@ -84,8 +84,10 @@ describe('DriveService - Comprehensive Test Suite', () => {
       const result = service.deleteFiles('fileId1');
 
       expect(global.Drive.Files.update).toHaveBeenCalledWith({ trashed: true }, 'fileId1');
-      expect(result.successful).toHaveLength(1);
-      expect(result.failed).toEqual([]);
+      expect(result).toEqual({
+        successful: [{ id: 'fileId1', status: 204, data: null }],
+        failed: []
+      });
     });
 
     it('should delete multiple files in batch', () => {
