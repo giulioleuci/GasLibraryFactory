@@ -280,8 +280,20 @@ describe('SpreadsheetService - Comprehensive Test Suite', () => {
 
       const result = service.updateRanges('sheet123', updates);
 
-      expect(result.responses).toBeDefined();
-      expect(Array.isArray(result.responses)).toBe(true);
+      expect(result.responses).toEqual([
+        {
+          updatedRange: 'Sheet1!A1:B2',
+          updatedRows: 2,
+          updatedColumns: 2,
+          updatedCells: 4
+        },
+        {
+          updatedRange: 'Sheet2!A1:C3',
+          updatedRows: 3,
+          updatedColumns: 3,
+          updatedCells: 9
+        }
+      ]);
     });
   });
 
@@ -317,8 +329,16 @@ describe('SpreadsheetService - Comprehensive Test Suite', () => {
         })
       );
       expect(typeof result).toBe('object');
-      expect(result['Sheet1!A1:B10']).toBeDefined();
-      expect(result['Sheet2!A1:C5']).toBeDefined();
+      expect(result).toEqual({
+        'Sheet1!A1:B10': [
+          ['Row0Col1', 'Row0Col2'],
+          ['Row0Col3', 'Row0Col4']
+        ],
+        'Sheet2!A1:C5': [
+          ['Row1Col1', 'Row1Col2'],
+          ['Row1Col3', 'Row1Col4']
+        ]
+      });
     });
 
     it('should support COLUMNS major dimension', () => {
@@ -721,11 +741,10 @@ describe('SpreadsheetService - Comprehensive Test Suite', () => {
     it('should execute the deletion through the retry wrapper with three attempts', () => {
       service.deleteColumn('sheet123', 'Sheet1', 4);
 
-      expect(exceptionService.executeWithRetry).toHaveBeenCalledWith(
-        expect.any(Function),
-        { spreadsheetId: 'sheet123' },
-        3
-      );
+      const [operation, context, attempts] = exceptionService.executeWithRetry.mock.calls[0];
+      expect(typeof operation).toBe('function');
+      expect(context).toEqual({ spreadsheetId: 'sheet123' });
+      expect(attempts).toBe(3);
     });
 
     it('should clear cached sheet metadata after a successful deletion', () => {
@@ -1408,14 +1427,10 @@ describe('SpreadsheetService - Comprehensive Test Suite', () => {
       expect(() => service.protectRanges('sheet123', protectionRequests)).toThrow(apiError);
 
       expect(mockSheets.Spreadsheets.batchUpdate).toHaveBeenCalledTimes(1);
-      expect(mockSheets.Spreadsheets.batchUpdate).toHaveBeenCalledWith(
-        expect.objectContaining({
-          requests: expect.arrayContaining([
-            expect.objectContaining({ addProtectedRange: expect.any(Object) })
-          ])
-        }),
-        'sheet123'
-      );
+      expect(
+        mockSheets.Spreadsheets.batchUpdate.mock.calls[0][0].requests.map(Object.keys)
+      ).toEqual([['addProtectedRange'], ['addProtectedRange']]);
+      expect(mockSheets.Spreadsheets.batchUpdate.mock.calls[0][1]).toBe('sheet123');
       expect(mockSheets.Spreadsheets.batchUpdate.mock.calls[0][0].requests).toHaveLength(2);
     });
 
