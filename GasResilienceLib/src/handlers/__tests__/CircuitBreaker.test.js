@@ -13,6 +13,8 @@ describe('CircuitBreaker - Comprehensive Test Suite', () => {
   let breaker;
 
   beforeEach(() => {
+    jest.spyOn(Date, 'now').mockReturnValue(1700000000000);
+
     // Mock logger
     logger = {
       info: jest.fn(),
@@ -34,6 +36,7 @@ describe('CircuitBreaker - Comprehensive Test Suite', () => {
 
   afterEach(() => {
     jest.clearAllMocks();
+    jest.restoreAllMocks();
   });
 
   // ===================================================================
@@ -44,7 +47,7 @@ describe('CircuitBreaker - Comprehensive Test Suite', () => {
     it('should create instance with default configuration', () => {
       const breaker = new CircuitBreaker();
 
-      expect(breaker).toBeDefined();
+      expect(breaker).toBeInstanceOf(CircuitBreaker);
       expect(breaker._failureThreshold).toBe(5);
       expect(breaker._successThreshold).toBe(2);
       expect(breaker._resetTimeout).toBe(60000);
@@ -118,19 +121,15 @@ describe('CircuitBreaker - Comprehensive Test Suite', () => {
     it('should work without logger (no errors)', () => {
       const breaker = new CircuitBreaker({}, null, cache);
 
-      expect(() => {
-        breaker.allowRequest('test');
-        breaker.recordSuccess('test');
-      }).not.toThrow();
+      expect(breaker.allowRequest('test')).toBe(true);
+      expect(breaker.recordSuccess('test')).toBeUndefined();
     });
 
     it('should work without cache (in-memory only)', () => {
       const breaker = new CircuitBreaker({}, logger, null);
 
-      expect(() => {
-        breaker.allowRequest('test');
-        breaker.recordSuccess('test');
-      }).not.toThrow();
+      expect(breaker.allowRequest('test')).toBe(true);
+      expect(breaker.recordSuccess('test')).toBeUndefined();
     });
   });
 
@@ -215,9 +214,7 @@ describe('CircuitBreaker - Comprehensive Test Suite', () => {
 
       const state = { state: 'CLOSED', failures: [] };
 
-      expect(() => {
-        breaker._saveState('errorOp', state);
-      }).not.toThrow();
+      expect(breaker._saveState('errorOp', state)).toBeUndefined();
 
       expect(logger.info).toHaveBeenCalledWith(
         expect.stringContaining('Failed to save circuit state to cache')
@@ -243,8 +240,28 @@ describe('CircuitBreaker - Comprehensive Test Suite', () => {
       expect(state1.failureCount).toBe(1);
       expect(state2.failureCount).toBe(1);
       // Both are independent
-      expect(cache.put).toHaveBeenCalledWith('CircuitBreaker_api1', expect.any(String), 21600);
-      expect(cache.put).toHaveBeenCalledWith('CircuitBreaker_api2', expect.any(String), 21600);
+      expect(cache.put).toHaveBeenCalledWith(
+        'CircuitBreaker_api1',
+        JSON.stringify({
+          state: 'CLOSED',
+          failures: [1700000000000],
+          consecutiveSuccesses: 0,
+          lastFailureTime: 1700000000000,
+          nextAttemptTime: null
+        }),
+        21600
+      );
+      expect(cache.put).toHaveBeenCalledWith(
+        'CircuitBreaker_api2',
+        JSON.stringify({
+          state: 'CLOSED',
+          failures: [1700000000000],
+          consecutiveSuccesses: 0,
+          lastFailureTime: 1700000000000,
+          nextAttemptTime: null
+        }),
+        21600
+      );
     });
 
     it('should clean old failures outside monitoring period', () => {
@@ -393,7 +410,7 @@ describe('CircuitBreaker - Comprehensive Test Suite', () => {
     it('should calculate nextAttemptTime correctly', () => {
       const state = breaker.getState('testOp');
 
-      expect(state.nextAttemptTime).toBeDefined();
+      expect(state.nextAttemptTime).toBe(1700000060000);
       expect(state.nextAttemptTime).toBeGreaterThan(Date.now());
       expect(state.nextAttemptTime).toBeLessThanOrEqual(Date.now() + 60000); // Within resetTimeout
     });
@@ -441,7 +458,7 @@ describe('CircuitBreaker - Comprehensive Test Suite', () => {
     it('should track lastFailureTime', () => {
       const state = breaker.getState('testOp');
 
-      expect(state.lastFailureTime).toBeDefined();
+      expect(state.lastFailureTime).toBe(1700000000000);
       expect(state.lastFailureTime).toBeLessThanOrEqual(Date.now());
     });
   });
@@ -680,7 +697,7 @@ describe('CircuitBreaker - Comprehensive Test Suite', () => {
 
       expect(state.state).toBe('OPEN');
       expect(state.failureCount).toBe(5);
-      expect(state.lastFailureTime).toBeDefined();
+      expect(state.lastFailureTime).toBe(1700000000000);
       expect(state.nextAttemptTime).toBeGreaterThan(Date.now());
     });
 
@@ -874,7 +891,7 @@ describe('CircuitBreaker - Comprehensive Test Suite', () => {
       expect(state.state).toBe('OPEN');
       // All failures happen rapidly, so all are within monitoring period
       // But circuit should still be OPEN and functional
-      expect(state.failureCount).toBeGreaterThan(0);
+      expect(state.failureCount).toBe(1000);
       expect(state.failureCount).toBeLessThanOrEqual(1000);
     });
 
@@ -887,8 +904,13 @@ describe('CircuitBreaker - Comprehensive Test Suite', () => {
         }
       }
 
-      // Should not throw errors
-      expect(breaker.getState('testOp')).toBeDefined();
+      expect(breaker.getState('testOp')).toEqual({
+        state: 'OPEN',
+        failureCount: 50,
+        consecutiveSuccesses: 0,
+        lastFailureTime: 1700000000000,
+        nextAttemptTime: 1700000060000
+      });
     });
 
     it('should handle multiple independent circuits concurrently', () => {
@@ -907,16 +929,27 @@ describe('CircuitBreaker - Comprehensive Test Suite', () => {
       noCacheBreaker.recordFailure('testOp');
       noCacheBreaker.recordSuccess('testOp');
 
-      expect(noCacheBreaker.getState('testOp')).toBeDefined();
+      expect(noCacheBreaker.getState('testOp')).toEqual({
+        state: 'CLOSED',
+        failureCount: 0,
+        consecutiveSuccesses: 0,
+        lastFailureTime: null,
+        nextAttemptTime: null
+      });
     });
 
     it('should work without logger (no logging)', () => {
       const noLoggerBreaker = new CircuitBreaker({}, null, cache);
 
-      expect(() => {
-        noLoggerBreaker.recordFailure('testOp');
-        noLoggerBreaker.recordSuccess('testOp');
-      }).not.toThrow();
+      expect(noLoggerBreaker.recordFailure('testOp')).toBeUndefined();
+      expect(noLoggerBreaker.recordSuccess('testOp')).toBeUndefined();
+      expect(noLoggerBreaker.getState('testOp')).toEqual({
+        state: 'CLOSED',
+        failureCount: 1,
+        consecutiveSuccesses: 0,
+        lastFailureTime: 1700000000000,
+        nextAttemptTime: null
+      });
     });
 
     it('should handle malformed cache data', () => {
