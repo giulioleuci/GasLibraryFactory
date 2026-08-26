@@ -135,12 +135,15 @@ describe('AdvancedQueryBuilder - JOIN Operations', () => {
         .execute();
 
       const bobRow = results.find((r) => r['Authors.name'] === 'Bob Johnson');
-      expect(bobRow).toBeDefined();
-      expect(bobRow['Authors.id']).toBe('3');
-      expect(bobRow['Books.id']).toBeNull();
-      expect(bobRow['Books.title']).toBeNull();
-      expect(bobRow['Books.author_id']).toBeNull();
-      expect(bobRow['Books.price']).toBeNull();
+      expect(bobRow).toEqual({
+        'Authors.id': '3',
+        'Authors.name': 'Bob Johnson',
+        'Authors.country': 'Canada',
+        'Books.id': null,
+        'Books.title': null,
+        'Books.author_id': null,
+        'Books.price': null
+      });
     });
   });
 
@@ -163,10 +166,15 @@ describe('AdvancedQueryBuilder - JOIN Operations', () => {
 
       // Find Book Four (orphan book with author_id: 99)
       const orphanBook = results.find((r) => r['Books.title'] === 'Book Four');
-      expect(orphanBook).toBeDefined();
-      expect(orphanBook['Authors.name']).toBeNull();
-      expect(orphanBook['Authors.id']).toBeNull();
-      expect(orphanBook['Books.id']).toBe('b4');
+      expect(orphanBook).toEqual({
+        'Authors.id': null,
+        'Authors.name': null,
+        'Authors.country': null,
+        'Books.id': 'b4',
+        'Books.title': 'Book Four',
+        'Books.author_id': '99',
+        'Books.price': 25
+      });
     });
 
     it('should fill left columns with null for unmatched right rows', () => {
@@ -178,11 +186,15 @@ describe('AdvancedQueryBuilder - JOIN Operations', () => {
         .execute();
 
       const orphanBook = results.find((r) => r['Books.title'] === 'Book Four');
-      expect(orphanBook).toBeDefined();
-      expect(orphanBook['Books.author_id']).toBe('99');
-      expect(orphanBook['Authors.id']).toBeNull();
-      expect(orphanBook['Authors.name']).toBeNull();
-      expect(orphanBook['Authors.country']).toBeNull();
+      expect(orphanBook).toEqual({
+        'Authors.id': null,
+        'Authors.name': null,
+        'Authors.country': null,
+        'Books.id': 'b4',
+        'Books.title': 'Book Four',
+        'Books.author_id': '99',
+        'Books.price': 25
+      });
     });
   });
 
@@ -217,13 +229,27 @@ describe('AdvancedQueryBuilder - JOIN Operations', () => {
 
       // Check for Bob (unmatched left)
       const bobRow = results.find((r) => r['Authors.name'] === 'Bob Johnson');
-      expect(bobRow).toBeDefined();
-      expect(bobRow['Books.title']).toBeNull();
+      expect(bobRow).toEqual({
+        'Authors.id': '3',
+        'Authors.name': 'Bob Johnson',
+        'Authors.country': 'Canada',
+        'Books.id': null,
+        'Books.title': null,
+        'Books.author_id': null,
+        'Books.price': null
+      });
 
       // Check for Book Four (unmatched right)
       const orphanBook = results.find((r) => r['Books.title'] === 'Book Four');
-      expect(orphanBook).toBeDefined();
-      expect(orphanBook['Authors.name']).toBeNull();
+      expect(orphanBook).toEqual({
+        'Authors.id': null,
+        'Authors.name': null,
+        'Authors.country': null,
+        'Books.id': 'b4',
+        'Books.title': 'Book Four',
+        'Books.author_id': '99',
+        'Books.price': 25
+      });
     });
   });
 
@@ -246,9 +272,19 @@ describe('AdvancedQueryBuilder - JOIN Operations', () => {
       expect(results.length).toBe(2);
 
       // Verify all three tables are joined
-      expect(results[0]['Authors.name']).toBeDefined();
-      expect(results[0]['Books.title']).toBeDefined();
-      expect(results[0]['Reviews.rating']).toBeDefined();
+      expect(results[0]).toEqual({
+        'Authors.id': '1',
+        'Authors.name': 'John Doe',
+        'Authors.country': 'USA',
+        'Books.id': 'b1',
+        'Books.title': 'Book One',
+        'Books.author_id': '1',
+        'Books.price': 10,
+        'Reviews.id': 'r1',
+        'Reviews.book_id': 'b1',
+        'Reviews.rating': 5,
+        'Reviews.comment': 'Great!'
+      });
     });
 
     it('should handle mixed join types', () => {
