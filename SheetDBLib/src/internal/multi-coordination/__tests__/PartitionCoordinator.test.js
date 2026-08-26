@@ -61,7 +61,8 @@ describe('PartitionCoordinator', () => {
     });
 
     it('falls back to console when no logger is provided', () => {
-      expect(() => new PartitionCoordinator(createConfig(), {})).not.toThrow();
+      const coordinator = new PartitionCoordinator(createConfig(), {});
+      expect(coordinator.getConnectedPartitions()).toEqual([]);
     });
   });
 
@@ -70,7 +71,7 @@ describe('PartitionCoordinator', () => {
       const coordinator = new PartitionCoordinator(createConfig(), { logger });
       const db = coordinator.getPartition('p_a');
 
-      expect(db).toBeDefined();
+      expect(db.spreadsheetId).toBe('sheet-a');
       expect(DatabaseService).toHaveBeenCalledTimes(1);
       expect(DatabaseService.mock.calls[0][0]).toBe('sheet-a');
     });
@@ -115,7 +116,7 @@ describe('PartitionCoordinator', () => {
       expect(coordinator.isConnected('p_a')).toBe(false);
 
       const db = coordinator.getPartition('p_a'); // retry, mock now succeeds
-      expect(db).toBeDefined();
+      expect(db.spreadsheetId).toBe('sheet-a');
       expect(coordinator.isConnected('p_a')).toBe(true);
     });
 
@@ -226,8 +227,16 @@ describe('PartitionCoordinator', () => {
 
     it('updateStatistics with an unknown event or partition id is a safe no-op', () => {
       const coordinator = new PartitionCoordinator(createConfig(), { logger });
-      expect(() => coordinator.updateStatistics('p_a', 'unknown-event')).not.toThrow();
-      expect(() => coordinator.updateStatistics('does-not-exist', 'query')).not.toThrow();
+      coordinator.updateStatistics('p_a', 'unknown-event');
+      coordinator.updateStatistics('does-not-exist', 'query');
+      expect(coordinator.getPartitionStatistics('p_a')).toEqual({
+        queries: 0,
+        hits: 0,
+        misses: 0,
+        lastAccess: null,
+        isConnected: false
+      });
+      expect(coordinator.getPartitionStatistics('does-not-exist')).toBeNull();
     });
 
     it('disconnect telemetry flips isConnected to false but preserves the query count', () => {
