@@ -18,7 +18,7 @@ describe('AdvancedQueryValidator', () => {
   describe('validateTable()', () => {
     it('should not throw when table exists', () => {
       const dbService = { tables: { Users: {} } };
-      expect(() => validator.validateTable(dbService, 'Users')).not.toThrow();
+      validator.validateTable(dbService, 'Users');
     });
 
     it('should throw when table is missing', () => {
@@ -32,7 +32,7 @@ describe('AdvancedQueryValidator', () => {
   describe('validateJoin()', () => {
     it('should not throw when join target exists', () => {
       const dbService = { tables: { Books: {} } };
-      expect(() => validator.validateJoin(dbService, 'Books')).not.toThrow();
+      validator.validateJoin(dbService, 'Books');
     });
 
     it('should throw with default JOIN type in message', () => {
@@ -52,11 +52,11 @@ describe('AdvancedQueryValidator', () => {
 
   describe('validateWhereIn()', () => {
     it('should not throw for arrays', () => {
-      expect(() => validator.validateWhereIn('status', ['a', 'b'])).not.toThrow();
+      validator.validateWhereIn('status', ['a', 'b']);
     });
 
     it('should not throw for an empty array', () => {
-      expect(() => validator.validateWhereIn('status', [])).not.toThrow();
+      validator.validateWhereIn('status', []);
     });
 
     it('should throw for a non-array value', () => {
@@ -74,16 +74,16 @@ describe('AdvancedQueryValidator', () => {
 
   describe('validateOrderDirection()', () => {
     it('should accept ASC', () => {
-      expect(() => validator.validateOrderDirection('ASC')).not.toThrow();
+      validator.validateOrderDirection('ASC');
     });
 
     it('should accept DESC', () => {
-      expect(() => validator.validateOrderDirection('DESC')).not.toThrow();
+      validator.validateOrderDirection('DESC');
     });
 
     it('should be case-insensitive', () => {
-      expect(() => validator.validateOrderDirection('asc')).not.toThrow();
-      expect(() => validator.validateOrderDirection('desc')).not.toThrow();
+      validator.validateOrderDirection('asc');
+      validator.validateOrderDirection('desc');
     });
 
     it('should throw for an invalid direction', () => {
