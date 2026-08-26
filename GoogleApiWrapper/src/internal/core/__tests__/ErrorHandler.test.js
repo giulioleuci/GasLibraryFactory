@@ -54,7 +54,7 @@ describe('ErrorHandler - Comprehensive Test Suite', () => {
       expect(error.operation).toBe('testOperation');
       expect(error.originalError).toBe(originalError);
       expect(error.context).toEqual(context);
-      expect(error.timestamp).toBeDefined();
+      expect(error.timestamp).toMatch(/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}\.\d{3}Z$/);
     });
 
     it('should work with default parameters', () => {
@@ -67,8 +67,7 @@ describe('ErrorHandler - Comprehensive Test Suite', () => {
     it('should capture stack trace', () => {
       const error = new ServiceError('Test', 'Service', 'op');
 
-      expect(error.stack).toBeDefined();
-      expect(typeof error.stack).toBe('string');
+      expect(error.stack).toMatch(/ServiceError/);
     });
 
     it('should convert to log object', () => {
@@ -456,7 +455,11 @@ describe('ErrorHandler - Comprehensive Test Suite', () => {
 
       expect(mocks.logger.error).toHaveBeenCalledWith(
         expect.stringContaining('[TestService] testOp failed after 2 attempts'),
-        expect.any(Object)
+        expect.objectContaining({
+          message: 'Quota exceeded',
+          serviceName: 'TestService',
+          operation: 'testOp'
+        })
       );
     });
 
