@@ -672,9 +672,10 @@ describe('ConfigurationBuilder', () => {
       const config = { name: 'test' };
       const rules = { name: { required: true, type: 'string' } };
 
-      expect(() => {
-        ConfigurationBuilder.assertValid(config, rules);
-      }).not.toThrow();
+      expect(ConfigurationBuilder.assertValid(config, rules)).toBeUndefined();
+      expect(() => ConfigurationBuilder.assertValid({}, rules)).toThrow(
+        'Configuration validation failed'
+      );
     });
 
     it('should throw for invalid configuration', () => {
@@ -829,9 +830,9 @@ describe('ConfigurationBuilder', () => {
       it('should pass validation for valid config', () => {
         const rules = { name: { required: true, type: 'string' } };
 
-        expect(() => {
-          ConfigurationBuilder.create({ name: 'test' }).validate(rules).build();
-        }).not.toThrow();
+        expect(ConfigurationBuilder.create({ name: 'test' }).validate(rules).build()).toEqual({
+          name: 'test'
+        });
       });
 
       it('should throw for invalid config', () => {
