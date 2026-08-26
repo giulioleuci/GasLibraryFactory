@@ -11,6 +11,8 @@
 // ===================================================================
 
 import { ExpressionEngineService } from '../ExpressionEngineService';
+import { ExpressionEvaluatorService } from '../ExpressionEvaluatorService';
+import { ExpressionParserService } from '../ExpressionParserService';
 import { MockFactory } from '../../../test/fakes/MockFactory';
 
 // Mock WorkspaceTemplateEngine as a global
@@ -45,10 +47,10 @@ describe('ExpressionEngineService (Logic Library Pattern)', () => {
 
   describe('Constructor and Initialization', () => {
     it('should create an instance with required dependencies', () => {
-      expect(engine).toBeDefined();
+      expect(engine).toBeInstanceOf(ExpressionEngineService);
       expect(engine.logger).toBe(logger);
-      expect(engine.parser).toBeDefined();
-      expect(engine.evaluator).toBeDefined();
+      expect(engine.parser).toBeInstanceOf(ExpressionParserService);
+      expect(engine.evaluator).toBeInstanceOf(ExpressionEvaluatorService);
     });
 
     it('should throw error if logger is not provided', () => {
@@ -197,20 +199,10 @@ describe('ExpressionEngineService (Logic Library Pattern)', () => {
       expect(engine.evaluate('{{user.profile.age}} >= 18', context)).toBe(true);
     });
 
-    // Note: JSEP does not support numeric indices in dot notation (e.g., users.0.age)
-    // Users should use bracket notation or access arrays differently
-    it.skip('should handle array indices in placeholders (JSEP limitation)', () => {
-      const context = {
-        users: [
-          { name: 'Alice', age: 25 },
-          { name: 'Bob', age: 30 }
-        ]
-      };
+    it('risolve gli indici array nei placeholder (limitazione JSEP superata)', () => {
+      const ctx = { items: [{ nome: 'Alice' }] };
 
-      // This syntax is not supported by JSEP (numeric property names)
-      // Users should restructure their data or use alternative access patterns
-      expect(engine.evaluate('{{users.0.age}} == 25', context)).toBe(true);
-      expect(engine.evaluate("{{users.1.name}} == 'Bob'", context)).toBe(true);
+      expect(engine.evaluate('{{items[0].nome}}', ctx)).toBe(true);
     });
   });
 
@@ -296,8 +288,12 @@ describe('ExpressionEngineService (Logic Library Pattern)', () => {
 
       // Check that eviction was logged
       const debugLogs = logger.getLogsByLevel('DEBUG');
-      const evictionLog = debugLogs.find((log) => log.message.includes('cache limit reached'));
-      expect(evictionLog).toBeDefined();
+      expect(
+        debugLogs.filter((log) => log.message === 'AST cache limit reached, removed oldest entry')
+      ).toEqual([
+        { level: 'DEBUG', message: 'AST cache limit reached, removed oldest entry', context: null },
+        { level: 'DEBUG', message: 'AST cache limit reached, removed oldest entry', context: null }
+      ]);
     });
 
     it('should throw error when setCacheEnabled receives non-boolean', () => {
@@ -363,8 +359,13 @@ describe('ExpressionEngineService (Logic Library Pattern)', () => {
       }
 
       const errorLogs = logger.getLogsByLevel('ERROR');
-      expect(errorLogs.length).toBeGreaterThan(0);
-      expect(errorLogs[0].message).toContain('ExpressionEngineService.evaluate() failed');
+      expect(errorLogs).toEqual([
+        {
+          level: 'ERROR',
+          message: expect.stringMatching(/^ExpressionEngineService\.evaluate\(\) failed: Failed to parse expression:/),
+          context: null
+        }
+      ]);
     });
 
     describe('parse() method errors', () => {
@@ -402,8 +403,13 @@ describe('ExpressionEngineService (Logic Library Pattern)', () => {
         }
 
         const errorLogs = logger.getLogsByLevel('ERROR');
-        expect(errorLogs.length).toBeGreaterThan(0);
-        expect(errorLogs[0].message).toContain('ExpressionEngineService.parse() failed');
+        expect(errorLogs).toEqual([
+          {
+            level: 'ERROR',
+            message: expect.stringMatching(/^ExpressionEngineService\.parse\(\) failed: Failed to parse expression:/),
+            context: null
+          }
+        ]);
       });
     });
   });
@@ -424,8 +430,12 @@ describe('ExpressionEngineService (Logic Library Pattern)', () => {
     it('should parse expression to AST', () => {
       const ast = engine.parse('{{age}} >= 18');
 
-      expect(ast).toBeDefined();
-      expect(ast.type).toBeDefined();
+      expect(ast).toEqual({
+        type: 'BinaryExpression',
+        operator: '>=',
+        left: { type: 'Identifier', name: 'age' },
+        right: { type: 'Literal', value: 18, raw: '18' }
+      });
     });
 
     it('should provide DI configuration via static getter', () => {
