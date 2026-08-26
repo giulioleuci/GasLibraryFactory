@@ -239,8 +239,11 @@ describe('StructuredLogFormatter', () => {
         throw new Error('no access');
       }
     });
-    expect(() => formatter.jobEnd('job-1', false, broken)).not.toThrow();
-    expect(formatter.jobEnd('job-1', false, broken)[1]).toContain('[Unrenderable details]');
+    expect(formatter.jobEnd('job-1', false, broken)).toEqual([
+      '======================================================================',
+      "❌ [FAILED] Job 'job-1' failed ([Unrenderable details])",
+      '======================================================================'
+    ]);
   });
 
   it('renders pipeline start, generic step, and content-first summary positions', () => {
