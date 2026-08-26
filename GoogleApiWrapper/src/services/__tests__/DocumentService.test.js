@@ -153,7 +153,7 @@ describe('DocumentService - Comprehensive Test Suite', () => {
     it('should return builder instance', () => {
       const result = service.createDocument('Test');
 
-      expect(result.builder).toBeDefined();
+      expect(result.builder).toBeInstanceOf(DocumentBuilder);
       expect(result.builder.documentId).toBe('doc123');
     });
 
@@ -226,8 +226,16 @@ describe('DocumentService - Comprehensive Test Suite', () => {
       const result = service.getDocument('doc123');
 
       expect(mockDocs.Documents.get).toHaveBeenCalledWith('doc123');
-      expect(result).toBeDefined();
-      expect(result.documentId).toBe('doc123');
+      expect(result).toEqual({
+        documentId: 'doc123',
+        title: 'Test Doc',
+        body: {
+          content: [
+            { startIndex: 1, endIndex: 1 },
+            { startIndex: 1, endIndex: 100001 }
+          ]
+        }
+      });
     });
 
     it('should get multiple documents', () => {
@@ -378,7 +386,8 @@ describe('DocumentService - Comprehensive Test Suite', () => {
       builder.appendParagraph('Test');
       builder.execute();
 
-      expect(service._executeBatchUpdate).toHaveBeenCalledWith('doc123', expect.any(Array));
+      expect(service._executeBatchUpdate.mock.calls[0][0]).toBe('doc123');
+      expect(service._executeBatchUpdate.mock.calls[0][1]).toHaveLength(1);
     });
 
     it('should not call _executeBatchUpdate when no operations', () => {
@@ -400,9 +409,13 @@ describe('DocumentService - Comprehensive Test Suite', () => {
       builder.appendParagraph('Test');
       const result = builder.execute();
 
-      expect(result).toBeDefined();
-      expect(result.success).toBe(true);
-      expect(result.batchResult).toBeDefined();
+      expect(result).toEqual({
+        success: true,
+        batchResult: { replies: [] },
+        standardResults: [],
+        tableResults: [],
+        nonBatchResults: []
+      });
     });
 
     it('should queue multiple appendParagraph calls at increasing indices, preserving call order', () => {
@@ -631,7 +644,7 @@ describe('DocumentService - Comprehensive Test Suite', () => {
       const result = builder.execute();
 
       expect(result.success).toBe(false);
-      expect(result.error).toBeDefined();
+      expect(result.error).toBeInstanceOf(Error);
       expect(result.error.message).toBe('Batch update failed');
       expect(logger.error).toHaveBeenCalledWith(
         expect.stringContaining('DocumentBuilder.execute failed')
@@ -647,7 +660,8 @@ describe('DocumentService - Comprehensive Test Suite', () => {
       const result = builder.execute();
 
       expect(result.success).toBe(false);
-      expect(result.error).toBeDefined();
+      expect(result.error).toBeInstanceOf(Error);
+      expect(result.error.message).toBe('PDF export failed');
       expect(logger.error).toHaveBeenCalled();
     });
   });
@@ -697,7 +711,7 @@ describe('DocumentService - Comprehensive Test Suite', () => {
       builder = service.document('test-doc-id');
       // Restore _executeBatchUpdate to actually call _convertOperationToDocsRequests
       service._executeBatchUpdate = jest.fn((docId, requests) => {
-        expect(requests).toBeDefined();
+        expect(Array.isArray(requests)).toBe(true);
         return { replies: [] };
       });
     });
@@ -793,7 +807,7 @@ describe('DocumentService - Comprehensive Test Suite', () => {
       // Clear and recreate the mock properly
       service._executeBatchUpdate.mockClear();
       service._executeBatchUpdate.mockImplementation((docId, requests) => {
-        expect(requests).toBeDefined();
+        expect(Array.isArray(requests)).toBe(true);
         return { replies: [] };
       });
       builder = service.document('test-doc-id');
@@ -803,18 +817,21 @@ describe('DocumentService - Comprehensive Test Suite', () => {
       builder.setText('New content').execute();
 
       const calls = service._executeBatchUpdate.mock.calls;
-      expect(calls.length).toBeGreaterThan(0);
+      expect(calls).toHaveLength(1);
       const requests = calls[0][1];
-      expect(requests).toBeDefined();
-
-      expect(requests.length).toBe(2);
-      expect(requests[0].deleteContentRange).toBeDefined();
-      expect(requests[0].deleteContentRange.range.startIndex).toBe(1);
-      expect(requests[0].deleteContentRange.range.endIndex).toBe(100000);
-
-      expect(requests[1].insertText).toBeDefined();
-      expect(requests[1].insertText.text).toBe('New content\n');
-      expect(requests[1].insertText.location.index).toBe(1);
+      expect(requests).toEqual([
+        {
+          deleteContentRange: {
+            range: { startIndex: 1, endIndex: 100000 }
+          }
+        },
+        {
+          insertText: {
+            text: 'New content\n',
+            location: { index: 1 }
+          }
+        }
+      ]);
     });
 
     it('should handle empty string in setText', () => {
@@ -846,7 +863,7 @@ describe('DocumentService - Comprehensive Test Suite', () => {
     beforeEach(() => {
       builder = service.document('test-doc-id');
       service._executeBatchUpdate = jest.fn((docId, requests) => {
-        expect(requests).toBeDefined();
+        expect(Array.isArray(requests)).toBe(true);
         return { replies: [] };
       });
     });
