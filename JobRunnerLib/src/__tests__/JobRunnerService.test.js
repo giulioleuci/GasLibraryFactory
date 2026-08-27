@@ -16,7 +16,7 @@ import { JobQueue } from '../JobQueue';
 import { JobStateManager } from '../internal/managers/JobRunnerStateManager';
 import { MockFactory } from '../../../test/fakes';
 import { testing as CoreUtilsTesting } from '@CoreUtilsLib';
-import { testing as GoogleApiTesting } from '@GoogleApiWrapper';
+import { testing as GoogleApiTesting, PropertiesService, TriggerService } from '@GoogleApiWrapper';
 
 // Mock GoogleApiWrapper as a global (JobRunnerService expects it globally)
 let mockPropertiesService;
@@ -84,7 +84,7 @@ describe('JobRunnerService (Stateful Library Pattern)', () => {
 
   describe('Constructor and Initialization', () => {
     it('should create an instance with required dependencies', () => {
-      expect(jobRunner).toBeDefined();
+      expect(jobRunner).toBeInstanceOf(JobRunnerService);
       expect(jobRunner._logger).toBe(logger);
       expect(jobRunner._utils).toBe(utils);
       expect(jobRunner._jobDefinitionRegistry).toBe(registry);
@@ -111,8 +111,11 @@ describe('JobRunnerService (Stateful Library Pattern)', () => {
     });
 
     it('should initialize internal services', () => {
-      expect(jobRunner._propertiesService).toBeDefined();
-      expect(jobRunner._triggerService).toBeDefined();
+      // Constructed internally via `new PropertiesService(logger)` / `new TriggerService(...)`
+      // (real GoogleApiWrapper classes) — not the standalone MockFactory mocks used elsewhere
+      // in this file, which are unrelated objects.
+      expect(jobRunner._propertiesService).toBeInstanceOf(PropertiesService);
+      expect(jobRunner._triggerService).toBeInstanceOf(TriggerService);
     });
   });
 
@@ -212,9 +215,13 @@ describe('JobRunnerService (Stateful Library Pattern)', () => {
 
       // Depending on implementation, this might be null (cleaned up)
       // or might contain final state. Check logs for cleanup messages.
-      expect(logger.logJobEnd).toHaveBeenCalledWith(jobName, true, {
-        durationMs: expect.any(Number)
-      });
+      expect(logger.logJobEnd).toHaveBeenCalledTimes(1);
+      const [[loggedJobName, loggedSuccess, loggedDetails]] = logger.logJobEnd.mock.calls;
+      expect(loggedJobName).toBe(jobName);
+      expect(loggedSuccess).toBe(true);
+      expect(Object.keys(loggedDetails)).toEqual(['durationMs']);
+      expect(Number.isFinite(loggedDetails.durationMs)).toBe(true);
+      expect(loggedDetails.durationMs).toBeGreaterThanOrEqual(0);
     });
   });
 
@@ -232,7 +239,7 @@ describe('JobRunnerService (Stateful Library Pattern)', () => {
       // This test would require actually timing out a job
       // For now, we verify the trigger service is available
 
-      expect(triggerService).toBeDefined();
+      expect(triggerService).toBeInstanceOf(GoogleApiTesting.TriggerServiceMock);
       expect(triggerService.getTriggerCount()).toBe(0);
 
       // In a real timeout scenario:
@@ -244,7 +251,14 @@ describe('JobRunnerService (Stateful Library Pattern)', () => {
       // We can test trigger creation directly
       const trigger = triggerService.createTimeTrigger('resumeJob', 1);
 
-      expect(trigger).toBeDefined();
+      expect(trigger).toEqual({
+        id: 'trigger-1',
+        functionName: 'resumeJob',
+        type: 'TIME_BASED',
+        delayMinutes: 1,
+        createdAt: expect.any(Date),
+        scheduledFor: expect.any(Date)
+      });
       expect(trigger.functionName).toBe('resumeJob');
       expect(triggerService.getTriggerCount()).toBe(1);
     });
@@ -291,8 +305,10 @@ describe('JobRunnerService (Stateful Library Pattern)', () => {
       const result2 = jobRunner.run(jobName, 'resumable', {}, registerHandlers);
 
       // Should complete again (in real scenario with saved state,
-      // it would skip already-processed steps)
-      expect(result2).toBeDefined();
+      // it would skip already-processed steps). No resumeState was ever
+      // persisted for a successfully-completed job, so this second run
+      // starts fresh again, giving a second full execution.
+      expect(result2).toEqual({ executions: 2 });
     });
 
     it('logs resume checkpoint and progress before completing resumed work', () => {
@@ -325,9 +341,13 @@ describe('JobRunnerService (Stateful Library Pattern)', () => {
         checkpoint: '2',
         percentage: 40
       });
-      expect(logger.logJobEnd).toHaveBeenCalledWith(jobName, true, {
-        durationMs: expect.any(Number)
-      });
+      expect(logger.logJobEnd).toHaveBeenCalledTimes(1);
+      const [[loggedJobName, loggedSuccess, loggedDetails]] = logger.logJobEnd.mock.calls;
+      expect(loggedJobName).toBe(jobName);
+      expect(loggedSuccess).toBe(true);
+      expect(Object.keys(loggedDetails)).toEqual(['durationMs']);
+      expect(Number.isFinite(loggedDetails.durationMs)).toBe(true);
+      expect(loggedDetails.durationMs).toBeGreaterThanOrEqual(0);
     });
   });
 
@@ -386,10 +406,14 @@ describe('JobRunnerService (Stateful Library Pattern)', () => {
       }).toThrow('Job failed at step 2');
 
       // Error should be logged
-      expect(logger.logJobEnd).toHaveBeenCalledWith('error-job', false, {
-        reason: 'Job failed at step 2',
-        durationMs: expect.any(Number)
-      });
+      expect(logger.logJobEnd).toHaveBeenCalledTimes(1);
+      const [[loggedJobName, loggedSuccess, loggedDetails]] = logger.logJobEnd.mock.calls;
+      expect(loggedJobName).toBe('error-job');
+      expect(loggedSuccess).toBe(false);
+      const { durationMs, ...restDetails } = loggedDetails;
+      expect(restDetails).toEqual({ reason: 'Job failed at step 2' });
+      expect(Number.isFinite(durationMs)).toBe(true);
+      expect(durationMs).toBeGreaterThanOrEqual(0);
     });
 
     /**
@@ -448,7 +472,21 @@ describe('JobRunnerService (Stateful Library Pattern)', () => {
 
       jobRunner.run('param-job', 'paramTest', jobParams, registerHandlers);
 
-      expect(receivedParams).toBeDefined();
+      // properties/triggers are jobRunner's own facade-internal PropertiesService/
+      // TriggerService instances (constructed internally via `new PropertiesService(...)`/
+      // `new TriggerService(...)`, real GoogleApiWrapper classes) — not the standalone
+      // MockFactory mocks (`propertiesService`/`triggerService`) used elsewhere in this file.
+      expect(receivedParams).toEqual({
+        userId: 'user-123',
+        action: 'import',
+        recordCount: 1000,
+        services: {
+          logger,
+          utils,
+          properties: jobRunner._propertiesService,
+          triggers: jobRunner._triggerService
+        }
+      });
       expect(receivedParams.userId).toBe('user-123');
       expect(receivedParams.action).toBe('import');
       expect(receivedParams.recordCount).toBe(1000);
@@ -465,10 +503,17 @@ describe('JobRunnerService (Stateful Library Pattern)', () => {
         availableServices = services;
 
         queue.registerJobHandler('serviceTest', function* (params) {
-          // Job should have access to services via params
-          expect(params.services).toBeDefined();
-          expect(params.services.logger).toBeDefined();
-          expect(params.services.utils).toBeDefined();
+          // Job should have access to services via params (jobRunner's own
+          // facade-internal PropertiesService/TriggerService instances, not the
+          // standalone MockFactory mocks used elsewhere in this file).
+          expect(params.services).toEqual({
+            logger,
+            utils,
+            properties: jobRunner._propertiesService,
+            triggers: jobRunner._triggerService
+          });
+          expect(params.services.logger).toBe(logger);
+          expect(params.services.utils).toBe(utils);
 
           yield { percentage: 100 };
           return { hasServices: true };
@@ -478,11 +523,16 @@ describe('JobRunnerService (Stateful Library Pattern)', () => {
       jobRunner.run('service-job', 'serviceTest', {}, registerHandlers);
 
       // Verify services were passed to callback
-      expect(availableServices).toBeDefined();
+      expect(availableServices).toEqual({
+        logger,
+        utils,
+        properties: jobRunner._propertiesService,
+        triggers: jobRunner._triggerService
+      });
       expect(availableServices.logger).toBe(logger);
       expect(availableServices.utils).toBe(utils);
-      expect(availableServices.properties).toBeDefined();
-      expect(availableServices.triggers).toBeDefined();
+      expect(availableServices.properties).toBe(jobRunner._propertiesService);
+      expect(availableServices.triggers).toBe(jobRunner._triggerService);
     });
   });
 
