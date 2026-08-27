@@ -31,7 +31,7 @@ describe('PostProcessor', () => {
 
   describe('Constructor', () => {
     it('should create an instance with valid logger', () => {
-      expect(processor).toBeDefined();
+      expect(processor).toBeInstanceOf(PostProcessor);
       expect(processor.logger).toBe(logger);
     });
 
@@ -584,8 +584,13 @@ describe('PostProcessor', () => {
       const customProcessor = (data) => data;
       processor.register('custom', customProcessor);
 
-      expect(logger.getLogsByLevel('DEBUG').length).toBeGreaterThan(0);
-      expect(logger.getLogsMatching(/custom/).length).toBeGreaterThan(0);
+      expect(logger.getLogsMatching(/custom/)).toEqual([
+        {
+          level: 'DEBUG',
+          message: 'Registered post-processor: custom',
+          context: null
+        }
+      ]);
     });
 
     it('should throw error if type is not a string', () => {
@@ -699,8 +704,13 @@ describe('PostProcessor', () => {
 
       processor.process([{ type: 'filterFields', fields: ['name'] }], data, 'TestProvider');
 
-      expect(logger.getLogsByLevel('DEBUG').length).toBeGreaterThan(0);
-      expect(logger.getLogsMatching(/TestProvider/).length).toBeGreaterThan(0);
+      expect(logger.getLogsMatching(/TestProvider/)).toEqual([
+        {
+          level: 'DEBUG',
+          message: '[TestProvider] Applying post-processor: filterFields',
+          context: null
+        }
+      ]);
     });
 
     it('should work without provider name', () => {
@@ -759,7 +769,13 @@ describe('PostProcessor', () => {
         "PostProcessor 'throwing' failed: Test error"
       );
 
-      expect(logger.getLogsByLevel('ERROR').length).toBeGreaterThan(0);
+      expect(logger.getLogsByLevel('ERROR')).toEqual([
+        {
+          level: 'ERROR',
+          message: "Failed to apply post-processor 'throwing': Test error",
+          context: null
+        }
+      ]);
     });
 
     it('should process with custom registered processor', () => {
