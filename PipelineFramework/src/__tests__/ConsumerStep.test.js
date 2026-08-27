@@ -48,7 +48,7 @@ describe('ConsumerStep - Comprehensive Test Suite', () => {
         inputKey: 'inputData'
       });
 
-      expect(step).toBeDefined();
+      expect(step).toBeInstanceOf(TestConsumerStep);
       expect(step.getName()).toBe('testConsumer');
       expect(step.inputKey).toBe('inputData');
       expect(step.outputKey).toBe(null);
@@ -325,11 +325,20 @@ describe('ConsumerStep - Comprehensive Test Suite', () => {
       expect(result.success).toBe(true);
 
       const document = context.get('generated_document');
-      expect(document).toBeDefined();
+      expect(document).toEqual({
+        id: expect.stringMatching(/^GENERATED_DOC_\d+$/),
+        url: expect.stringMatching(
+          /^https:\/\/docs\.google\.com\/document\/d\/GENERATED_DOC_\d+$/
+        ),
+        name: 'John Doe - PASS Report',
+        templateId: 'TEMPLATE_PASS',
+        templateFileId: 'MOCK_TEMPLATE_PASS_ID',
+        createdAt: expect.stringMatching(/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}\.\d{3}Z$/)
+      });
       expect(document.name).toBe('John Doe - PASS Report');
       expect(document.templateId).toBe('TEMPLATE_PASS');
-      expect(document.id).toBeDefined();
-      expect(document.url).toBeDefined();
+      expect(document.id).toMatch(/^GENERATED_DOC_\d+$/);
+      expect(document.url).toBe(`https://docs.google.com/document/d/${document.id}`);
     });
 
     it('should generate document from TEMPLATE_FAIL', () => {
@@ -543,7 +552,7 @@ describe('ConsumerStep - Comprehensive Test Suite', () => {
       });
 
       // Should create successfully without expression engine
-      expect(step).toBeDefined();
+      expect(step).toBeInstanceOf(TestConsumerStep);
       expect(step._expressionEngine).toBeUndefined();
     });
 
