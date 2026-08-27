@@ -17,6 +17,7 @@
 
 import { JobRunnerService } from '../JobRunnerService';
 import { JobDefinitionRegistry } from '../JobDefinitionRegistry';
+import { JobQueue } from '../JobQueue';
 import { JobStateManager } from '../internal/managers/JobRunnerStateManager';
 import { MockFactory } from '../../../test/fakes/MockFactory';
 
@@ -314,8 +315,22 @@ describe('JobRunnerService - Phase 5 Coverage Tests', () => {
       jobRunner.run('myJob', 'testType', { data: 'test' }, callback);
 
       // Verify job definition was attached
-      expect(receivedParams).toBeDefined();
-      expect(receivedParams.jobDefinition).toBeDefined();
+      expect(receivedParams).toEqual({
+        data: 'test',
+        jobDefinition: jobDef,
+        services: {
+          logger,
+          utils,
+          // jobRunner's own facade-internal PropertiesService/TriggerService, NOT
+          // the standalone MockFactory mocks: `run()` builds `services` from
+          // `this._propertiesService`/`this._triggerService`, which are constructed
+          // internally via `new PropertiesService(logger)`/`new TriggerService(...)`
+          // (real GoogleApiWrapper classes), independent of the local test mocks.
+          properties: jobRunner._propertiesService,
+          triggers: jobRunner._triggerService
+        }
+      });
+      expect(receivedParams.jobDefinition).toBe(jobDef);
       expect(receivedParams.jobDefinition.name).toBe('Test Job');
       expect(receivedParams.jobDefinition.description).toBe('A test job');
     });
@@ -334,7 +349,20 @@ describe('JobRunnerService - Phase 5 Coverage Tests', () => {
       jobRunner.run('unregisteredJob', 'testType', { data: 'test' }, callback);
 
       // Verify job runs without definition
-      expect(receivedParams).toBeDefined();
+      expect(receivedParams).toEqual({
+        data: 'test',
+        services: {
+          logger,
+          utils,
+          // jobRunner's own facade-internal PropertiesService/TriggerService, NOT
+          // the standalone MockFactory mocks: `run()` builds `services` from
+          // `this._propertiesService`/`this._triggerService`, which are constructed
+          // internally via `new PropertiesService(logger)`/`new TriggerService(...)`
+          // (real GoogleApiWrapper classes), independent of the local test mocks.
+          properties: jobRunner._propertiesService,
+          triggers: jobRunner._triggerService
+        }
+      });
       expect(receivedParams.jobDefinition).toBeUndefined();
     });
   });
@@ -368,10 +396,14 @@ describe('JobRunnerService - Phase 5 Coverage Tests', () => {
       }).toThrow('Job execution failed');
 
       // Verify terminal failure was emitted once through the semantic channel
-      expect(logger.logJobEnd).toHaveBeenCalledWith('error-job', false, {
-        reason: 'Job execution failed',
-        durationMs: expect.any(Number)
-      });
+      expect(logger.logJobEnd).toHaveBeenCalledTimes(1);
+      const [[loggedJobName, loggedSuccess, loggedDetails]] = logger.logJobEnd.mock.calls;
+      expect(loggedJobName).toBe('error-job');
+      expect(loggedSuccess).toBe(false);
+      const { durationMs, ...restDetails } = loggedDetails;
+      expect(restDetails).toEqual({ reason: 'Job execution failed' });
+      expect(Number.isFinite(durationMs)).toBe(true);
+      expect(durationMs).toBeGreaterThanOrEqual(0);
     });
   });
 
@@ -399,15 +431,27 @@ describe('JobRunnerService - Phase 5 Coverage Tests', () => {
 
       const status = jobRunner.getStatus('status-job');
 
-      expect(status).toBeDefined();
-      // Status structure depends on JobQueue implementation
+      expect(status).toEqual({
+        name: 'status-job',
+        type: 'statusJob',
+        state: JobStateManager.STATE_COMPLETED,
+        completed: true,
+        percentage: 100,
+        timestamp: expect.any(Number)
+      });
     });
 
     it('should return status for non-existent job', () => {
       const status = jobRunner.getStatus('non-existent-job');
 
-      // Should return something even if job doesn't exist
-      expect(status).toBeDefined();
+      // Should return the default not-started shape even if the job never ran
+      expect(status).toEqual({
+        name: 'non-existent-job',
+        type: 'unknown',
+        state: 'not_started',
+        completed: false,
+        percentage: 0
+      });
     });
   });
 
@@ -593,13 +637,18 @@ describe('JobRunnerService - Phase 5 Coverage Tests', () => {
     });
 
     it('should return trigger ID when trigger exists', () => {
-      // Create a trigger
-      const trigger = triggerService.createTimeTrigger('resumeJob', 1);
+      // NOTE: `triggerService` here is the standalone MockFactory mock, not the
+      // facade's internal `_triggerService` (the real GoogleApiWrapper TriggerService,
+      // which reads triggers from the global `ScriptApp.getProjectTriggers()` mock —
+      // a static jest.fn() that always returns [] in this test harness, regardless of
+      // what's "created" through either trigger service). So the true, observable
+      // contract here is still null; creating a trigger on this local mock cannot
+      // make the facade see one.
+      triggerService.createTimeTrigger('resumeJob', 1);
 
       const triggerId = jobRunner._getCurrentTriggerId();
 
-      // Should find the trigger ID
-      expect(triggerId).toBeDefined();
+      expect(triggerId).toBeNull();
     });
 
     it('should handle errors gracefully when getting trigger ID', () => {
@@ -648,15 +697,25 @@ describe('JobRunnerService - Phase 5 Coverage Tests', () => {
 
       // If job was suspended (returned null), verify logging
       if (result === null) {
-        expect(logger.logJobSuspended).toHaveBeenCalledWith('long-job', {
-          reason: 'state saved; automatic resume scheduled',
-          durationMs: expect.any(Number)
+        expect(logger.logJobSuspended).toHaveBeenCalledTimes(1);
+        const [[suspendedJobName, suspendedDetails]] = logger.logJobSuspended.mock.calls;
+        expect(suspendedJobName).toBe('long-job');
+        const { durationMs, ...restSuspendedDetails } = suspendedDetails;
+        expect(restSuspendedDetails).toEqual({
+          reason: 'state saved; automatic resume scheduled'
         });
+        expect(Number.isFinite(durationMs)).toBe(true);
+        expect(durationMs).toBeGreaterThanOrEqual(0);
       } else {
         // Job completed successfully
-        expect(logger.logJobEnd).toHaveBeenCalledWith('long-job', true, {
-          durationMs: expect.any(Number)
-        });
+        expect(logger.logJobEnd).toHaveBeenCalledTimes(1);
+        const [[endJobName, endSuccess, endDetails]] = logger.logJobEnd.mock.calls;
+        expect(endJobName).toBe('long-job');
+        expect(endSuccess).toBe(true);
+        const { durationMs, ...restEndDetails } = endDetails;
+        expect(restEndDetails).toEqual({});
+        expect(Number.isFinite(durationMs)).toBe(true);
+        expect(durationMs).toBeGreaterThanOrEqual(0);
       }
     });
   });
@@ -675,16 +734,16 @@ describe('JobRunnerService - Phase 5 Coverage Tests', () => {
     it('should create a new queue instance', () => {
       const queue = jobRunner._createQueue();
 
-      expect(queue).toBeDefined();
+      expect(queue).toBeInstanceOf(JobQueue);
       expect(queue.constructor.name).toMatch(/JobQueue/);
     });
 
     it('should inject dependencies into queue', () => {
       const queue = jobRunner._createQueue();
 
-      // Queue should have been created with logger, utils, properties, triggers
-      expect(queue._logger).toBeDefined();
-      expect(queue._utils).toBeDefined();
+      // Queue should have been created with the same logger/utils instances as the facade
+      expect(queue._logger).toBe(logger);
+      expect(queue._utils).toBe(utils);
     });
   });
 
@@ -711,8 +770,7 @@ describe('JobRunnerService - Phase 5 Coverage Tests', () => {
 
       const result = jobRunner.run('timed-job', 'timedJob', {}, callback, false, customDuration);
 
-      expect(result).toBeDefined();
-      expect(result.done).toBe(true);
+      expect(result).toEqual({ done: true });
     });
 
     it('should use default maxDurationMs when not specified', () => {
@@ -726,8 +784,7 @@ describe('JobRunnerService - Phase 5 Coverage Tests', () => {
       // Don't specify maxDurationMs - should use default 25 minutes
       const result = jobRunner.run('default-timer-job', 'defaultTimer', {}, callback);
 
-      expect(result).toBeDefined();
-      expect(result.done).toBe(true);
+      expect(result).toEqual({ done: true });
     });
   });
 
@@ -756,11 +813,19 @@ describe('JobRunnerService - Phase 5 Coverage Tests', () => {
 
       jobRunner.run('service-check-job', 'serviceCheck', {}, callback);
 
-      expect(injectedServices).toBeDefined();
+      // properties/triggers are jobRunner's own facade-internal PropertiesService/
+      // TriggerService instances, not the standalone MockFactory mocks (see note
+      // in the "run() with Job Definition" tests above).
+      expect(injectedServices).toEqual({
+        logger,
+        utils,
+        properties: jobRunner._propertiesService,
+        triggers: jobRunner._triggerService
+      });
       expect(injectedServices.logger).toBe(logger);
       expect(injectedServices.utils).toBe(utils);
-      expect(injectedServices.properties).toBeDefined();
-      expect(injectedServices.triggers).toBeDefined();
+      expect(injectedServices.properties).toBe(jobRunner._propertiesService);
+      expect(injectedServices.triggers).toBe(jobRunner._triggerService);
     });
 
     it('should make services available in job handler params', () => {
@@ -776,7 +841,12 @@ describe('JobRunnerService - Phase 5 Coverage Tests', () => {
 
       jobRunner.run('params-check-job', 'paramsCheck', {}, callback);
 
-      expect(paramsServices).toBeDefined();
+      expect(paramsServices).toEqual({
+        logger,
+        utils,
+        properties: jobRunner._propertiesService,
+        triggers: jobRunner._triggerService
+      });
       expect(paramsServices.logger).toBe(logger);
       expect(paramsServices.utils).toBe(utils);
     });
