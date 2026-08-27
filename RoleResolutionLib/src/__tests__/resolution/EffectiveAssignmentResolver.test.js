@@ -457,12 +457,14 @@ describe('EffectiveAssignmentResolver', () => {
       ],
       actors: ['old', 'middle', 'new']
     });
-    expect(() =>
-      resolver.resolve({
-        context: { group: 'G1', subject: 'S1' },
-        asOfDate: new Date('2026-01-12')
-      })
-    ).not.toThrow();
+    const [result] = resolver.resolve({
+      context: { group: 'G1', subject: 'S1' },
+      asOfDate: new Date('2026-01-12')
+    });
+    expect(result.permanentActor.id).toBe('new');
+    expect(result.trace.entries.filter(
+      (entry) => entry.stage === 'OVERRIDE' && entry.decision === 'APPLIED'
+    )).toHaveLength(2);
   });
 
   test.each(Object.values(RoutingPolicy))(
