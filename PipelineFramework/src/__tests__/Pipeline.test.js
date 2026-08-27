@@ -41,7 +41,7 @@ describe('Pipeline - Comprehensive Test Suite', () => {
     it('should create instance with default options', () => {
       const pipeline = new Pipeline(mocks.logger);
 
-      expect(pipeline).toBeDefined();
+      expect(pipeline).toBeInstanceOf(Pipeline);
       expect(pipeline.getName()).toBe('Pipeline');
       expect(pipeline.getSteps()).toEqual([]);
     });
@@ -290,6 +290,16 @@ describe('Pipeline - Comprehensive Test Suite', () => {
       };
     }
 
+    function expectSummary(logger, summary, position) {
+      expect(logger.logSummary).toHaveBeenCalledTimes(1);
+      const [[title, durationMs, actualSummary, actualPosition]] = logger.logSummary.mock.calls;
+      expect(title).toBe('⏹️ Pipeline completed');
+      expect(Number.isFinite(durationMs)).toBe(true);
+      expect(durationMs).toBeGreaterThanOrEqual(0);
+      expect(actualSummary).toBe(summary);
+      expect(actualPosition).toEqual(position);
+    }
+
     it('emits ordered semantic start, step, and summary events with tree positions', () => {
       const logger = semanticLogger();
       const logPosition = { depth: 1, isLast: false, ancestorHasNext: [] };
@@ -330,9 +340,8 @@ describe('Pipeline - Comprehensive Test Suite', () => {
         { content: undefined, durationMs: 5 },
         { depth: 2, isLast: true, ancestorHasNext: [true] }
       );
-      expect(logger.logSummary).toHaveBeenCalledWith(
-        '⏹️ Pipeline completed',
-        expect.any(Number),
+      expectSummary(
+        logger,
         '2 executed, 1 skipped, 0 failed',
         { depth: 1, isLast: true, ancestorHasNext: [] }
       );
@@ -361,9 +370,8 @@ describe('Pipeline - Comprehensive Test Suite', () => {
           ancestorHasNext: [true]
         }
       );
-      expect(logger.logSummary).toHaveBeenCalledWith(
-        '⏹️ Pipeline completed',
-        expect.any(Number),
+      expectSummary(
+        logger,
         '0 executed, 0 skipped, 1 failed',
         { depth: 0, isLast: true, ancestorHasNext: [] }
       );
@@ -378,9 +386,8 @@ describe('Pipeline - Comprehensive Test Suite', () => {
         isLast: false,
         ancestorHasNext: []
       });
-      expect(dryLogger.logSummary).toHaveBeenCalledWith(
-        '⏹️ Pipeline completed',
-        expect.any(Number),
+      expectSummary(
+        dryLogger,
         'dry run; 0 executed, 0 skipped, 0 failed',
         { depth: 0, isLast: true, ancestorHasNext: [] }
       );
@@ -392,9 +399,8 @@ describe('Pipeline - Comprehensive Test Suite', () => {
         isLast: false,
         ancestorHasNext: []
       });
-      expect(emptyLogger.logSummary).toHaveBeenCalledWith(
-        '⏹️ Pipeline completed',
-        expect.any(Number),
+      expectSummary(
+        emptyLogger,
         '0 executed, 0 skipped, 0 failed',
         { depth: 0, isLast: true, ancestorHasNext: [] }
       );
@@ -489,15 +495,14 @@ describe('Pipeline - Comprehensive Test Suite', () => {
 
       pipeline.execute();
 
-      expect(semanticSpy).toHaveBeenCalledWith(
-        'GenerateName',
-        'EXECUTED',
-        {
-          content: 'PDP_DSA_Rossi_Mario_2026',
-          durationMs: expect.any(Number)
-        },
-        { depth: 1, isLast: true, ancestorHasNext: [true] }
-      );
+      expect(semanticSpy).toHaveBeenCalledTimes(1);
+      const [[stepName, status, details, position]] = semanticSpy.mock.calls;
+      expect(stepName).toBe('GenerateName');
+      expect(status).toBe('EXECUTED');
+      expect(details.content).toBe('PDP_DSA_Rossi_Mario_2026');
+      expect(Number.isFinite(details.durationMs)).toBe(true);
+      expect(details.durationMs).toBeGreaterThanOrEqual(0);
+      expect(position).toEqual({ depth: 1, isLast: true, ancestorHasNext: [true] });
       const nestedLine = emitted.find((line) => line.includes('nested service detail'));
       const stepLine = emitted.find((line) => line.includes('[GenerateName]'));
       expect(nestedLine).toMatch(/^  │    ├─ \[INFO\] nested service detail$/);
@@ -672,11 +677,12 @@ describe('Pipeline - Comprehensive Test Suite', () => {
       pipeline.execute();
 
       expect(mocks.exceptionService.executeWithRetry).toHaveBeenCalledTimes(1);
-      expect(mocks.exceptionService.executeWithRetry).toHaveBeenCalledWith(
-        expect.any(Function),
-        {},
-        3
-      );
+      const [[operation, options, retries]] = mocks.exceptionService.executeWithRetry.mock.calls;
+      expect(operation).toBeInstanceOf(Function);
+      expect(options).toEqual({});
+      expect(retries).toBe(3);
+      expect(mockStep.execute).toHaveBeenCalledTimes(1);
+      expect(mockStep.execute.mock.calls[0][0]).toBeInstanceOf(PipelineContext);
     });
 
     it('should throw error if initialData is invalid', () => {
