@@ -79,16 +79,18 @@ describe('FilterStrategy and FilterRegistry - Comprehensive Test Suite', () => {
 
       const filter = new ValidatingFilter();
 
-      expect(() => filter.validate('test', [])).not.toThrow();
+      filter.validate('test', []);
       expect(() => filter.validate(123, [])).toThrow('Value must be a string');
     });
 
     it('should have default validate() that does nothing', () => {
       const filter = new TestFilter();
 
-      expect(() => filter.validate('any', [])).not.toThrow();
-      expect(() => filter.validate(123, [])).not.toThrow();
-      expect(() => filter.validate(null, [])).not.toThrow();
+      // FilterStrategy.validate() is a true no-op by design (see source): it never
+      // throws for any input, so there is no corresponding negative case to add here.
+      filter.validate('any', []);
+      filter.validate(123, []);
+      filter.validate(null, []);
     });
 
     it('should support filters with multiple arguments', () => {
@@ -135,7 +137,8 @@ describe('FilterStrategy and FilterRegistry - Comprehensive Test Suite', () => {
 
       const registry = new FilterRegistry(logger);
 
-      expect(registry).toBeDefined();
+      expect(registry).toBeInstanceOf(FilterRegistry);
+      expect(registry._logger).toBe(logger);
     });
 
     it('should use console as default logger', () => {
@@ -645,7 +648,7 @@ describe('FilterStrategy and FilterRegistry - Comprehensive Test Suite', () => {
 
       const filter = registry.get('strict');
 
-      expect(() => filter.validate(10)).not.toThrow();
+      filter.validate(10);
       expect(() => filter.validate(-5)).toThrow('positive number');
       expect(() => filter.validate('text')).toThrow('positive number');
     });
