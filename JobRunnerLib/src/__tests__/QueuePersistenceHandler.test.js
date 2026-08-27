@@ -309,13 +309,15 @@ describe('QueuePersistenceHandler', () => {
       });
       stateManager.setState('running'); // version -> 1
 
-      expect(() =>
-        handler.batchSave({
-          state: 'to_resume',
-          resumeState: bigState,
-          progress: { completed: false, percentage: 42 }
-        })
-      ).not.toThrow();
+      // Real effect proven by the assertions below (suspend-critical fields
+      // still persisted, resumeState falls back to inline JSON); bare call
+      // is enough here, the graceful-fallback contract is the point of the
+      // test, not merely "doesn't throw".
+      handler.batchSave({
+        state: 'to_resume',
+        resumeState: bigState,
+        progress: { completed: false, percentage: 42 }
+      });
 
       // The suspend-critical fields must all still be persisted...
       expect(propertiesService.getProperty('job_job-a')).toBe('to_resume');
@@ -378,7 +380,11 @@ describe('QueuePersistenceHandler', () => {
     });
 
     it('does not throw when reset is called with no prior state at all', () => {
-      expect(() => handler.reset()).not.toThrow();
+      // reset() takes no args, so there is no invalid-input path to
+      // negative-test; the real contract is idempotent no-op behavior,
+      // pinned via its actual (undefined) return and unchanged empty state.
+      expect(handler.reset()).toBeUndefined();
+      expect(handler.loadResumeState()).toBeNull();
     });
 
     it('does not throw even if the Drive cleanup itself fails (best-effort)', () => {
@@ -387,7 +393,11 @@ describe('QueuePersistenceHandler', () => {
       driveApp.getFileById.mockImplementationOnce(() => {
         throw new Error('drive down');
       });
-      expect(() => handler.reset()).not.toThrow();
+      // Real effect: despite the Drive throw, reset() still clears the
+      // PropertiesService-backed state (best-effort Drive cleanup only).
+      expect(handler.reset()).toBeUndefined();
+      expect(handler.loadResumeState()).toBeNull();
+      expect(propertiesService.getProperty('state_file_id_job-a')).toBeNull();
     });
   });
 });
