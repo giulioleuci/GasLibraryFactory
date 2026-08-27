@@ -182,10 +182,24 @@ describe('ValueResolver', () => {
       const result = resolver.resolve(source, context);
 
       expect(result).toBe(42);
-      expect(mockExpressionEngine.evaluate).toHaveBeenCalledWith(
-        '{{count}} + 1',
-        expect.any(Object)
-      );
+      expect(mockExpressionEngine.evaluate).toHaveBeenCalledWith('{{count}} + 1', {
+        step: {
+          name: 'TestStep',
+          success: true,
+          skipped: false,
+          durationMs: 100,
+          error: null
+        },
+        stepResult: {
+          success: true,
+          skipped: false,
+          durationMs: 100,
+          output: {}
+        },
+        stepOutput: {},
+        pipeline: { count: 41 },
+        metadata: {}
+      });
     });
 
     it('should throw when no expression engine', () => {
@@ -206,10 +220,24 @@ describe('ValueResolver', () => {
 
       expect(mockExpressionEngine.evaluate).toHaveBeenCalledWith(
         '{{step.success}}',
-        expect.objectContaining({
-          step: expect.any(Object),
-          pipeline: expect.any(Object)
-        })
+        {
+          step: {
+            name: 'TestStep',
+            success: true,
+            skipped: false,
+            durationMs: 100,
+            error: null
+          },
+          stepResult: {
+            success: true,
+            skipped: false,
+            durationMs: 100,
+            output: {}
+          },
+          stepOutput: {},
+          pipeline: { userId: 'user-123' },
+          metadata: {}
+        }
       );
     });
   });
