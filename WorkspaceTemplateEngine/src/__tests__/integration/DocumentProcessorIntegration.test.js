@@ -22,29 +22,6 @@ describe('DocumentProcessor + PlaceholderService + GoogleApiWrapper Integration'
   let mockDocumentService;
   let processor;
 
-  // Mock Google Docs document structure
-  const createMockDocument = (content) => {
-    const mockBody = {
-      _content: content,
-      getText: jest.fn().mockReturnValue(content),
-      replaceText: jest.fn((pattern, replacement) => {
-        mockBody._content = mockBody._content.replace(
-          new RegExp(pattern.replace(/\\/g, ''), 'g'),
-          replacement
-        );
-        return mockBody;
-      }),
-      getTables: jest.fn().mockReturnValue([]),
-      getParagraphs: jest.fn().mockReturnValue([])
-    };
-
-    return {
-      getId: jest.fn().mockReturnValue('doc-123'),
-      getName: jest.fn().mockReturnValue('Test Document'),
-      getBody: jest.fn().mockReturnValue(mockBody)
-    };
-  };
-
   beforeEach(() => {
     logger = {
       debug: jest.fn(),
@@ -61,9 +38,7 @@ describe('DocumentProcessor + PlaceholderService + GoogleApiWrapper Integration'
     placeholderService = new PlaceholderService({ logger, mustache });
 
     mockDocumentService = {
-      getDocumentById: jest.fn(),
       createDocument: jest.fn(),
-      copyDocument: jest.fn(),
       scanDocumentStructure: jest.fn().mockReturnValue({
         paragraphs: [],
         tables: [],
@@ -186,29 +161,12 @@ Name\tEmail\tDepartment
     });
   });
 
-  describe('document creation from template', () => {
-    // Note: createFromTemplate is not a method on DocumentProcessor
-    // This test describes desired functionality but the feature doesn't exist yet
-    it.skip('should create new document from template (feature not implemented)', () => {
-      const templateDoc = createMockDocument('Hello {{name}}!');
-      const newDoc = createMockDocument('Hello {{name}}!');
-      newDoc.getId.mockReturnValue('new-doc-456');
-
-      mockDocumentService.getDocumentById.mockReturnValue(templateDoc);
-      mockDocumentService.copyDocument.mockReturnValue(newDoc);
-
-      const data = { name: 'World' };
-
-      // This method doesn't exist - skipping test
-      // const result = processor.createFromTemplate('template-123', 'New Document', data);
-
-      expect(mockDocumentService.copyDocument).toHaveBeenCalledWith(
-        'template-123',
-        'New Document',
-        expect.any(Object)
-      );
-    });
-  });
+  // "document creation from template" (createFromTemplate) moved to
+  // WorkspaceTemplateEngine/__testOnline__/WorkspaceTemplateEngineTests.gs as
+  // `${NS}/Document/CreateFromTemplate` — the method doesn't exist on
+  // DocumentProcessor yet, so this belongs where a real API can be exercised, as the
+  // pending specification of that feature, not as an it.skip() in an offline suite
+  // (task 9 step 4 of the audit remediation plan).
 
   describe('error handling', () => {
     it('should handle missing document gracefully', () => {
