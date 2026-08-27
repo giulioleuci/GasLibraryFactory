@@ -70,9 +70,9 @@
 ---
 <br>
 
-## CLASS: MockSchemaValidator
-**File Path:** `GasSchemaValidatorLib/src/testing/mocks.js`
-**Constructor Usage:** `const instance = new MockSchemaValidator();`
+## CLASS: DatasetValidator
+**File Path:** `GasSchemaValidatorLib/src/DatasetValidator.js`
+**Constructor Usage:** `const instance = new DatasetValidator();`
 **Description:** N/A
 
 ### Raw JSDoc Context:
@@ -80,6 +80,124 @@
 /** Class definition */
 ```
 
+### Methods of DatasetValidator
+
+#### METHOD: DatasetValidator.validate
+- **Scope:** instance
+- **LLM Call Syntax:** `const result = datasetValidator.validate(datasets, rules);`
+- **Pure JSDoc:**
+```javascript
+/**
+   * @param {Record<string, Array<Record<string, unknown>>>} datasets
+   * @param {Array<object>} rules
+   * @returns {{violations: Array<object>}}
+   */
+```
+---
+#### METHOD: DatasetValidator.if
+- **Scope:** instance
+- **LLM Call Syntax:** `datasetValidator.if(this._logger);`
+- **Pure JSDoc:**
+```javascript
+/** Method if */
+```
+---
+#### METHOD: DatasetValidator.switch
+- **Scope:** instance
+- **LLM Call Syntax:** `datasetValidator.switch(rule.type);`
+- **Pure JSDoc:**
+```javascript
+/** Method switch */
+```
+---
+#### METHOD: DatasetValidator.if
+- **Scope:** instance
+- **LLM Call Syntax:** `datasetValidator.if(set);`
+- **Pure JSDoc:**
+```javascript
+/** Method if */
+```
+---
+#### METHOD: DatasetValidator.if
+- **Scope:** instance
+- **LLM Call Syntax:** `datasetValidator.if(value !);`
+- **Pure JSDoc:**
+```javascript
+/** Method if */
+```
+---
+#### METHOD: DatasetValidator.if
+- **Scope:** instance
+- **LLM Call Syntax:** `datasetValidator.if(value);`
+- **Pure JSDoc:**
+```javascript
+/** Method if */
+```
+---
+#### METHOD: DatasetValidator.if
+- **Scope:** instance
+- **LLM Call Syntax:** `datasetValidator.if(raw);`
+- **Pure JSDoc:**
+```javascript
+/** Method if */
+```
+---
+#### METHOD: DatasetValidator.if
+- **Scope:** instance
+- **LLM Call Syntax:** `datasetValidator.if(typeof raw);`
+- **Pure JSDoc:**
+```javascript
+/** Method if */
+```
+---
+#### METHOD: DatasetValidator.if
+- **Scope:** instance
+- **LLM Call Syntax:** `datasetValidator.if(value);`
+- **Pure JSDoc:**
+```javascript
+/** Method if */
+```
+---
+#### METHOD: DatasetValidator.catch
+- **Scope:** instance
+- **LLM Call Syntax:** `datasetValidator.catch(error);`
+- **Pure JSDoc:**
+```javascript
+/** Method catch */
+```
+---
+#### METHOD: DatasetValidator.if
+- **Scope:** instance
+- **LLM Call Syntax:** `datasetValidator.if(raw);`
+- **Pure JSDoc:**
+```javascript
+/** Method if */
+```
+---
+#### METHOD: DatasetValidator.if
+- **Scope:** instance
+- **LLM Call Syntax:** `datasetValidator.if(!allowEmpty);`
+- **Pure JSDoc:**
+```javascript
+/** Method if */
+```
+---
+#### METHOD: DatasetValidator.if
+- **Scope:** instance
+- **LLM Call Syntax:** `datasetValidator.if(rule.allowWildcard && token);`
+- **Pure JSDoc:**
+```javascript
+/** Method if */
+```
+---
+#### METHOD: DatasetValidator.if
+- **Scope:** instance
+- **LLM Call Syntax:** `datasetValidator.if(!hit);`
+- **Pure JSDoc:**
+```javascript
+/** Method if */
+```
+---
 <br>
 
 ## CLASS: GasValidators
