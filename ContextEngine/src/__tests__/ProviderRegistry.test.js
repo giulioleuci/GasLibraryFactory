@@ -34,7 +34,7 @@ describe('ProviderRegistry - Comprehensive Test Suite', () => {
 
   describe('Constructor and Initialization', () => {
     it('should create instance with logger', () => {
-      expect(registry).toBeDefined();
+      expect(registry).toBeInstanceOf(ProviderRegistry);
       expect(registry.logger).toBe(mocks.logger);
     });
 
@@ -231,8 +231,7 @@ describe('ProviderRegistry - Comprehensive Test Suite', () => {
     it('should get factory provider', () => {
       const provider = registry.get('FactoryProvider');
 
-      expect(provider).toBeDefined();
-      expect(typeof provider.provide).toBe('function');
+      expect(provider).toBe(mockProvider);
     });
 
     it('should throw error if provider type is invalid', () => {
