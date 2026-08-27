@@ -85,21 +85,32 @@ describe('ProcessMonitorService', () => {
 
   describe('registerJob', () => {
     it('should register a new job with PENDING status', () => {
+      const beforeMs = Date.now();
       service.registerJob('test-job');
 
       const state = JSON.parse(cacheStore['PROCESS_MONITOR_test-job']);
       expect(state.jobId).toBe('test-job');
       expect(state.status).toBe(ProcessState.PENDING);
       expect(state.percentage).toBe(0);
-      expect(state.startTime).toBeDefined();
+      expect(Number.isInteger(state.startTime)).toBe(true);
+      expect(state.startTime).toBeGreaterThanOrEqual(beforeMs);
     });
 
     it('should persist to properties on register', () => {
       service.registerJob('test-job');
 
-      expect(propsStore['PM_test-job']).toBeDefined();
-      const state = JSON.parse(propsStore['PM_test-job']);
-      expect(state.status).toBe(ProcessState.PENDING);
+      const raw = propsStore['PM_test-job'];
+      expect(typeof raw).toBe('string');
+      const state = JSON.parse(raw);
+      expect(state).toMatchObject({
+        jobId: 'test-job',
+        status: ProcessState.PENDING,
+        percentage: 0,
+        message: '',
+        endTime: null,
+        error: null,
+        steps: []
+      });
     });
 
     it('should throw error if jobId is empty', () => {
@@ -186,13 +197,16 @@ describe('ProcessMonitorService', () => {
     });
 
     it('should add a new step with RUNNING status', () => {
+      const beforeMs = Date.now();
       service.logStepStart('test-job', 'Extract');
 
       const state = service.getJobState('test-job');
       expect(state.steps).toHaveLength(1);
       expect(state.steps[0].name).toBe('Extract');
       expect(state.steps[0].status).toBe(StepState.RUNNING);
-      expect(state.steps[0].startTime).toBeDefined();
+      expect(Number.isInteger(state.steps[0].startTime)).toBe(true);
+      expect(state.steps[0].startTime).toBeGreaterThanOrEqual(beforeMs);
+      expect(state.steps[0].endTime).toBeNull();
     });
 
     it('should throw error for empty stepName', () => {
@@ -209,11 +223,13 @@ describe('ProcessMonitorService', () => {
     });
 
     it('should mark step as COMPLETED when success=true', () => {
+      const beforeMs = Date.now();
       service.logStepComplete('test-job', 'Extract', true);
 
       const state = service.getJobState('test-job');
       expect(state.steps[0].status).toBe(StepState.COMPLETED);
-      expect(state.steps[0].endTime).toBeDefined();
+      expect(Number.isInteger(state.steps[0].endTime)).toBe(true);
+      expect(state.steps[0].endTime).toBeGreaterThanOrEqual(beforeMs);
     });
 
     it('should mark step as FAILED when success=false', () => {
@@ -245,13 +261,15 @@ describe('ProcessMonitorService', () => {
     });
 
     it('should mark job as COMPLETED with 100%', () => {
+      const beforeMs = Date.now();
       service.completeJob('test-job', 'Done!');
 
       const state = service.getJobState('test-job');
       expect(state.status).toBe(ProcessState.COMPLETED);
       expect(state.percentage).toBe(100);
       expect(state.message).toBe('Done!');
-      expect(state.endTime).toBeDefined();
+      expect(Number.isInteger(state.endTime)).toBe(true);
+      expect(state.endTime).toBeGreaterThanOrEqual(beforeMs);
     });
 
     it('should persist to properties on complete', () => {
@@ -268,12 +286,14 @@ describe('ProcessMonitorService', () => {
     });
 
     it('should mark job as FAILED with error message from Error object', () => {
+      const beforeMs = Date.now();
       service.setError('test-job', new Error('Connection failed'));
 
       const state = service.getJobState('test-job');
       expect(state.status).toBe(ProcessState.FAILED);
       expect(state.error).toBe('Connection failed');
-      expect(state.endTime).toBeDefined();
+      expect(Number.isInteger(state.endTime)).toBe(true);
+      expect(state.endTime).toBeGreaterThanOrEqual(beforeMs);
     });
 
     it('should mark job as FAILED with string error', () => {
