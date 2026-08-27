@@ -32,7 +32,7 @@ describe('RecipeParser', () => {
 
   describe('Constructor', () => {
     it('should create an instance with valid logger', () => {
-      expect(parser).toBeDefined();
+      expect(parser).toBeInstanceOf(RecipeParser);
       expect(parser.logger).toBe(logger);
     });
 
@@ -94,7 +94,17 @@ describe('RecipeParser', () => {
 
       const result = parser.parse(recipe);
 
-      expect(result).toBeDefined();
+      expect(result).toEqual({
+        providers: [
+          {
+            name: 'userData',
+            type: 'UserDataProvider',
+            parameters: {},
+            condition: null,
+            postProcess: []
+          }
+        ]
+      });
       expect(result.providers).toHaveLength(1);
       expect(result.providers[0].name).toBe('userData');
       expect(result.providers[0].type).toBe('UserDataProvider');
@@ -207,8 +217,13 @@ describe('RecipeParser', () => {
 
       parser.parse(recipe);
 
-      expect(logger.getLogsByLevel('DEBUG').length).toBeGreaterThan(0);
-      expect(logger.getLogsMatching(/validated successfully/).length).toBeGreaterThan(0);
+      expect(logger.getLogsByLevel('DEBUG')).toEqual([
+        {
+          level: 'DEBUG',
+          message: 'Recipe validated successfully with 1 provider(s)',
+          context: null
+        }
+      ]);
     });
   });
 
@@ -459,8 +474,9 @@ describe('RecipeParser', () => {
         fail('Should have thrown error');
       } catch (error) {
         expect(error).toBeInstanceOf(RecipeValidationError);
-        expect(error.validationErrors).toBeDefined();
-        expect(error.validationErrors.length).toBeGreaterThan(0);
+        expect(error.validationErrors).toEqual([
+          "Provider at index 0: 'name' is required and must be a string"
+        ]);
       }
     });
 
@@ -471,8 +487,13 @@ describe('RecipeParser', () => {
         // Expected error
       }
 
-      expect(logger.getLogsByLevel('ERROR').length).toBeGreaterThan(0);
-      expect(logger.getLogsMatching(/validation failed/).length).toBeGreaterThan(0);
+      expect(logger.getLogsByLevel('ERROR')).toEqual([
+        {
+          level: 'ERROR',
+          message: 'Recipe validation failed with 1 error(s)',
+          context: null
+        }
+      ]);
     });
 
     it('should collect multiple validation errors', () => {
@@ -516,7 +537,7 @@ describe('RecipeParser', () => {
       const result = parser.validate(recipe);
 
       expect(result.isValid).toBe(false);
-      expect(result.errors.length).toBeGreaterThan(0);
+      expect(result.errors).toEqual(['"providers" array must contain at least one provider']);
     });
 
     it('should not throw errors for invalid recipe', () => {
@@ -528,7 +549,13 @@ describe('RecipeParser', () => {
         ]
       };
 
-      expect(() => parser.validate(recipe)).not.toThrow();
+      expect(parser.validate(recipe)).toEqual({
+        isValid: false,
+        errors: [
+          "Provider at index 0: 'name' is required and must be a string",
+          "Provider at index 0: 'type' is required and must be a string"
+        ]
+      });
     });
 
     it('should return validation errors in result', () => {
