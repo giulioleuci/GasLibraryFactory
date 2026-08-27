@@ -55,7 +55,7 @@ describe('Step - Comprehensive Test Suite', () => {
     it('should create instance with required parameters', () => {
       const step = new TestStep('testStep', mocks.logger);
 
-      expect(step).toBeDefined();
+      expect(step).toBeInstanceOf(TestStep);
       expect(step.getName()).toBe('testStep');
     });
 
@@ -181,7 +181,10 @@ describe('Step - Comprehensive Test Suite', () => {
 
       const context = new PipelineContext({ userId: 123, startDate: '2024-01-01' });
 
-      expect(() => step.verifyContext(context)).not.toThrow();
+      step.verifyContext(context);
+      expect(() =>
+        step.verifyContext(new PipelineContext({ userId: 123 }))
+      ).toThrow(ContextValidationError);
     });
 
     it('should throw error if required keys are missing', () => {
@@ -198,7 +201,7 @@ describe('Step - Comprehensive Test Suite', () => {
       const step = new TestStep('testStep', mocks.logger);
       const context = new PipelineContext({ customKey: 'value' });
 
-      expect(() => step.verifyContext(context, ['customKey'])).not.toThrow();
+      step.verifyContext(context, ['customKey']);
       expect(() => step.verifyContext(context, ['missingKey'])).toThrow(ContextValidationError);
     });
 
@@ -206,7 +209,11 @@ describe('Step - Comprehensive Test Suite', () => {
       const step = new TestStep('testStep', mocks.logger);
       const context = new PipelineContext();
 
-      expect(() => step.verifyContext(context)).not.toThrow();
+      step.verifyContext(context);
+      const requiredStep = new TestStep('requiredStep', mocks.logger, {
+        requiredKeys: ['required']
+      });
+      expect(() => requiredStep.verifyContext(context)).toThrow(ContextValidationError);
     });
   });
 
@@ -387,7 +394,7 @@ describe('Step - Comprehensive Test Suite', () => {
       const result = failingStep.execute(context);
 
       expect(result.success).toBe(true);
-      expect(result.error).toBeDefined();
+      expect(result.error).toBeInstanceOf(Error);
       expect(result.error.message).toBe('Test error');
       expect(mocks.logger.error).not.toHaveBeenCalled();
       expect(mocks.logger.warn).not.toHaveBeenCalled();
