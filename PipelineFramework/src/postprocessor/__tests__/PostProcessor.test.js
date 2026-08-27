@@ -166,7 +166,10 @@ describe('PostProcessor', () => {
   describe('_validateConfig', () => {
     it('should be callable without error by default', () => {
       const processor = new TestPostProcessor('test-1');
-      expect(() => processor._validateConfig()).not.toThrow();
+
+      processor._validateConfig();
+
+      expect(processor.getConfig()).toEqual({});
     });
   });
 
