@@ -1,6 +1,7 @@
 import { RoleRegistry } from '../../registry/RoleRegistry.js';
 import { Role } from '../../core/Role.js';
 import { ScopeType } from '../../core/ScopeType.js';
+import { ResolutionStrategy } from '../../core/ResolutionStrategy.js';
 import {
   RoleNotFoundError,
   RoleValidationError
@@ -198,17 +199,26 @@ describe('RoleRegistry', () => {
       registry.register({ id: 'r1', name: 'Role 1' });
       const json = registry.toJSON();
       expect(json.roles).toEqual(expect.objectContaining({
-        r1: expect.objectContaining({ id: 'r1', name: 'Role 1' })
+        r1: expect.objectContaining({
+          id: 'r1',
+          name: 'Role 1',
+          description: '',
+          scopeType: ScopeType.GLOBAL,
+          resolutionStrategy: ResolutionStrategy.FIRST,
+          allowsDelegation: true,
+          fallbackRoles: [],
+          metadata: {}
+        })
       }));
       expect(json.roles.r1).toEqual(expect.objectContaining({
         id: 'r1',
         name: 'Role 1',
-        description: expect.any(String),
-        scopeType: expect.any(String),
-        resolutionStrategy: expect.any(String),
-        allowsDelegation: expect.any(Boolean),
-        fallbackRoles: expect.any(Array),
-        metadata: expect.any(Object)
+        description: '',
+        scopeType: ScopeType.GLOBAL,
+        resolutionStrategy: ResolutionStrategy.FIRST,
+        allowsDelegation: true,
+        fallbackRoles: [],
+        metadata: {}
       }));
       expect(json.roles.r1.name).toBe('Role 1');
     });
