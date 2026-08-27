@@ -69,7 +69,7 @@ describe('PipelineFramework Error Classes', () => {
       it('should maintain stack trace', () => {
         const error = new PipelineError('Test error');
 
-        expect(error.stack).toBeDefined();
+        expect(typeof error.stack).toBe('string');
         expect(error.stack).toContain('PipelineError');
       });
 
@@ -511,9 +511,9 @@ describe('PipelineFramework Error Classes', () => {
       ];
 
       errors.forEach((error) => {
-        expect(error.stack).toBeDefined();
+        expect(error.stack).toContain(error.name);
         expect(typeof error.stack).toBe('string');
-        expect(error.stack.length).toBeGreaterThan(0);
+        expect(error.stack).toContain(error.message);
       });
     });
 
