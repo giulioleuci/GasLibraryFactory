@@ -51,7 +51,7 @@ describe('PlaceholderService - Comprehensive Test Suite', () => {
   describe('Constructor and Initialization', () => {
     it('should create instance with required dependencies', () => {
       const instance = new PlaceholderService({ logger: mockLogger, mustache: mockMustache });
-      expect(instance).toBeDefined();
+      expect(instance).toBeInstanceOf(PlaceholderService);
       expect(instance.mustache).toBe(mockMustache);
     });
 
@@ -94,12 +94,12 @@ describe('PlaceholderService - Comprehensive Test Suite', () => {
 
     it('should handle empty context', () => {
       const result = service.processString('No {{placeholders}}', {});
-      expect(result).toBeDefined();
+      expect(result).toBe('No {{placeholders}}');
     });
 
     it('should allow null context', () => {
       const result = service.processString('template', null);
-      expect(result).toBeDefined();
+      expect(result).toBe('template');
     });
   });
 
@@ -187,7 +187,7 @@ describe('PlaceholderService - Comprehensive Test Suite', () => {
 
       const result = service.resolve(template, context);
 
-      expect(result).toBeDefined();
+      expect(result).toBe('test');
       expect(mockMustache.render).toHaveBeenCalledWith(template, context);
     });
 
