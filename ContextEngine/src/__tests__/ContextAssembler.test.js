@@ -9,6 +9,9 @@ import { ContextAssembler } from '../ContextAssembler';
 import { ProviderRegistry } from '../ProviderRegistry';
 import { DataProvider } from '../DataProvider';
 import { ContextEngineError } from '../internal/errors/ContextEngineError';
+import { DependencyResolver } from '../internal/DependencyResolver';
+import { RecipeParser } from '../internal/RecipeParser';
+import { PostProcessor } from '../PostProcessor';
 import { MockFactory } from '../../../test/fakes';
 
 // Create test providers
@@ -93,7 +96,7 @@ describe('ContextAssembler - Comprehensive Test Suite', () => {
     it('should create instance with required parameters', () => {
       const assembler = new ContextAssembler(mocks.logger, mockRegistry);
 
-      expect(assembler).toBeDefined();
+      expect(assembler).toBeInstanceOf(ContextAssembler);
       expect(assembler.logger).toBe(mocks.logger);
       expect(assembler.providerRegistry).toBe(mockRegistry);
     });
@@ -183,15 +186,15 @@ describe('ContextAssembler - Comprehensive Test Suite', () => {
     });
 
     it('should return dependency resolver', () => {
-      expect(assembler.dependencyResolver).toBeDefined();
+      expect(assembler.dependencyResolver).toBeInstanceOf(DependencyResolver);
     });
 
     it('should return recipe parser', () => {
-      expect(assembler.recipeParser).toBeDefined();
+      expect(assembler.recipeParser).toBeInstanceOf(RecipeParser);
     });
 
     it('should return post processor', () => {
-      expect(assembler.postProcessor).toBeDefined();
+      expect(assembler.postProcessor).toBeInstanceOf(PostProcessor);
     });
   });
 
@@ -213,9 +216,14 @@ describe('ContextAssembler - Comprehensive Test Suite', () => {
 
       const context = assembler.assemble(recipe, { userId: 123 });
 
-      expect(context.userData).toBeDefined();
-      expect(context.userData.id).toBe(123);
-      expect(context.userData.name).toBe('User 123');
+      expect(context).toEqual({
+        userData: {
+          id: 123,
+          name: 'User 123',
+          email: 'user123@example.com',
+          isActive: true
+        }
+      });
     });
 
     it('should assemble context with multiple providers', () => {
@@ -236,9 +244,18 @@ describe('ContextAssembler - Comprehensive Test Suite', () => {
 
       const context = assembler.assemble(recipe, { userId: 123 });
 
-      expect(context.userData).toBeDefined();
-      expect(context.userOrders).toBeDefined();
-      expect(context.userOrders).toHaveLength(2);
+      expect(context).toEqual({
+        userData: {
+          id: 123,
+          name: 'User 123',
+          email: 'user123@example.com',
+          isActive: true
+        },
+        userOrders: [
+          { id: 1, userId: 123, total: 50, status: 'completed' },
+          { id: 2, userId: 123, total: 75, status: 'pending' }
+        ]
+      });
     });
 
     it('should throw error if recipe is invalid', () => {
@@ -368,8 +385,18 @@ describe('ContextAssembler - Comprehensive Test Suite', () => {
 
       const context = assembler.assemble(recipe, { userId: 123 });
 
-      expect(context.userData).toBeDefined();
-      expect(context.userOrders).toBeDefined();
+      expect(context).toEqual({
+        userData: {
+          id: 123,
+          name: 'User 123',
+          email: 'user123@example.com',
+          isActive: true
+        },
+        userOrders: [
+          { id: 1, userId: 123, total: 50, status: 'completed' },
+          { id: 2, userId: 123, total: 75, status: 'pending' }
+        ]
+      });
       expect(mockExpressionEngine.evaluate).toHaveBeenCalled();
     });
 
@@ -394,8 +421,14 @@ describe('ContextAssembler - Comprehensive Test Suite', () => {
 
       const context = assembler.assemble(recipe, { userId: 123 });
 
-      expect(context.userData).toBeDefined();
-      expect(context.userOrders).toBeUndefined();
+      expect(context).toEqual({
+        userData: {
+          id: 123,
+          name: 'User 123',
+          email: 'user123@example.com',
+          isActive: true
+        }
+      });
     });
 
     it('should default to true when no expression engine provided', () => {
@@ -414,8 +447,17 @@ describe('ContextAssembler - Comprehensive Test Suite', () => {
 
       const context = assembler.assemble(recipe, { userId: 123 });
 
-      expect(context.userData).toBeDefined();
-      expect(mocks.logger.warn).toHaveBeenCalled();
+      expect(context).toEqual({
+        userData: {
+          id: 123,
+          name: 'User 123',
+          email: 'user123@example.com',
+          isActive: true
+        }
+      });
+      expect(mocks.logger.warn).toHaveBeenCalledWith(
+        'Condition specified but no expression engine provided - defaulting to true'
+      );
     });
   });
 
@@ -443,10 +485,7 @@ describe('ContextAssembler - Comprehensive Test Suite', () => {
 
       const context = assembler.assemble(recipe, { userId: 123 });
 
-      expect(context.userData.id).toBeDefined();
-      expect(context.userData.name).toBeDefined();
-      expect(context.userData.email).toBeUndefined();
-      expect(context.userData.isActive).toBeUndefined();
+      expect(context).toEqual({ userData: { id: 123, name: 'User 123' } });
     });
 
     it('should apply multiple post-processors in sequence', () => {
@@ -472,9 +511,13 @@ describe('ContextAssembler - Comprehensive Test Suite', () => {
 
       const context = assembler.assemble(recipe, { userId: 123 });
 
-      expect(context.userData.id).toBeDefined();
-      expect(context.userData.userName).toBe('User 123');
-      expect(context.userData.name).toBeUndefined();
+      expect(context).toEqual({
+        userData: {
+          id: 123,
+          userName: 'User 123',
+          email: 'user123@example.com'
+        }
+      });
     });
   });
 
@@ -586,7 +629,9 @@ describe('ContextAssembler - Comprehensive Test Suite', () => {
       const validation = assembler.validateRecipe(recipe);
 
       expect(validation.isValid).toBe(false);
-      expect(validation.errors.length).toBeGreaterThan(0);
+      expect(validation.errors).toEqual([
+        "Provider at index 0: 'name' is required and must be a string"
+      ]);
     });
   });
 
@@ -614,14 +659,28 @@ describe('ContextAssembler - Comprehensive Test Suite', () => {
 
       const analysis = assembler.analyzeRecipeDependencies(recipe);
 
-      expect(analysis.userData).toBeDefined();
-      expect(analysis.userData.type).toBe('UserDataProvider');
-      expect(analysis.userData.dependencies.paramDependencies).toContain('userId');
-
-      expect(analysis.userOrders).toBeDefined();
-      expect(analysis.userOrders.type).toBe('OrderDataProvider');
-      expect(analysis.userOrders.hasCondition).toBe(true);
-      expect(analysis.userOrders.dependencies.providerDependencies).toContain('userData');
+      expect(analysis).toEqual({
+        userData: {
+          type: 'UserDataProvider',
+          hasCondition: false,
+          condition: null,
+          dependencies: {
+            paramDependencies: ['userId'],
+            providerDependencies: [],
+            totalDependencies: 1
+          }
+        },
+        userOrders: {
+          type: 'OrderDataProvider',
+          hasCondition: true,
+          condition: '$userData.isActive == true',
+          dependencies: {
+            paramDependencies: [],
+            providerDependencies: ['userData'],
+            totalDependencies: 1
+          }
+        }
+      });
     });
   });
 
@@ -659,8 +718,14 @@ describe('ContextAssembler - Comprehensive Test Suite', () => {
 
       const context = assembler.assembleAsync(recipe, { userId: 123 });
 
-      expect(context.userData).toBeDefined();
-      expect(context.userData.id).toBe(123);
+      expect(context).toEqual({
+        userData: {
+          id: 123,
+          name: 'User 123',
+          email: 'user123@example.com',
+          isActive: true
+        }
+      });
     });
   });
 
@@ -727,18 +792,15 @@ describe('ContextAssembler - Comprehensive Test Suite', () => {
 
       const context = assembler.assemble(recipe, { userId: 123, orgId: 456 });
 
-      expect(context.userData).toBeDefined();
-      expect(context.userData.id).toBe(123);
-      expect(context.userData.email).toBeUndefined(); // Filtered out
-
-      expect(context.userOrders).toBeDefined();
-      expect(context.userOrders).toHaveLength(2);
-
-      expect(context.organization).toBeDefined();
-      expect(context.organization.id).toBe(456);
-
-      expect(context.permissions).toBeDefined();
-      expect(context.permissions.canWrite).toBe(true);
+      expect(context).toEqual({
+        userData: { id: 123, name: 'User 123', isActive: true },
+        userOrders: [
+          { id: 1, userId: 123, total: 50, status: 'completed' },
+          { id: 2, userId: 123, total: 75, status: 'pending' }
+        ],
+        organization: { id: 456, name: 'Organization 456', country: 'USA' },
+        permissions: { canRead: true, canWrite: true, canDelete: false }
+      });
     });
 
     it('should reject empty recipe', () => {
@@ -758,12 +820,17 @@ describe('ContextAssembler - Comprehensive Test Suite', () => {
         ]
       };
 
+      const clock = jest
+        .spyOn(Date, 'now')
+        .mockReturnValueOnce(1000)
+        .mockReturnValueOnce(1015);
       assembler.assemble(recipe, { userId: 123 });
+      clock.mockRestore();
 
       expect(mocks.logger.logSummary).toHaveBeenCalledWith(
-        expect.stringContaining('Context Assembly completed'),
-        expect.any(Number),
-        expect.stringContaining('1 providers executed'),
+        '⚙️ Context Assembly completed',
+        15,
+        '1 providers executed, 0 skipped, 0 failed',
         undefined
       );
     });
