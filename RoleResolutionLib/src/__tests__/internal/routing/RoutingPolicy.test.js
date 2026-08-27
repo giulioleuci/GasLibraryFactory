@@ -13,7 +13,15 @@ import {
 describe('RoutingPolicy', () => {
   describe('RoutingPolicy enum', () => {
     it('should be defined and frozen', () => {
-      expect(RoutingPolicy).toBeDefined();
+      expect(RoutingPolicy).toEqual(expect.objectContaining({
+        DELEGATE_ONLY: 'DELEGATE_ONLY',
+        PRINCIPAL_ONLY: 'PRINCIPAL_ONLY',
+        BOTH_EQUAL: 'BOTH_EQUAL',
+        DELEGATE_PRIMARY_PRINCIPAL_CC: 'DELEGATE_PRIMARY_PRINCIPAL_CC',
+        PRINCIPAL_PRIMARY_DELEGATE_CC: 'PRINCIPAL_PRIMARY_DELEGATE_CC',
+        CHAIN_ALL: 'CHAIN_ALL',
+        DELEGATE_OR_PRINCIPAL: 'DELEGATE_OR_PRINCIPAL'
+      }));
       expect(Object.isFrozen(RoutingPolicy)).toBe(true);
     });
 
