@@ -257,7 +257,7 @@ describe('ResolutionResult', () => {
       expect(json.routing.primary).toEqual([{ id: 'user-1', displayName: 'User 1' }]);
       expect(json.fallbackUsed).toBe(true);
       expect(json.fallbackRoleId).toBe('fallback-1');
-      expect(json.metadata).toBeDefined();
+      expect(json.metadata).toEqual(expect.objectContaining({ resolvedAt: expect.any(Date) }));
     });
   });
 
