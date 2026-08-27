@@ -12,6 +12,8 @@
 import { ContextAssembler } from '../../ContextAssembler';
 import { ProviderRegistry } from '../../ProviderRegistry';
 import { DataProvider } from '../../DataProvider';
+import { ContextEngineError } from '../../internal/errors/ContextEngineError';
+import { ProviderExecutionError } from '../../internal/errors/ProviderExecutionError';
 import { ExceptionService } from '@GasResilienceLib';
 
 describe('ContextEngine + GasResilienceLib Integration', () => {
@@ -69,9 +71,8 @@ describe('ContextEngine + GasResilienceLib Integration', () => {
 
       const context = assembler.assemble(recipe, {});
 
-      expect(context.flakeyData).toBeDefined();
-      expect(context.flakeyData.data).toBe('success');
-      expect(attemptCount).toBeGreaterThanOrEqual(3);
+      expect(context).toEqual({ flakeyData: { data: 'success', attempts: 3 } });
+      expect(attemptCount).toBe(3);
     });
 
     it('should exhaust retries and fail on persistent failure', () => {
@@ -199,9 +200,9 @@ describe('ContextEngine + GasResilienceLib Integration', () => {
         assembler.assemble(recipe, {});
         fail('Expected error to be thrown');
       } catch (error) {
-        expect(error.context?.originalError).toBeDefined();
-        // The original error message is included in the wrapped error message
-        expect(error.context?.originalError.message).toContain('Original database error');
+        expect(error).toBeInstanceOf(ContextEngineError);
+        expect(error.context.originalError).toBeInstanceOf(ProviderExecutionError);
+        expect(error.context.originalError.originalError).toBe(originalError);
       }
     });
   });
@@ -464,12 +465,12 @@ describe('ContextEngine + GasResilienceLib Integration', () => {
 
       const context = assembler.assemble(recipe, { userId: 42 });
 
-      expect(context.user).toBeDefined();
-      expect(context.user.isActive).toBe(true);
-      expect(context.orders).toBeDefined();
-      expect(context.orders.length).toBe(1);
-      expect(userAttempts).toBeGreaterThanOrEqual(2);
-      expect(orderAttempts).toBeGreaterThanOrEqual(2);
+      expect(context).toEqual({
+        user: { id: 42, isActive: true },
+        orders: [{ id: 1, userId: 42, total: 100 }]
+      });
+      expect(userAttempts).toBe(2);
+      expect(orderAttempts).toBe(2);
     });
   });
 });
