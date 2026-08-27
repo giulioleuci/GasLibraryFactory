@@ -39,7 +39,7 @@ describe('ImportConfiguration - Comprehensive Test Suite', () => {
 
       const config = new ImportConfiguration(recipe, mockLogger);
 
-      expect(config).toBeDefined();
+      expect(config).toBeInstanceOf(ImportConfiguration);
       expect(config.name).toBe('Test Import');
     });
 
@@ -224,7 +224,11 @@ describe('ImportConfiguration - Comprehensive Test Suite', () => {
 
       const config = new ImportConfiguration(recipe, mockLogger);
 
-      expect(config.transform.mapping).toBeDefined();
+      expect(config.transform.mapping).toEqual({
+        'First Name': 'FIRST_NAME',
+        'Last Name': 'LAST_NAME',
+        Email: 'EMAIL'
+      });
       expect(config.transform.mapping['First Name']).toBe('FIRST_NAME');
     });
 
@@ -244,8 +248,11 @@ describe('ImportConfiguration - Comprehensive Test Suite', () => {
 
       const config = new ImportConfiguration(recipe, mockLogger);
 
-      expect(config.transform.calculated).toBeDefined();
-      expect(config.transform.calculated['FULL_NAME']).toBeDefined();
+      expect(config.transform.calculated).toEqual({
+        FULL_NAME: '{{FIRST_NAME}} {{LAST_NAME}}',
+        UNIQUE_ID: '{{EMAIL}}-{{ID}}'
+      });
+      expect(config.transform.calculated['FULL_NAME']).toBe('{{FIRST_NAME}} {{LAST_NAME}}');
     });
 
     it('should handle normalization options', () => {
@@ -267,7 +274,13 @@ describe('ImportConfiguration - Comprehensive Test Suite', () => {
 
       const config = new ImportConfiguration(recipe, mockLogger);
 
-      expect(config.transform.normalization).toBeDefined();
+      expect(config.transform.normalization).toEqual({
+        trim: true,
+        lowercaseColumns: ['email'],
+        uppercaseColumns: ['code'],
+        dateColumns: ['created_at'],
+        dateFormat: 'yyyy-MM-dd'
+      });
       expect(config.transform.normalization.trim).toBe(true);
     });
 
@@ -281,7 +294,7 @@ describe('ImportConfiguration - Comprehensive Test Suite', () => {
 
       const config = new ImportConfiguration(recipe, mockLogger);
 
-      expect(config.transform).toBeDefined();
+      expect(config.transform).toEqual({});
     });
   });
 
@@ -392,7 +405,10 @@ describe('ImportConfiguration - Comprehensive Test Suite', () => {
 
       const config = new ImportConfiguration(recipe, mockLogger);
 
-      expect(config.load.updateIfNewer).toBeDefined();
+      expect(config.load.updateIfNewer).toEqual({
+        enabled: true,
+        timestampColumn: 'UPDATED_AT'
+      });
       expect(config.load.updateIfNewer.enabled).toBe(true);
     });
   });
@@ -437,7 +453,7 @@ describe('ImportConfiguration - Comprehensive Test Suite', () => {
 
       const config = new ImportConfiguration(recipe, mockLogger);
 
-      expect(config).toBeDefined();
+      expect(config).toBeInstanceOf(ImportConfiguration);
       expect(config.name).toBe('Comprehensive Test');
     });
 
@@ -738,7 +754,10 @@ describe('ImportConfiguration - Comprehensive Test Suite', () => {
 
       const config = new ImportConfiguration(recipe, mockLogger);
 
-      expect(config).toBeDefined();
+      expect(config.load.updateIfNewer).toEqual({
+        enabled: true,
+        timestampColumn: 'UPDATED_AT'
+      });
     });
 
     it('should allow updateIfNewer when disabled without timestampColumn', () => {
@@ -754,7 +773,7 @@ describe('ImportConfiguration - Comprehensive Test Suite', () => {
 
       const config = new ImportConfiguration(recipe, mockLogger);
 
-      expect(config).toBeDefined();
+      expect(config.load.updateIfNewer).toEqual({ enabled: false });
     });
   });
 
@@ -970,7 +989,7 @@ describe('ImportConfiguration - Comprehensive Test Suite', () => {
 
       const config = new ImportConfiguration(recipe, mockLogger);
 
-      expect(config).toBeDefined();
+      expect(config).toBeInstanceOf(ImportConfiguration);
       expect(config.getName()).toBe('Complete Import');
       expect(config.getSource().type).toBe('SheetById');
       expect(config.getLoad().conflictResolution).toBe('UPSERT');
@@ -997,7 +1016,7 @@ describe('ImportConfiguration - Comprehensive Test Suite', () => {
 
       const config = new ImportConfiguration(recipe, mockLogger);
 
-      expect(config).toBeDefined();
+      expect(config).toBeInstanceOf(ImportConfiguration);
       expect(config.getSource().type).toBe('Folder');
       expect(config.getSource().config.folderId).toBe('FOLDER123');
     });
@@ -1015,7 +1034,7 @@ describe('ImportConfiguration - Comprehensive Test Suite', () => {
 
       const config = new ImportConfiguration(recipe, mockLogger);
 
-      expect(config).toBeDefined();
+      expect(config).toBeInstanceOf(ImportConfiguration);
       expect(config.getLoad().conflictResolution).toBe('INSERT_ONLY');
     });
 
