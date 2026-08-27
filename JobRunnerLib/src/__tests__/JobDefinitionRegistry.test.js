@@ -5,6 +5,7 @@
 
 import { JobDefinitionRegistry } from '../JobDefinitionRegistry.js';
 import { MockFactory } from '../../../test/fakes/MockFactory';
+import { Registry } from '@CoreUtilsLib';
 
 describe('JobDefinitionRegistry - Comprehensive Test Suite', () => {
   let registry;
@@ -23,9 +24,12 @@ describe('JobDefinitionRegistry - Comprehensive Test Suite', () => {
   describe('Constructor', () => {
     it('should create instance with valid logger', () => {
       const instance = new JobDefinitionRegistry(mockLogger);
-      expect(instance).toBeDefined();
+      expect(instance).toBeInstanceOf(JobDefinitionRegistry);
       expect(instance.logger).toBe(mockLogger);
-      expect(instance.definitions).toBeDefined();
+      // `definitions` is a Map-backed CoreUtilsLib Registry, freshly
+      // constructed empty (see JobDefinitionRegistry constructor).
+      expect(instance.definitions).toBeInstanceOf(Registry);
+      expect(instance.definitions.size).toBe(0);
     });
 
     it('should log initialization', () => {
