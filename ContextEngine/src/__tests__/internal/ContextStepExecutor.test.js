@@ -169,11 +169,14 @@ describe('ContextStepExecutor', () => {
       const result = executor._executeProvider(providerConfig, {}, {});
 
       expect(result).toBe('providerResult');
-      expect(facade._exceptionService.executeWithRetry).toHaveBeenCalledWith(
-        expect.any(Function),
+      expect(facade._exceptionService.executeWithRetry).toHaveBeenCalledTimes(1);
+      expect(facade._exceptionService.executeWithRetry.mock.calls[0].slice(1)).toEqual([
         {},
         facade._maxRetries
-      );
+      ]);
+      expect(mockProvider.provide).toHaveBeenCalledWith('testProvider', {
+        resolvedParam1: 'resolvedValue1'
+      });
     });
 
     it('should apply post-processing if configured', () => {
@@ -437,11 +440,12 @@ describe('ContextStepExecutor', () => {
 
       executor._executeMutatingProvider(providerConfig, {}, {}, {});
 
-      expect(facade._exceptionService.executeWithRetry).toHaveBeenCalledWith(
-        expect.any(Function),
+      expect(facade._exceptionService.executeWithRetry).toHaveBeenCalledTimes(1);
+      expect(facade._exceptionService.executeWithRetry.mock.calls[0].slice(1)).toEqual([
         {},
         facade._maxRetries
-      );
+      ]);
+      expect(mockProvider.provide).toHaveBeenCalledWith({}, {}, {});
     });
 
     it('should invoke registered interceptors with (name, sharedTarget, sharedTarget, options) and ignore their return value', () => {
@@ -572,14 +576,19 @@ describe('ContextStepExecutor', () => {
       facade._providerRegistry.get.mockReturnValue(provider);
 
       const sharedTarget = { untouched: true };
+      const clock = jest
+        .spyOn(Date, 'now')
+        .mockReturnValueOnce(1000)
+        .mockReturnValueOnce(1012);
       const result = executor.assembleInto(sharedTarget, recipe, {}, {});
+      clock.mockRestore();
 
       expect(provider.provide).not.toHaveBeenCalled();
       expect(result).toEqual({ untouched: true });
       expect(facade._logger.info).not.toHaveBeenCalledWith(expect.stringContaining('Skipped'));
       expect(facade._logger.logSummary).toHaveBeenCalledWith(
         '⚙️ Context Assembly completed',
-        expect.any(Number),
+        12,
         '0 providers executed, 1 skipped, 0 failed',
         undefined
       );
