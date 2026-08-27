@@ -143,10 +143,8 @@ describe('Loose Coupling: Libraries work without monitor', () => {
         logger: mockLogger
       };
 
-      // Should not throw when using optional chaining
-      expect(() => {
-        services.monitor?.updateProgress?.('job', 50, 'message');
-      }).not.toThrow();
+      // Optional chaining on a null monitor resolves to undefined, not a throw
+      expect(services.monitor?.updateProgress?.('job', 50, 'message')).toBeUndefined();
     });
   });
 
@@ -170,24 +168,25 @@ describe('Loose Coupling: Libraries work without monitor', () => {
     it('should safely call methods on undefined monitor', () => {
       const monitor = undefined;
 
-      // These should all be safe operations
-      expect(() => monitor?.registerJob('job')).not.toThrow();
-      expect(() => monitor?.updateProgress('job', 50)).not.toThrow();
-      expect(() => monitor?.logStepStart('job', 'step')).not.toThrow();
-      expect(() => monitor?.logStepComplete('job', 'step', true)).not.toThrow();
-      expect(() => monitor?.setError('job', new Error('test'))).not.toThrow();
-      expect(() => monitor?.completeJob('job')).not.toThrow();
+      // Optional chaining on undefined resolves to undefined for every call
+      expect(monitor?.registerJob('job')).toBeUndefined();
+      expect(monitor?.updateProgress('job', 50)).toBeUndefined();
+      expect(monitor?.logStepStart('job', 'step')).toBeUndefined();
+      expect(monitor?.logStepComplete('job', 'step', true)).toBeUndefined();
+      expect(monitor?.setError('job', new Error('test'))).toBeUndefined();
+      expect(monitor?.completeJob('job')).toBeUndefined();
     });
 
     it('should safely call methods on null monitor', () => {
       const monitor = null;
 
-      expect(() => monitor?.registerJob('job')).not.toThrow();
-      expect(() => monitor?.updateProgress('job', 50)).not.toThrow();
-      expect(() => monitor?.logStepStart('job', 'step')).not.toThrow();
-      expect(() => monitor?.logStepComplete('job', 'step', true)).not.toThrow();
-      expect(() => monitor?.setError('job', new Error('test'))).not.toThrow();
-      expect(() => monitor?.completeJob('job')).not.toThrow();
+      // Optional chaining on null resolves to undefined for every call
+      expect(monitor?.registerJob('job')).toBeUndefined();
+      expect(monitor?.updateProgress('job', 50)).toBeUndefined();
+      expect(monitor?.logStepStart('job', 'step')).toBeUndefined();
+      expect(monitor?.logStepComplete('job', 'step', true)).toBeUndefined();
+      expect(monitor?.setError('job', new Error('test'))).toBeUndefined();
+      expect(monitor?.completeJob('job')).toBeUndefined();
     });
 
     it('should call methods when monitor is provided', () => {
