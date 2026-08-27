@@ -405,7 +405,14 @@ describe('InterceptorRegistry', () => {
     });
 
     it('should work when no interceptors registered', () => {
-      expect(() => registry.clear()).not.toThrow();
+      expect(registry.clear()).toBe(registry);
+      expect(registry.getSummary()).toEqual({
+        singletonCount: 0,
+        factoryCount: 0,
+        totalInterceptors: 0,
+        singletonTypes: [],
+        factoryTypes: []
+      });
     });
   });
 
