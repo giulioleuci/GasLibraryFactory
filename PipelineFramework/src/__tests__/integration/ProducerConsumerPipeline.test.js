@@ -66,7 +66,7 @@ describe('Producer-Consumer Pipeline - Integration Tests', () => {
 
       // Verify execution
       expect(finalContext.get('selected_template_id')).toBe('TEMPLATE_PASS');
-      expect(finalContext.get('generated_document')).toBeDefined();
+      expect(finalContext.get('generated_document').templateFileId).toBe('MOCK_TEMPLATE_PASS_ID');
       expect(finalContext.get('generated_document').name).toBe('John Doe - PASS Report');
 
       // Verify pipeline completed successfully
@@ -74,6 +74,10 @@ describe('Producer-Consumer Pipeline - Integration Tests', () => {
       expect(summary.totalSteps).toBe(2);
       expect(summary.completedSteps).toBe(2);
       expect(summary.failedSteps).toBe(0);
+      expect(summary.history.map(({ stepName, status }) => ({ stepName, status }))).toEqual([
+        { stepName: 'TemplateSelector', status: 'completed' },
+        { stepName: 'GenerateDocument', status: 'completed' }
+      ]);
     });
 
     it('should execute complete Producer-Consumer workflow for failing grade', () => {
@@ -177,7 +181,7 @@ describe('Producer-Consumer Pipeline - Integration Tests', () => {
       });
 
       expect(finalContext.get('selected_template_id')).toBe('TEMPLATE_PASS');
-      expect(finalContext.get('generated_document')).toBeDefined();
+      expect(finalContext.get('generated_document').name).toBe('Test Student - PASS Report');
     });
 
     it('should allow swapping ProducerStep without changing ConsumerStep', () => {
@@ -219,7 +223,7 @@ describe('Producer-Consumer Pipeline - Integration Tests', () => {
 
       const context1 = pipeline1.execute({ student_name: 'Student 1' });
       expect(context1.get('selected_template_id')).toBe('TEMPLATE_PASS');
-      expect(context1.get('generated_document')).toBeDefined();
+      expect(context1.get('generated_document').name).toBe('Student 1 - PASS Report');
 
       // Pipeline 2: Complex Producer
       const pipeline2 = new Pipeline(logger);
@@ -238,7 +242,7 @@ describe('Producer-Consumer Pipeline - Integration Tests', () => {
 
       const context2 = pipeline2.execute({ score: 90, student_name: 'Student 2' });
       expect(context2.get('selected_template_id')).toBe('TEMPLATE_PASS');
-      expect(context2.get('generated_document')).toBeDefined();
+      expect(context2.get('generated_document').name).toBe('Student 2 - PASS Report');
     });
 
     it('should verify ConsumerStep has zero dependencies on ExpressionEngine', () => {
@@ -258,7 +262,7 @@ describe('Producer-Consumer Pipeline - Integration Tests', () => {
       const result = consumerStep.execute(context);
 
       expect(result.success).toBe(true);
-      expect(context.get('generated_document')).toBeDefined();
+      expect(context.get('generated_document').templateId).toBe('TEMPLATE_PASS');
       expect(context.get('generated_document').name).toBe('Manual Test - PASS Report');
     });
   });
@@ -339,7 +343,7 @@ describe('Producer-Consumer Pipeline - Integration Tests', () => {
       });
 
       expect(finalContext.get('selected_template_id')).toBe('TEMPLATE_PASS');
-      expect(finalContext.get('generated_document')).toBeDefined();
+      expect(finalContext.get('generated_document').name).toBe('John Doe - PASS Report');
       expect(finalContext.get('email_subject')).toBe('Congratulations on Passing!');
       expect(finalContext.get('email_result')).toEqual({
         to: 'student@example.com',
@@ -508,7 +512,7 @@ describe('Producer-Consumer Pipeline - Integration Tests', () => {
 
       // Plus new data from steps
       expect(finalContext.get('selected_template_id')).toBe('TEMPLATE_PASS');
-      expect(finalContext.get('generated_document')).toBeDefined();
+      expect(finalContext.get('generated_document').templateFileId).toBe('MOCK_TEMPLATE_PASS_ID');
     });
 
     it('should allow steps to read data from previous steps', () => {
