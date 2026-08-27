@@ -46,7 +46,7 @@ describe('CollectionProjectionInterceptor', () => {
     });
     const context = { focus: { items: [{ id: 1 }] } };
 
-    expect(() => interceptor.intercept('assignments', context, context, null)).not.toThrow();
+    expect(interceptor.intercept('assignments', context, context, null)).toBe(context);
     expect(projector.project).not.toHaveBeenCalled();
   });
 
