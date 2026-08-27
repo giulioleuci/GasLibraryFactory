@@ -8,6 +8,8 @@
 import { ImportEngine } from '../../ImportEngine.js';
 import { ImportRecipeValidator } from '../../ImportRecipeValidator.js';
 import { ImportConfiguration } from '../../ImportConfiguration.js';
+import { Transformer } from '../../pipeline/Transformer.js';
+import { Loader } from '../../internal/load/Loader.js';
 import { MockFactory } from '../../../../test/fakes/MockFactory.js';
 
 /**
@@ -175,7 +177,7 @@ describe('Integration Test 13: Importer-Recipe Parsing', () => {
       const config = new ImportConfiguration(recipe, logger);
       const transformer = engine._transformer;
 
-      expect(transformer).toBeDefined();
+      expect(transformer).toBeInstanceOf(Transformer);
       // Test that it can handle the config via transform call
       const result = transformer.transform(
         [{ OldCol: 'Val', First: 'A', Last: 'B' }],
@@ -204,7 +206,8 @@ describe('Integration Test 13: Importer-Recipe Parsing', () => {
       const config = new ImportConfiguration(recipe, logger);
       const loader = engine._loader;
 
-      expect(loader).toBeDefined();
+      expect(loader).toBeInstanceOf(Loader);
+      expect(typeof loader.load).toBe('function');
       // We don't call load() here as it requires more complex DB mocking,
       // but we verified the component exists in the engine.
     });
@@ -233,9 +236,9 @@ describe('Integration Test 13: Importer-Recipe Parsing', () => {
       const transformer = engine._transformer;
       const loader = engine._loader;
 
-      expect(strategy).toBeDefined();
-      expect(transformer).toBeDefined();
-      expect(loader).toBeDefined();
+      expect(strategy.constructor.name).toBe('SheetByIdStrategy');
+      expect(transformer).toBeInstanceOf(Transformer);
+      expect(loader).toBeInstanceOf(Loader);
 
       expect(config.getName()).toBe('Full Pipeline Recipe');
     });
