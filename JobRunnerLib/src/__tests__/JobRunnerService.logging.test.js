@@ -141,17 +141,18 @@ describe('JobRunnerService - Logging Features', () => {
     it('should pass validation for sidebar target with uiService', () => {
       const config = { target: 'sidebar', uiService: mockUiService };
 
-      expect(() => {
-        service._validateLoggingConfig(config);
-      }).not.toThrow();
+      // Sibling negative case above ('should throw error if sidebar target
+      // missing uiService') already covers the failure path for this target;
+      // here we pin the real (undefined) return value of a passing call.
+      expect(service._validateLoggingConfig(config)).toBeUndefined();
     });
 
     it('should pass validation for driveFile target with driveService', () => {
       const config = { target: 'driveFile', driveService: mockDriveService };
 
-      expect(() => {
-        service._validateLoggingConfig(config);
-      }).not.toThrow();
+      // Sibling negative case above ('should throw error if driveFile target
+      // missing driveService') already covers the failure path for this target.
+      expect(service._validateLoggingConfig(config)).toBeUndefined();
     });
   });
 
@@ -176,9 +177,13 @@ describe('JobRunnerService - Logging Features', () => {
       const capturedQueue = service._createQueue.mock.results[0].value;
       expect(capturedQueue).toBe(mockQueue);
       expect(logger.logJobStart).toHaveBeenCalledWith('job1', 'testJob');
-      expect(logger.logJobEnd).toHaveBeenCalledWith('job1', true, {
-        durationMs: expect.any(Number)
-      });
+      expect(logger.logJobEnd).toHaveBeenCalledTimes(1);
+      const [[loggedJobName, loggedSuccess, loggedDetails]] = logger.logJobEnd.mock.calls;
+      expect(loggedJobName).toBe('job1');
+      expect(loggedSuccess).toBe(true);
+      expect(Object.keys(loggedDetails)).toEqual(['durationMs']);
+      expect(Number.isFinite(loggedDetails.durationMs)).toBe(true);
+      expect(loggedDetails.durationMs).toBeGreaterThanOrEqual(0);
     });
 
     it('should use normal logger when no logging config provided', () => {
@@ -216,10 +221,14 @@ describe('JobRunnerService - Logging Features', () => {
       }).toThrow('Job failed');
 
       expect(mockUiService.createSidebar).toHaveBeenCalled();
-      expect(logger.logJobEnd).toHaveBeenCalledWith('job1', false, {
-        reason: 'Job failed',
-        durationMs: expect.any(Number)
-      });
+      expect(logger.logJobEnd).toHaveBeenCalledTimes(1);
+      const [[loggedJobName, loggedSuccess, loggedDetails]] = logger.logJobEnd.mock.calls;
+      expect(loggedJobName).toBe('job1');
+      expect(loggedSuccess).toBe(false);
+      const { durationMs, ...restDetails } = loggedDetails;
+      expect(restDetails).toEqual({ reason: 'Job failed' });
+      expect(Number.isFinite(durationMs)).toBe(true);
+      expect(durationMs).toBeGreaterThanOrEqual(0);
     });
 
     it('should NOT display logs when job is suspended (not completed)', () => {
@@ -231,10 +240,15 @@ describe('JobRunnerService - Logging Features', () => {
       service.run('job1', 'testJob', {}, jobHandlerCallback, false, 25 * 60 * 1000, loggingConfig);
 
       expect(mockUiService.createSidebar).not.toHaveBeenCalled();
-      expect(logger.logJobSuspended).toHaveBeenCalledWith('job1', {
-        reason: 'state saved; automatic resume scheduled',
-        durationMs: expect.any(Number)
+      expect(logger.logJobSuspended).toHaveBeenCalledTimes(1);
+      const [[suspendedJobName, suspendedDetails]] = logger.logJobSuspended.mock.calls;
+      expect(suspendedJobName).toBe('job1');
+      const { durationMs, ...restSuspendedDetails } = suspendedDetails;
+      expect(restSuspendedDetails).toEqual({
+        reason: 'state saved; automatic resume scheduled'
       });
+      expect(Number.isFinite(durationMs)).toBe(true);
+      expect(durationMs).toBeGreaterThanOrEqual(0);
       expect(logger.logJobEnd).not.toHaveBeenCalledWith('job1', true, expect.anything());
     });
 
@@ -268,10 +282,14 @@ describe('JobRunnerService - Logging Features', () => {
 
       service.run('job1', 'testJob', {}, jobHandlerCallback);
 
-      expect(logger.logJobEnd).toHaveBeenCalledWith('job1', false, {
-        reason: 'cancelled',
-        durationMs: expect.any(Number)
-      });
+      expect(logger.logJobEnd).toHaveBeenCalledTimes(1);
+      const [[loggedJobName, loggedSuccess, loggedDetails]] = logger.logJobEnd.mock.calls;
+      expect(loggedJobName).toBe('job1');
+      expect(loggedSuccess).toBe(false);
+      const { durationMs, ...restDetails } = loggedDetails;
+      expect(restDetails).toEqual({ reason: 'cancelled' });
+      expect(Number.isFinite(durationMs)).toBe(true);
+      expect(durationMs).toBeGreaterThanOrEqual(0);
       expect(logger.logJobSuspended).not.toHaveBeenCalled();
     });
 
@@ -281,10 +299,14 @@ describe('JobRunnerService - Logging Features', () => {
 
       service.run('job1', 'testJob', {}, jobHandlerCallback);
 
-      expect(logger.logJobEnd).toHaveBeenCalledWith('job1', false, {
-        reason: 'failed',
-        durationMs: expect.any(Number)
-      });
+      expect(logger.logJobEnd).toHaveBeenCalledTimes(1);
+      const [[loggedJobName, loggedSuccess, loggedDetails]] = logger.logJobEnd.mock.calls;
+      expect(loggedJobName).toBe('job1');
+      expect(loggedSuccess).toBe(false);
+      const { durationMs, ...restDetails } = loggedDetails;
+      expect(restDetails).toEqual({ reason: 'failed' });
+      expect(Number.isFinite(durationMs)).toBe(true);
+      expect(durationMs).toBeGreaterThanOrEqual(0);
       expect(logger.logJobSuspended).not.toHaveBeenCalled();
     });
   });
@@ -320,10 +342,15 @@ describe('JobRunnerService - Logging Features', () => {
         'testJob',
         expect.objectContaining({ checkpoint: 'nextIndex: 4', percentage: 40 })
       );
-      expect(logger.logJobSuspended).toHaveBeenCalledWith('job1', {
-        reason: 'state saved; automatic resume scheduled',
-        durationMs: expect.any(Number)
+      expect(logger.logJobSuspended).toHaveBeenCalledTimes(1);
+      const [[suspendedJobName, suspendedDetails]] = logger.logJobSuspended.mock.calls;
+      expect(suspendedJobName).toBe('job1');
+      const { durationMs, ...restSuspendedDetails } = suspendedDetails;
+      expect(restSuspendedDetails).toEqual({
+        reason: 'state saved; automatic resume scheduled'
       });
+      expect(Number.isFinite(durationMs)).toBe(true);
+      expect(durationMs).toBeGreaterThanOrEqual(0);
       expect(logger.logJobEnd).not.toHaveBeenCalledWith('job1', true, expect.anything());
     });
   });
@@ -403,7 +430,14 @@ describe('JobRunnerService - Logging Features', () => {
       const position = { depth: 1, isLast: false, ancestorHasNext: [] };
 
       expect(capturingLogger.withPosition(position, () => 42)).toBe(42);
-      expect(logger.withPosition).toHaveBeenCalledWith(position, expect.any(Function));
+
+      // Capture the exact callback CapturingLogger forwarded and invoke it
+      // directly, rather than type-checking the arg: it must be the same
+      // scoped thunk that produces the real return value above.
+      expect(logger.withPosition).toHaveBeenCalledTimes(1);
+      const [[calledPosition, calledCallback]] = logger.withPosition.mock.calls;
+      expect(calledPosition).toBe(position);
+      expect(calledCallback()).toBe(42);
     });
   });
 
