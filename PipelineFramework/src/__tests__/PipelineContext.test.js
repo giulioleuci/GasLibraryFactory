@@ -16,7 +16,7 @@ describe('PipelineContext - Comprehensive Test Suite', () => {
     it('should create instance with empty data', () => {
       const context = new PipelineContext();
 
-      expect(context).toBeDefined();
+      expect(context).toBeInstanceOf(PipelineContext);
       expect(context.getData()).toEqual({});
     });
 
@@ -292,14 +292,17 @@ describe('PipelineContext - Comprehensive Test Suite', () => {
 
     it('should return metadata object', () => {
       const metadata = context.getMetadata();
+      const { startTime, ...state } = metadata;
 
-      expect(metadata).toBeDefined();
-      expect(metadata.startTime).toBeDefined();
-      expect(metadata.endTime).toBe(null);
-      expect(metadata.stopRequested).toBe(false);
-      expect(metadata.stopReason).toBe(null);
-      expect(metadata.executionHistory).toEqual([]);
-      expect(metadata.flags).toEqual({});
+      expect(typeof startTime).toBe('number');
+      expect(startTime).toBeLessThanOrEqual(Date.now());
+      expect(state).toEqual({
+        endTime: null,
+        stopRequested: false,
+        stopReason: null,
+        executionHistory: [],
+        flags: {}
+      });
     });
 
     it('should mark as completed', () => {
@@ -380,17 +383,21 @@ describe('PipelineContext - Comprehensive Test Suite', () => {
 
     it('should return empty summary for new context', () => {
       const summary = context.getSummary();
+      const { startTime, ...state } = summary;
 
-      expect(summary.startTime).toBeDefined();
-      expect(summary.endTime).toBe(null);
-      expect(summary.totalDuration).toBe(0);
-      expect(summary.totalSteps).toBe(0);
-      expect(summary.completedSteps).toBe(0);
-      expect(summary.skippedSteps).toBe(0);
-      expect(summary.failedSteps).toBe(0);
-      expect(summary.stopRequested).toBe(false);
-      expect(summary.stopReason).toBe(null);
-      expect(summary.history).toEqual([]);
+      expect(typeof startTime).toBe('number');
+      expect(startTime).toBeLessThanOrEqual(Date.now());
+      expect(state).toEqual({
+        endTime: null,
+        totalDuration: 0,
+        totalSteps: 0,
+        completedSteps: 0,
+        skippedSteps: 0,
+        failedSteps: 0,
+        stopRequested: false,
+        stopReason: null,
+        history: []
+      });
     });
 
     it('should return summary with execution history', () => {
