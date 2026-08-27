@@ -45,7 +45,7 @@ describe('DataProvider - Comprehensive Test Suite', () => {
     it('should create instance with default options', () => {
       const provider = new TestDataProvider(mocks.logger);
 
-      expect(provider).toBeDefined();
+      expect(provider).toBeInstanceOf(TestDataProvider);
       expect(provider.logger).toBe(mocks.logger);
       expect(provider._cacheable).toBe(false);
       expect(provider._cacheDurationMs).toBe(300000);
@@ -110,9 +110,9 @@ describe('DataProvider - Comprehensive Test Suite', () => {
     it('should fetch data successfully', () => {
       const result = provider.provide('TestProvider', { id: 123 });
 
-      expect(result).toBeDefined();
-      expect(result.id).toBe(123);
-      expect(result.name).toBe('User 123');
+      expect(Object.keys(result)).toEqual(['id', 'name', 'fetchedAt']);
+      expect(result).toMatchObject({ id: 123, name: 'User 123' });
+      expect(Number.isInteger(result.fetchedAt)).toBe(true);
       expect(provider.fetchCount).toBe(1);
     });
 
@@ -295,7 +295,7 @@ describe('DataProvider - Comprehensive Test Suite', () => {
 
       const provider = new ValidatingProvider(mocks.logger);
 
-      expect(() => provider.provide('Provider', { id: 123 })).not.toThrow();
+      expect(provider.provide('Provider', { id: 123 })).toEqual({ data: 'test' });
     });
 
     it('should allow custom validation in subclass', () => {
