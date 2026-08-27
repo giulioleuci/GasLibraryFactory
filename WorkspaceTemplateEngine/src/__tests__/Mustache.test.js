@@ -21,12 +21,12 @@ describe('Mustache - Comprehensive Test Suite', () => {
   describe('Constructor and Initialization', () => {
     it('should create instance with logger', () => {
       const instance = new Mustache({ logger });
-      expect(instance).toBeDefined();
+      expect(instance).toBeInstanceOf(Mustache);
     });
 
     it('should create instance with default logger (console)', () => {
       const instance = new Mustache({});
-      expect(instance).toBeDefined();
+      expect(instance).toBeInstanceOf(Mustache);
     });
 
     it('should initialize with built-in filters', () => {
@@ -170,7 +170,10 @@ describe('Mustache - Comprehensive Test Suite', () => {
       const result = mustache.render('{{items | sortBy:"value",true}}', {
         items: [{ value: 2 }, { value: 1 }]
       });
-      expect(result).toBeDefined();
+      // sortBy(array, key) only accepts a key; the boolean 3rd arg parses correctly
+      // (to `true`, not the string 'true') but is otherwise unused by the filter.
+      // The stringified array-of-objects result is what render() actually produces.
+      expect(result).toBe('[object Object],[object Object]');
     });
 
     it('should parse filter arguments with quoted strings', () => {
@@ -305,12 +308,13 @@ describe('Mustache - Comprehensive Test Suite', () => {
       const template = '{{name}}';
       mustache.render(template, { name: 'first' });
       mustache.render(template, { name: 'second' });
-      expect(Object.keys(mustache.templateCache).length).toBeGreaterThan(0);
+      // Same template + same tags => single cache entry, reused on the 2nd render.
+      expect(Object.keys(mustache.templateCache)).toEqual(['{{name}}:{{:}}']);
     });
 
     it('should clear cache', () => {
       mustache.render('{{name}}', { name: 'test' });
-      expect(Object.keys(mustache.templateCache).length).toBeGreaterThan(0);
+      expect(Object.keys(mustache.templateCache)).toEqual(['{{name}}:{{:}}']);
       mustache.clearCache();
       expect(Object.keys(mustache.templateCache).length).toBe(0);
     });
@@ -458,7 +462,10 @@ describe('Mustache - Comprehensive Test Suite', () => {
       // Create a malformed template that will cause an error during rendering
       const result = mustache.render('{{#unclosed}}', {});
       expect(result).toContain('[RENDER ERROR:');
-      expect(logger.getLogsByLevel('ERROR').length).toBeGreaterThan(0);
+      const errorLogs = logger.getLogsByLevel('ERROR');
+      expect(errorLogs).toHaveLength(1);
+      expect(errorLogs[0].message).toContain('MyMustache render error');
+      expect(errorLogs[0].message).toContain('Unclosed section');
     });
 
     it('should accept null data', () => {
@@ -532,8 +539,11 @@ describe('Mustache - Comprehensive Test Suite', () => {
         }
       };
       const result = mustache.render('{{#wrapped}}Content{{/wrapped}}', data);
-      // Just verify it doesn't crash - the exact behavior may vary
-      expect(result).toBeDefined();
+      // context.lookup() eagerly calls functions (see _MustacheContext.lookup), so the
+      // section value is the string 'value' by the time _renderSection sees it: a
+      // truthy, non-array, non-object, non-function value renders the section body
+      // literally against the unchanged (not pushed) context.
+      expect(result).toBe('Content');
     });
 
     it('should handle section with function in data', () => {
@@ -544,7 +554,8 @@ describe('Mustache - Comprehensive Test Suite', () => {
         }
       };
       const result = mustache.render('{{#fn}}Text{{/fn}}', data);
-      expect(result).toBeDefined();
+      // Same eager function-resolution as above: the section body renders literally.
+      expect(result).toBe('Text');
     });
 
     it('should handle function returning null', () => {
@@ -840,9 +851,13 @@ describe('Mustache - Comprehensive Test Suite', () => {
       expect(mustache.renderSegments('', {})).toEqual([]);
     });
 
+    it('throws TypeError for a non-string template (the one documented failure mode)', () => {
+      expect(() => mustache.renderSegments(123, {})).toThrow('template must be a string');
+    });
+
     it('degrades gracefully instead of throwing for an unclosed section, mirroring render()', () => {
       const template = '{{#unclosed}}';
-      expect(() => mustache.renderSegments(template, {})).not.toThrow();
+      mustache.renderSegments(template, {});
       const segments = mustache.renderSegments(template, {});
       expect(segments).toHaveLength(1);
       expect(segments[0]).toEqual({
@@ -857,7 +872,7 @@ describe('Mustache - Comprehensive Test Suite', () => {
 
     it('degrades gracefully instead of throwing for an unclosed tag', () => {
       const template = '{{unclosed';
-      expect(() => mustache.renderSegments(template, {})).not.toThrow();
+      mustache.renderSegments(template, {});
       const segments = mustache.renderSegments(template, {});
       expect(segments).toHaveLength(1);
       expect(segments[0].type).toBe('value');
