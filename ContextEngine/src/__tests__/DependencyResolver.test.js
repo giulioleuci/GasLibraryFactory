@@ -28,7 +28,7 @@ describe('DependencyResolver - Comprehensive Test Suite', () => {
 
   describe('Constructor and Initialization', () => {
     it('should create instance with logger', () => {
-      expect(resolver).toBeDefined();
+      expect(resolver).toBeInstanceOf(DependencyResolver);
       expect(resolver.logger).toBe(mocks.logger);
     });
 
