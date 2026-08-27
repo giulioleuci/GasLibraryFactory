@@ -945,6 +945,39 @@ describe('CircuitBreaker - Comprehensive Test Suite', () => {
       });
     });
 
+    it('should complete the no-cache circuit lifecycle and support reset', () => {
+      const noCacheBreaker = new CircuitBreaker(
+        { failureThreshold: 1, successThreshold: 1, resetTimeout: 1000, monitoringPeriod: 1000 },
+        logger,
+        null
+      );
+
+      noCacheBreaker.recordFailure('testOp');
+      expect(noCacheBreaker.getState('testOp').state).toBe('OPEN');
+      expect(noCacheBreaker.allowRequest('testOp')).toBe(false);
+
+      Date.now.mockReturnValue(1700000001000);
+      expect(noCacheBreaker.allowRequest('testOp')).toBe(true);
+      expect(noCacheBreaker.getState('testOp').state).toBe('HALF_OPEN');
+      noCacheBreaker.recordSuccess('testOp');
+      expect(noCacheBreaker.getState('testOp').state).toBe('CLOSED');
+
+      noCacheBreaker.recordFailure('testOp');
+      Date.now.mockReturnValue(1700000002000);
+      expect(noCacheBreaker.allowRequest('testOp')).toBe(true);
+      noCacheBreaker.recordFailure('testOp');
+      expect(noCacheBreaker.getState('testOp').state).toBe('OPEN');
+
+      noCacheBreaker.reset('testOp');
+      expect(noCacheBreaker.getState('testOp')).toEqual({
+        state: 'CLOSED',
+        failureCount: 0,
+        consecutiveSuccesses: 0,
+        lastFailureTime: null,
+        nextAttemptTime: null
+      });
+    });
+
     it('should work without logger (no logging)', () => {
       const noLoggerBreaker = new CircuitBreaker({}, null, cache);
 
