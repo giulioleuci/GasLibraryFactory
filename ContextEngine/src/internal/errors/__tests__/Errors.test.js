@@ -67,8 +67,7 @@ describe('ContextEngine Error Classes', () => {
       it('should maintain stack trace', () => {
         const error = new ContextEngineError('Test error');
 
-        expect(error.stack).toBeDefined();
-        expect(error.stack).toContain('ContextEngineError');
+        expect(error.stack.split('\n')[0]).toBe('ContextEngineError: Test error');
       });
     });
 
@@ -188,15 +187,18 @@ describe('ContextEngine Error Classes', () => {
       });
 
       it('should merge context with providerType', () => {
+        const attemptedAt = Date.now();
         const context = {
           registeredProviders: ['Provider1', 'Provider2'],
-          attemptedAt: Date.now()
+          attemptedAt
         };
         const error = new ProviderNotFoundError('MissingProvider', context);
 
-        expect(error.context.providerType).toBe('MissingProvider');
-        expect(error.context.registeredProviders).toEqual(['Provider1', 'Provider2']);
-        expect(error.context.attemptedAt).toBeDefined();
+        expect(error.context).toEqual({
+          registeredProviders: ['Provider1', 'Provider2'],
+          attemptedAt,
+          providerType: 'MissingProvider'
+        });
       });
 
       it('should handle context with registeredProviders', () => {
@@ -317,11 +319,12 @@ describe('ContextEngine Error Classes', () => {
         new ProviderNotFoundError('NotFound')
       ];
 
-      errors.forEach((error) => {
-        expect(error.stack).toBeDefined();
-        expect(typeof error.stack).toBe('string');
-        expect(error.stack.length).toBeGreaterThan(0);
-      });
+      expect(errors.map((error) => error.stack.split('\n')[0])).toEqual([
+        'ContextEngineError: Error 1',
+        "ProviderExecutionError: Provider 'Provider' execution failed: Error 3",
+        'RecipeValidationError: Error 4',
+        "ProviderNotFoundError: Provider 'NotFound' not found in registry"
+      ]);
     });
 
     it('should allow error chaining through context', () => {
