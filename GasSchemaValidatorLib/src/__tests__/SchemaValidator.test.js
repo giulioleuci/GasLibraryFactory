@@ -87,7 +87,7 @@ describe('SchemaValidator', () => {
       expect(result.success).toBe(false);
       const formatted = SchemaValidator.formatZodError(result.error);
       expect(formatted).toEqual(
-        expect.arrayContaining([{ field: 'user.email', message: expect.any(String) }])
+        expect.arrayContaining([{ field: 'user.email', message: 'Invalid email address' }])
       );
     });
 
@@ -106,7 +106,7 @@ describe('SchemaValidator', () => {
       const ex = SchemaValidator.toValidationException(result.error, 'Widget');
       expect(ex).toBeInstanceOf(ValidationException);
       expect(ex.entityType).toBe('Widget');
-      expect(ex.errors.length).toBeGreaterThan(0);
+      expect(ex.errors.length).toBe(1);
     });
 
     it('creates ValidationException without entityType', () => {
@@ -188,9 +188,9 @@ describe('GasValidators', () => {
   describe('a1Notation()', () => {
     const schema = GasValidators.a1Notation();
 
-    it.each(['A1', 'B10', 'A1:B10', 'Sheet1!A1:B10'])('accepts valid notation: %s', (val) =>
-      expect(() => schema.parse(val)).not.toThrow()
-    );
+    it.each(['A1', 'B10', 'A1:B10', 'Sheet1!A1:B10'])('accepts valid notation: %s', (val) => {
+      schema.parse(val);
+    });
 
     it('rejects invalid notation', () => {
       expect(() => schema.parse('not-a1-notation!')).toThrow();
@@ -202,7 +202,7 @@ describe('GasValidators', () => {
     const validId = 'a'.repeat(44);
 
     it('accepts valid 44-char alphanumeric ID', () => {
-      expect(() => schema.parse(validId)).not.toThrow();
+      schema.parse(validId);
     });
 
     it('rejects too-short ID', () => {
@@ -217,9 +217,15 @@ describe('GasValidators', () => {
   describe('hexColor()', () => {
     const schema = GasValidators.hexColor();
 
-    it('accepts #FFF (3-char)', () => expect(() => schema.parse('#FFF')).not.toThrow());
-    it('accepts #FFFFFF (6-char)', () => expect(() => schema.parse('#FFFFFF')).not.toThrow());
-    it('accepts lowercase hex', () => expect(() => schema.parse('#aabbcc')).not.toThrow());
+    it('accepts #FFF (3-char)', () => {
+      schema.parse('#FFF');
+    });
+    it('accepts #FFFFFF (6-char)', () => {
+      schema.parse('#FFFFFF');
+    });
+    it('accepts lowercase hex', () => {
+      schema.parse('#aabbcc');
+    });
     it('rejects invalid color', () => expect(() => schema.parse('red')).toThrow());
     it('rejects missing hash', () => expect(() => schema.parse('FFFFFF')).toThrow());
   });
