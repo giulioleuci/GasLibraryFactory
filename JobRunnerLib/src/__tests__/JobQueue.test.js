@@ -40,7 +40,7 @@ describe('JobStateManager', () => {
 
   describe('Constructor and Validation', () => {
     it('should create instance with valid parameters', () => {
-      expect(stateManager).toBeDefined();
+      expect(stateManager).toBeInstanceOf(JobStateManager);
       expect(stateManager.jobName).toBe('test-job');
     });
 
@@ -244,9 +244,12 @@ describe('JobStateManager', () => {
     });
 
     it('should handle empty batch save', () => {
-      expect(() => {
-        stateManager.batchSave({});
-      }).not.toThrow();
+      // batchSave has no input-validation throw path to negative-test; the
+      // meaningful contrast is the populated-updates tests above (batch save
+      // with state/progress/config/type), which exercise setProperties with
+      // real properties. Here we pin the real (no-op) return value and effect.
+      expect(stateManager.batchSave({})).toBeUndefined();
+      expect(propertiesService.setProperties).not.toHaveBeenCalled();
     });
   });
 
@@ -486,7 +489,7 @@ describe('JobTriggerManager', () => {
 
   describe('Constructor', () => {
     it('should create instance with valid parameters', () => {
-      expect(triggerManager).toBeDefined();
+      expect(triggerManager).toBeInstanceOf(JobTriggerManager);
       expect(triggerManager.jobName).toBe('test-job');
     });
 
@@ -519,7 +522,10 @@ describe('JobTriggerManager', () => {
       triggerManager.createResumeTrigger();
 
       const triggerId = propertiesService.getScriptProperty('trigger_test-job');
-      expect(triggerId).toBeDefined();
+      // TriggerServiceMock's per-instance counter starts fresh in this test's
+      // own triggerManager/triggerService (beforeEach), so the first trigger
+      // created here always gets id 'trigger-1'.
+      expect(triggerId).toBe('trigger-1');
     });
 
     it('should store job-to-trigger mapping', () => {
@@ -574,9 +580,10 @@ describe('JobTriggerManager', () => {
     });
 
     it('should handle deletion when no trigger exists', () => {
-      expect(() => {
-        triggerManager.deleteExistingTriggers();
-      }).not.toThrow();
+      // deleteExistingTriggers() has no invalid-input throw path (it takes no
+      // args and no-ops when the property lookup misses); the real contract
+      // is that it stays a no-op, verified by the trigger-count assertion below.
+      expect(triggerManager.deleteExistingTriggers()).toBeUndefined();
 
       expect(triggerService.getTriggerCount()).toBe(0);
     });
@@ -961,7 +968,7 @@ describe('JobQueue', () => {
 
   describe('Constructor and Validation', () => {
     it('should create instance with valid parameters', () => {
-      expect(queue).toBeDefined();
+      expect(queue).toBeInstanceOf(JobQueue);
     });
 
     it('should throw error if logger is missing', () => {
@@ -1104,9 +1111,15 @@ describe('JobQueue', () => {
     });
 
     it('should handle null configuration gracefully', () => {
-      expect(() => {
-        queue.applyConfiguration(null);
-      }).not.toThrow();
+      // Sibling positive case above ('should apply saved configuration')
+      // covers the populated-config path; here the real contract is that a
+      // falsy config is a no-op: constructor defaults survive, fluent return.
+      const result = queue.applyConfiguration(null);
+
+      expect(result).toBe(queue);
+      expect(queue._maxExecutionDuration).toBe(25 * 60 * 1000);
+      expect(queue._triggerDelayMs).toBe(60 * 1000);
+      expect(queue._maxRetries).toBeNull();
     });
   });
 
@@ -1397,8 +1410,16 @@ describe('JobQueue', () => {
       queue.execute('job1', 'timeout');
 
       const failureInfo = stateManager.getFailureInfo();
-      expect(failureInfo).toBeDefined();
-      expect(failureInfo.reason).toBe('MAX_RETRIES_EXCEEDED');
+      // retryCount is pinned exact: maxRetries=1, first execute() timeout
+      // increments it to 1, second execute() sees retryCount(1) >= maxRetries(1)
+      // and takes the MAX_RETRIES_EXCEEDED path without incrementing again.
+      // timestamp is a genuine non-deterministic Date.getTime() (no fake
+      // timers in this file).
+      expect(failureInfo).toEqual({
+        reason: 'MAX_RETRIES_EXCEEDED',
+        retryCount: 1,
+        timestamp: expect.any(Number)
+      });
     });
 
     it('should call failure callback when max retries exceeded', () => {
@@ -1444,10 +1465,12 @@ describe('JobQueue', () => {
       queue.setOnFailure(failureCallback);
       queue.setMaxDuration(1);
 
-      // Should not throw despite callback error
-      expect(() => {
-        queue.execute('job1', 'timeout');
-      }).not.toThrow();
+      // Should not throw despite callback error. Sibling contrast: the
+      // preceding test ('should call failure callback when max retries
+      // exceeded') exercises the same path with a callback that does NOT
+      // throw; here the real effect is that execute() still returns null
+      // and the callback's error is caught and logged, not propagated.
+      expect(queue.execute('job1', 'timeout')).toBeNull();
 
       expect(logger.hasLog('ERROR', /Error in onFailure callback/)).toBe(true);
     });
