@@ -222,11 +222,16 @@ describe('ImportEngine - Comprehensive Test Suite', () => {
 
       engine.runImport(validRecipe, { maxRetries: 5 });
 
-      expect(mockExceptionService.executeWithRetry).toHaveBeenCalledWith(
-        expect.any(Function),
-        {},
-        5
-      );
+      // The mock implementation above already invoked the captured callback
+      // as a side effect of runImport(), which is what proves it's the real
+      // import closure (not a stub): it drove the actual ETL calls below.
+      const [fn, retryOptions, maxRetries] = mockExceptionService.executeWithRetry.mock.calls[0];
+      expect(typeof fn).toBe('function');
+      expect(retryOptions).toEqual({});
+      expect(maxRetries).toBe(5);
+      expect(mockStrategy.extract).toHaveBeenCalled();
+      expect(mockTransformer.transform).toHaveBeenCalled();
+      expect(mockLoader.load).toHaveBeenCalled();
     });
 
     it('should work without exception service', () => {
@@ -265,11 +270,13 @@ describe('ImportEngine - Comprehensive Test Suite', () => {
 
       engine.runImport(validRecipe);
 
-      expect(mockExceptionService.executeWithRetry).toHaveBeenCalledWith(
-        expect.any(Function),
-        {},
-        3
-      );
+      const [fn, retryOptions, maxRetries] = mockExceptionService.executeWithRetry.mock.calls[0];
+      expect(typeof fn).toBe('function');
+      expect(retryOptions).toEqual({});
+      expect(maxRetries).toBe(3);
+      expect(mockStrategy.extract).toHaveBeenCalled();
+      expect(mockTransformer.transform).toHaveBeenCalled();
+      expect(mockLoader.load).toHaveBeenCalled();
     });
 
     it('should support custom maxRetries option', () => {
@@ -277,11 +284,13 @@ describe('ImportEngine - Comprehensive Test Suite', () => {
 
       engine.runImport(validRecipe, { maxRetries: 10 });
 
-      expect(mockExceptionService.executeWithRetry).toHaveBeenCalledWith(
-        expect.any(Function),
-        {},
-        10
-      );
+      const [fn, retryOptions, maxRetries] = mockExceptionService.executeWithRetry.mock.calls[0];
+      expect(typeof fn).toBe('function');
+      expect(retryOptions).toEqual({});
+      expect(maxRetries).toBe(10);
+      expect(mockStrategy.extract).toHaveBeenCalled();
+      expect(mockTransformer.transform).toHaveBeenCalled();
+      expect(mockLoader.load).toHaveBeenCalled();
     });
 
     it('should invoke options.postTransform with the transformed batch and config before Load', () => {
@@ -754,9 +763,12 @@ describe('ImportEngine - Comprehensive Test Suite', () => {
       expect(checkpoint.counters.transformed).toBe(6);
       expect(checkpoint.counters.inserted).toBe(6);
       // The bounded-buffer guarantee: checkpoint.buffer never exceeds maxRows
-      // items at any yielded/returned point, for the whole run.
+      // items at any yielded/returned point, for the whole run. With 6 rows
+      // and maxRows=2, the EXTRACT/LOAD stages alternate deterministically:
+      // EXTRACT fills the buffer to 2, the following LOAD call drains it to 0,
+      // three times over (6 chunk boundaries total).
       expect(observedBufferLengths.every((len) => len <= 2)).toBe(true);
-      expect(Math.max(...observedBufferLengths)).toBeGreaterThan(0); // sanity: buffer was actually populated at some point
+      expect(observedBufferLengths).toEqual([2, 0, 2, 0, 2, 0]);
     });
 
     it('reaches isFirstChunk:false on a real second LOAD call end-to-end, without re-purging prior chunks (OVERWRITE)', () => {
