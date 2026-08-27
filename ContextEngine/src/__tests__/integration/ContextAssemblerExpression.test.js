@@ -107,10 +107,19 @@ describe('ContextAssembler + ExpressionEngine Integration', () => {
       // User ID > 100 makes isPremium = true
       const context = assembler.assemble(recipe, { userId: 150 });
 
-      expect(context.userData).toBeDefined();
-      expect(context.userData.isPremium).toBe(true);
-      expect(context.premiumData).toBeDefined();
-      expect(context.premiumData.features).toContain('analytics');
+      expect(context).toEqual({
+        userData: {
+          id: 150,
+          name: 'John Doe',
+          isPremium: true,
+          status: 'active',
+          tier: 'silver'
+        },
+        premiumData: {
+          features: ['analytics', 'priority-support', 'api-access'],
+          discount: 20
+        }
+      });
     });
 
     it('should skip provider when condition evaluates to false', () => {
@@ -134,9 +143,15 @@ describe('ContextAssembler + ExpressionEngine Integration', () => {
       // User ID <= 100 makes isPremium = false
       const context = assembler.assemble(recipe, { userId: 50 });
 
-      expect(context.userData).toBeDefined();
-      expect(context.userData.isPremium).toBe(false);
-      expect(context.premiumData).toBeUndefined();
+      expect(context).toEqual({
+        userData: {
+          id: 50,
+          name: 'John Doe',
+          isPremium: false,
+          status: 'active',
+          tier: 'silver'
+        }
+      });
     });
 
     it('should evaluate complex conditions with logical operators', () => {
@@ -159,7 +174,19 @@ describe('ContextAssembler + ExpressionEngine Integration', () => {
 
       const context = assembler.assemble(recipe, { userId: 150 });
 
-      expect(context.premiumData).toBeDefined();
+      expect(context).toEqual({
+        userData: {
+          id: 150,
+          name: 'John Doe',
+          isPremium: true,
+          status: 'active',
+          tier: 'silver'
+        },
+        premiumData: {
+          features: ['analytics', 'priority-support', 'api-access'],
+          discount: 20
+        }
+      });
     });
 
     it('should evaluate conditions with initialParams using {{}} syntax', () => {
@@ -176,7 +203,15 @@ describe('ContextAssembler + ExpressionEngine Integration', () => {
 
       // Should execute - userId > 0
       const context1 = assembler.assemble(recipe, { userId: 100 });
-      expect(context1.userData).toBeDefined();
+      expect(context1).toEqual({
+        userData: {
+          id: 100,
+          name: 'John Doe',
+          isPremium: false,
+          status: 'active',
+          tier: 'silver'
+        }
+      });
     });
 
     it('should evaluate string comparison conditions', () => {
@@ -200,8 +235,19 @@ describe('ContextAssembler + ExpressionEngine Integration', () => {
       // User ID > 200 makes tier = 'gold'
       const context = assembler.assemble(recipe, { userId: 250 });
 
-      expect(context.userData.tier).toBe('gold');
-      expect(context.premiumData).toBeDefined();
+      expect(context).toEqual({
+        userData: {
+          id: 250,
+          name: 'John Doe',
+          isPremium: true,
+          status: 'active',
+          tier: 'gold'
+        },
+        premiumData: {
+          features: ['analytics', 'priority-support', 'api-access'],
+          discount: 20
+        }
+      });
     });
   });
 
@@ -233,12 +279,20 @@ describe('ContextAssembler + ExpressionEngine Integration', () => {
 
       const context = assembler.assemble(recipe, { userId: 123 });
 
-      expect(context.user).toBeDefined();
-      expect(context.orders).toBeDefined();
-      expect(context.orders.length).toBe(2);
-      expect(context.analytics).toBeDefined();
-      expect(context.analytics.orderCount).toBe(2);
-      expect(context.analytics.totalSpent).toBe(350);
+      expect(context).toEqual({
+        user: {
+          id: 123,
+          name: 'John Doe',
+          isPremium: true,
+          status: 'active',
+          tier: 'silver'
+        },
+        orders: [
+          { id: 1, userId: 123, total: 100 },
+          { id: 2, userId: 123, total: 250 }
+        ],
+        analytics: { orderCount: 2, totalSpent: 350, avgOrderValue: 175 }
+      });
     });
 
     it('should stop chain when intermediate condition fails', () => {
@@ -276,9 +330,9 @@ describe('ContextAssembler + ExpressionEngine Integration', () => {
 
       const context = assembler.assemble(recipe, { userId: 123 });
 
-      expect(context.user).toBeDefined();
-      expect(context.user.status).toBe('inactive');
-      expect(context.orders).toBeUndefined(); // Skipped - status != active
+      expect(context).toEqual({
+        user: { id: 123, name: 'Inactive User', status: 'inactive' }
+      });
     });
   });
 
@@ -314,13 +368,20 @@ describe('ContextAssembler + ExpressionEngine Integration', () => {
 
       // With value flag true
       const context1 = assembler.assemble(recipe, { includeValue: true });
-      expect(context1.flagData.hasValue).toBe(true);
-      expect(context1.dependentData).toBeDefined();
+      expect(context1).toEqual({
+        flagData: { hasValue: true, value: 'some-value' },
+        dependentData: {
+          id: 1,
+          name: 'John Doe',
+          isPremium: false,
+          status: 'active',
+          tier: 'silver'
+        }
+      });
 
       // With value flag false
       const context2 = assembler.assemble(recipe, { includeValue: false });
-      expect(context2.flagData.hasValue).toBe(false);
-      expect(context2.dependentData).toBeUndefined();
+      expect(context2).toEqual({ flagData: { hasValue: false, value: null } });
     });
 
     it('should handle numeric comparisons in conditions', () => {
@@ -343,11 +404,31 @@ describe('ContextAssembler + ExpressionEngine Integration', () => {
 
       // userId >= 100
       const context1 = assembler.assemble(recipe, { userId: 100 });
-      expect(context1.premiumData).toBeDefined();
+      expect(context1).toEqual({
+        userData: {
+          id: 100,
+          name: 'John Doe',
+          isPremium: false,
+          status: 'active',
+          tier: 'silver'
+        },
+        premiumData: {
+          features: ['analytics', 'priority-support', 'api-access'],
+          discount: 20
+        }
+      });
 
       // userId < 100
       const context2 = assembler.assemble(recipe, { userId: 99 });
-      expect(context2.premiumData).toBeUndefined();
+      expect(context2).toEqual({
+        userData: {
+          id: 99,
+          name: 'John Doe',
+          isPremium: false,
+          status: 'active',
+          tier: 'silver'
+        }
+      });
     });
 
     it('should handle boolean expressions with negation', () => {
@@ -370,11 +451,31 @@ describe('ContextAssembler + ExpressionEngine Integration', () => {
 
       // Non-premium user (userId <= 100)
       const context1 = assembler.assemble(recipe, { userId: 50 });
-      expect(context1.nonPremiumData).toBeDefined();
+      expect(context1).toEqual({
+        userData: {
+          id: 50,
+          name: 'John Doe',
+          isPremium: false,
+          status: 'active',
+          tier: 'silver'
+        },
+        nonPremiumData: [
+          { id: 1, userId: 50, total: 100 },
+          { id: 2, userId: 50, total: 250 }
+        ]
+      });
 
       // Premium user (userId > 100)
       const context2 = assembler.assemble(recipe, { userId: 150 });
-      expect(context2.nonPremiumData).toBeUndefined();
+      expect(context2).toEqual({
+        userData: {
+          id: 150,
+          name: 'John Doe',
+          isPremium: true,
+          status: 'active',
+          tier: 'silver'
+        }
+      });
     });
   });
 
@@ -455,8 +556,15 @@ describe('ContextAssembler + ExpressionEngine Integration', () => {
 
       const context = assembler.assemble(recipe, {});
 
-      expect(context.nestedData).toBeDefined();
-      expect(context.notificationData).toBeDefined();
+      expect(context).toEqual({
+        nestedData: {
+          user: { profile: { settings: { notifications: true } } }
+        },
+        notificationData: [
+          { id: 1, userId: 1, total: 100 },
+          { id: 2, userId: 1, total: 250 }
+        ]
+      });
     });
 
     it('should check array existence in conditions', () => {
@@ -480,8 +588,13 @@ describe('ContextAssembler + ExpressionEngine Integration', () => {
 
       const context = assembler.assemble(recipe, { userId: 123 });
 
-      expect(context.orders.length).toBe(2);
-      expect(context.analytics).toBeDefined();
+      expect(context).toEqual({
+        orders: [
+          { id: 1, userId: 123, total: 100 },
+          { id: 2, userId: 123, total: 250 }
+        ],
+        analytics: { orderCount: 2, totalSpent: 350, avgOrderValue: 175 }
+      });
     });
   });
 
@@ -510,10 +623,22 @@ describe('ContextAssembler + ExpressionEngine Integration', () => {
       // because there's no expression engine to evaluate the condition
       const context = assemblerNoExpr.assemble(recipe, { userId: 50 });
 
-      expect(context.userData).toBeDefined();
-      expect(context.userData.isPremium).toBe(false);
-      expect(context.premiumData).toBeDefined(); // Executed despite condition
-      expect(logger.warn).toHaveBeenCalled(); // Should warn about missing expression engine
+      expect(context).toEqual({
+        userData: {
+          id: 50,
+          name: 'John Doe',
+          isPremium: false,
+          status: 'active',
+          tier: 'silver'
+        },
+        premiumData: {
+          features: ['analytics', 'priority-support', 'api-access'],
+          discount: 20
+        }
+      });
+      expect(logger.warn).toHaveBeenCalledWith(
+        'Condition specified but no expression engine provided - defaulting to true'
+      );
     });
   });
 });
