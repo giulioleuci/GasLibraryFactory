@@ -16,7 +16,8 @@ import {
   CircularDelegationError,
   DelegationDepthExceededError,
   CircularAssignmentOverrideError,
-  OverrideChainDepthExceededError
+  OverrideChainDepthExceededError,
+  RoleValidationError
 } from '../../internal/errors/RoleResolutionError.js';
 
 const actor = (id) => Actor.person(id, `${id}@example.test`, id);
@@ -465,6 +466,16 @@ describe('EffectiveAssignmentResolver', () => {
     expect(result.trace.entries.filter(
       (entry) => entry.stage === 'OVERRIDE' && entry.decision === 'APPLIED'
     )).toHaveLength(2);
+  });
+
+  test('throws RoleValidationError when asOfDate is invalid', () => {
+    const resolver = createResolver();
+    expect(() =>
+      resolver.resolve({
+        context: { group: 'G1', subject: 'S1' },
+        asOfDate: 'not-a-date'
+      })
+    ).toThrow(RoleValidationError);
   });
 
   test.each(Object.values(RoutingPolicy))(
