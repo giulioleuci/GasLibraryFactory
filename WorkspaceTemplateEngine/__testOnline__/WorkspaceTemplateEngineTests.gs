@@ -466,6 +466,80 @@ function initWorkspaceTemplateEngineTests() {
     }
   });
 
+  // PENDING SPECIFICATION: DocumentProcessor.createFromTemplate() does not exist yet
+  // (moved here from a WorkspaceTemplateEngine/src/__tests__/integration/
+  // DocumentProcessorIntegration.test.js it.skip() — task 9 step 4 of the audit
+  // remediation plan). It describes the feature's intended contract: copy a template
+  // document via Drive, substitute placeholders in the copy, and leave the template
+  // untouched. This test exercises the real (not yet existing) method against real
+  // GAS APIs, so it will genuinely fail until createFromTemplate() is implemented —
+  // that failure IS the point: a pinned limitation that documents itself and fails
+  // the moment the limitation lifts, instead of a silently-skipped offline test.
+  runner.register(`${NS}/Document/CreateFromTemplate`, () => {
+    const deps = createGoogleApiWrapperDeps();
+    const docService = new DocumentService(
+      deps.logger,
+      deps.cache,
+      deps.utils,
+      deps.exceptionService
+    );
+
+    const templateName =
+      'GLF-Test-CreateFromTemplate-Template_' + deps.utils.generateUuid().substring(0, 8);
+    const { documentId: templateId, builder } = docService.createDocument(templateName);
+    builder.appendParagraph('Hello {{name}}! Welcome to {{place}}.');
+    builder.execute();
+
+    const logger = new LoggerService();
+    const mustache = new Mustache({ logger });
+    const placeholderService = new PlaceholderService({ logger, mustache });
+    const docProcessor = new DocumentProcessor(placeholderService);
+
+    let newDocumentId;
+    try {
+      const newName =
+        'GLF-Test-CreateFromTemplate-Copy_' + deps.utils.generateUuid().substring(0, 8);
+
+      // createFromTemplate() should copy `templateId` to a new document named
+      // `newName`, render `data` into the copy, and return the new document's id.
+      newDocumentId = docProcessor.createFromTemplate(templateId, newName, {
+        name: 'Alice',
+        place: 'Wonderland'
+      });
+
+      SmartAssert.isString(newDocumentId, 'createFromTemplate should return the new document id');
+      SmartAssert.notEquals(
+        newDocumentId,
+        templateId,
+        'New document should be a distinct copy, not the template itself'
+      );
+
+      const newDoc = DocumentApp.openById(newDocumentId);
+      const newText = newDoc.getBody().getText();
+      SmartAssert.isTrue(newText.includes('Hello Alice'), 'Copy should have name substituted');
+      SmartAssert.isTrue(
+        newText.includes('Welcome to Wonderland'),
+        'Copy should have place substituted'
+      );
+
+      const templateDoc = DocumentApp.openById(templateId);
+      const templateText = templateDoc.getBody().getText();
+      SmartAssert.isTrue(
+        templateText.includes('{{name}}'),
+        'Original template should remain unsubstituted (createFromTemplate must not mutate it)'
+      );
+      SmartAssert.isTrue(
+        templateText.includes('{{place}}'),
+        'Original template should remain unsubstituted (createFromTemplate must not mutate it)'
+      );
+    } finally {
+      DriveApp.getFileById(templateId).setTrashed(true);
+      if (newDocumentId) {
+        DriveApp.getFileById(newDocumentId).setTrashed(true);
+      }
+    }
+  });
+
   runner.register(`${NS}/Sheet/Matrix_Expansion`, () => {
     const ss = testContext.getSpreadsheet();
     testContext.resetSpreadsheet(ss);
