@@ -294,7 +294,8 @@ describe('PipelineContext - Comprehensive Test Suite', () => {
       const metadata = context.getMetadata();
       const { startTime, ...state } = metadata;
 
-      expect(typeof startTime).toBe('number');
+      expect(Number.isFinite(startTime)).toBe(true);
+      expect(startTime).toBeGreaterThanOrEqual(0);
       expect(startTime).toBeLessThanOrEqual(Date.now());
       expect(state).toEqual({
         endTime: null,
@@ -385,7 +386,8 @@ describe('PipelineContext - Comprehensive Test Suite', () => {
       const summary = context.getSummary();
       const { startTime, ...state } = summary;
 
-      expect(typeof startTime).toBe('number');
+      expect(Number.isFinite(startTime)).toBe(true);
+      expect(startTime).toBeGreaterThanOrEqual(0);
       expect(startTime).toBeLessThanOrEqual(Date.now());
       expect(state).toEqual({
         endTime: null,
