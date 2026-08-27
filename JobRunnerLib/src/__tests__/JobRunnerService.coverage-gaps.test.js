@@ -135,10 +135,15 @@ describe('JobRunnerService - Coverage Gap Tests', () => {
       const result = service.run('suspendTest', 'testType', {}, callback, false);
 
       expect(result).toBeNull();
-      expect(mockLogger.logJobSuspended).toHaveBeenCalledWith('suspendTest', {
-        reason: 'state saved; automatic resume scheduled',
-        durationMs: expect.any(Number)
+      expect(mockLogger.logJobSuspended).toHaveBeenCalledTimes(1);
+      const [[suspendedJobName, suspendedDetails]] = mockLogger.logJobSuspended.mock.calls;
+      expect(suspendedJobName).toBe('suspendTest');
+      const { durationMs, ...restSuspendedDetails } = suspendedDetails;
+      expect(restSuspendedDetails).toEqual({
+        reason: 'state saved; automatic resume scheduled'
       });
+      expect(Number.isFinite(durationMs)).toBe(true);
+      expect(durationMs).toBeGreaterThanOrEqual(0);
     });
 
     it('should log when job completes successfully (returns result)', () => {
@@ -160,9 +165,13 @@ describe('JobRunnerService - Coverage Gap Tests', () => {
       const result = service.run('completeTest', 'testType', {}, callback, false);
 
       expect(result).toEqual({ success: true, data: 'complete' });
-      expect(mockLogger.logJobEnd).toHaveBeenCalledWith('completeTest', true, {
-        durationMs: expect.any(Number)
-      });
+      expect(mockLogger.logJobEnd).toHaveBeenCalledTimes(1);
+      const [[loggedJobName, loggedSuccess, loggedDetails]] = mockLogger.logJobEnd.mock.calls;
+      expect(loggedJobName).toBe('completeTest');
+      expect(loggedSuccess).toBe(true);
+      expect(Object.keys(loggedDetails)).toEqual(['durationMs']);
+      expect(Number.isFinite(loggedDetails.durationMs)).toBe(true);
+      expect(loggedDetails.durationMs).toBeGreaterThanOrEqual(0);
     });
   });
 
@@ -310,16 +319,18 @@ describe('JobRunnerService - Coverage Gap Tests', () => {
   describe('Additional Edge Cases', () => {
     it('should handle job definition in resume()', () => {
       // Test that job definition can be registered
-      mockRegistry.register('defJob', {
+      const definition = {
         name: 'defJob',
         type: 'defType',
         description: 'Test definition',
         action: () => {},
         schedule: 'manual'
-      });
+      };
+      mockRegistry.register('defJob', definition);
 
       const def = mockRegistry.getDefinition('defJob');
-      expect(def).toBeDefined();
+      // getDefinition() returns the exact stored object, not a copy.
+      expect(def).toBe(definition);
       expect(def.name).toBe('defJob');
     });
 
