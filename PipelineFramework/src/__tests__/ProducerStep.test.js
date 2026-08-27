@@ -50,7 +50,7 @@ describe('ProducerStep - Comprehensive Test Suite', () => {
         outputKey: 'result'
       });
 
-      expect(step).toBeDefined();
+      expect(step).toBeInstanceOf(TestProducerStep);
       expect(step.getName()).toBe('testProducer');
       expect(step.outputKey).toBe('result');
       expect(step.expressionEngine).toBe(mocks.expressionEngine);
