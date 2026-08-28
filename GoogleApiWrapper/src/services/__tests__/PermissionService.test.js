@@ -547,14 +547,14 @@ describe('PermissionService - Comprehensive Test Suite', () => {
       const fileIds = ['file1', 'file2', 'file3'];
       const newOwner = 'newteam@example.com';
 
-      const result = service.transferOwnership(fileIds, newOwner);
+      const _result = service.transferOwnership(fileIds, newOwner);
 
       expect(global.Drive.Permissions.create).toHaveBeenCalledTimes(3);
       expect(cache.remove).toHaveBeenCalledTimes(3);
     });
 
     it('should upgrade viewer to editor', () => {
-      const result = service.changeRoles('fileId', {
+      const _result = service.changeRoles('fileId', {
         email: 'user@example.com',
         newRole: 'writer'
       });
@@ -564,7 +564,7 @@ describe('PermissionService - Comprehensive Test Suite', () => {
     });
 
     it('should cleanup access after project completion', () => {
-      const result = service.removeAccess('fileId', 'user@example.com');
+      const _result = service.removeAccess('fileId', 'user@example.com');
 
       expect(service.getPermissions).toHaveBeenCalled();
       expect(global.Drive.Permissions.remove).toHaveBeenCalled();
@@ -801,5 +801,84 @@ describe('PermissionService - Comprehensive Test Suite', () => {
     // Note: the original 'should execute batch operations with maxRetries option'
     // test was removed because native API calls don't have maxRetries passed like that
     // in PermissionService getSharingLink right now.
+  });
+
+  function buildService() {
+    const logger = {
+      debug: jest.fn(),
+      info: jest.fn(),
+      warn: jest.fn(),
+      error: jest.fn()
+    };
+
+    const cache = {
+      get: jest.fn(() => null),
+      put: jest.fn(),
+      remove: jest.fn()
+    };
+
+    const utils = {
+      sleep: jest.fn(),
+      getUuid: jest.fn(() => 'test-uuid-permission')
+    };
+
+    const exceptionService = {
+      executeWithRetry: jest.fn((fn) => fn())
+    };
+
+    return new PermissionService(logger, cache, utils, exceptionService);
+  }
+
+  describe('changeRolesByPermissionId', () => {
+    test('updates each permission id and reports success', () => {
+      const service = buildService(); // existing helper in this file
+      global.Drive.Permissions.update = jest.fn(() => ({}));
+
+      const result = service.changeRolesByPermissionId('file1', [
+        { permissionId: 'p1', newRole: 'reader' },
+        { permissionId: 'p2', newRole: 'reader' }
+      ]);
+
+      expect(global.Drive.Permissions.update).toHaveBeenCalledTimes(2);
+      expect(global.Drive.Permissions.update).toHaveBeenCalledWith(
+        { role: 'reader' },
+        'file1',
+        'p1'
+      );
+      expect(result.successful).toHaveLength(2);
+      expect(result.failed).toHaveLength(0);
+    });
+
+    test('isolates a failing permission and keeps going', () => {
+      const service = buildService();
+      global.Drive.Permissions.update = jest.fn((_res, _fileId, permissionId) => {
+        if (permissionId === 'p1') {
+          throw new Error('nope');
+        }
+        return {};
+      });
+
+      const result = service.changeRolesByPermissionId(
+        ['file1'],
+        [
+          { permissionId: 'p1', newRole: 'reader' },
+          { permissionId: 'p2', newRole: 'reader' }
+        ]
+      );
+
+      expect(result.failed).toHaveLength(1);
+      expect(result.failed[0].permissionId).toBe('p1');
+      expect(result.successful).toHaveLength(1);
+    });
+
+    test('accepts a single change object and invalidates the permissions cache', () => {
+      const service = buildService();
+      global.Drive.Permissions.update = jest.fn(() => ({}));
+      const removeSpy = jest.spyOn(service._cache, 'remove');
+
+      service.changeRolesByPermissionId('file1', { permissionId: 'p1', newRole: 'reader' });
+
+      expect(removeSpy).toHaveBeenCalled();
+    });
   });
 });

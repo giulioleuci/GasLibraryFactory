@@ -356,6 +356,65 @@ export class PermissionService extends GoogleService {
   }
 
   /**
+   * Changes roles addressed by PERMISSION ID rather than by email.
+   *
+   * `changeRoles` resolves each change through `emailAddress`, so grants that
+   * have no email — `type: 'anyone'` (link sharing) and `type: 'domain'` —
+   * are unreachable through it. Callers that enumerate permissions themselves
+   * (e.g. "downgrade every writer on this file") use this method.
+   *
+   * @param {string|string[]} fileIds
+   * @param {{permissionId: string, newRole: string}|Array<{permissionId: string, newRole: string}>} roleChanges
+   * @param {Object} [_options]
+   * @returns {{successful: Array<Object>, failed: Array<Object>}}
+   */
+  changeRolesByPermissionId(fileIds, roleChanges, _options = {}) {
+    const fileIdsArray = Array.isArray(fileIds) ? fileIds : [fileIds];
+    const changesArray = Array.isArray(roleChanges) ? roleChanges : [roleChanges];
+    const results = { successful: [], failed: [] };
+
+    fileIdsArray.forEach((fileId) => {
+      changesArray.forEach((change) => {
+        try {
+          this._exceptionService.executeWithRetry(
+            () =>
+              Drive.Permissions.update(
+                {
+                  role: change.newRole
+                },
+                fileId,
+                change.permissionId
+              ),
+            {},
+            3
+          );
+          results.successful.push({
+            fileId,
+            permissionId: change.permissionId,
+            newRole: change.newRole,
+            statusCode: 200
+          });
+        } catch (error) {
+          results.failed.push({
+            fileId,
+            permissionId: change.permissionId,
+            error: error,
+            statusCode: error.code || 500
+          });
+          this._logger.warn(
+            `Failed to update permission ${change.permissionId} on ${fileId}: ${error.message}`
+          );
+        }
+      });
+
+      const cacheKey = this._generateCacheKey(this._cachePrefix, fileId, 'getPermissions');
+      this._cache.remove(cacheKey);
+    });
+
+    return results;
+  }
+
+  /**
    * Transfers ownership of file(s) to user(s) in batch with NO email notifications.
    *
    * This method transfers file ownership to new owner(s). Ownership transfer is a special
