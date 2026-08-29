@@ -6,7 +6,7 @@ export class ImportStrategyRegistry {
   }
 
   registerCustomSource(name, strategyClass) {
-    this.facade.logger.info(`[ImportEngine] Registering custom source strategy: ${name}`);
+    this.facade.logger.debug(`[ImportEngine] Registering custom source strategy: ${name}`);
     this.facade._sourceFactory.registerStrategy(name, strategyClass);
     // Also whitelist the type for recipe validation — otherwise a recipe using
     // this custom source is rejected by ImportConfiguration before extraction

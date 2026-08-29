@@ -71,7 +71,7 @@ describe('Cross-Cutting Concern: Logger Propagation', () => {
       repository.save(entity);
 
       // Assert: Logger was called during operation
-      expect(mockLogger.hasLog('INFO', /Inserted new TestEntity/i)).toBe(true);
+      expect(mockLogger.hasLog('DEBUG', /Inserted new TestEntity/i)).toBe(true);
     });
 
     test('Logger propagates through ContextAssembler to Providers', () => {

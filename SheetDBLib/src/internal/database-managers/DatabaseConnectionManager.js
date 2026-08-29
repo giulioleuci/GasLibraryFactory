@@ -39,12 +39,12 @@ export class DatabaseConnectionManager {
         if (pendingChanges.length > 0) {
           this._logger.info(`[DRY-RUN] Would save changes to ${pendingChanges.length} table(s):`);
           pendingChanges.forEach((change) => {
-            this._logger.info(
-              `[DRY-RUN]   - ${change.table}: ${change.inserts} inserts, ${change.updates} updates, ${change.deletes} deletes`
+            this._logger.debug(
+              `[DRY-RUN] - ${change.table}: ${change.inserts} inserts, ${change.updates} updates, ${change.deletes} deletes`
             );
           });
         } else {
-          this._logger.info('[DRY-RUN] No pending changes to save');
+          this._logger.debug('[DRY-RUN] No pending changes to save');
         }
 
         return { success: true, pendingChanges, dryRun: true };

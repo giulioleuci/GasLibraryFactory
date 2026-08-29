@@ -116,7 +116,7 @@ describe('ImportEngine - Comprehensive Test Suite', () => {
     });
 
     it('should log successful initialization', () => {
-      expect(mockLogger.info).toHaveBeenCalledWith('[ImportEngine] Initialized successfully');
+      expect(mockLogger.debug).toHaveBeenCalledWith('[ImportEngine] Initialized successfully');
     });
   });
 
@@ -489,7 +489,7 @@ describe('ImportEngine - Comprehensive Test Suite', () => {
 
       engine.registerCustomSource('ApiSource', customStrategy);
 
-      expect(mockLogger.info).toHaveBeenCalledWith(
+      expect(mockLogger.debug).toHaveBeenCalledWith(
         '[ImportEngine] Registering custom source strategy: ApiSource'
       );
     });
@@ -1185,9 +1185,9 @@ describe('ImportEngine - Comprehensive Test Suite', () => {
 
       engine.runImport(recipe);
 
-      expect(mockLogger.info).toHaveBeenCalledWith('[ImportEngine] Phase 1: EXTRACT');
-      expect(mockLogger.info).toHaveBeenCalledWith('[ImportEngine] Phase 2: TRANSFORM');
-      expect(mockLogger.info).toHaveBeenCalledWith('[ImportEngine] Phase 3: LOAD');
+      expect(mockLogger.debug).toHaveBeenCalledWith('[ImportEngine] Phase 1: EXTRACT');
+      expect(mockLogger.debug).toHaveBeenCalledWith('[ImportEngine] Phase 2: TRANSFORM');
+      expect(mockLogger.debug).toHaveBeenCalledWith('[ImportEngine] Phase 3: LOAD');
     });
   });
 });

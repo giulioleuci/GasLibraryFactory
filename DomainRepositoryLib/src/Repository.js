@@ -52,7 +52,7 @@ export class Repository {
     this._dryRun = options.dryRun || false;
 
     if (this._dryRun) {
-      this.logger.info(
+      this.logger.debug(
         `[DRY-RUN] Repository for ${tableName} initialized in dry-run mode. Changes will not be persisted.`
       );
     }
@@ -258,7 +258,7 @@ export class Repository {
       if (this._isDryRun(options)) {
         const operation = entity.id ? 'update' : 'insert';
         const simulatedId = entity.id || `dry-run-${Date.now()}`;
-        this.logger.info(
+        this.logger.debug(
           `[DRY-RUN] Would ${operation} ${this.EntityClass.name}${entity.id ? ` with ID: ${entity.id}` : ''}`
         );
 
@@ -272,12 +272,12 @@ export class Repository {
       if (entity.id) {
         // Update existing entity (TableService will perform dirty checking to skip unnecessary API calls)
         this._table.updateRowById(entity.id, data);
-        this.logger.info(`Updated ${this.EntityClass.name} with ID: ${entity.id}`);
+        this.logger.debug(`Updated ${this.EntityClass.name} with ID: ${entity.id}`);
       } else {
         // Insert new entity
         const newRow = this._table.insertRow(data);
         entity.id = newRow.id;
-        this.logger.info(`Inserted new ${this.EntityClass.name} with ID: ${entity.id}`);
+        this.logger.debug(`Inserted new ${this.EntityClass.name} with ID: ${entity.id}`);
       }
 
       // Save to database
@@ -338,7 +338,7 @@ export class Repository {
           savedEntities.push(entity);
         }
 
-        this.logger.info(
+        this.logger.debug(
           `Bulk inserted ${newEntities.length} new ${this.EntityClass.name} entities`
         );
       }
@@ -356,7 +356,7 @@ export class Repository {
       }
 
       if (existingEntities.length > 0) {
-        this.logger.info(
+        this.logger.debug(
           `Updated ${existingEntities.length} existing ${this.EntityClass.name} entities`
         );
       }
@@ -405,7 +405,7 @@ export class Repository {
       this.hydrationService.clearDirtyFields(entity);
       this.hydrationService.storeOriginalData(entity, updatedRow);
 
-      this.logger.info(`Patched ${this.EntityClass.name} with ID: ${entity.id}`);
+      this.logger.debug(`Patched ${this.EntityClass.name} with ID: ${entity.id}`);
 
       // Save to database
       this.database.save();
@@ -450,7 +450,7 @@ export class Repository {
     this._executeWithRetry(() => {
       this._table.deleteRowById(id);
       this.database.save();
-      this.logger.info(`Deleted ${this.EntityClass.name} with ID: ${id}`);
+      this.logger.debug(`Deleted ${this.EntityClass.name} with ID: ${id}`);
 
       // Clear cache if available
       if (this.cache) {
@@ -479,7 +479,7 @@ export class Repository {
 
       // Save to database once
       this.database.save();
-      this.logger.info(`Deleted ${entities.length} ${this.EntityClass.name} entities`);
+      this.logger.debug(`Deleted ${entities.length} ${this.EntityClass.name} entities`);
 
       // Clear cache if available
       if (this.cache) {

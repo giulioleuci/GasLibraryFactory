@@ -56,7 +56,7 @@ export class DriveService extends GoogleService {
     this._dryRun = options.dryRun || false;
 
     if (this._dryRun) {
-      this._logger.info(
+      this._logger.debug(
         '[DRY-RUN] DriveService initialized in dry-run mode. No mutations will be performed.'
       );
     }

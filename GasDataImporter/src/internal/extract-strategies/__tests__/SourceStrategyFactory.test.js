@@ -120,7 +120,7 @@ describe('SourceStrategyFactory - Comprehensive Test Suite', () => {
       factory.registerStrategy('CustomSource', CustomTestStrategy);
 
       expect(factory.hasStrategy('CustomSource')).toBe(true);
-      expect(mockLogger.info).toHaveBeenCalledWith(
+      expect(mockLogger.debug).toHaveBeenCalledWith(
         '[SourceStrategyFactory] Registered strategy: CustomSource'
       );
     });

@@ -82,14 +82,14 @@ describe('FolderStrategy - Comprehensive Test Suite', () => {
 
       strategy.extract(config);
 
-      expect(mockLogger.info).toHaveBeenCalledWith(
+      expect(mockLogger.debug).toHaveBeenCalledWith(
         '[FolderStrategy] Searching for spreadsheets in folder: test123'
       );
-      expect(mockLogger.info).toHaveBeenCalledWith('[FolderStrategy] Processing file: Users.xlsx');
-      expect(mockLogger.info).toHaveBeenCalledWith(
+      expect(mockLogger.debug).toHaveBeenCalledWith('[FolderStrategy] Processing file: Users.xlsx');
+      expect(mockLogger.debug).toHaveBeenCalledWith(
         '[FolderStrategy] Processing file: Employees.xlsx'
       );
-      expect(mockLogger.info).toHaveBeenCalledWith(
+      expect(mockLogger.debug).toHaveBeenCalledWith(
         '[FolderStrategy] Processed 2 files, extracted 4 total rows'
       );
     });
@@ -228,7 +228,7 @@ describe('FolderStrategy - Comprehensive Test Suite', () => {
       const result = strategy.extract(config);
 
       expect(result).toHaveLength(2); // Only Users.xlsx matches
-      expect(mockLogger.info).toHaveBeenCalledWith(
+      expect(mockLogger.debug).toHaveBeenCalledWith(
         '[FolderStrategy] Skipping file (pattern mismatch): Employees.xlsx'
       );
     });
@@ -269,10 +269,10 @@ describe('FolderStrategy - Comprehensive Test Suite', () => {
 
       strategy.extract(config);
 
-      expect(mockLogger.info).toHaveBeenCalledWith(
+      expect(mockLogger.debug).toHaveBeenCalledWith(
         '[FolderStrategy] Skipping file (pattern mismatch): Users.xlsx'
       );
-      expect(mockLogger.info).toHaveBeenCalledWith(
+      expect(mockLogger.debug).toHaveBeenCalledWith(
         '[FolderStrategy] Skipping file (pattern mismatch): Employees.xlsx'
       );
     });

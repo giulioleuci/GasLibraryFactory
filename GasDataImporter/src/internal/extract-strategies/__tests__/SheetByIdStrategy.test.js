@@ -126,7 +126,7 @@ describe('SheetByIdStrategy - Comprehensive Test Suite', () => {
       expect(mockLogger.debug).toHaveBeenCalledWith(
         '[SheetByIdStrategy] Reading from sheet: Sheet1'
       );
-      expect(mockLogger.info).toHaveBeenCalledWith(
+      expect(mockLogger.debug).toHaveBeenCalledWith(
         '[SheetByIdStrategy] Extracted 2 rows from sheet'
       );
     });

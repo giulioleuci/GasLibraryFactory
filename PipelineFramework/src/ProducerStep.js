@@ -145,6 +145,6 @@ export class ProducerStep extends Step {
     // Write result to context
     this.setResult(context, this._outputKey, result);
 
-    this._logger.info(`[${this._name}] Decision made: ${this._outputKey} = ${result}`);
+    this._logger.debug(`[${this._name}] Decision made: ${this._outputKey} = ${result}`);
   }
 }

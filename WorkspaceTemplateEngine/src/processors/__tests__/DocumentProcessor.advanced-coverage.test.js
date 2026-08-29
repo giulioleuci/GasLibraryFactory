@@ -612,7 +612,7 @@ describe('DocumentProcessor - Advanced Coverage Tests (Reverse-Order Strategy)',
       processor.process('doc123', {});
 
       // Should not execute batch update since no substitutions were made
-      expect(mockLogger.info).toHaveBeenCalledWith('No batch operations to execute');
+      expect(mockLogger.debug).toHaveBeenCalledWith('No batch operations to execute');
     });
   });
 });

@@ -326,7 +326,7 @@ describe('ProducerStep - Comprehensive Test Suite', () => {
       expect(mocks.logger.debug).toHaveBeenCalledWith(
         '[test] Evaluated result: HIGH (type: string)'
       );
-      expect(mocks.logger.info).toHaveBeenCalledWith('[test] Decision made: result = HIGH');
+      expect(mocks.logger.debug).toHaveBeenCalledWith('[test] Decision made: result = HIGH');
     });
 
     it('should validate required keys before execution', () => {

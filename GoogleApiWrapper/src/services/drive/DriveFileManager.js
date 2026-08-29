@@ -156,8 +156,8 @@ export class DriveFileManager {
     if (this._isDryRun(options)) {
       this._logger.info(`[DRY-RUN] Would copy ${reqsArray.length} file(s)`);
       reqsArray.forEach((req) => {
-        this._logger.info(
-          `[DRY-RUN]   - Copy ${req.fileId} as "${req.name || 'Copy'}"${req.destinationFolder ? ` to folder ${req.destinationFolder}` : ''}`
+        this._logger.debug(
+          `[DRY-RUN] - Copy ${req.fileId} as "${req.name || 'Copy'}"${req.destinationFolder ? ` to folder ${req.destinationFolder}` : ''}`
         );
       });
 
@@ -226,8 +226,8 @@ export class DriveFileManager {
     if (this._isDryRun(options)) {
       this._logger.info(`[DRY-RUN] Would move ${reqsArray.length} file(s)`);
       reqsArray.forEach((req) => {
-        this._logger.info(
-          `[DRY-RUN]   - Move ${req.fileId} to ${req.newParent}${req.removeFromOtherParents ? ' (removing from other parents)' : ''}`
+        this._logger.debug(
+          `[DRY-RUN] - Move ${req.fileId} to ${req.newParent}${req.removeFromOtherParents ? ' (removing from other parents)' : ''}`
         );
       });
 
@@ -332,7 +332,7 @@ export class DriveFileManager {
     if (this._isDryRun(options)) {
       this._logger.info(`[DRY-RUN] Would rename ${reqsArray.length} file(s)`);
       reqsArray.forEach((req) => {
-        this._logger.info(`[DRY-RUN]   - Rename ${req.fileId} to "${req.newName}"`);
+        this._logger.debug(`[DRY-RUN] - Rename ${req.fileId} to "${req.newName}"`);
       });
 
       // Return simulated success

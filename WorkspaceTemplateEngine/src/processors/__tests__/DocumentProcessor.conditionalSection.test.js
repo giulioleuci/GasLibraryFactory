@@ -400,7 +400,7 @@ describe('DocumentProcessor - {{#expr}}/{{^expr}} conditional-section directive'
       processor.process('doc1', {});
 
       expect(mockDocumentService._executeBatchUpdate).not.toHaveBeenCalled();
-      expect(mockLogger.info).toHaveBeenCalledWith('No batch operations to execute');
+      expect(mockLogger.debug).toHaveBeenCalledWith('No batch operations to execute');
     });
   });
 });

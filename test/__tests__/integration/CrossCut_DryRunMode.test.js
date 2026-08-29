@@ -113,8 +113,8 @@ describe('Cross-Cutting Concern: Dry Run Mode', () => {
       expect(mockDatabase.tables.DryRunEntities.insertRow).not.toHaveBeenCalled();
 
       // Standardized Logger Assertion
-      expect(mockLogger.hasLog('INFO', /\[DRY-RUN\]/i)).toBe(true);
-      expect(mockLogger.hasLog('INFO', /Would insert DryRunEntity/i)).toBe(true);
+      expect(mockLogger.hasLog('DEBUG', /\[DRY-RUN\]/i)).toBe(true);
+      expect(mockLogger.hasLog('DEBUG', /Would insert DryRunEntity/i)).toBe(true);
     });
 
     test('Non-dry-run save persists normally', () => {
@@ -314,7 +314,7 @@ describe('Cross-Cutting Concern: Dry Run Mode', () => {
 
       // Standardized Logger Assertion
       expect(mockLogger.hasLog('WARN', /\[ImportEngine\] DRY RUN mode/i)).toBe(true);
-      expect(mockLogger.hasLog('INFO', /Phase 3: LOAD \(DRY RUN - skipped\)/i)).toBe(true);
+      expect(mockLogger.hasLog('DEBUG', /Phase 3: LOAD \(DRY RUN - skipped\)/i)).toBe(true);
     });
 
     test('Normal import loads data', () => {

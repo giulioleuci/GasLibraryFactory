@@ -86,7 +86,7 @@ class Transformer {
     const normalization = config.normalization || {};
     const validation = config.validation || null;
 
-    this._logger.info(`[Transformer] Transforming ${sourceData.length} rows`);
+    this._logger.debug(`[Transformer] Transforming ${sourceData.length} rows`);
 
     try {
       const transformedData = sourceData
@@ -102,7 +102,7 @@ class Transformer {
         );
       }
 
-      this._logger.info(`[Transformer] Successfully transformed ${transformedData.length} rows`);
+      this._logger.debug(`[Transformer] Successfully transformed ${transformedData.length} rows`);
       return transformedData;
     } catch (error) {
       if (error instanceof TransformError) {

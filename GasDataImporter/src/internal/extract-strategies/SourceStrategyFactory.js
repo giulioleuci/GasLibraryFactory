@@ -61,7 +61,7 @@ class SourceStrategyFactory {
     }
 
     this._strategies.set(name, strategyClass);
-    this.logger.info(`[SourceStrategyFactory] Registered strategy: ${name}`);
+    this.logger.debug(`[SourceStrategyFactory] Registered strategy: ${name}`);
   }
 
   /**

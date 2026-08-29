@@ -32,7 +32,7 @@ class SourceStrategy {
    * @throws {SourceError} If extraction fails or result is not an array.
    */
   extract(config) {
-    this.logger.info(`[SourceStrategy] Extracting data with config:`, JSON.stringify(config));
+    this.logger.debug(`[SourceStrategy] Extracting data with config:`, JSON.stringify(config));
 
     try {
       const data = this._extractData(config);
@@ -45,7 +45,7 @@ class SourceStrategy {
         );
       }
 
-      this.logger.info(`[SourceStrategy] Successfully extracted ${data.length} rows`);
+      this.logger.debug(`[SourceStrategy] Successfully extracted ${data.length} rows`);
       return data;
     } catch (error) {
       if (error instanceof SourceError) {

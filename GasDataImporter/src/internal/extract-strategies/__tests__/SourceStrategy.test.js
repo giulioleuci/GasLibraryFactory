@@ -77,11 +77,11 @@ describe('SourceStrategy - Abstract Base Class Test Suite', () => {
       const result = strategy.extract(config);
 
       expect(result).toEqual(expectedData);
-      expect(mockLogger.info).toHaveBeenCalledWith(
+      expect(mockLogger.debug).toHaveBeenCalledWith(
         '[SourceStrategy] Extracting data with config:',
         JSON.stringify(config)
       );
-      expect(mockLogger.info).toHaveBeenCalledWith(
+      expect(mockLogger.debug).toHaveBeenCalledWith(
         '[SourceStrategy] Successfully extracted 2 rows'
       );
     });
@@ -92,8 +92,8 @@ describe('SourceStrategy - Abstract Base Class Test Suite', () => {
 
       strategy.extract(config);
 
-      expect(mockLogger.info).toHaveBeenCalledTimes(2);
-      expect(mockLogger.info).toHaveBeenNthCalledWith(
+      expect(mockLogger.debug).toHaveBeenCalledTimes(2);
+      expect(mockLogger.debug).toHaveBeenNthCalledWith(
         1,
         '[SourceStrategy] Extracting data with config:',
         JSON.stringify(config)
@@ -105,7 +105,7 @@ describe('SourceStrategy - Abstract Base Class Test Suite', () => {
       const result = strategy.extract({});
 
       expect(result).toEqual([]);
-      expect(mockLogger.info).toHaveBeenCalledWith(
+      expect(mockLogger.debug).toHaveBeenCalledWith(
         '[SourceStrategy] Successfully extracted 0 rows'
       );
     });
@@ -567,7 +567,7 @@ describe('SourceStrategy - Abstract Base Class Test Suite', () => {
 
       expect(result).toHaveLength(2);
       expect(result[0]).toHaveProperty('firstName', 'John');
-      expect(mockLogger.info).toHaveBeenCalled();
+      expect(mockLogger.debug).toHaveBeenCalled();
     });
 
     it('should support method chaining pattern', () => {

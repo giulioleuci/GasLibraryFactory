@@ -47,7 +47,7 @@ class FolderStrategy extends SourceStrategy {
 
     try {
       // Search for all spreadsheet files in the folder using DriveService
-      this.logger.info(`[FolderStrategy] Searching for spreadsheets in folder: ${folderId}`);
+      this.logger.debug(`[FolderStrategy] Searching for spreadsheets in folder: ${folderId}`);
 
       // Build search query for spreadsheets in the folder
       const query = `'${folderId}' in parents and mimeType='application/vnd.google-apps.spreadsheet' and trashed=false`;
@@ -81,11 +81,11 @@ class FolderStrategy extends SourceStrategy {
 
         // Skip if doesn't match pattern
         if (regex && !regex.test(fileName)) {
-          this.logger.info(`[FolderStrategy] Skipping file (pattern mismatch): ${fileName}`);
+          this.logger.debug(`[FolderStrategy] Skipping file (pattern mismatch): ${fileName}`);
           continue;
         }
 
-        this.logger.info(`[FolderStrategy] Processing file: ${fileName}`);
+        this.logger.debug(`[FolderStrategy] Processing file: ${fileName}`);
 
         try {
           const fileData = this._extractFromFile(
@@ -116,7 +116,7 @@ class FolderStrategy extends SourceStrategy {
         }
       }
 
-      this.logger.info(
+      this.logger.debug(
         `[FolderStrategy] Processed ${fileCount} files, extracted ${allData.length} total rows`
       );
 

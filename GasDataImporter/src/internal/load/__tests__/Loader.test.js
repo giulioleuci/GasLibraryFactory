@@ -151,10 +151,10 @@ describe('Loader - Comprehensive Test Suite', () => {
 
       loader.load([{ email: 'test@example.com' }], config);
 
-      expect(mockLogger.info).toHaveBeenCalledWith(
+      expect(mockLogger.debug).toHaveBeenCalledWith(
         '[Loader] Loading 1 rows into table "Users" using strategy "UPSERT"'
       );
-      expect(mockLogger.info).toHaveBeenCalledWith('[Loader] Saving changes to database...');
+      expect(mockLogger.debug).toHaveBeenCalledWith('[Loader] Saving changes to database...');
       expect(mockLogger.info).toHaveBeenCalledWith(
         expect.stringContaining('[Loader] Load complete:')
       );

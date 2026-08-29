@@ -74,7 +74,7 @@ export class DatabaseService {
     ]);
 
     if (this._dryRun) {
-      this._logger.info('[DRY-RUN] DatabaseService initialized in dry-run mode.');
+      this._logger.debug('[DRY-RUN] DatabaseService initialized in dry-run mode.');
     }
 
     this._initialize();

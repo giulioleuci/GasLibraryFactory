@@ -100,7 +100,7 @@ export class ConsumerStep extends Step {
       );
     }
 
-    this._logger.info(`[${this._name}] Performing action with input: ${inputValue}`);
+    this._logger.debug(`[${this._name}] Performing action with input: ${inputValue}`);
 
     // Perform the action (implemented by subclass)
     const result = this.performAction(inputValue, context);
@@ -108,11 +108,11 @@ export class ConsumerStep extends Step {
     // Optionally write result to context
     if (this._outputKey) {
       this.setResult(context, this._outputKey, result);
-      this._logger.info(
+      this._logger.debug(
         `[${this._name}] Action completed: ${this._outputKey} = ${JSON.stringify(result)}`
       );
     } else {
-      this._logger.info(`[${this._name}] Action completed successfully`);
+      this._logger.debug(`[${this._name}] Action completed successfully`);
     }
   }
 }

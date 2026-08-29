@@ -51,7 +51,7 @@ class ImportEngine {
     this._transformer = new Transformer(logger, expressionEngine);
     this._loader = new Loader(logger, databaseService);
 
-    this.logger.info('[ImportEngine] Initialized successfully');
+    this.logger.debug('[ImportEngine] Initialized successfully');
 
     // Facade Delegation
     this._pipelineExecutor = new ImportPipelineExecutor(this);

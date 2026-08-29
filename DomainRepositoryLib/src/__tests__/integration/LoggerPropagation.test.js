@@ -98,11 +98,11 @@ describe('Integration Test 15: Logger Propagation', () => {
   });
 
   describe('Repository Operation Logging', () => {
-    test('should log info message on successful save', () => {
+    test('should log debug message on successful save', () => {
       const user = new User({ username: 'jdoe' });
       repository.save(user);
 
-      expect(mockLogger.info).toHaveBeenCalledWith(
+      expect(mockLogger.debug).toHaveBeenCalledWith(
         expect.stringContaining('Inserted new User with ID: new-id')
       );
     });
@@ -144,32 +144,32 @@ describe('Integration Test 15: Logger Propagation', () => {
     test('should include entity type in log messages', () => {
       const user = new User({ username: 'jdoe' });
       repository.save(user);
-      expect(mockLogger.info).toHaveBeenCalledWith(expect.stringContaining('User'));
+      expect(mockLogger.debug).toHaveBeenCalledWith(expect.stringContaining('User'));
     });
 
     test('should include operation type in log messages', () => {
       const user = new User({ username: 'jdoe' });
       repository.save(user);
-      expect(mockLogger.info).toHaveBeenCalledWith(expect.stringContaining('Inserted'));
+      expect(mockLogger.debug).toHaveBeenCalledWith(expect.stringContaining('Inserted'));
 
       user.id = 'existing-id';
       repository.save(user);
-      expect(mockLogger.info).toHaveBeenCalledWith(expect.stringContaining('Updated'));
+      expect(mockLogger.debug).toHaveBeenCalledWith(expect.stringContaining('Updated'));
     });
 
     test('should include entity ID in log messages when available', () => {
       const user = new User({ id: 'user-123', username: 'jdoe' });
       repository.save(user);
-      expect(mockLogger.info).toHaveBeenCalledWith(expect.stringContaining('user-123'));
+      expect(mockLogger.debug).toHaveBeenCalledWith(expect.stringContaining('user-123'));
     });
   });
 
   describe('Log Levels', () => {
     test('should use appropriate log levels for different operations', () => {
-      // INFO for successful operations
+      // DEBUG for successful repository operations
       const user = new User({ username: 'jdoe' });
       repository.save(user);
-      expect(mockLogger.info).toHaveBeenCalled();
+      expect(mockLogger.debug).toHaveBeenCalled();
 
       // DEBUG for internal details like query translation
       const mockSpec = {
@@ -188,7 +188,7 @@ describe('Integration Test 15: Logger Propagation', () => {
       const repo = new UserRepository(mockDatabase, customLogger);
 
       repo.save(new User({ username: 'test' }));
-      expect(customLogger.info).toHaveBeenCalled();
+      expect(customLogger.debug).toHaveBeenCalled();
     });
 
     test('should use default logger if none provided', () => {
@@ -204,7 +204,7 @@ describe('Integration Test 15: Logger Propagation', () => {
       const user = new User({ id: '123', username: 'jdoe' });
       repository.deleteById('123');
 
-      expect(mockLogger.info).toHaveBeenCalledWith(
+      expect(mockLogger.debug).toHaveBeenCalledWith(
         expect.stringContaining('Deleted User with ID: 123')
       );
     });

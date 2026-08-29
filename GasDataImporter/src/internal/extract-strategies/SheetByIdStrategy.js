@@ -37,7 +37,7 @@ class SheetByIdStrategy extends SourceStrategy {
     const hasHeaders = config.hasHeaders !== false; // default true
     const values = this._resolveValues(config);
     const data = this._arrayToObjects(values, hasHeaders);
-    this.logger.info(`[SheetByIdStrategy] Extracted ${data.length} rows from sheet`);
+    this.logger.debug(`[SheetByIdStrategy] Extracted ${data.length} rows from sheet`);
     return data;
   }
 

@@ -280,7 +280,7 @@ class _DocumentProcessor {
       this.documentService._executeBatchUpdate(documentId, batchRequests);
       this.logger.debug(`Batch update completed successfully`);
     } else {
-      this.logger.info(`No batch operations to execute`);
+      this.logger.debug(`No batch operations to execute`);
     }
   }
 }

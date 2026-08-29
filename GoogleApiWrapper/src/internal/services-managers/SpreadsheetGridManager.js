@@ -255,7 +255,7 @@ export class SpreadsheetGridManager {
         });
       });
     });
-    this._logger.info(`Found ${protectedRanges.length} protected range(s)`);
+    this._logger.debug(`Found ${protectedRanges.length} protected range(s)`);
     return protectedRanges;
   }
 

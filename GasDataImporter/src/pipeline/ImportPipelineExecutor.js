@@ -20,7 +20,7 @@ export class ImportPipelineExecutor {
    */
   startImport(recipe, _options = {}) {
     const config = new ImportConfiguration(recipe, this.facade.logger);
-    this.facade.logger.info(`[ImportEngine] startImport: ${config.getName()}`);
+    this.facade.logger.debug(`[ImportEngine] startImport: ${config.getName()}`);
     return ImportCheckpoint.initial(config.getName());
   }
 
@@ -228,7 +228,7 @@ export class ImportPipelineExecutor {
     try {
       // Validate and parse configuration
       const config = new ImportConfiguration(recipe, this.facade.logger);
-      this.facade.logger.info(
+      this.facade.logger.debug(
         `[ImportEngine] Configuration validated: ${JSON.stringify(config.getSummary())}`
       );
 
@@ -335,38 +335,38 @@ export class ImportPipelineExecutor {
   }
 
   _executeExtract(config) {
-    this.facade.logger.info('[ImportEngine] Phase 1: EXTRACT');
+    this.facade.logger.debug('[ImportEngine] Phase 1: EXTRACT');
 
     const sourceConfig = config.getSource();
     const strategy = this.facade._sourceFactory.createStrategy(sourceConfig.type);
     const data = strategy.extract(sourceConfig.config);
 
-    this.facade.logger.info(`[ImportEngine] Extracted ${data.length} rows`);
+    this.facade.logger.debug(`[ImportEngine] Extracted ${data.length} rows`);
     return data;
   }
 
   _executeTransform(data, config) {
-    this.facade.logger.info('[ImportEngine] Phase 2: TRANSFORM');
+    this.facade.logger.debug('[ImportEngine] Phase 2: TRANSFORM');
 
     const transformConfig = config.getTransform();
     const transformedData = this.facade._transformer.transform(data, transformConfig);
 
-    this.facade.logger.info(`[ImportEngine] Transformed ${transformedData.length} rows`);
+    this.facade.logger.debug(`[ImportEngine] Transformed ${transformedData.length} rows`);
     return transformedData;
   }
 
   _executeLoad(data, config) {
-    this.facade.logger.info('[ImportEngine] Phase 3: LOAD');
+    this.facade.logger.debug('[ImportEngine] Phase 3: LOAD');
 
     const loadConfig = config.getLoad();
     const result = this.facade._loader.load(data, loadConfig);
 
-    this.facade.logger.info(`[ImportEngine] Load complete: ${JSON.stringify(result)}`);
+    this.facade.logger.debug(`[ImportEngine] Load complete: ${JSON.stringify(result)}`);
     return result;
   }
 
   _generateDryRunLoadResult(data) {
-    this.facade.logger.info('[ImportEngine] Phase 3: LOAD (DRY RUN - skipped)');
+    this.facade.logger.debug('[ImportEngine] Phase 3: LOAD (DRY RUN - skipped)');
 
     return {
       success: true,

@@ -90,7 +90,7 @@ export class SpreadsheetService extends GoogleService {
     ]);
 
     if (this._dryRun) {
-      this._logger.info('[DRY-RUN] SpreadsheetService initialized in dry-run mode.');
+      this._logger.debug('[DRY-RUN] SpreadsheetService initialized in dry-run mode.');
     }
   }
 

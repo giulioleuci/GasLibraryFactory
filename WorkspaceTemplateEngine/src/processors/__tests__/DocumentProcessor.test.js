@@ -202,7 +202,7 @@ describe('DocumentProcessor - Core Functionality Tests (Reverse-Order Strategy)'
       expect(mockLogger.debug).toHaveBeenCalledWith(
         'Starting document processing with Reverse-Order Strategy for document: doc123'
       );
-      expect(mockLogger.info).toHaveBeenCalledWith('No batch operations to execute');
+      expect(mockLogger.debug).toHaveBeenCalledWith('No batch operations to execute');
     });
 
     it('should collect and execute operations in reverse order', () => {
@@ -935,7 +935,7 @@ describe('DocumentProcessor - Core Functionality Tests (Reverse-Order Strategy)'
       // Should delete template row
       expect(mockDocumentService.deleteTableRow).toHaveBeenCalledWith('doc123', 0, 1);
 
-      expect(mockLogger.info).toHaveBeenCalledWith(
+      expect(mockLogger.debug).toHaveBeenCalledWith(
         expect.stringContaining('Executing row loop: 2 items')
       );
     });
@@ -1176,7 +1176,7 @@ describe('DocumentProcessor - Core Functionality Tests (Reverse-Order Strategy)'
         expect.arrayContaining([expect.objectContaining({ rendered: 'January' })])
       );
 
-      expect(mockLogger.info).toHaveBeenCalledWith(
+      expect(mockLogger.debug).toHaveBeenCalledWith(
         expect.stringContaining('Executing column loop: 2 items')
       );
     });
@@ -1823,7 +1823,7 @@ describe('DocumentProcessor - Core Functionality Tests (Reverse-Order Strategy)'
       expect(mockDocumentService.deleteTableRow).toHaveBeenCalled();
 
       // No batch update for table operations (they're executed immediately)
-      expect(mockLogger.info).toHaveBeenCalledWith('No batch operations to execute');
+      expect(mockLogger.debug).toHaveBeenCalledWith('No batch operations to execute');
     });
 
     it('should execute column loop operations using Standard API', () => {
@@ -1941,7 +1941,7 @@ describe('DocumentProcessor - Core Functionality Tests (Reverse-Order Strategy)'
       // The stale TABLE_TEXT match belongs to the already row-looped table
       // (tableIndex 0) and must be excluded — no batch corruption request.
       expect(mockDocumentService._executeBatchUpdate).not.toHaveBeenCalled();
-      expect(mockLogger.info).toHaveBeenCalledWith('No batch operations to execute');
+      expect(mockLogger.debug).toHaveBeenCalledWith('No batch operations to execute');
     });
 
     it('recomputes deleteRow ops against the POST-list-loop-mutation document layout, not a stale pre-mutation snapshot (Finding 1 regression)', () => {

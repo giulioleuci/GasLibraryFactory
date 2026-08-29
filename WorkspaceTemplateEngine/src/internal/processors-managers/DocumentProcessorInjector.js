@@ -79,7 +79,7 @@ export class DocumentProcessorInjector {
 
   _executeRowLoopOperation(documentId, op) {
     try {
-      this.facade.logger.info(
+      this.facade.logger.debug(
         `Executing row loop: ${op.dataArray.length} items at table ${op.tableIndex}, row ${op.rowIndex}`
       );
       const templateRow = this.facade.documentService.getTableRow(
@@ -148,7 +148,7 @@ export class DocumentProcessorInjector {
 
   _executeColumnLoopOperation(documentId, op) {
     try {
-      this.facade.logger.info(
+      this.facade.logger.debug(
         `Executing column loop: ${op.dataArray.length} items at table ${op.tableIndex}, column ${op.cellIndex}`
       );
       const tableData = this.facade.documentService.getTableData(documentId, op.tableIndex);
@@ -397,7 +397,7 @@ export class DocumentProcessorInjector {
    */
   _executeListLoopOperation(documentId, op) {
     try {
-      this.facade.logger.info(
+      this.facade.logger.debug(
         `Executing list loop: ${op.dataArray.length} items at paragraph ${op.paragraphIndex}`
       );
       const doc = this.facade.documentService.openStandard(documentId);
@@ -515,7 +515,7 @@ export class DocumentProcessorInjector {
    */
   _executeTableInsertOperation(documentId, op) {
     try {
-      this.facade.logger.info(
+      this.facade.logger.debug(
         `Executing table insert: ${op.data.length} rows at marker "${op.placeholder}"`
       );
       this.facade.documentService.insertTableAtMarker(

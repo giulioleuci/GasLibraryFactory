@@ -63,7 +63,7 @@ class Loader {
     const conflictKey = loadConfig.conflictKey;
     const updateIfNewer = loadConfig.updateIfNewer || {};
 
-    this.logger.info(
+    this.logger.debug(
       `[Loader] Loading ${data.length} rows into table "${targetTable}" using strategy "${conflictResolution}"`
     );
 
@@ -107,7 +107,7 @@ class Loader {
       }
 
       // Save changes to spreadsheet
-      this.logger.info('[Loader] Saving changes to database...');
+      this.logger.debug('[Loader] Saving changes to database...');
       this._db.save();
 
       this.logger.info(`[Loader] Load complete: ${JSON.stringify(result)}`);
@@ -159,7 +159,7 @@ class Loader {
     const conflictKey = loadConfig.conflictKey;
     const updateIfNewer = loadConfig.updateIfNewer || {};
 
-    this.logger.info(
+    this.logger.debug(
       `[Loader] Loading chunk of ${data.length} rows into table "${targetTable}" using strategy "${conflictResolution}" (isFirstChunk=${isFirstChunk})`
     );
 
@@ -216,10 +216,10 @@ class Loader {
 
       // Commit boundary: flush after every chunk so a resumed run picks up
       // from durable state.
-      this.logger.info('[Loader] Saving chunk to database...');
+      this.logger.debug('[Loader] Saving chunk to database...');
       this._db.save();
 
-      this.logger.info(`[Loader] Chunk load complete: ${JSON.stringify(result)}`);
+      this.logger.debug(`[Loader] Chunk load complete: ${JSON.stringify(result)}`);
       return result;
     } catch (error) {
       if (error instanceof LoadError) {
@@ -268,7 +268,7 @@ class Loader {
       if (rowsToInsert.length > 0) {
         table.insertRows(rowsToInsert);
         inserted = rowsToInsert.length;
-        this.logger.info(`[Loader] Bulk inserted ${inserted} new rows`);
+        this.logger.debug(`[Loader] Bulk inserted ${inserted} new rows`);
       }
 
       return {
@@ -399,7 +399,7 @@ class Loader {
       if (rowsToInsert.length > 0) {
         table.insertRows(rowsToInsert);
         inserted = rowsToInsert.length;
-        this.logger.info(`[Loader] Bulk inserted ${inserted} new rows`);
+        this.logger.debug(`[Loader] Bulk inserted ${inserted} new rows`);
       }
 
       // Batch update existing rows (still one-by-one but cached)
@@ -409,7 +409,7 @@ class Loader {
         updated++;
       }
       if (updated > 0) {
-        this.logger.info(`[Loader] Updated ${updated} existing rows`);
+        this.logger.debug(`[Loader] Updated ${updated} existing rows`);
       }
 
       return {
@@ -451,7 +451,7 @@ class Loader {
       }
 
       if (deleted > 0) {
-        this.logger.info(`[Loader] Deleted ${deleted} existing rows`);
+        this.logger.debug(`[Loader] Deleted ${deleted} existing rows`);
       }
 
       // OPTIMIZATION: Bulk insert all rows at once
@@ -459,7 +459,7 @@ class Loader {
       if (data.length > 0) {
         table.insertRows(data);
         inserted = data.length;
-        this.logger.info(`[Loader] Bulk inserted ${inserted} rows`);
+        this.logger.debug(`[Loader] Bulk inserted ${inserted} rows`);
       }
 
       return {
@@ -502,7 +502,7 @@ class Loader {
       if (data.length > 0) {
         table.insertRows(data);
         inserted = data.length;
-        this.logger.info(
+        this.logger.debug(
           `[Loader] Bulk appended ${inserted} rows unconditionally (chunked OVERWRITE, non-first chunk)`
         );
       }

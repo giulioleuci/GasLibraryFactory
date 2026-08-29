@@ -202,10 +202,10 @@ describe('ConsumerStep - Comprehensive Test Suite', () => {
       expect(mocks.logger.debug).toHaveBeenCalledWith(
         expect.stringContaining("Reading input from 'input': DATA")
       );
-      expect(mocks.logger.info).toHaveBeenCalledWith(
+      expect(mocks.logger.debug).toHaveBeenCalledWith(
         expect.stringContaining('Performing action with input: DATA')
       );
-      expect(mocks.logger.info).toHaveBeenCalledWith(
+      expect(mocks.logger.debug).toHaveBeenCalledWith(
         expect.stringContaining('Action completed: output = "DATA_PROCESSED"')
       );
     });

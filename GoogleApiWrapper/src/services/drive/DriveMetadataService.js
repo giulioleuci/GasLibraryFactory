@@ -33,7 +33,7 @@ export class DriveMetadataService {
       this._logger.info(`[DRY-RUN] Would update metadata for ${reqsArray.length} file(s)`);
       reqsArray.forEach((req) => {
         const metadataFields = Object.keys(req.metadata || {}).join(', ');
-        this._logger.info(`[DRY-RUN]   - Update ${req.fileId} metadata: ${metadataFields}`);
+        this._logger.debug(`[DRY-RUN] - Update ${req.fileId} metadata: ${metadataFields}`);
       });
 
       // Return simulated success
