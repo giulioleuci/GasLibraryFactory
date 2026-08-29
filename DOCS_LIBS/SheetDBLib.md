@@ -1,12 +1,5 @@
 # API Reference: SheetDBLib
 
-## Transaction persistence contract
-
-A successful `commit()` drains every registered table's pending insert, update,
-and delete queues by calling each table's `flush()` before the spreadsheet batch
-is flushed. The transaction is marked complete only after those queued writes
-have reached the batch flush seam.
-
 ## CLASS: TableService
 **File Path:** `SheetDBLib/src/TableService.js`
 **Constructor Usage:** `const instance = new TableService();`
@@ -566,9 +559,9 @@ Internal logic engine for mutating SheetDB table data. Handles validation, UUID 
 ---
 <br>
 
-## CLASS: MyDatabaseService
+## CLASS: DatabaseService
 **File Path:** `SheetDBLib/src/DatabaseService.js`
-**Constructor Usage:** `const instance = new MyDatabaseService();`
+**Constructor Usage:** `const instance = new DatabaseService();`
 **Description:** N/A
 
 ### Raw JSDoc Context:
@@ -576,19 +569,19 @@ Internal logic engine for mutating SheetDB table data. Handles validation, UUID 
 /** Class definition */
 ```
 
-### Methods of MyDatabaseService
+### Methods of DatabaseService
 
-#### METHOD: MyDatabaseService.if
+#### METHOD: DatabaseService.if
 - **Scope:** instance
-- **LLM Call Syntax:** `myDatabaseService.if(this._dryRun);`
+- **LLM Call Syntax:** `databaseService.if(this._dryRun);`
 - **Pure JSDoc:**
 ```javascript
 /** Method if */
 ```
 ---
-#### METHOD: MyDatabaseService.select
+#### METHOD: DatabaseService.select
 - **Scope:** instance
-- **LLM Call Syntax:** `myDatabaseService.select(fields);`
+- **LLM Call Syntax:** `databaseService.select(fields);`
 - **Pure JSDoc:**
 ```javascript
 /** Method select */
@@ -596,22 +589,20 @@ Internal logic engine for mutating SheetDB table data. Handles validation, UUID 
 ---
 <br>
 
-## CLASS: AdvancedQueryBuilderMock
+## CLASS: TableServiceMock
 **File Path:** `SheetDBLib/src/testing/mocks.js`
-**Constructor Usage:** `const instance = new AdvancedQueryBuilderMock();`
+**Constructor Usage:** `const instance = new TableServiceMock();`
 **Description:** Centralized high-fidelity mocks for SheetDBLib services.
 
 /
 
 import { TableSearchEngine } from '../TableSearchEngine.js';
+import { AdvancedQueryBuilder } from '../query/AdvancedQueryBuilder.js';
 
 /**
-@class AdvancedQueryBuilderMock
-High-fidelity Jest-based mock for AdvancedQueryBuilder.
-Simulates fluent API chaining and provides methods to inject return data for distributed or local query tests.
-
-@example
-const mock = new AdvancedQueryBuilderMock().setReturnData([{ id: 1 }]);
+@class TableServiceMock
+Mock implementation of TableService for unit testing CRUD logic.
+Manages an internal array of records and simulates primary key generation and indexing.
 
 ### Raw JSDoc Context:
 ```javascript
@@ -622,51 +613,7 @@ const mock = new AdvancedQueryBuilderMock().setReturnData([{ id: 1 }]);
  */
 
 import { TableSearchEngine } from '../TableSearchEngine.js';
-
-/**
- * @class AdvancedQueryBuilderMock
- * @description High-fidelity Jest-based mock for AdvancedQueryBuilder.
- * Simulates fluent API chaining and provides methods to inject return data for distributed or local query tests.
- *
- * @example
- * const mock = new AdvancedQueryBuilderMock().setReturnData([{ id: 1 }]);
- */
-```
-
-<br>
-
-## CLASS: TableServiceMock
-**File Path:** `SheetDBLib/src/testing/mocks.js`
-**Constructor Usage:** `const instance = new TableServiceMock();`
-**Description:** Injects data into the execute() mock and updates count() based on array length.
-@param {Object[]} data - Collection of records to return.
-@returns {AdvancedQueryBuilderMock} Current instance for chaining.
-/
-  setReturnData(data) {
-    this.execute.mockReturnValue(data);
-    this.count.mockReturnValue(data.length);
-    return this;
-  }
-}
-
-/**
-@class TableServiceMock
-Mock implementation of TableService for unit testing CRUD logic.
-Manages an internal array of records and simulates primary key generation and indexing.
-
-### Raw JSDoc Context:
-```javascript
-/**
-   * @description Injects data into the execute() mock and updates count() based on array length.
-   * @param {Object[]} data - Collection of records to return.
-   * @returns {AdvancedQueryBuilderMock} Current instance for chaining.
-   */
-  setReturnData(data) {
-    this.execute.mockReturnValue(data);
-    this.count.mockReturnValue(data.length);
-    return this;
-  }
-}
+import { AdvancedQueryBuilder } from '../query/AdvancedQueryBuilder.js';
 
 /**
  * @class TableServiceMock
@@ -3597,3 +3544,4 @@ export const MemberSourceType = Object.freeze({
 ```
 ---
 <br>
+

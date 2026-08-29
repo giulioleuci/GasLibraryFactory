@@ -1,27 +1,5 @@
 # API Reference: CoreUtilsLib
 
-## Structured logging contracts
-
-```ts
-type TreePosition = {
-  depth: number;
-  isLast: boolean;
-  ancestorHasNext?: boolean[];
-};
-
-type LogDetailScalar = string | number | boolean | null | undefined;
-type LogDetails =
-  | string
-  | LogDetailScalar[]
-  | Record<string, LogDetailScalar | LogDetailScalar[]>;
-
-withPosition<T>(position: TreePosition, callback: () => T): T;
-```
-
-`LoggerService.withPosition()` applies the supplied tree position to logs emitted
-by the callback, returns the callback result unchanged, and restores the previous
-position after the callback completes or throws.
-
 ## CLASS: MyService
 **File Path:** `CoreUtilsLib/src/interfaces.js`
 **Constructor Usage:** `const instance = new MyService();`
@@ -1720,12 +1698,404 @@ frozen immutability, richer payloads) on top of this contract.
 
 ### Methods of SystemUtils
 
-#### METHOD: SystemUtils.if
+#### METHOD: SystemUtils.sleep
 - **Scope:** instance
-- **LLM Call Syntax:** `systemUtils.if(typeof manager[method]);`
+- **LLM Call Syntax:** `systemUtils.sleep(...args);`
 - **Pure JSDoc:**
 ```javascript
-/** Method if */
+/** Method sleep */
+```
+---
+#### METHOD: SystemUtils.delay
+- **Scope:** instance
+- **LLM Call Syntax:** `systemUtils.delay(...args);`
+- **Pure JSDoc:**
+```javascript
+/** Method delay */
+```
+---
+#### METHOD: SystemUtils.isValidEmail
+- **Scope:** instance
+- **LLM Call Syntax:** `systemUtils.isValidEmail(...args);`
+- **Pure JSDoc:**
+```javascript
+/** Method isValidEmail */
+```
+---
+#### METHOD: SystemUtils.isValidUrl
+- **Scope:** instance
+- **LLM Call Syntax:** `systemUtils.isValidUrl(...args);`
+- **Pure JSDoc:**
+```javascript
+/** Method isValidUrl */
+```
+---
+#### METHOD: SystemUtils.isEqual
+- **Scope:** instance
+- **LLM Call Syntax:** `systemUtils.isEqual(...args);`
+- **Pure JSDoc:**
+```javascript
+/** Method isEqual */
+```
+---
+#### METHOD: SystemUtils.isNil
+- **Scope:** instance
+- **LLM Call Syntax:** `systemUtils.isNil(...args);`
+- **Pure JSDoc:**
+```javascript
+/** Method isNil */
+```
+---
+#### METHOD: SystemUtils.isNumber
+- **Scope:** instance
+- **LLM Call Syntax:** `systemUtils.isNumber(...args);`
+- **Pure JSDoc:**
+```javascript
+/** Method isNumber */
+```
+---
+#### METHOD: SystemUtils.isString
+- **Scope:** instance
+- **LLM Call Syntax:** `systemUtils.isString(...args);`
+- **Pure JSDoc:**
+```javascript
+/** Method isString */
+```
+---
+#### METHOD: SystemUtils.isEmptyValue
+- **Scope:** instance
+- **LLM Call Syntax:** `systemUtils.isEmptyValue(...args);`
+- **Pure JSDoc:**
+```javascript
+/** Method isEmptyValue */
+```
+---
+#### METHOD: SystemUtils.debounce
+- **Scope:** instance
+- **LLM Call Syntax:** `systemUtils.debounce(...args);`
+- **Pure JSDoc:**
+```javascript
+/** Method debounce */
+```
+---
+#### METHOD: SystemUtils.once
+- **Scope:** instance
+- **LLM Call Syntax:** `systemUtils.once(...args);`
+- **Pure JSDoc:**
+```javascript
+/** Method once */
+```
+---
+#### METHOD: SystemUtils.noop
+- **Scope:** instance
+- **LLM Call Syntax:** `systemUtils.noop(...args);`
+- **Pure JSDoc:**
+```javascript
+/** Method noop */
+```
+---
+#### METHOD: SystemUtils.chunk
+- **Scope:** instance
+- **LLM Call Syntax:** `systemUtils.chunk(...args);`
+- **Pure JSDoc:**
+```javascript
+/** Method chunk */
+```
+---
+#### METHOD: SystemUtils.unique
+- **Scope:** instance
+- **LLM Call Syntax:** `systemUtils.unique(...args);`
+- **Pure JSDoc:**
+```javascript
+/** Method unique */
+```
+---
+#### METHOD: SystemUtils.flatten
+- **Scope:** instance
+- **LLM Call Syntax:** `systemUtils.flatten(...args);`
+- **Pure JSDoc:**
+```javascript
+/** Method flatten */
+```
+---
+#### METHOD: SystemUtils.flattenShallow
+- **Scope:** instance
+- **LLM Call Syntax:** `systemUtils.flattenShallow(array);`
+- **Pure JSDoc:**
+```javascript
+/** Method flattenShallow */
+```
+---
+#### METHOD: SystemUtils.flattenDeep
+- **Scope:** instance
+- **LLM Call Syntax:** `systemUtils.flattenDeep(array);`
+- **Pure JSDoc:**
+```javascript
+/** Method flattenDeep */
+```
+---
+#### METHOD: SystemUtils.compact
+- **Scope:** instance
+- **LLM Call Syntax:** `systemUtils.compact(...args);`
+- **Pure JSDoc:**
+```javascript
+/** Method compact */
+```
+---
+#### METHOD: SystemUtils.difference
+- **Scope:** instance
+- **LLM Call Syntax:** `systemUtils.difference(...args);`
+- **Pure JSDoc:**
+```javascript
+/** Method difference */
+```
+---
+#### METHOD: SystemUtils.differenceBy
+- **Scope:** instance
+- **LLM Call Syntax:** `systemUtils.differenceBy(...args);`
+- **Pure JSDoc:**
+```javascript
+/** Method differenceBy */
+```
+---
+#### METHOD: SystemUtils.groupBy
+- **Scope:** instance
+- **LLM Call Syntax:** `systemUtils.groupBy(...args);`
+- **Pure JSDoc:**
+```javascript
+/** Method groupBy */
+```
+---
+#### METHOD: SystemUtils.intersection
+- **Scope:** instance
+- **LLM Call Syntax:** `systemUtils.intersection(...args);`
+- **Pure JSDoc:**
+```javascript
+/** Method intersection */
+```
+---
+#### METHOD: SystemUtils.keyBy
+- **Scope:** instance
+- **LLM Call Syntax:** `systemUtils.keyBy(...args);`
+- **Pure JSDoc:**
+```javascript
+/** Method keyBy */
+```
+---
+#### METHOD: SystemUtils.orderBy
+- **Scope:** instance
+- **LLM Call Syntax:** `systemUtils.orderBy(...args);`
+- **Pure JSDoc:**
+```javascript
+/** Method orderBy */
+```
+---
+#### METHOD: SystemUtils.uniq
+- **Scope:** instance
+- **LLM Call Syntax:** `systemUtils.uniq(...args);`
+- **Pure JSDoc:**
+```javascript
+/** Method uniq */
+```
+---
+#### METHOD: SystemUtils.uniqBy
+- **Scope:** instance
+- **LLM Call Syntax:** `systemUtils.uniqBy(...args);`
+- **Pure JSDoc:**
+```javascript
+/** Method uniqBy */
+```
+---
+#### METHOD: SystemUtils.randomInt
+- **Scope:** instance
+- **LLM Call Syntax:** `systemUtils.randomInt(min, max);`
+- **Pure JSDoc:**
+```javascript
+/** Method randomInt */
+```
+---
+#### METHOD: SystemUtils.round
+- **Scope:** instance
+- **LLM Call Syntax:** `systemUtils.round(number, decimals);`
+- **Pure JSDoc:**
+```javascript
+/** Method round */
+```
+---
+#### METHOD: SystemUtils.clamp
+- **Scope:** instance
+- **LLM Call Syntax:** `systemUtils.clamp(...args);`
+- **Pure JSDoc:**
+```javascript
+/** Method clamp */
+```
+---
+#### METHOD: SystemUtils.maxBy
+- **Scope:** instance
+- **LLM Call Syntax:** `systemUtils.maxBy(...args);`
+- **Pure JSDoc:**
+```javascript
+/** Method maxBy */
+```
+---
+#### METHOD: SystemUtils.minBy
+- **Scope:** instance
+- **LLM Call Syntax:** `systemUtils.minBy(...args);`
+- **Pure JSDoc:**
+```javascript
+/** Method minBy */
+```
+---
+#### METHOD: SystemUtils.sumBy
+- **Scope:** instance
+- **LLM Call Syntax:** `systemUtils.sumBy(...args);`
+- **Pure JSDoc:**
+```javascript
+/** Method sumBy */
+```
+---
+#### METHOD: SystemUtils.meanBy
+- **Scope:** instance
+- **LLM Call Syntax:** `systemUtils.meanBy(...args);`
+- **Pure JSDoc:**
+```javascript
+/** Method meanBy */
+```
+---
+#### METHOD: SystemUtils.every
+- **Scope:** instance
+- **LLM Call Syntax:** `systemUtils.every(...args);`
+- **Pure JSDoc:**
+```javascript
+/** Method every */
+```
+---
+#### METHOD: SystemUtils.filter
+- **Scope:** instance
+- **LLM Call Syntax:** `systemUtils.filter(...args);`
+- **Pure JSDoc:**
+```javascript
+/** Method filter */
+```
+---
+#### METHOD: SystemUtils.find
+- **Scope:** instance
+- **LLM Call Syntax:** `systemUtils.find(...args);`
+- **Pure JSDoc:**
+```javascript
+/** Method find */
+```
+---
+#### METHOD: SystemUtils.forEach
+- **Scope:** instance
+- **LLM Call Syntax:** `systemUtils.forEach(...args);`
+- **Pure JSDoc:**
+```javascript
+/** Method forEach */
+```
+---
+#### METHOD: SystemUtils.map
+- **Scope:** instance
+- **LLM Call Syntax:** `systemUtils.map(...args);`
+- **Pure JSDoc:**
+```javascript
+/** Method map */
+```
+---
+#### METHOD: SystemUtils.reduce
+- **Scope:** instance
+- **LLM Call Syntax:** `systemUtils.reduce(...args);`
+- **Pure JSDoc:**
+```javascript
+/** Method reduce */
+```
+---
+#### METHOD: SystemUtils.size
+- **Scope:** instance
+- **LLM Call Syntax:** `systemUtils.size(...args);`
+- **Pure JSDoc:**
+```javascript
+/** Method size */
+```
+---
+#### METHOD: SystemUtils.some
+- **Scope:** instance
+- **LLM Call Syntax:** `systemUtils.some(...args);`
+- **Pure JSDoc:**
+```javascript
+/** Method some */
+```
+---
+#### METHOD: SystemUtils.deepClone
+- **Scope:** instance
+- **LLM Call Syntax:** `systemUtils.deepClone(...args);`
+- **Pure JSDoc:**
+```javascript
+/** Method deepClone */
+```
+---
+#### METHOD: SystemUtils.deepMerge
+- **Scope:** instance
+- **LLM Call Syntax:** `systemUtils.deepMerge(...args);`
+- **Pure JSDoc:**
+```javascript
+/** Method deepMerge */
+```
+---
+#### METHOD: SystemUtils.getNestedProperty
+- **Scope:** instance
+- **LLM Call Syntax:** `systemUtils.getNestedProperty(...args);`
+- **Pure JSDoc:**
+```javascript
+/** Method getNestedProperty */
+```
+---
+#### METHOD: SystemUtils.setNestedProperty
+- **Scope:** instance
+- **LLM Call Syntax:** `systemUtils.setNestedProperty(...args);`
+- **Pure JSDoc:**
+```javascript
+/** Method setNestedProperty */
+```
+---
+#### METHOD: SystemUtils.has
+- **Scope:** instance
+- **LLM Call Syntax:** `systemUtils.has(...args);`
+- **Pure JSDoc:**
+```javascript
+/** Method has */
+```
+---
+#### METHOD: SystemUtils.pick
+- **Scope:** instance
+- **LLM Call Syntax:** `systemUtils.pick(...args);`
+- **Pure JSDoc:**
+```javascript
+/** Method pick */
+```
+---
+#### METHOD: SystemUtils.omit
+- **Scope:** instance
+- **LLM Call Syntax:** `systemUtils.omit(...args);`
+- **Pure JSDoc:**
+```javascript
+/** Method omit */
+```
+---
+#### METHOD: SystemUtils.mapKeys
+- **Scope:** instance
+- **LLM Call Syntax:** `systemUtils.mapKeys(...args);`
+- **Pure JSDoc:**
+```javascript
+/** Method mapKeys */
+```
+---
+#### METHOD: SystemUtils.mapValues
+- **Scope:** instance
+- **LLM Call Syntax:** `systemUtils.mapValues(...args);`
+- **Pure JSDoc:**
+```javascript
+/** Method mapValues */
 ```
 ---
 <br>
@@ -1897,411 +2267,6 @@ frozen immutability, richer payloads) on top of this contract.
 - **Pure JSDoc:**
 ```javascript
 /** Method if */
-```
----
-<br>
-
-## CLASS: SystemQuotaManager
-**File Path:** `CoreUtilsLib/src/utils/SystemQuotaManager.js`
-**Constructor Usage:** `const instance = new SystemQuotaManager();`
-**Description:** N/A
-
-### Raw JSDoc Context:
-```javascript
-/** Class definition */
-```
-
-### Methods of SystemQuotaManager
-
-#### METHOD: SystemQuotaManager.chunk
-- **Scope:** instance
-- **LLM Call Syntax:** `const result = systemQuotaManager.chunk(array, size);`
-- **Pure JSDoc:**
-```javascript
-/**
-   * Splits array into multiple smaller arrays of specified maximum size.
-   * @param {Array} array Input collection to chunk.
-   * @param {number} size Maximum length of each chunk.
-   * @returns {Array[]} Collection of array segments.
-   */
-```
----
-#### METHOD: SystemQuotaManager.unique
-- **Scope:** instance
-- **LLM Call Syntax:** `const result = systemQuotaManager.unique(array);`
-- **Pure JSDoc:**
-```javascript
-/**
-   * Deduplicates array values using a Set-based implementation for uniqueness.
-   * @param {Array} array Input collection.
-   * @returns {Array} Array containing only unique elements.
-   */
-```
----
-#### METHOD: SystemQuotaManager.flatten
-- **Scope:** instance
-- **LLM Call Syntax:** `const result = systemQuotaManager.flatten(array, depth);`
-- **Pure JSDoc:**
-```javascript
-/**
-   * Flattens a nested array structure to the specified recursion depth.
-   * @param {Array} array Nested input collection.
-   * @param {number} [depth=1] Recursion limit (Infinity for deep flattening).
-   * @returns {Array} Flattened collection.
-   */
-```
----
-#### METHOD: SystemQuotaManager.if
-- **Scope:** instance
-- **LLM Call Syntax:** `systemQuotaManager.if(depth);`
-- **Pure JSDoc:**
-```javascript
-/** Method if */
-```
----
-#### METHOD: SystemQuotaManager.for
-- **Scope:** instance
-- **LLM Call Syntax:** `systemQuotaManager.for(let i);`
-- **Pure JSDoc:**
-```javascript
-/** Method for */
-```
----
-#### METHOD: SystemQuotaManager.flattenShallow
-- **Scope:** instance
-- **LLM Call Syntax:** `const result = systemQuotaManager.flattenShallow(array);`
-- **Pure JSDoc:**
-```javascript
-/**
-   * Flattens array structure by exactly one level.
-   * @param {Array} array Nested input collection.
-   * @returns {Array} Shallowly flattened array.
-   */
-```
----
-#### METHOD: SystemQuotaManager.flattenDeep
-- **Scope:** instance
-- **LLM Call Syntax:** `const result = systemQuotaManager.flattenDeep(array);`
-- **Pure JSDoc:**
-```javascript
-/**
-   * Recursively flattens all nested array levels into a single-dimensional array.
-   * @param {Array} array Nested input collection.
-   * @returns {Array} Fully flattened array.
-   */
-```
----
-#### METHOD: SystemQuotaManager.compact
-- **Scope:** instance
-- **LLM Call Syntax:** `const result = systemQuotaManager.compact(array);`
-- **Pure JSDoc:**
-```javascript
-/**
-   * Removes all falsy values (false, null, 0, "", undefined, NaN) from the array.
-   * @param {Array} array Input collection.
-   * @returns {Array} Filtered collection with truthy values only.
-   */
-```
----
-#### METHOD: SystemQuotaManager.difference
-- **Scope:** instance
-- **LLM Call Syntax:** `const result = systemQuotaManager.difference(array, values);`
-- **Pure JSDoc:**
-```javascript
-/**
-   * Returns values from first array that are not present in subsequent arrays.
-   * @param {Array} array Source collection to inspect.
-   * @param {...Array} values Collections of values to exclude.
-   * @returns {Array} Filtered collection of unique differences.
-   */
-```
----
-#### METHOD: SystemQuotaManager.differenceBy
-- **Scope:** instance
-- **LLM Call Syntax:** `const result = systemQuotaManager.differenceBy(array, values, iteratee);`
-- **Pure JSDoc:**
-```javascript
-/**
-   * Returns differences between arrays using an iteratee for value comparison.
-   * @param {Array} array Source collection.
-   * @param {Array} values Exclusion collection.
-   * @param {Function|string} iteratee Criteria for element comparison.
-   * @returns {Array} Filtered collection.
-   */
-```
----
-#### METHOD: SystemQuotaManager.groupBy
-- **Scope:** instance
-- **LLM Call Syntax:** `const result = systemQuotaManager.groupBy(array, iteratee);`
-- **Pure JSDoc:**
-```javascript
-/**
-   * Organizes array elements into an object keyed by the result of an iteratee.
-   * @param {Array} array Input collection.
-   * @param {Function|string} iteratee Logic to determine group keys.
-   * @returns {Object.<string, Array>} Grouped elements object.
-   */
-```
----
-#### METHOD: SystemQuotaManager.intersection
-- **Scope:** instance
-- **LLM Call Syntax:** `const result = systemQuotaManager.intersection(arrays);`
-- **Pure JSDoc:**
-```javascript
-/**
-   * Returns unique values present in all provided arrays.
-   * @param {...Array} arrays Collections to intersect.
-   * @returns {Array} Collection of common elements.
-   */
-```
----
-#### METHOD: SystemQuotaManager.keyBy
-- **Scope:** instance
-- **LLM Call Syntax:** `const result = systemQuotaManager.keyBy(array, iteratee);`
-- **Pure JSDoc:**
-```javascript
-/**
-   * Creates an object composed of keys generated from array elements using an iteratee.
-   * @param {Array} array Input collection.
-   * @param {Function|string} iteratee Logic to determine unique object keys.
-   * @returns {Object} Object indexed by generated keys.
-   */
-```
----
-#### METHOD: SystemQuotaManager.orderBy
-- **Scope:** instance
-- **LLM Call Syntax:** `const result = systemQuotaManager.orderBy(array, iteratees, orders);`
-- **Pure JSDoc:**
-```javascript
-/**
-   * Sorts array elements by specified iteratees and sort orders.
-   * @param {Array} array Input collection.
-   * @param {Array|string} iteratees Sort criteria.
-   * @param {Array|string} orders Sort directions ('asc' or 'desc').
-   * @returns {Array} Ordered collection.
-   */
-```
----
-#### METHOD: SystemQuotaManager.uniq
-- **Scope:** instance
-- **LLM Call Syntax:** `const result = systemQuotaManager.uniq(array);`
-- **Pure JSDoc:**
-```javascript
-/**
-   * Returns a duplicate-free version of the array using strict equality.
-   * @param {Array} array Input collection.
-   * @returns {Array} Unique value collection.
-   */
-```
----
-#### METHOD: SystemQuotaManager.uniqBy
-- **Scope:** instance
-- **LLM Call Syntax:** `const result = systemQuotaManager.uniqBy(array, iteratee);`
-- **Pure JSDoc:**
-```javascript
-/**
-   * Returns a duplicate-free array based on an iteratee comparison.
-   * @param {Array} array Input collection.
-   * @param {Function|string} iteratee Uniqueness criteria.
-   * @returns {Array} Unique value collection.
-   */
-```
----
-#### METHOD: SystemQuotaManager.randomInt
-- **Scope:** instance
-- **LLM Call Syntax:** `const result = systemQuotaManager.randomInt(min, max);`
-- **Pure JSDoc:**
-```javascript
-/**
-   * Generates a pseudo-random integer within the specified inclusive range.
-   * @param {number} min Minimum possible value.
-   * @param {number} max Maximum possible value.
-   * @returns {number} Random integer.
-   */
-```
----
-#### METHOD: SystemQuotaManager.round
-- **Scope:** instance
-- **LLM Call Syntax:** `const result = systemQuotaManager.round(number, decimals);`
-- **Pure JSDoc:**
-```javascript
-/**
-   * Rounds a number to a specified number of decimal places.
-   * @param {number} number Value to round.
-   * @param {number} [decimals=0] Precision limit.
-   * @returns {number} Rounded value.
-   */
-```
----
-#### METHOD: SystemQuotaManager.clamp
-- **Scope:** instance
-- **LLM Call Syntax:** `const result = systemQuotaManager.clamp(number, min, max);`
-- **Pure JSDoc:**
-```javascript
-/**
-   * Constrains a number to stay within a defined minimum and maximum boundary.
-   * @param {number} number Value to clamp.
-   * @param {number} min Lower bound.
-   * @param {number} max Upper bound.
-   * @returns {number} Boundary-constrained value.
-   */
-```
----
-#### METHOD: SystemQuotaManager.maxBy
-- **Scope:** instance
-- **LLM Call Syntax:** `const result = systemQuotaManager.maxBy(array, iteratee);`
-- **Pure JSDoc:**
-```javascript
-/**
-   * Identifies the collection element with the highest value according to an iteratee.
-   * @param {Array} array Input collection.
-   * @param {Function|string} iteratee Criteria for comparison.
-   * @returns {*} Element with the maximum resolved value.
-   */
-```
----
-#### METHOD: SystemQuotaManager.minBy
-- **Scope:** instance
-- **LLM Call Syntax:** `const result = systemQuotaManager.minBy(array, iteratee);`
-- **Pure JSDoc:**
-```javascript
-/**
-   * Identifies the collection element with the lowest value according to an iteratee.
-   * @param {Array} array Input collection.
-   * @param {Function|string} iteratee Criteria for comparison.
-   * @returns {*} Element with the minimum resolved value.
-   */
-```
----
-#### METHOD: SystemQuotaManager.sumBy
-- **Scope:** instance
-- **LLM Call Syntax:** `const result = systemQuotaManager.sumBy(array, iteratee);`
-- **Pure JSDoc:**
-```javascript
-/**
-   * Calculates the arithmetic sum of values resolved via an iteratee.
-   * @param {Array} array Input collection.
-   * @param {Function|string} iteratee Logic to extract numeric values.
-   * @returns {number} Calculated sum.
-   */
-```
----
-#### METHOD: SystemQuotaManager.meanBy
-- **Scope:** instance
-- **LLM Call Syntax:** `const result = systemQuotaManager.meanBy(array, iteratee);`
-- **Pure JSDoc:**
-```javascript
-/**
-   * Calculates the arithmetic mean (average) of values resolved via an iteratee.
-   * @param {Array} array Input collection.
-   * @param {Function|string} iteratee Logic to extract numeric values.
-   * @returns {number} Calculated mean.
-   */
-```
----
-#### METHOD: SystemQuotaManager.every
-- **Scope:** instance
-- **LLM Call Syntax:** `const result = systemQuotaManager.every(collection, predicate);`
-- **Pure JSDoc:**
-```javascript
-/**
-   * Checks if all elements in the collection satisfy the provided predicate.
-   * @param {Array|Object} collection Input collection.
-   * @param {Function} predicate Validation logic.
-   * @returns {boolean} True if every element passes.
-   */
-```
----
-#### METHOD: SystemQuotaManager.filter
-- **Scope:** instance
-- **LLM Call Syntax:** `const result = systemQuotaManager.filter(collection, predicate);`
-- **Pure JSDoc:**
-```javascript
-/**
-   * Returns a subset of the collection containing only elements passing the predicate.
-   * @param {Array|Object} collection Input collection.
-   * @param {Function} predicate Filtering logic.
-   * @returns {Array} Filtered subset.
-   */
-```
----
-#### METHOD: SystemQuotaManager.find
-- **Scope:** instance
-- **LLM Call Syntax:** `const result = systemQuotaManager.find(collection, predicate, fromIndex);`
-- **Pure JSDoc:**
-```javascript
-/**
-   * Locates the first element in the collection that satisfies the predicate.
-   * @param {Array|Object} collection Input collection.
-   * @param {Function} predicate Search logic.
-   * @param {number} [fromIndex=0] Starting search index.
-   * @returns {*} First matching element or undefined.
-   */
-```
----
-#### METHOD: SystemQuotaManager.forEach
-- **Scope:** instance
-- **LLM Call Syntax:** `const result = systemQuotaManager.forEach(collection, iteratee);`
-- **Pure JSDoc:**
-```javascript
-/**
-   * Executes the provided iteratee for each element in the collection.
-   * @param {Array|Object} collection Input collection.
-   * @param {Function} iteratee Operation to perform.
-   * @returns {Array|Object} Original collection (chainable).
-   */
-```
----
-#### METHOD: SystemQuotaManager.map
-- **Scope:** instance
-- **LLM Call Syntax:** `const result = systemQuotaManager.map(collection, iteratee);`
-- **Pure JSDoc:**
-```javascript
-/**
-   * Creates a new array by transforming each collection element through an iteratee.
-   * @param {Array|Object} collection Input collection.
-   * @param {Function} iteratee Transformation logic.
-   * @returns {Array} Transformed collection.
-   */
-```
----
-#### METHOD: SystemQuotaManager.reduce
-- **Scope:** instance
-- **LLM Call Syntax:** `const result = systemQuotaManager.reduce(collection, iteratee, accumulator);`
-- **Pure JSDoc:**
-```javascript
-/**
-   * Accumulates collection elements into a single value using a reducer function.
-   * @param {Array|Object} collection Input collection.
-   * @param {Function} iteratee Accumulator logic.
-   * @param {*} [accumulator] Initial state.
-   * @returns {*} Final accumulated value.
-   */
-```
----
-#### METHOD: SystemQuotaManager.size
-- **Scope:** instance
-- **LLM Call Syntax:** `const result = systemQuotaManager.size(collection);`
-- **Pure JSDoc:**
-```javascript
-/**
-   * Returns the count of elements in a collection, object properties, or string length.
-   * @param {Array|Object|string} collection Input to measure.
-   * @returns {number} Element count.
-   */
-```
----
-#### METHOD: SystemQuotaManager.some
-- **Scope:** instance
-- **LLM Call Syntax:** `const result = systemQuotaManager.some(collection, predicate);`
-- **Pure JSDoc:**
-```javascript
-/**
-   * Checks if at least one element in the collection satisfies the provided predicate.
-   * @param {Array|Object} collection Input collection.
-   * @param {Function} predicate Validation logic.
-   * @returns {boolean} True if any element passes.
-   */
 ```
 ---
 <br>
@@ -2502,18 +2467,6 @@ frozen immutability, richer payloads) on top of this contract.
 
 ### Methods of StringUtils
 
-#### METHOD: StringUtils.isEmpty
-- **Scope:** instance
-- **LLM Call Syntax:** `const result = stringUtils.isEmpty(str);`
-- **Pure JSDoc:**
-```javascript
-/**
-   * Checks if a string is null, undefined, empty, or consists only of whitespace.
-   * @param {string} str String to evaluate.
-   * @returns {boolean} True if string lacks non-whitespace content.
-   */
-```
----
 #### METHOD: StringUtils.truncate
 - **Scope:** instance
 - **LLM Call Syntax:** `const result = stringUtils.truncate(str, maxLength, suffix);`
@@ -3367,46 +3320,6 @@ to internal collaborator (manager) objects.
    * @param {Date|string|number|null|undefined} input Multi-format date input.
    * @returns {Date|null} Parsed Date object or null for invalid inputs.
    */
-```
----
-#### METHOD: DateUtils.if
-- **Scope:** instance
-- **LLM Call Syntax:** `dateUtils.if(!input && input !);`
-- **Pure JSDoc:**
-```javascript
-/** Method if */
-```
----
-#### METHOD: DateUtils.if
-- **Scope:** instance
-- **LLM Call Syntax:** `dateUtils.if(input instanceof Date);`
-- **Pure JSDoc:**
-```javascript
-/** Method if */
-```
----
-#### METHOD: DateUtils.if
-- **Scope:** instance
-- **LLM Call Syntax:** `dateUtils.if(typeof input);`
-- **Pure JSDoc:**
-```javascript
-/** Method if */
-```
----
-#### METHOD: DateUtils.if
-- **Scope:** instance
-- **LLM Call Syntax:** `dateUtils.if(typeof input);`
-- **Pure JSDoc:**
-```javascript
-/** Method if */
-```
----
-#### METHOD: DateUtils.if
-- **Scope:** instance
-- **LLM Call Syntax:** `dateUtils.if(input > 0 && input < 100000);`
-- **Pure JSDoc:**
-```javascript
-/** Method if */
 ```
 ---
 #### METHOD: DateUtils.parseGoogleSheetsDate
@@ -6018,3 +5931,4 @@ const validator = new ConfigValidator();
 ```
 ---
 <br>
+

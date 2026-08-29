@@ -115,15 +115,15 @@ describe('SheetByIdStrategy - Comprehensive Test Suite', () => {
       expect(result).toHaveLength(3); // All rows including the header row
     });
 
-    it('should log extraction steps', () => {
+    it('should log sheet traversal details at debug level', () => {
       const config = { sheetId: 'test123' };
 
       strategy.extract(config);
 
-      expect(mockLogger.info).toHaveBeenCalledWith(
+      expect(mockLogger.debug).toHaveBeenCalledWith(
         '[SheetByIdStrategy] Getting sheet info for spreadsheet: test123'
       );
-      expect(mockLogger.info).toHaveBeenCalledWith(
+      expect(mockLogger.debug).toHaveBeenCalledWith(
         '[SheetByIdStrategy] Reading from sheet: Sheet1'
       );
       expect(mockLogger.info).toHaveBeenCalledWith(
@@ -626,6 +626,10 @@ describe('SheetByIdStrategy - Comprehensive Test Suite', () => {
       ]);
       expect(mockSpreadsheetService.getSheetInfo).toHaveBeenCalledWith('abc123');
       expect(mockSpreadsheetService.getRanges).toHaveBeenCalledWith('abc123', 'Sheet1!A1:C10');
+      expect(mockLogger.debug).toHaveBeenCalledWith(
+        '[SheetByIdStrategy] Extracting raw grid with config:',
+        JSON.stringify({ sheetId: 'abc123' })
+      );
     });
 
     it('resolves tab and range identically to extract()', () => {

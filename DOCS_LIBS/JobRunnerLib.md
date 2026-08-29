@@ -1,12 +1,5 @@
 # API Reference: JobRunnerLib
 
-## Dynamic job definition contract
-
-Registered `JobDefinition` metadata is optional for dynamic jobs. A job created
-at runtime may execute or resume from persisted state without a matching
-`JobDefinitionRegistry` entry; definition-derived settings are applied only when
-a definition exists.
-
 ## CLASS: QueueStateManager
 **File Path:** `JobRunnerLib/src/QueueStateManager.js`
 **Constructor Usage:** `const instance = new QueueStateManager();`
@@ -373,15 +366,19 @@ Decorates a generator with execution time limits.
 @param {number} maxDuration Maximum execution time in milliseconds.
 @param {number} startTime Unix timestamp of execution start.
 @yields {*} Values from the original generator.
-@throws {TimeoutException} If `now() - startTime >= maxDuration`.
+@throws {TimeoutException} After exposing the latest checkpoint if
+  `now() - startTime >= maxDuration`, before advancing the generator again.
 /
 function* withTimeout(generator, maxDuration, startTime) {
   let next = generator.next();
   while (!next.done) {
+    // A yielded value is the consumer's resume contract. Expose it before
+    // evaluating the deadline so JobExecutor can persist it even when the
+    // work that produced this checkpoint crossed maxDuration.
+    yield next.value;
     if (new Date().getTime() - startTime >= maxDuration) {
       throw new TimeoutException(`Timeout of ${maxDuration}ms exceeded`);
     }
-    yield next.value;
     next = generator.next();
   }
   // Return the final return value from the generator
@@ -427,15 +424,19 @@ export { JobTriggerManager, JobStateManager };
  * @param {number} maxDuration Maximum execution time in milliseconds.
  * @param {number} startTime Unix timestamp of execution start.
  * @yields {*} Values from the original generator.
- * @throws {TimeoutException} If `now() - startTime >= maxDuration`.
+ * @throws {TimeoutException} After exposing the latest checkpoint if
+ *   `now() - startTime >= maxDuration`, before advancing the generator again.
  */
 function* withTimeout(generator, maxDuration, startTime) {
   let next = generator.next();
   while (!next.done) {
+    // A yielded value is the consumer's resume contract. Expose it before
+    // evaluating the deadline so JobExecutor can persist it even when the
+    // work that produced this checkpoint crossed maxDuration.
+    yield next.value;
     if (new Date().getTime() - startTime >= maxDuration) {
       throw new TimeoutException(`Timeout of ${maxDuration}ms exceeded`);
     }
-    yield next.value;
     next = generator.next();
   }
   // Return the final return value from the generator
@@ -2074,3 +2075,4 @@ and UI replay.
 ```
 ---
 <br>
+

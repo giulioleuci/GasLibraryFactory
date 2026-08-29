@@ -76,9 +76,9 @@
 
 <br>
 
-## CLASS: MyPlaceholderService
+## CLASS: PlaceholderService
 **File Path:** `WorkspaceTemplateEngine/src/PlaceholderService.js`
-**Constructor Usage:** `const instance = new MyPlaceholderService();`
+**Constructor Usage:** `const instance = new PlaceholderService();`
 **Description:** N/A
 
 ### Raw JSDoc Context:
@@ -86,19 +86,19 @@
 /** Class definition */
 ```
 
-### Methods of MyPlaceholderService
+### Methods of PlaceholderService
 
-#### METHOD: MyPlaceholderService.if
+#### METHOD: PlaceholderService.if
 - **Scope:** instance
-- **LLM Call Syntax:** `myPlaceholderService.if(!this.mustache);`
+- **LLM Call Syntax:** `placeholderService.if(!this.mustache);`
 - **Pure JSDoc:**
 ```javascript
 /** Method if */
 ```
 ---
-#### METHOD: MyPlaceholderService.processString
+#### METHOD: PlaceholderService.processString
 - **Scope:** instance
-- **LLM Call Syntax:** `const result = myPlaceholderService.processString(template, context);`
+- **LLM Call Syntax:** `const result = placeholderService.processString(template, context);`
 - **Pure JSDoc:**
 ```javascript
 /**
@@ -111,33 +111,33 @@
    */
 ```
 ---
-#### METHOD: MyPlaceholderService.if
+#### METHOD: PlaceholderService.if
 - **Scope:** instance
-- **LLM Call Syntax:** `myPlaceholderService.if(typeof template !);`
+- **LLM Call Syntax:** `placeholderService.if(typeof template !);`
 - **Pure JSDoc:**
 ```javascript
 /** Method if */
 ```
 ---
-#### METHOD: MyPlaceholderService.if
+#### METHOD: PlaceholderService.if
 - **Scope:** instance
-- **LLM Call Syntax:** `myPlaceholderService.if(context !);`
+- **LLM Call Syntax:** `placeholderService.if(context !);`
 - **Pure JSDoc:**
 ```javascript
 /** Method if */
 ```
 ---
-#### METHOD: MyPlaceholderService.catch
+#### METHOD: PlaceholderService.catch
 - **Scope:** instance
-- **LLM Call Syntax:** `myPlaceholderService.catch(error);`
+- **LLM Call Syntax:** `placeholderService.catch(error);`
 - **Pure JSDoc:**
 ```javascript
 /** Method catch */
 ```
 ---
-#### METHOD: MyPlaceholderService.resolve
+#### METHOD: PlaceholderService.resolve
 - **Scope:** instance
-- **LLM Call Syntax:** `const result = myPlaceholderService.resolve(template, context);`
+- **LLM Call Syntax:** `const result = placeholderService.resolve(template, context);`
 - **Pure JSDoc:**
 ```javascript
 /**
@@ -148,9 +148,9 @@
    */
 ```
 ---
-#### METHOD: MyPlaceholderService.processDocument
+#### METHOD: PlaceholderService.processDocument
 - **Scope:** instance
-- **LLM Call Syntax:** `const result = myPlaceholderService.processDocument(documentId, context);`
+- **LLM Call Syntax:** `const result = placeholderService.processDocument(documentId, context);`
 - **Pure JSDoc:**
 ```javascript
 /**
@@ -163,25 +163,25 @@
    */
 ```
 ---
-#### METHOD: MyPlaceholderService.if
+#### METHOD: PlaceholderService.if
 - **Scope:** instance
-- **LLM Call Syntax:** `myPlaceholderService.if(context !);`
+- **LLM Call Syntax:** `placeholderService.if(context !);`
 - **Pure JSDoc:**
 ```javascript
 /** Method if */
 ```
 ---
-#### METHOD: MyPlaceholderService.catch
+#### METHOD: PlaceholderService.catch
 - **Scope:** instance
-- **LLM Call Syntax:** `myPlaceholderService.catch(error);`
+- **LLM Call Syntax:** `placeholderService.catch(error);`
 - **Pure JSDoc:**
 ```javascript
 /** Method catch */
 ```
 ---
-#### METHOD: MyPlaceholderService.processSheet
+#### METHOD: PlaceholderService.processSheet
 - **Scope:** instance
-- **LLM Call Syntax:** `const result = myPlaceholderService.processSheet(sheetId, context, sheetName);`
+- **LLM Call Syntax:** `const result = placeholderService.processSheet(sheetId, context, sheetName);`
 - **Pure JSDoc:**
 ```javascript
 /**
@@ -202,25 +202,25 @@
    */
 ```
 ---
-#### METHOD: MyPlaceholderService.if
+#### METHOD: PlaceholderService.if
 - **Scope:** instance
-- **LLM Call Syntax:** `myPlaceholderService.if(context !);`
+- **LLM Call Syntax:** `placeholderService.if(context !);`
 - **Pure JSDoc:**
 ```javascript
 /** Method if */
 ```
 ---
-#### METHOD: MyPlaceholderService.if
+#### METHOD: PlaceholderService.if
 - **Scope:** instance
-- **LLM Call Syntax:** `myPlaceholderService.if(sheetName !);`
+- **LLM Call Syntax:** `placeholderService.if(sheetName !);`
 - **Pure JSDoc:**
 ```javascript
 /** Method if */
 ```
 ---
-#### METHOD: MyPlaceholderService.catch
+#### METHOD: PlaceholderService.catch
 - **Scope:** instance
-- **LLM Call Syntax:** `myPlaceholderService.catch(error);`
+- **LLM Call Syntax:** `placeholderService.catch(error);`
 - **Pure JSDoc:**
 ```javascript
 /** Method catch */

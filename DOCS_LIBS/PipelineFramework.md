@@ -1,26 +1,5 @@
 # API Reference: PipelineFramework
 
-## Pipeline observability contracts
-
-```ts
-type LogDetailScalar = string | number | boolean | null | undefined;
-type LogDetails =
-  | string
-  | LogDetailScalar[]
-  | Record<string, LogDetailScalar | LogDetailScalar[]>;
-
-type PipelineStepDetails = {
-  content?: LogDetails;
-  durationMs?: number;
-  reason?: string;
-};
-```
-
-Successful step execution may expose content-first details through
-`Step._getLogDetails(context)` and `StepExecutionResult.logDetails`. The pipeline
-passes those details to the logger as `PipelineStepDetails.content`, alongside
-timing or failure/skip reasons when applicable.
-
 ## CLASS: for
 **File Path:** `PipelineFramework/index.js`
 **Constructor Usage:** `const instance = new for();`
@@ -1998,3 +1977,4 @@ import { ConsumerStep } from '../ConsumerStep';
 ```
 
 <br>
+

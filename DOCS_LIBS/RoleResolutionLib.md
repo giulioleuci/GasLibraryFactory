@@ -1881,7 +1881,7 @@ import { cloneDeep } from '@CoreUtilsLib';
 
 import { Scope } from './Scope.js';
 import { cloneDeep } from '@CoreUtilsLib';
-import { parseDate } from '../internal/DateParsing.js';
+import { parseDate } from '@CoreUtilsLib/src/utils/DateUtils.js';
 
 /**
 @class Assignment
@@ -1897,7 +1897,7 @@ Immutable Value Object binding an Actor to a Role within a Scope (with temporal 
 
 import { Scope } from './Scope.js';
 import { cloneDeep } from '@CoreUtilsLib';
-import { parseDate } from '../internal/DateParsing.js';
+import { parseDate } from '@CoreUtilsLib/src/utils/DateUtils.js';
 
 /**
  * @class Assignment

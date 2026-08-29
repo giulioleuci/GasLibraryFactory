@@ -1869,6 +1869,17 @@ export function _registerCompositeSpecification(cls) {
 /** Method if */
 ```
 ---
+#### METHOD: FieldSpecification.toQueryObject
+- **Scope:** instance
+- **LLM Call Syntax:** `const result = fieldSpecification.toQueryObject();`
+- **Pure JSDoc:**
+```javascript
+/**
+   * Exposes an exact equality criterion for query-object pushdown.
+   * @returns {Record<string, unknown>|null} Equality criterion or null for other operators.
+   */
+```
+---
 #### METHOD: FieldSpecification.toQuery
 - **Scope:** instance
 - **LLM Call Syntax:** `const result = fieldSpecification.toQuery(queryBuilder);`
@@ -2029,6 +2040,50 @@ export function _registerCompositeSpecification(cls) {
    * Returns a string representation of the underlying expression.
    * @returns {string} Formatted expression string.
    */
+```
+---
+<br>
+
+## CLASS: EqualityFieldSpec
+**File Path:** `DomainRepositoryLib/src/specifications/EqualityFieldSpec.js`
+**Constructor Usage:** `const instance = new EqualityFieldSpec();`
+**Description:** Specification di uguaglianza in cui isSatisfiedBy e toQueryObject sono
+coerenti per costruzione: il valore letto dall'entità e quello confrontato
+nella query sono lo stesso.
+
+### Raw JSDoc Context:
+```javascript
+/**
+ * Specification di uguaglianza in cui isSatisfiedBy e toQueryObject sono
+ * coerenti per costruzione: il valore letto dall'entità e quello confrontato
+ * nella query sono lo stesso.
+ */
+```
+
+### Methods of EqualityFieldSpec
+
+#### METHOD: EqualityFieldSpec.isSatisfiedBy
+- **Scope:** instance
+- **LLM Call Syntax:** `equalityFieldSpec.isSatisfiedBy(entity);`
+- **Pure JSDoc:**
+```javascript
+/** Method isSatisfiedBy */
+```
+---
+#### METHOD: EqualityFieldSpec.toQueryObject
+- **Scope:** instance
+- **LLM Call Syntax:** `equalityFieldSpec.toQueryObject();`
+- **Pure JSDoc:**
+```javascript
+/** Method toQueryObject */
+```
+---
+#### METHOD: EqualityFieldSpec.toString
+- **Scope:** instance
+- **LLM Call Syntax:** `equalityFieldSpec.toString();`
+- **Pure JSDoc:**
+```javascript
+/** Method toString */
 ```
 ---
 <br>
@@ -2268,13 +2323,14 @@ export function _registerCompositeSpecification(cls) {
 
 #### METHOD: QueryTranslator.translate
 - **Scope:** instance
-- **LLM Call Syntax:** `const result = queryTranslator.translate(specification, queryBuilder);`
+- **LLM Call Syntax:** `const result = queryTranslator.translate(specification, queryBuilder, {{valid:boolean,);`
 - **Pure JSDoc:**
 ```javascript
 /**
    * Applies domain specification filters to a database query builder.
    * @param {Object} specification domain filter criteria.
    * @param {Object} queryBuilder database query constructor.
+   * @param {{valid:boolean, reason:string|null, queryObjectCriteria:Record<string, unknown>|null}|null} [validation=null] Optional analysis already produced for this operation.
    * @returns {Object} The configured query builder.
    * @throws {SpecificationException} If specification is null, queryBuilder is missing, or translation is unsupported.
    */
@@ -2291,6 +2347,22 @@ export function _registerCompositeSpecification(cls) {
 #### METHOD: QueryTranslator.if
 - **Scope:** instance
 - **LLM Call Syntax:** `queryTranslator.if(!queryBuilder);`
+- **Pure JSDoc:**
+```javascript
+/** Method if */
+```
+---
+#### METHOD: QueryTranslator.if
+- **Scope:** instance
+- **LLM Call Syntax:** `queryTranslator.if(!analysis.valid);`
+- **Pure JSDoc:**
+```javascript
+/** Method if */
+```
+---
+#### METHOD: QueryTranslator.if
+- **Scope:** instance
+- **LLM Call Syntax:** `queryTranslator.if(analysis.queryObjectCriteria !);`
 - **Pure JSDoc:**
 ```javascript
 /** Method if */
@@ -2336,13 +2408,21 @@ export function _registerCompositeSpecification(cls) {
 /**
    * Evaluates if a given specification possesses a supported mapping to database query structures.
    * @param {Object} specification Criteria to validate.
-   * @returns {{valid:boolean, reason:string|null}} Validation outcome and failure explanation.
+   * @returns {{valid:boolean, reason:string|null, queryObjectCriteria:Record<string, unknown>|null}} Validation outcome and the criterion evaluation for this operation.
    */
 ```
 ---
 #### METHOD: QueryTranslator.if
 - **Scope:** instance
 - **LLM Call Syntax:** `queryTranslator.if(!specification);`
+- **Pure JSDoc:**
+```javascript
+/** Method if */
+```
+---
+#### METHOD: QueryTranslator.if
+- **Scope:** instance
+- **LLM Call Syntax:** `queryTranslator.if(queryObjectCriteria !);`
 - **Pure JSDoc:**
 ```javascript
 /** Method if */

@@ -52,7 +52,7 @@ class SheetByIdStrategy extends SourceStrategy {
    * @throws {SourceError} If document is inaccessible, has no sheets, or target tab is missing.
    */
   extractRaw(config) {
-    this.logger.info(
+    this.logger.debug(
       `[SheetByIdStrategy] Extracting raw grid with config:`,
       JSON.stringify(config)
     );
@@ -210,7 +210,7 @@ class SheetByIdStrategy extends SourceStrategy {
 
     try {
       // Get sheet information using SpreadsheetService
-      this.logger.info(`[SheetByIdStrategy] Getting sheet info for spreadsheet: ${sheetId}`);
+      this.logger.debug(`[SheetByIdStrategy] Getting sheet info for spreadsheet: ${sheetId}`);
       const sheets = this._spreadsheetService.getSheetInfo(sheetId);
 
       if (!sheets || sheets.length === 0) {
@@ -232,7 +232,7 @@ class SheetByIdStrategy extends SourceStrategy {
         targetSheet = sheets[0];
       }
 
-      this.logger.info(`[SheetByIdStrategy] Reading from sheet: ${targetSheet.name}`);
+      this.logger.debug(`[SheetByIdStrategy] Reading from sheet: ${targetSheet.name}`);
 
       // Build the range to fetch
       let fullRange;
