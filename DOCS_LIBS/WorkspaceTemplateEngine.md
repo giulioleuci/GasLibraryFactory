@@ -618,6 +618,36 @@ import { FilterStrategy } from '../../FilterStrategy.js';
 ---
 <br>
 
+## CLASS: UncapitalizeFilter
+**File Path:** `WorkspaceTemplateEngine/src/internal/filters/BuiltInFilters.js`
+**Constructor Usage:** `const instance = new UncapitalizeFilter();`
+**Description:** String transformer. Converts only the first character to lowercase and preserves all remaining characters. Unicode-safe.
+
+### Template pipe
+
+```mustache
+{{value | uncapitalize}}
+```
+
+For example, `MARIO` becomes `mARIO`.
+
+### Methods of UncapitalizeFilter
+
+#### METHOD: UncapitalizeFilter.getName
+- **Scope:** instance
+- **LLM Call Syntax:** `uncapitalizeFilter.getName();`
+
+#### METHOD: UncapitalizeFilter.getDescription
+- **Scope:** instance
+- **LLM Call Syntax:** `uncapitalizeFilter.getDescription();`
+
+#### METHOD: UncapitalizeFilter.execute
+- **Scope:** instance
+- **LLM Call Syntax:** `uncapitalizeFilter.execute(value);`
+
+---
+<br>
+
 ## CLASS: CapitalizeFilter
 **File Path:** `WorkspaceTemplateEngine/src/internal/filters/BuiltInFilters.js`
 **Constructor Usage:** `const instance = new CapitalizeFilter();`
@@ -2291,4 +2321,3 @@ const result = mustache.render('{{items | join:", "}}', { items: [1, 2, 3] });
 ```
 
 <br>
-

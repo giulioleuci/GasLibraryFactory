@@ -43,6 +43,27 @@ export class LowercaseFilter extends FilterStrategy {
 }
 
 /**
+ * @description String transformer. Converts only the first character to lowercase. Unicode-safe.
+ * @class
+ */
+export class UncapitalizeFilter extends FilterStrategy {
+  getName() {
+    return 'uncapitalize';
+  }
+  getDescription() {
+    return 'Lowercases the first character of text';
+  }
+  execute(value) {
+    if (!value) {
+      return '';
+    }
+    value = String(value);
+    const chars = Array.from(value);
+    return chars[0].toLowerCase() + value.slice(chars[0].length);
+  }
+}
+
+/**
  * @description String transformer. Capitalizes the first character and lowercases the rest. Unicode-safe.
  * @class
  */
@@ -287,6 +308,7 @@ export function createBuiltInFilters(utils) {
   return [
     new UppercaseFilter(),
     new LowercaseFilter(),
+    new UncapitalizeFilter(),
     new CapitalizeFilter(),
     new DateFilter(utils),
     new NumberFilter(),
