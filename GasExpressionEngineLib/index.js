@@ -191,10 +191,7 @@
  * // Subsequent evaluations use cached AST (faster)
  * engine.evaluate("{{x}} > 5", { x: 3 });  // Cache hit, evaluate only
  * engine.evaluate("{{x}} > 5", { x: 7 });  // Cache hit, evaluate only
- *
- * // Check cache statistics
- * const stats = engine.getCacheStats();
- * console.log(`Cached expressions: ${stats.size}`); // 1
+ * engine.clearCache(); // Manually clear the AST cache
  *
  * @example
  * // Advanced: Direct AST parsing and evaluation

@@ -14,8 +14,17 @@ import { FilterStrategy } from '../../FilterStrategy.js';
  * @class
  */
 export class DefaultFilter extends FilterStrategy {
+  /**
+   * @param {string} [name='default'] Registered filter name. Also registered
+   *   as 'fallback' — same null/undefined/empty-string(/array) behavior.
+   */
+  constructor(name = 'default') {
+    super();
+    this._name = name;
+  }
+
   getName() {
-    return 'default';
+    return this._name;
   }
   getDescription() {
     return 'Returns the argument if value is null/undefined/empty';
@@ -51,26 +60,6 @@ export class YesNoFilter extends FilterStrategy {
     const noString = parts[1] || 'No';
 
     return value ? yesString : noString;
-  }
-}
-
-/**
- * @description Simple fallback mechanism. Returns fallbackValue if value is missing.
- * @class
- */
-export class FallbackFilter extends FilterStrategy {
-  getName() {
-    return 'fallback';
-  }
-  getDescription() {
-    return 'Returns fallback value if main value is missing';
-  }
-
-  execute(value, fallbackValue = '') {
-    if (value === null || value === undefined || value === '') {
-      return fallbackValue;
-    }
-    return value;
   }
 }
 
@@ -262,8 +251,17 @@ export class SkipFilter extends FilterStrategy {
  * @class
  */
 export class SortFilter extends FilterStrategy {
+  /**
+   * @param {string} [name='sort'] Registered filter name. Also registered as
+   *   'sortBy' (BuiltInFilters) for the single-property-ascending call shape.
+   */
+  constructor(name = 'sort') {
+    super();
+    this._name = name;
+  }
+
   getName() {
-    return 'sort';
+    return this._name;
   }
   getDescription() {
     return 'Sorts array by property (optional: "desc")';
@@ -455,7 +453,7 @@ export function createAdvancedFilters() {
     // Logic & Defaults
     new DefaultFilter(),
     new YesNoFilter(),
-    new FallbackFilter(),
+    new DefaultFilter('fallback'),
 
     // String Manipulation
     new TruncateFilter(),

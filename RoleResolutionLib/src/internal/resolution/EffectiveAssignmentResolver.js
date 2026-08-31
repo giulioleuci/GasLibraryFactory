@@ -1,3 +1,4 @@
+import { get } from '@CoreUtilsLib';
 import { AssignmentCandidate } from '../../core/AssignmentCandidate.js';
 import { DelegationChain } from '../delegation/DelegationChain.js';
 import { EffectiveAssignmentResult } from '../../core/EffectiveAssignmentResult.js';
@@ -26,12 +27,6 @@ function withTrace(error, trace) {
   return error;
 }
 
-function getPath(value, path) {
-  return String(path)
-    .split('.')
-    .reduce((current, part) => (current == null ? undefined : current[part]), value);
-}
-
 function resultIdentityValue(result, field) {
   if (field === 'slot') {
     return result.slot.key;
@@ -39,7 +34,7 @@ function resultIdentityValue(result, field) {
   if (field === 'principalActor') {
     return result.permanentActor && result.permanentActor.id;
   }
-  const value = getPath(result, field);
+  const value = get(result, field);
   if (value && typeof value === 'object') {
     if (typeof value.key === 'string') {
       return value.key;

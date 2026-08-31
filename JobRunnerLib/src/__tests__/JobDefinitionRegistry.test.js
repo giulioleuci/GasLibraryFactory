@@ -396,217 +396,10 @@ describe('JobDefinitionRegistry - Comprehensive Test Suite', () => {
   });
 
   // ===================================================================
-  // removeJob() Method Tests
-  // ===================================================================
-  describe('removeJob() Method', () => {
-    beforeEach(() => {
-      const jobDef = {
-        name: 'Test Job',
-        description: 'Test',
-        action: function* () {}
-      };
-      registry.register('testJob', jobDef);
-    });
-
-    it('should remove existing job', () => {
-      const removed = registry.removeJob('testJob');
-
-      expect(removed).toBe(true);
-      expect(registry.definitions.has('testJob')).toBe(false);
-      expect(mockLogger.hasLog('DEBUG', /removed from registry/i)).toBe(true);
-    });
-
-    it('should return false for non-existing job', () => {
-      const removed = registry.removeJob('nonExistentJob');
-
-      expect(removed).toBe(false);
-      expect(mockLogger.hasLog('WARN', /did not exist in registry/i)).toBe(true);
-    });
-
-    it('should return false if job name is empty', () => {
-      const removed = registry.removeJob('');
-
-      expect(removed).toBe(false);
-      expect(mockLogger.hasLog('ERROR', /Job name must be a non-empty string/i)).toBe(true);
-    });
-
-    it('should return false if job name is null', () => {
-      const removed = registry.removeJob(null);
-
-      expect(removed).toBe(false);
-    });
-
-    it('should return false if job name is not a string', () => {
-      const removed = registry.removeJob(123);
-
-      expect(removed).toBe(false);
-    });
-  });
-
-  // ===================================================================
-  // getStatistics() Method Tests
-  // ===================================================================
-  describe('getStatistics() Method', () => {
-    it('should return statistics for empty registry', () => {
-      const stats = registry.getStatistics();
-
-      expect(stats.totalJobs).toBe(0);
-      expect(stats.jobsByCategory).toEqual({});
-      expect(stats.jobsWithParameters).toBe(0);
-    });
-
-    it('should count total jobs correctly', () => {
-      const jobDef = {
-        name: 'Test Job',
-        description: 'Test',
-        action: function* () {}
-      };
-
-      registry.register('job1', jobDef);
-      registry.register('job2', jobDef);
-
-      const stats = registry.getStatistics();
-      expect(stats.totalJobs).toBe(2);
-    });
-
-    it('should categorize Generation jobs', () => {
-      const jobDef = {
-        name: 'Generate Report',
-        description: 'Generates monthly report',
-        action: function* () {}
-      };
-
-      registry.register('job1', jobDef);
-
-      const stats = registry.getStatistics();
-      expect(stats.jobsByCategory.Generation).toBe(1);
-    });
-
-    it('should categorize Email jobs', () => {
-      const emailJobDef = {
-        name: 'Send Email',
-        description: 'Send email to users',
-        action: function* () {}
-      };
-
-      registry.register('emailJob', emailJobDef);
-
-      const stats = registry.getStatistics();
-      expect(stats.jobsByCategory.Email).toBe(1);
-    });
-
-    it('should categorize Import jobs', () => {
-      const importJobDef = {
-        name: 'Import Data',
-        description: 'Import data from source',
-        action: function* () {}
-      };
-
-      registry.register('importJob', importJobDef);
-
-      const stats = registry.getStatistics();
-      expect(stats.jobsByCategory.Import).toBe(1);
-    });
-
-    it('should categorize Infrastructure jobs', () => {
-      const infraJobDef = {
-        name: 'Create Structure',
-        description: 'Create folder structure',
-        action: function* () {}
-      };
-
-      registry.register('infraJob', infraJobDef);
-
-      const stats = registry.getStatistics();
-      expect(stats.jobsByCategory.Infrastructure).toBe(1);
-    });
-
-    it('should categorize uncategorized jobs as Other', () => {
-      const otherJobDef = {
-        name: 'Other Job',
-        description: 'Does something else',
-        action: function* () {}
-      };
-
-      registry.register('otherJob', otherJobDef);
-
-      const stats = registry.getStatistics();
-      expect(stats.jobsByCategory.Other).toBe(1);
-    });
-
-    it('should count jobs with parameters', () => {
-      const jobWithParams = {
-        name: 'Job With Params',
-        description: 'Test',
-        action: function* () {},
-        requiredParameters: ['param1', 'param2']
-      };
-
-      const jobWithoutParams = {
-        name: 'Job Without Params',
-        description: 'Test',
-        action: function* () {}
-      };
-
-      registry.register('job1', jobWithParams);
-      registry.register('job2', jobWithoutParams);
-
-      const stats = registry.getStatistics();
-      expect(stats.jobsWithParameters).toBe(1);
-    });
-
-    it('should not count jobs with empty parameter array', () => {
-      const jobWithEmptyParams = {
-        name: 'Job',
-        description: 'Test',
-        action: function* () {},
-        requiredParameters: []
-      };
-
-      registry.register('job1', jobWithEmptyParams);
-
-      const stats = registry.getStatistics();
-      expect(stats.jobsWithParameters).toBe(0);
-    });
-
-    it('should log statistics retrieval', () => {
-      const jobDef = {
-        name: 'Test',
-        description: 'Test',
-        action: function* () {}
-      };
-
-      registry.register('job1', jobDef);
-      registry.register('job2', jobDef);
-
-      registry.getStatistics();
-
-      expect(mockLogger.hasLog('DEBUG', /total jobs in registry/i)).toBe(true);
-    });
-
-    it('should handle multiple categories correctly', () => {
-      const jobs = [
-        { name: 'Gen', description: 'Generate report', action: function* () {} },
-        { name: 'Email', description: 'Send email', action: function* () {} },
-        { name: 'Import', description: 'Import data', action: function* () {} },
-        { name: 'Other', description: 'Other task', action: function* () {} }
-      ];
-
-      jobs.forEach((job, idx) => registry.register(`job${idx}`, job));
-
-      const stats = registry.getStatistics();
-      expect(stats.jobsByCategory.Generation).toBe(1);
-      expect(stats.jobsByCategory.Email).toBe(1);
-      expect(stats.jobsByCategory.Import).toBe(1);
-      expect(stats.jobsByCategory.Other).toBe(1);
-    });
-  });
-
-  // ===================================================================
   // Integration Tests
   // ===================================================================
   describe('Integration Tests', () => {
-    it('should support full lifecycle: register, retrieve, remove', () => {
+    it('should support full lifecycle: register, retrieve, list', () => {
       const jobDef = {
         name: 'Test Job',
         description: 'A comprehensive test',
@@ -627,16 +420,6 @@ describe('JobDefinitionRegistry - Comprehensive Test Suite', () => {
       // List
       const jobs = registry.listRegisteredJobs();
       expect(jobs).toContain('lifecycleJob');
-
-      // Statistics
-      const stats = registry.getStatistics();
-      expect(stats.totalJobs).toBe(1);
-      expect(stats.jobsWithParameters).toBe(1);
-
-      // Remove
-      const removed = registry.removeJob('lifecycleJob');
-      expect(removed).toBe(true);
-      expect(registry.jobExists('lifecycleJob')).toBe(false);
     });
 
     it('should handle multiple jobs with different configurations', () => {
@@ -664,13 +447,6 @@ describe('JobDefinitionRegistry - Comprehensive Test Suite', () => {
       jobs.forEach((job, idx) => registry.register(`job${idx}`, job));
 
       expect(registry.listRegisteredJobs()).toHaveLength(3);
-
-      const stats = registry.getStatistics();
-      expect(stats.totalJobs).toBe(3);
-      expect(stats.jobsWithParameters).toBe(1);
-      expect(stats.jobsByCategory.Import).toBe(1);
-      expect(stats.jobsByCategory.Email).toBe(1);
-      expect(stats.jobsByCategory.Generation).toBe(1);
     });
   });
 });

@@ -3,8 +3,6 @@
  * @description Manager for transformation configuration and row-level validation.
  */
 
-import { TransformError } from '../errors/TransformError.js';
-
 export class TransformerValidationGuard {
   constructor(facade) {
     this.facade = facade;
@@ -20,7 +18,9 @@ export class TransformerValidationGuard {
    * @returns {boolean} True if all validation predicates are satisfied.
    */
   _applyValidation(row, validation, rowIndex) {
-    if (!validation) return true;
+    if (!validation) {
+      return true;
+    }
     const rules = Array.isArray(validation) ? validation : [validation];
 
     for (const rule of rules) {
@@ -35,39 +35,6 @@ export class TransformerValidationGuard {
           `[Transformer] Validation rule evaluation failed for row ${rowIndex}: ${error.message}`
         );
         return false;
-      }
-    }
-    return true;
-  }
-
-  /**
-   * Enforces structural integrity of the transformation configuration segment.
-   * @param {Object} config target transformation rules.
-   * @returns {boolean} Always true if no errors are thrown.
-   * @throws {TransformError} If mapping, calculated fields, or normalization blocks are malformed.
-   */
-  validateConfig(config) {
-    if (config.mapping && typeof config.mapping !== 'object') {
-      throw new TransformError('Transform mapping must be an object', 'INVALID_MAPPING_CONFIG');
-    }
-    if (config.calculated && typeof config.calculated !== 'object') {
-      throw new TransformError(
-        'Transform calculated must be an object',
-        'INVALID_CALCULATED_CONFIG'
-      );
-    }
-    if (config.normalization && typeof config.normalization !== 'object') {
-      throw new TransformError(
-        'Transform normalization must be an object',
-        'INVALID_NORMALIZATION_CONFIG'
-      );
-    }
-    if (config.validation) {
-      if (typeof config.validation !== 'string' && !Array.isArray(config.validation)) {
-        throw new TransformError(
-          'Transform validation must be a string or an array of strings',
-          'INVALID_VALIDATION_CONFIG'
-        );
       }
     }
     return true;

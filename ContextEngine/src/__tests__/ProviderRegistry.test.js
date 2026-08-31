@@ -56,9 +56,6 @@ describe('ProviderRegistry - Comprehensive Test Suite', () => {
 
     it('should start with no registered providers', () => {
       expect(registry.getRegisteredTypes()).toEqual([]);
-
-      const summary = registry.getSummary();
-      expect(summary.totalProviders).toBe(0);
     });
   });
 
@@ -70,7 +67,7 @@ describe('ProviderRegistry - Comprehensive Test Suite', () => {
     it('should register singleton provider', () => {
       registry.registerSingleton('TestProvider', mockProvider);
 
-      expect(registry.has('TestProvider')).toBe(true);
+      expect(registry.get('TestProvider')).toBe(mockProvider);
       expect(registry.getRegisteredTypes()).toContain('TestProvider');
     });
 
@@ -139,7 +136,7 @@ describe('ProviderRegistry - Comprehensive Test Suite', () => {
 
       registry.registerFactory('TestProvider', factory);
 
-      expect(registry.has('TestProvider')).toBe(true);
+      expect(registry.get('TestProvider')).not.toBeNull();
       expect(registry.getRegisteredTypes()).toContain('TestProvider');
     });
 
@@ -259,101 +256,6 @@ describe('ProviderRegistry - Comprehensive Test Suite', () => {
   });
 
   // ===================================================================
-  // PROVIDER EXISTENCE CHECK
-  // ===================================================================
-
-  describe('Provider Existence Check', () => {
-    beforeEach(() => {
-      registry.registerSingleton('SingletonProvider', mockProvider);
-      registry.registerFactory('FactoryProvider', () => mockProvider);
-    });
-
-    it('should return true for registered singleton', () => {
-      expect(registry.has('SingletonProvider')).toBe(true);
-    });
-
-    it('should return true for registered factory', () => {
-      expect(registry.has('FactoryProvider')).toBe(true);
-    });
-
-    it('should return false for unregistered provider', () => {
-      expect(registry.has('NonExistentProvider')).toBe(false);
-    });
-
-    it('should return false if type is invalid', () => {
-      expect(registry.has('')).toBe(false);
-      expect(registry.has(null)).toBe(false);
-    });
-  });
-
-  // ===================================================================
-  // UNREGISTER
-  // ===================================================================
-
-  describe('Unregister', () => {
-    beforeEach(() => {
-      registry.registerSingleton('SingletonProvider', mockProvider);
-      registry.registerFactory('FactoryProvider', () => mockProvider);
-    });
-
-    it('should unregister singleton provider', () => {
-      const result = registry.unregister('SingletonProvider');
-
-      expect(result).toBe(true);
-      expect(registry.has('SingletonProvider')).toBe(false);
-    });
-
-    it('should unregister factory provider', () => {
-      const result = registry.unregister('FactoryProvider');
-
-      expect(result).toBe(true);
-      expect(registry.has('FactoryProvider')).toBe(false);
-    });
-
-    it('should return false if provider not found', () => {
-      const result = registry.unregister('NonExistentProvider');
-
-      expect(result).toBe(false);
-    });
-
-    it('should throw error if type is invalid', () => {
-      expect(() => registry.unregister('')).toThrow(
-        'ProviderRegistry.unregister: type is required and must be a non-empty string'
-      );
-      expect(() => registry.unregister(null)).toThrow(
-        'ProviderRegistry.unregister: type is required and must be a non-empty string'
-      );
-    });
-  });
-
-  // ===================================================================
-  // CLEAR
-  // ===================================================================
-
-  describe('Clear', () => {
-    beforeEach(() => {
-      registry.registerSingleton('Singleton1', mockProvider);
-      registry.registerSingleton('Singleton2', mockProvider);
-      registry.registerFactory('Factory1', () => mockProvider);
-    });
-
-    it('should clear all providers', () => {
-      registry.clear();
-
-      expect(registry.getRegisteredTypes()).toEqual([]);
-      expect(registry.has('Singleton1')).toBe(false);
-      expect(registry.has('Singleton2')).toBe(false);
-      expect(registry.has('Factory1')).toBe(false);
-    });
-
-    it('should support method chaining for clear', () => {
-      const result = registry.clear();
-
-      expect(result).toBe(registry);
-    });
-  });
-
-  // ===================================================================
   // GET REGISTERED TYPES
   // ===================================================================
 
@@ -393,44 +295,6 @@ describe('ProviderRegistry - Comprehensive Test Suite', () => {
       expect(types).toHaveLength(2);
       expect(types).toContain('Singleton1');
       expect(types).toContain('Factory1');
-    });
-  });
-
-  // ===================================================================
-  // GET SUMMARY
-  // ===================================================================
-
-  describe('Get Summary', () => {
-    it('should return empty summary initially', () => {
-      const summary = registry.getSummary();
-
-      expect(summary.singletonCount).toBe(0);
-      expect(summary.factoryCount).toBe(0);
-      expect(summary.totalProviders).toBe(0);
-      expect(summary.singletonTypes).toEqual([]);
-      expect(summary.factoryTypes).toEqual([]);
-    });
-
-    it('should return correct counts', () => {
-      registry.registerSingleton('Singleton1', mockProvider);
-      registry.registerSingleton('Singleton2', mockProvider);
-      registry.registerFactory('Factory1', () => mockProvider);
-
-      const summary = registry.getSummary();
-
-      expect(summary.singletonCount).toBe(2);
-      expect(summary.factoryCount).toBe(1);
-      expect(summary.totalProviders).toBe(3);
-    });
-
-    it('should return correct type arrays', () => {
-      registry.registerSingleton('Singleton1', mockProvider);
-      registry.registerFactory('Factory1', () => mockProvider);
-
-      const summary = registry.getSummary();
-
-      expect(summary.singletonTypes).toContain('Singleton1');
-      expect(summary.factoryTypes).toContain('Factory1');
     });
   });
 

@@ -97,6 +97,74 @@ describe('DocumentContentExtractor', () => {
       expect(result.textMatches[0].type).toBe('TEXT');
     });
 
+    it("assigns table ordinals matching DocumentApp.getTables()'s flattened depth-first order when a table is nested inside another table's cell", () => {
+      // Mirrors the real PDP-DSA template: a top-level "signature box" table
+      // containing a nested table in one of its cells, followed by a
+      // sibling top-level table (e.g. a tablecol_loop table). DocumentApp's
+      // body.getTables() flattens nested tables into the same list as
+      // top-level ones, in document order — so table.index here (later
+      // reused verbatim as op.tableIndex against tables[tableIndex] in
+      // DocumentTableManager) must count the nested table too, not skip it.
+      facade.getRawDocumentStructure.mockReturnValue({
+        body: {
+          content: [
+            {
+              type: 'TABLE',
+              startIndex: 1,
+              tableRows: [
+                {
+                  rowIndex: 0,
+                  cells: [
+                    {
+                      rowIndex: 0,
+                      columnIndex: 0,
+                      text: '',
+                      runs: [],
+                      content: [
+                        {
+                          type: 'TABLE',
+                          startIndex: 5,
+                          tableRows: [
+                            {
+                              rowIndex: 0,
+                              cells: [{ rowIndex: 0, columnIndex: 0, text: 'inner', runs: [] }]
+                            }
+                          ]
+                        }
+                      ]
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              type: 'TABLE',
+              startIndex: 50,
+              tableRows: [
+                {
+                  rowIndex: 0,
+                  cells: [
+                    { rowIndex: 0, columnIndex: 0, text: 'label', runs: [] },
+                    { rowIndex: 0, columnIndex: 1, text: '{{sigla}}', runs: [] }
+                  ]
+                }
+              ]
+            }
+          ]
+        }
+      });
+
+      const result = extractor.scanDocumentStructure('doc-1', ['{{']);
+
+      expect(result.tables.map((t) => t.startIndex)).toEqual([1, 5, 50]);
+      expect(result.tables.map((t) => t.index)).toEqual([0, 1, 2]);
+
+      // The sibling top-level table's TABLE_TEXT match must be tagged with
+      // its post-nesting ordinal (2), not a naive top-level-only count (1).
+      const siglaMatch = result.textMatches.find((m) => m.text === '{{sigla}}');
+      expect(siglaMatch.tableIndex).toBe(2);
+    });
+
     it('should handle empty content gracefully', () => {
       facade.getRawDocumentStructure.mockReturnValue({
         body: {

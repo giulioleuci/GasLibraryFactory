@@ -24,9 +24,9 @@ export class DriveFolderManager {
    * @param {Object} [options={}] Operation settings.
    * @param {boolean} [options.returnExistingIfFound=false] Retrieve first match if name exists in parent.
    * @returns {Object} Folder metadata {id, name, mimeType, parents, webViewLink}.
-   * @throws {PermissionDeniedError} On auth/scope failure.
-   * @throws {ResourceNotFoundError} If parent folder is missing.
-   * @throws {QuotaExceededError} If storage limit reached.
+   * @throws {Error} On auth/scope failure.
+   * @throws {Error} If parent folder is missing.
+   * @throws {Error} If storage limit reached.
    * @throws {ValidationError} On invalid input.
    */
   createFolder(folderName, parentFolderId = null, options = {}) {
@@ -83,8 +83,8 @@ export class DriveFolderManager {
    * @description Accesses folder via native DriveApp (standard API). Enables use of folder-specific iterators and methods.
    * @param {string} folderId Target resource identifier.
    * @returns {GoogleAppsScript.Drive.Folder} Native GAS Drive Folder object.
-   * @throws {ResourceNotFoundError} If folder is missing.
-   * @throws {PermissionDeniedError} If access is denied.
+   * @throws {Error} If folder is missing.
+   * @throws {Error} If access is denied.
    */
   getFolderByIdStandard(folderId) {
     try {

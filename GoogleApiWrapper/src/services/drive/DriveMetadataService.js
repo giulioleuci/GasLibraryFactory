@@ -22,7 +22,7 @@ export class DriveMetadataService {
    * @param {Object|Object[]} updateRequests Collection of {fileId, metadata}.
    * @param {Object} [options={}] Operation settings.
    * @returns {Object} Result summary {successful: Array<{id, status, data}>, failed: Array<{id, status, error}>}.
-   * @throws {ServiceError} On execution failure.
+   * @throws {Error} On execution failure.
    * @throws {ValidationError} On invalid request format.
    */
   updateMetadata(updateRequests, options = {}) {
@@ -91,14 +91,15 @@ export class DriveMetadataService {
    * @param {string} [options.fields] Comma-separated fields to retrieve (defaults to comprehensive metadata set).
    * @param {boolean} [options.strict=false] Propagate metadata lookup failures instead of returning null for failed IDs.
    * @returns {Object|Object<string, Object>} Metadata object (single) or ID-to-Metadata map (batch).
-   * @throws {ServiceError} On execution failure.
+   * @throws {Error} On execution failure.
    */
   getFiles(fileIds, options = {}) {
     const isSingleId = !Array.isArray(fileIds);
     const idsArray = isSingleId ? [fileIds] : fileIds;
     const fields =
       options.fields || 'id,name,mimeType,parents,modifiedTime,createdTime,webViewLink,size,owners';
-    const requiredFields = options.strict === true ? fields.split(',').map((field) => field.trim()) : [];
+    const requiredFields =
+      options.strict === true ? fields.split(',').map((field) => field.trim()) : [];
 
     // Check cache first
     const cacheResults = {};
@@ -163,7 +164,7 @@ export class DriveMetadataService {
    * records, follows pagination, and propagates auth/quota/network errors.
    * @param {string|string[]} fileIds Resource ID(s) whose permissions must be read back.
    * @returns {Object[]|Object<string, Object[]>} Permission records for one ID, or an ID map.
-   * @throws {ServiceError} On any Drive permission lookup failure.
+   * @throws {Error} On any Drive permission lookup failure.
    */
   getPermissions(fileIds) {
     const isSingleId = !Array.isArray(fileIds);
@@ -180,13 +181,17 @@ export class DriveMetadataService {
           pageSize: 100,
           supportsAllDrives: true
         };
-        if (pageToken) options.pageToken = pageToken;
+        if (pageToken) {
+          options.pageToken = pageToken;
+        }
         const page = this._exceptionService.executeWithRetry(
           () => Drive.Permissions.list(fileId, options),
           {},
           3
         );
-        if (Array.isArray(page.permissions)) permissions.push(...page.permissions);
+        if (Array.isArray(page.permissions)) {
+          permissions.push(...page.permissions);
+        }
         pageToken = page.nextPageToken || null;
       } while (pageToken);
       results[fileId] = permissions;
@@ -200,7 +205,7 @@ export class DriveMetadataService {
    * caching/retry behaviour (the `owners` field is already part of its default field set).
    * @param {string} fileId Resource ID.
    * @returns {string|null} Owner email, or null when no owner is present (e.g. a Shared Drive file).
-   * @throws {ServiceError} On execution failure.
+   * @throws {Error} On execution failure.
    */
   getFileOwnerEmail(fileId) {
     const metadata = this.getFiles(fileId);
@@ -215,7 +220,7 @@ export class DriveMetadataService {
    * @param {number} [options.maxResults=Infinity] Upper bound for result count.
    * @param {string} [options.orderBy] Sorting criteria (e.g., 'modifiedTime desc').
    * @returns {Object[]} Collection of matching file metadata objects.
-   * @throws {ServiceError} On execution failure.
+   * @throws {Error} On execution failure.
    * @throws {ValidationError} On invalid query syntax.
    */
   searchFiles(query, options = {}) {

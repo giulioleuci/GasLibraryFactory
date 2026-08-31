@@ -6,6 +6,7 @@
  */
 
 import { FilterStrategy } from '../../FilterStrategy.js';
+import { SortFilter } from './AdvancedFilters.js';
 
 // ==================== STRING FILTERS ====================
 
@@ -206,58 +207,6 @@ export class PluralizeFilter extends FilterStrategy {
 }
 
 /**
- * @description Array sorter. Performs in-place sorting based on a specific property key. Includes prototype pollution protection.
- * @class
- */
-export class SortByFilter extends FilterStrategy {
-  getName() {
-    return 'sortBy';
-  }
-  getDescription() {
-    return 'Sorts an array by a property';
-  }
-
-  _isDangerousKey(key) {
-    return key === '__proto__' || key === 'constructor' || key === 'prototype';
-  }
-
-  execute(array, key) {
-    if (!Array.isArray(array)) {
-      return array;
-    }
-    // GEL-C004: Prevent prototype pollution in filter
-    if (this._isDangerousKey(key)) {
-      return array;
-    }
-    return [...array].sort((a, b) => {
-      const valA =
-        a && typeof a === 'object' && Object.prototype.hasOwnProperty.call(a, key) ? a[key] : null;
-      const valB =
-        b && typeof b === 'object' && Object.prototype.hasOwnProperty.call(b, key) ? b[key] : null;
-      if (valA == null && valB != null) {
-        return 1;
-      }
-      if (valA != null && valB == null) {
-        return -1;
-      }
-      if (valA == null && valB == null) {
-        return 0;
-      }
-      if (typeof valA !== 'string' || typeof valB !== 'string') {
-        if (valA < valB) {
-          return -1;
-        }
-        if (valA > valB) {
-          return 1;
-        }
-        return 0;
-      }
-      return valA.localeCompare(valB, 'en', { sensitivity: 'base' });
-    });
-  }
-}
-
-/**
  * @description Array filter. Returns elements where the specified property matches a value. Includes prototype pollution protection.
  * @class
  */
@@ -343,7 +292,7 @@ export function createBuiltInFilters(utils) {
     new NumberFilter(),
     new JoinFilter(),
     new PluralizeFilter(),
-    new SortByFilter(),
+    new SortFilter('sortBy'),
     new WhereFilter(),
     new ExcludeFilter()
   ];

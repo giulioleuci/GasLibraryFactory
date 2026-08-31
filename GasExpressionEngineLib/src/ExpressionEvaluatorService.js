@@ -6,7 +6,7 @@
  * @version 1.0.0
  */
 
-import { RegexUtils, ValidationUtils } from '@CoreUtilsLib';
+import { ValidationUtils } from '@CoreUtilsLib';
 import { AstNodeEvaluator } from './internal/AstNodeEvaluator.js';
 import { EvaluationContextHandler } from './handlers/EvaluationContextHandler.js';
 import { OperatorHandler } from './internal/OperatorHandler.js';
@@ -132,11 +132,6 @@ export class ExpressionEvaluatorService {
   }
 
   // --- Delegated OperatorHandler methods ---
-
-  /** @private */
-  _evaluateLogicalExpression(...args) {
-    return this._operatorHandler._evaluateLogicalExpression(...args);
-  }
 
   /** @private */
   _evaluateBinaryExpression(...args) {

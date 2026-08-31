@@ -19,17 +19,11 @@ The library follows a modular design where each file focuses on a specific utili
 CoreUtilsLib/
 ├── src/
 │   ├── BaseError.js            # Standardized error class with context support
-│   ├── BoundedMap.js           # Memory-safe Map implementation with size limits
-│   ├── CacheUtils.js           # Logic for TTL and cache key generation
-│   ├── ConfigurationBuilder.js  # Fluent API for building complex config objects
 │   ├── HashUtils.js            # SHA-256 hashing for strings and objects
-│   ├── interfaces.js           # TypeScript-like JSDoc interface definitions
 │   ├── LodashFacade.js         # Hybrid utility facade (Native + es-toolkit)
 │   ├── LoggerService.js        # Structured logging with levels and child loggers
 │   ├── PiiRedactor.js          # Utility to scrub sensitive data from strings/objects
-│   ├── PlaceholderUtils.js     # String interpolation and template handling
 │   ├── RegexUtils.js           # Security-focused regex creation and validation
-│   ├── ServiceValidator.js     # Orchestrates validation across services
 │   ├── TypeGuards.js           # Runtime type checking and validation helpers
 │   ├── UtilsService.js         # Main facade for general utilities (Date, UUID, etc.)
 │   ├── ValidationUtils.js      # Low-level validation logic
@@ -41,10 +35,9 @@ CoreUtilsLib/
 This library utilizes several key design patterns to ensure flexibility and testability:
 
 1.  **Facade Pattern**: `UtilsService` acts as a simplified interface to a large body of logic (dates, IDs, objects), hiding the complexity of the underlying implementation.
-2.  **Builder Pattern**: `ConfigurationBuilder` provides a fluent interface to construct complex configuration objects step-by-step, improving readability.
-3.  **Dependency Injection**: Crucial for testability, `UtilsService` requires the injection of the `sleep` function (e.g., `Utilities.sleep` in GAS) during instantiation.
-4.  **Static Utility Pattern**: `HashUtils`, `RegexUtils`, and `TypeGuards` use static methods for stateless, functional-style operations.
-5.  **PII Redaction (Interception)**: `PiiRedactor` implements a form of data interception to sanitize logs before they are persisted.
+2.  **Dependency Injection**: Crucial for testability, `UtilsService` requires the injection of the `sleep` function (e.g., `Utilities.sleep` in GAS) during instantiation.
+3.  **Static Utility Pattern**: `HashUtils`, `RegexUtils`, and `TypeGuards` use static methods for stateless, functional-style operations.
+4.  **PII Redaction (Interception)**: `PiiRedactor` implements a form of data interception to sanitize logs before they are persisted.
 
 ## ✨ Key Features
 

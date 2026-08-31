@@ -75,67 +75,12 @@
 // Core classes
 export { Pipeline } from './src/Pipeline';
 export { Step } from './src/Step';
-export { PostProcessableStep } from './src/PostProcessableStep';
 export { PipelineContext } from './src/PipelineContext';
-
-// Producer-Consumer Pattern
-export { ProducerStep } from './src/ProducerStep';
-export { ConsumerStep } from './src/ConsumerStep';
-
-// Example Implementations
-export { TemplateSelectorStep } from './src/examples/TemplateSelectorStep';
-export { GenerateDocumentStep } from './src/examples/GenerateDocumentStep';
 
 // Utility classes
 export { PipelineError } from './src/internal/errors/PipelineError';
 export { StepExecutionError } from './src/internal/errors/StepExecutionError';
 export { ContextValidationError } from './src/internal/errors/ContextValidationError';
-
-// ===================================================================
-// PostProcessor Extension
-// ===================================================================
-
-// Core PostProcessor types and enums
-export { WhenCondition, isValidWhenCondition } from './src/postprocessor/WhenCondition';
-export {
-  ValueSource,
-  ValueSourceType,
-  isValidValueSourceType
-} from './src/postprocessor/ValueSource';
-
-// Core PostProcessor classes
-export { PostProcessorContext } from './src/postprocessor/PostProcessorContext';
-export { PostProcessorResult } from './src/postprocessor/PostProcessorResult';
-export { PostProcessor } from './src/postprocessor/PostProcessor';
-export { PostProcessorChain } from './src/postprocessor/PostProcessorChain';
-export { PostProcessorRegistry } from './src/postprocessor/PostProcessorRegistry';
-export { ValueResolver } from './src/postprocessor/ValueResolver';
-
-// Built-in PostProcessors
-export {
-  BaseUpdatePostProcessor,
-  RecordIdentifierStrategy
-} from './src/postprocessor/builtin/BaseUpdatePostProcessor';
-export { CellUpdatePostProcessor } from './src/postprocessor/builtin/CellUpdatePostProcessor';
-export { LogAuditPostProcessor } from './src/postprocessor/builtin/LogAuditPostProcessor';
-export {
-  CounterUpdatePostProcessor,
-  CounterOperation
-} from './src/postprocessor/builtin/CounterUpdatePostProcessor';
-export { FieldUpdatePostProcessor } from './src/postprocessor/builtin/FieldUpdatePostProcessor';
-
-// PostProcessor Errors
-export {
-  PostProcessorError,
-  ConfigurationError,
-  ExecutionError,
-  RecordNotFoundError,
-  ValueResolutionError,
-  ProcessorNotFoundError
-} from './src/internal/postprocessor-errors/PostProcessorError';
-
-// Convenience factory
-export { createDefaultRegistry } from './src/postprocessor/index';
 
 // Testing Mocks (Standardized Testing SDK)
 export * as testing from './src/testing/mocks.js';

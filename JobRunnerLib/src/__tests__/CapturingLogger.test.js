@@ -54,7 +54,7 @@ describe('CapturingLogger - Comprehensive Test Suite', () => {
 
         expect(capturingLogger[method](...args)).toBe(capturingLogger);
         expect(realLogger[method]).toHaveBeenCalledWith(...args);
-        expect(capturingLogger.getCapturedLogs()).toEqual([
+        expect(capturingLogger._capturedLogs).toEqual([
           expect.objectContaining({
             level,
             message: expect.stringContaining(fragment),
@@ -69,7 +69,7 @@ describe('CapturingLogger - Comprehensive Test Suite', () => {
 
       expect(capturingLogger.logJobStart('job-1', 'TYPE')).toBe(capturingLogger);
       expect(realLogger.info).toHaveBeenCalledWith("Job 'job-1' started (TYPE)");
-      expect(capturingLogger.getCapturedLogs()).toHaveLength(1);
+      expect(capturingLogger._capturedLogs).toHaveLength(1);
     });
   });
 
@@ -151,7 +151,7 @@ describe('CapturingLogger - Comprehensive Test Suite', () => {
     it('should capture log entry', () => {
       capturingLogger.debug('Debug message');
 
-      const logs = capturingLogger.getCapturedLogs();
+      const logs = capturingLogger._capturedLogs;
       expect(logs).toHaveLength(1);
       expect(logs[0].level).toBe('DEBUG');
       expect(logs[0].message).toBe('Debug message');
@@ -161,7 +161,7 @@ describe('CapturingLogger - Comprehensive Test Suite', () => {
     it('should capture log entry with context', () => {
       capturingLogger.debug('Debug message', { userId: 123 });
 
-      const logs = capturingLogger.getCapturedLogs();
+      const logs = capturingLogger._capturedLogs;
       expect(logs[0].context).toEqual({ userId: 123 });
     });
 
@@ -174,7 +174,7 @@ describe('CapturingLogger - Comprehensive Test Suite', () => {
     it('should handle object messages', () => {
       capturingLogger.debug({ key: 'value' });
 
-      const logs = capturingLogger.getCapturedLogs();
+      const logs = capturingLogger._capturedLogs;
       expect(logs[0].message).toBe('{"key":"value"}');
     });
 
@@ -182,7 +182,7 @@ describe('CapturingLogger - Comprehensive Test Suite', () => {
       capturingLogger.debug(() => 'Lazy message');
 
       expect(realLogger.debug).toHaveBeenCalled();
-      const logs = capturingLogger.getCapturedLogs();
+      const logs = capturingLogger._capturedLogs;
       expect(logs[0].message).toBe('Lazy message');
     });
   });
@@ -201,7 +201,7 @@ describe('CapturingLogger - Comprehensive Test Suite', () => {
     it('should capture log entry', () => {
       capturingLogger.info('Info message');
 
-      const logs = capturingLogger.getCapturedLogs();
+      const logs = capturingLogger._capturedLogs;
       expect(logs).toHaveLength(1);
       expect(logs[0].level).toBe('INFO');
       expect(logs[0].message).toBe('Info message');
@@ -228,7 +228,7 @@ describe('CapturingLogger - Comprehensive Test Suite', () => {
     it('should capture log entry', () => {
       capturingLogger.warn('Warning message');
 
-      const logs = capturingLogger.getCapturedLogs();
+      const logs = capturingLogger._capturedLogs;
       expect(logs).toHaveLength(1);
       expect(logs[0].level).toBe('WARN');
       expect(logs[0].message).toBe('Warning message');
@@ -255,7 +255,7 @@ describe('CapturingLogger - Comprehensive Test Suite', () => {
     it('should capture log entry', () => {
       capturingLogger.error('Error message');
 
-      const logs = capturingLogger.getCapturedLogs();
+      const logs = capturingLogger._capturedLogs;
       expect(logs).toHaveLength(1);
       expect(logs[0].level).toBe('ERROR');
       expect(logs[0].message).toBe('Error message');
@@ -282,7 +282,7 @@ describe('CapturingLogger - Comprehensive Test Suite', () => {
     it('should capture log entry', () => {
       capturingLogger.log('WARN', 'Warning message');
 
-      const logs = capturingLogger.getCapturedLogs();
+      const logs = capturingLogger._capturedLogs;
       expect(logs).toHaveLength(1);
       expect(logs[0].level).toBe('WARN');
       expect(logs[0].message).toBe('Warning message');
@@ -291,7 +291,7 @@ describe('CapturingLogger - Comprehensive Test Suite', () => {
     it('should uppercase level', () => {
       capturingLogger.log('info', 'Message');
 
-      const logs = capturingLogger.getCapturedLogs();
+      const logs = capturingLogger._capturedLogs;
       expect(logs[0].level).toBe('INFO');
     });
 
@@ -315,7 +315,7 @@ describe('CapturingLogger - Comprehensive Test Suite', () => {
       capturingLogger.info('Message 3');
       capturingLogger.info('Message 4'); // Should remove Message 1
 
-      const logs = capturingLogger.getCapturedLogs();
+      const logs = capturingLogger._capturedLogs;
       expect(logs).toHaveLength(3);
       expect(logs[0].message).toBe('Message 2');
       expect(logs[1].message).toBe('Message 3');
@@ -329,7 +329,7 @@ describe('CapturingLogger - Comprehensive Test Suite', () => {
         capturingLogger.info(`Message ${i}`);
       }
 
-      const logs = capturingLogger.getCapturedLogs();
+      const logs = capturingLogger._capturedLogs;
       expect(logs).toHaveLength(100);
     });
   });
@@ -338,24 +338,22 @@ describe('CapturingLogger - Comprehensive Test Suite', () => {
   // CAPTURE RETRIEVAL METHODS
   // ===================================================================
 
-  describe('getCapturedLogs()', () => {
+  describe('_capturedLogs buffer', () => {
     beforeEach(() => {
       capturingLogger = new CapturingLogger(realLogger);
     });
 
-    it('should return empty array initially', () => {
-      const logs = capturingLogger.getCapturedLogs();
-
-      expect(logs).toEqual([]);
+    it('should be empty initially', () => {
+      expect(capturingLogger._capturedLogs).toEqual([]);
     });
 
-    it('should return all captured logs', () => {
+    it('should hold all captured logs', () => {
       capturingLogger.debug('Debug 1');
       capturingLogger.info('Info 1');
       capturingLogger.warn('Warn 1');
       capturingLogger.error('Error 1');
 
-      const logs = capturingLogger.getCapturedLogs();
+      const logs = capturingLogger._capturedLogs;
 
       expect(logs).toHaveLength(4);
       expect(logs[0].level).toBe('DEBUG');
@@ -364,22 +362,10 @@ describe('CapturingLogger - Comprehensive Test Suite', () => {
       expect(logs[3].level).toBe('ERROR');
     });
 
-    it('should return shallow copy (prevent external modification)', () => {
-      capturingLogger.info('Original message');
-
-      const logs1 = capturingLogger.getCapturedLogs();
-      logs1.push({ level: 'FAKE', message: 'Fake', context: null, timestamp: new Date() });
-
-      const logs2 = capturingLogger.getCapturedLogs();
-
-      expect(logs2).toHaveLength(1);
-      expect(logs2[0].message).toBe('Original message');
-    });
-
     it('should include timestamps', () => {
       capturingLogger.info('Message 1');
 
-      const logs = capturingLogger.getCapturedLogs();
+      const logs = capturingLogger._capturedLogs;
 
       expect(logs[0].timestamp).toBeInstanceOf(Date);
     });
@@ -486,32 +472,6 @@ describe('CapturingLogger - Comprehensive Test Suite', () => {
     });
   });
 
-  describe('clearCapturedLogs()', () => {
-    beforeEach(() => {
-      capturingLogger = new CapturingLogger(realLogger);
-    });
-
-    it('should clear all captured logs', () => {
-      capturingLogger.info('Message 1');
-      capturingLogger.info('Message 2');
-
-      capturingLogger.clearCapturedLogs();
-
-      const logs = capturingLogger.getCapturedLogs();
-      expect(logs).toEqual([]);
-    });
-
-    it('should allow logging after clearing', () => {
-      capturingLogger.info('Message 1');
-      capturingLogger.clearCapturedLogs();
-      capturingLogger.info('Message 2');
-
-      const logs = capturingLogger.getCapturedLogs();
-      expect(logs).toHaveLength(1);
-      expect(logs[0].message).toBe('Message 2');
-    });
-  });
-
   describe('getLogCount()', () => {
     beforeEach(() => {
       capturingLogger = new CapturingLogger(realLogger);
@@ -533,7 +493,7 @@ describe('CapturingLogger - Comprehensive Test Suite', () => {
       capturingLogger.info('Message');
       expect(capturingLogger.getLogCount()).toBe(1);
 
-      capturingLogger.clearCapturedLogs();
+      capturingLogger._capturedLogs = [];
       expect(capturingLogger.getLogCount()).toBe(0);
     });
   });
@@ -622,7 +582,7 @@ describe('CapturingLogger - Comprehensive Test Suite', () => {
       expect(realLogger.warn).toHaveBeenCalledTimes(1);
       expect(realLogger.error).toHaveBeenCalledTimes(1);
 
-      const logs = capturingLogger.getCapturedLogs();
+      const logs = capturingLogger._capturedLogs;
       expect(logs).toHaveLength(5);
     });
 
@@ -631,7 +591,7 @@ describe('CapturingLogger - Comprehensive Test Suite', () => {
       capturingLogger.warn('Second');
       capturingLogger.debug('Third');
 
-      const logs = capturingLogger.getCapturedLogs();
+      const logs = capturingLogger._capturedLogs;
       expect(logs[0].message).toBe('First');
       expect(logs[1].message).toBe('Second');
       expect(logs[2].message).toBe('Third');
@@ -640,7 +600,7 @@ describe('CapturingLogger - Comprehensive Test Suite', () => {
     it('should support method chaining across different levels', () => {
       capturingLogger.info('Info').warn('Warn').error('Error');
 
-      const logs = capturingLogger.getCapturedLogs();
+      const logs = capturingLogger._capturedLogs;
       expect(logs).toHaveLength(3);
     });
   });

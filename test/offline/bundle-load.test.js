@@ -36,8 +36,4 @@ describe('Bundle Load', () => {
   it('should expose initializeServices function', () => {
     expect(typeof global.initializeServices).toBe('function');
   });
-
-  it('should expose exampleUsage function', () => {
-    expect(typeof global.exampleUsage).toBe('function');
-  });
 });

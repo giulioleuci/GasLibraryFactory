@@ -102,8 +102,8 @@ describe('InterceptorRegistry', () => {
         .registerSingleton('Interceptor2', interceptor2);
 
       expect(result).toBe(registry);
-      expect(registry.has('Interceptor1')).toBe(true);
-      expect(registry.has('Interceptor2')).toBe(true);
+      expect(registry.get('Interceptor1')).toBe(interceptor1);
+      expect(registry.get('Interceptor2')).toBe(interceptor2);
     });
 
     it('should replace existing singleton registration', () => {
@@ -163,8 +163,8 @@ describe('InterceptorRegistry', () => {
         .registerFactory('Factory2', factory2);
 
       expect(result).toBe(registry);
-      expect(registry.has('Factory1')).toBe(true);
-      expect(registry.has('Factory2')).toBe(true);
+      expect(registry.get('Factory1')).not.toBeNull();
+      expect(registry.get('Factory2')).not.toBeNull();
     });
 
     it('should replace existing factory registration', () => {
@@ -337,85 +337,6 @@ describe('InterceptorRegistry', () => {
     });
   });
 
-  describe('has', () => {
-    it('should return true for registered singleton', () => {
-      registry.registerSingleton('Test', { intercept: jest.fn() });
-      expect(registry.has('Test')).toBe(true);
-    });
-
-    it('should return true for registered factory', () => {
-      registry.registerFactory('Test', () => ({ intercept: jest.fn() }));
-      expect(registry.has('Test')).toBe(true);
-    });
-
-    it('should return false for unregistered interceptor', () => {
-      expect(registry.has('NonExistent')).toBe(false);
-    });
-
-    it('should return false for invalid type', () => {
-      expect(registry.has(null)).toBe(false);
-      expect(registry.has('')).toBe(false);
-      expect(registry.has(123)).toBe(false);
-    });
-  });
-
-  describe('unregister', () => {
-    it('should unregister singleton interceptor', () => {
-      registry.registerSingleton('Test', { intercept: jest.fn() });
-
-      const result = registry.unregister('Test');
-
-      expect(result).toBe(true);
-      expect(registry.has('Test')).toBe(false);
-      expect(mocks.logger.debug).toHaveBeenCalledWith('Unregistered interceptor: Test');
-    });
-
-    it('should unregister factory interceptor', () => {
-      registry.registerFactory('Test', () => ({ intercept: jest.fn() }));
-
-      const result = registry.unregister('Test');
-
-      expect(result).toBe(true);
-      expect(registry.has('Test')).toBe(false);
-    });
-
-    it('should return false if interceptor not found', () => {
-      const result = registry.unregister('NonExistent');
-      expect(result).toBe(false);
-    });
-
-    it('should throw error if type is not a string', () => {
-      expect(() => registry.unregister(null)).toThrow(
-        'InterceptorRegistry.unregister: type is required and must be a non-empty string'
-      );
-    });
-  });
-
-  describe('clear', () => {
-    it('should clear all interceptors', () => {
-      registry.registerSingleton('Singleton', { intercept: jest.fn() });
-      registry.registerFactory('Factory', () => ({ intercept: jest.fn() }));
-
-      const result = registry.clear();
-
-      expect(result).toBe(registry); // fluent API
-      expect(registry.has('Singleton')).toBe(false);
-      expect(registry.has('Factory')).toBe(false);
-      expect(mocks.logger.debug).toHaveBeenCalledWith('Cleared all registered interceptors');
-    });
-
-    it('should work when no interceptors registered', () => {
-      expect(registry.clear()).toBe(registry);
-      expect(registry.getSummary()).toEqual({
-        singletonCount: 0,
-        factoryCount: 0,
-        totalInterceptors: 0,
-        singletonTypes: [],
-        factoryTypes: []
-      });
-    });
-  });
-
   describe('getRegisteredTypes', () => {
     it('should return empty array when no interceptors registered', () => {
       const types = registry.getRegisteredTypes();
@@ -453,36 +374,6 @@ describe('InterceptorRegistry', () => {
       expect(types).toHaveLength(2);
       expect(types).toContain('Singleton');
       expect(types).toContain('Factory');
-    });
-  });
-
-  describe('getSummary', () => {
-    it('should return summary with all counts', () => {
-      registry.registerSingleton('Singleton1', { intercept: jest.fn() });
-      registry.registerSingleton('Singleton2', { intercept: jest.fn() });
-      registry.registerFactory('Factory1', () => ({ intercept: jest.fn() }));
-
-      const summary = registry.getSummary();
-
-      expect(summary).toEqual({
-        singletonCount: 2,
-        factoryCount: 1,
-        totalInterceptors: 3,
-        singletonTypes: ['Singleton1', 'Singleton2'],
-        factoryTypes: ['Factory1']
-      });
-    });
-
-    it('should return empty summary when no interceptors registered', () => {
-      const summary = registry.getSummary();
-
-      expect(summary).toEqual({
-        singletonCount: 0,
-        factoryCount: 0,
-        totalInterceptors: 0,
-        singletonTypes: [],
-        factoryTypes: []
-      });
     });
   });
 

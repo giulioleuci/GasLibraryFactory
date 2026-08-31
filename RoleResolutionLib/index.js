@@ -195,7 +195,6 @@ export {
   RoleResolutionError,
   RoleNotFoundError,
   NoActorFoundError,
-  ActorNotFoundError,
   CircularDelegationError,
   InvalidScopeError,
   DelegationDepthExceededError,

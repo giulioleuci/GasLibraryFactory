@@ -227,7 +227,7 @@ class _FunctionFilterStrategy extends FilterStrategy {
 }
 
 /**
- * @description Advanced Mustache engine with Handlebars meta-variables (@index, @first) and Liquid-style filters.
+ * @description Advanced Mustache engine with Handlebars meta-variables (@index, @number, @first, @last, @odd, @even, @total, @key) and Liquid-style filters.
  * Implements template caching, prototype pollution protection, and Strategy-based filter registry.
  * @class
  * @version 2.1.0

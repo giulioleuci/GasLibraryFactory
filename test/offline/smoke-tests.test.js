@@ -143,29 +143,6 @@ describe('Smoke Tests', () => {
     });
   });
 
-  // ─── BoundedMap ─────────────────────────────────────────────────────
-
-  describe('BoundedMap', () => {
-    it('should instantiate with a max size', () => {
-      const map = new global.BoundedMap(3);
-      expect(map).toBeDefined();
-    });
-
-    it('should store and retrieve values', () => {
-      const map = new global.BoundedMap(10);
-      map.set('key1', 'value1');
-      expect(map.get('key1')).toBe('value1');
-    });
-
-    it('should respect size limit', () => {
-      const map = new global.BoundedMap(2);
-      map.set('a', 1);
-      map.set('b', 2);
-      map.set('c', 3);
-      expect(map.size).toBeLessThanOrEqual(2);
-    });
-  });
-
   // ─── Error classes ──────────────────────────────────────────────────
 
   describe('Error classes', () => {

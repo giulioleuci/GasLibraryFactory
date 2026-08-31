@@ -1,3 +1,4 @@
+import { get } from '@CoreUtilsLib';
 import { AssignmentCandidate } from '../core/AssignmentCandidate.js';
 import { AssignmentOverride } from '../core/AssignmentOverride.js';
 import { AssignmentSlot } from '../core/AssignmentSlot.js';
@@ -19,9 +20,7 @@ function getPath(value, path) {
   if (typeof path !== 'string' || !path.trim()) {
     return undefined;
   }
-  return path
-    .split('.')
-    .reduce((current, part) => (current == null ? undefined : current[part]), value);
+  return get(value, path);
 }
 
 function mapped(row, definition) {

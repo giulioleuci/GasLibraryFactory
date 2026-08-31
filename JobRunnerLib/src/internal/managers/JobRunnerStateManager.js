@@ -23,9 +23,6 @@ export class JobStateManager {
   static get STATE_PENDING() {
     return QueueStateManager.STATE_PENDING;
   }
-  static get LOCK_RETRY_DELAY_MS() {
-    return QueueStateManager.LOCK_RETRY_DELAY_MS;
-  }
   static get LARGE_STATE_THRESHOLD() {
     return QueuePersistenceHandler.LARGE_STATE_THRESHOLD;
   }

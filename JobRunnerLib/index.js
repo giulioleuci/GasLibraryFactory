@@ -251,10 +251,6 @@
  * // List all registered jobs
  * const jobs = registry.listRegisteredJobs();
  * // [{jobType: 'dataImport', name: 'Data Import Job', ...}, ...]
- *
- * // Get statistics
- * const stats = registry.getStatistics();
- * // {totalJobs: 2, categories: {ETL: 1, Reports: 1}, ...}
  * ```
  *
  * ### Example 5: Manual Job Resumption

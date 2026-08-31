@@ -3,7 +3,6 @@ import {
   RoleResolutionError,
   RoleNotFoundError,
   NoActorFoundError,
-  ActorNotFoundError,
   CircularDelegationError,
   InvalidScopeError,
   DelegationDepthExceededError,
@@ -86,18 +85,6 @@ describe('RoleResolutionError classes', () => {
       expect(error.roleId).toBe('role-2');
       expect(error.scope).toBe(scope);
       expect(error.context).toEqual({ roleId: 'role-2', scope });
-    });
-  });
-
-  describe('ActorNotFoundError', () => {
-    it('should assign message and context correctly', () => {
-      const error = new ActorNotFoundError('actor-1', { extra: 'info' });
-
-      expect(error).toBeInstanceOf(RoleResolutionError);
-      expect(error.name).toBe('ActorNotFoundError');
-      expect(error.message).toBe('Actor not found: actor-1');
-      expect(error.actorId).toBe('actor-1');
-      expect(error.context).toEqual({ extra: 'info', actorId: 'actor-1' });
     });
   });
 

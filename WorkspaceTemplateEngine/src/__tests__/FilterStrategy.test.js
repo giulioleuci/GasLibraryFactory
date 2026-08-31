@@ -124,8 +124,7 @@ describe('FilterStrategy and FilterRegistry - Comprehensive Test Suite', () => {
     it('should create empty registry', () => {
       const registry = new FilterRegistry();
 
-      expect(registry.count()).toBe(0);
-      expect(registry.getAllNames()).toEqual([]);
+      expect(registry.get('anything')).toBeNull();
     });
 
     it('should create registry with logger', () => {
@@ -185,8 +184,7 @@ describe('FilterStrategy and FilterRegistry - Comprehensive Test Suite', () => {
 
       registry.register(filter);
 
-      expect(registry.has('test')).toBe(true);
-      expect(registry.count()).toBe(1);
+      expect(registry.get('test')).toBe(filter);
       expect(logger.debug).toHaveBeenCalledWith("FilterRegistry: Registered filter 'test'");
     });
 
@@ -209,7 +207,7 @@ describe('FilterStrategy and FilterRegistry - Comprehensive Test Suite', () => {
       registry.register(filter1);
       registry.register(filter2);
 
-      expect(registry.count()).toBe(1); // Still only one
+      expect(registry.get('test')).toBe(filter2); // Overwritten
       expect(logger.warn).toHaveBeenCalledWith(
         "FilterRegistry: Overwriting existing filter 'test'"
       );
@@ -246,9 +244,8 @@ describe('FilterStrategy and FilterRegistry - Comprehensive Test Suite', () => {
 
       registry.registerAll([new Filter1(), new Filter2()]);
 
-      expect(registry.count()).toBe(2);
-      expect(registry.has('filter1')).toBe(true);
-      expect(registry.has('filter2')).toBe(true);
+      expect(registry.get('filter1')).not.toBeNull();
+      expect(registry.get('filter2')).not.toBeNull();
     });
 
     it('should throw error when registerAll receives non-array', () => {
@@ -260,7 +257,7 @@ describe('FilterStrategy and FilterRegistry - Comprehensive Test Suite', () => {
     it('should handle empty array in registerAll', () => {
       registry.registerAll([]);
 
-      expect(registry.count()).toBe(0);
+      expect(registry.get('anything')).toBeNull();
     });
   });
 
@@ -318,100 +315,11 @@ describe('FilterStrategy and FilterRegistry - Comprehensive Test Suite', () => {
       expect(filter).toBeNull();
     });
 
-    it('should check if filter exists', () => {
-      expect(registry.has('uppercase')).toBe(true);
-      expect(registry.has('lowercase')).toBe(true);
-      expect(registry.has('nonexistent')).toBe(false);
-    });
-
-    it('should get all filter names', () => {
-      const names = registry.getAllNames();
-
-      expect(names).toHaveLength(2);
-      expect(names).toContain('uppercase');
-      expect(names).toContain('lowercase');
-    });
-
-    it('should get all filters', () => {
-      const filters = registry.getAll();
-
-      expect(filters).toHaveLength(2);
-      expect(filters.every((f) => f instanceof FilterStrategy)).toBe(true);
-    });
-
-    it('should get count of registered filters', () => {
-      expect(registry.count()).toBe(2);
-    });
-
     it('should execute retrieved filter', () => {
       const filter = registry.get('uppercase');
       const result = filter.execute('hello');
 
       expect(result).toBe('HELLO');
-    });
-  });
-
-  // ===================================================================
-  // FILTER REGISTRY - UNREGISTRATION
-  // ===================================================================
-
-  describe('FilterRegistry - Unregistration', () => {
-    let registry;
-    let logger;
-
-    class TestFilter extends FilterStrategy {
-      getName() {
-        return 'test';
-      }
-
-      getDescription() {
-        return 'Test';
-      }
-
-      execute(value) {
-        return value;
-      }
-    }
-
-    beforeEach(() => {
-      logger = {
-        debug: jest.fn(),
-        warn: jest.fn(),
-        error: jest.fn()
-      };
-
-      registry = new FilterRegistry(logger);
-      registry.register(new TestFilter());
-    });
-
-    it('should unregister filter by name', () => {
-      const removed = registry.unregister('test');
-
-      expect(removed).toBe(true);
-      expect(registry.has('test')).toBe(false);
-      expect(registry.count()).toBe(0);
-      expect(logger.debug).toHaveBeenCalledWith("FilterRegistry: Unregistered filter 'test'");
-    });
-
-    it('should return false when unregistering non-existent filter', () => {
-      const removed = registry.unregister('nonexistent');
-
-      expect(removed).toBe(false);
-    });
-
-    it('should clear all filters', () => {
-      registry.clear();
-
-      expect(registry.count()).toBe(0);
-      expect(registry.getAllNames()).toEqual([]);
-      expect(logger.debug).toHaveBeenCalledWith('FilterRegistry: Cleared all filters');
-    });
-
-    it('should handle clearing empty registry', () => {
-      registry.clear();
-      registry.clear(); // Clear again
-
-      expect(registry.count()).toBe(0);
     });
   });
 
@@ -443,7 +351,7 @@ describe('FilterStrategy and FilterRegistry - Comprehensive Test Suite', () => {
 
       registry.register(new SpecialFilter());
 
-      expect(registry.has('special-filter_123')).toBe(true);
+      expect(registry.get('special-filter_123')).not.toBeNull();
     });
 
     it('should handle filter with unicode name', () => {
@@ -463,7 +371,7 @@ describe('FilterStrategy and FilterRegistry - Comprehensive Test Suite', () => {
 
       registry.register(new UnicodeFilter());
 
-      expect(registry.has('filtre-français-中文')).toBe(true);
+      expect(registry.get('filtre-français-中文')).not.toBeNull();
     });
 
     it('should handle many filters efficiently', () => {
@@ -494,61 +402,8 @@ describe('FilterStrategy and FilterRegistry - Comprehensive Test Suite', () => {
 
       registry.registerAll(filters);
 
-      expect(registry.count()).toBe(100);
-      expect(registry.has('filter0')).toBe(true);
-      expect(registry.has('filter99')).toBe(true);
-    });
-
-    it('should maintain insertion order in getAllNames()', () => {
-      class Filter1 extends FilterStrategy {
-        getName() {
-          return 'aaa';
-        }
-
-        getDescription() {
-          return 'AAA';
-        }
-
-        execute(v) {
-          return v;
-        }
-      }
-
-      class Filter2 extends FilterStrategy {
-        getName() {
-          return 'zzz';
-        }
-
-        getDescription() {
-          return 'ZZZ';
-        }
-
-        execute(v) {
-          return v;
-        }
-      }
-
-      class Filter3 extends FilterStrategy {
-        getName() {
-          return 'mmm';
-        }
-
-        getDescription() {
-          return 'MMM';
-        }
-
-        execute(v) {
-          return v;
-        }
-      }
-
-      registry.register(new Filter1());
-      registry.register(new Filter2());
-      registry.register(new Filter3());
-
-      const names = registry.getAllNames();
-
-      expect(names).toEqual(['aaa', 'zzz', 'mmm']); // Insertion order preserved
+      expect(registry.get('filter0')).not.toBeNull();
+      expect(registry.get('filter99')).not.toBeNull();
     });
   });
 

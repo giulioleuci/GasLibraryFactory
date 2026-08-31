@@ -5,7 +5,7 @@
  * @version 2.0 - Translated from Italian and refactored with ExceptionService support.
  */
 
-// No imports needed - using native validation
+import { ValidationUtils } from '@CoreUtilsLib';
 
 /**
  * @class GoogleService
@@ -32,48 +32,17 @@ export class GoogleService {
    */
   constructor(logger, cache, utils, exceptionService) {
     // Parameter validation
-    if (logger == null) {
-      throw new Error('GoogleService: logger is required and cannot be null or undefined');
-    }
-    if (typeof logger !== 'object') {
-      throw new Error('GoogleService: logger must be of type object');
-    }
-    for (const method of ['debug', 'info', 'warn', 'error']) {
-      if (typeof logger[method] !== 'function') {
-        throw new Error('GoogleService: logger must have method: ' + method);
-      }
-    }
-
-    if (cache == null) {
-      throw new Error('GoogleService: cache is required and cannot be null or undefined');
-    }
-    if (typeof cache !== 'object') {
-      throw new Error('GoogleService: cache must be of type object');
-    }
-    for (const method of ['get', 'put', 'remove']) {
-      if (typeof cache[method] !== 'function') {
-        throw new Error('GoogleService: cache must have method: ' + method);
-      }
-    }
-
-    if (utils == null) {
-      throw new Error('GoogleService: utils is required and cannot be null or undefined');
-    }
-    if (typeof utils !== 'object') {
-      throw new Error('GoogleService: utils must be of type object');
-    }
-
-    if (exceptionService == null) {
-      throw new Error(
-        'GoogleService: exceptionService is required and cannot be null or undefined'
-      );
-    }
-    if (typeof exceptionService !== 'object') {
-      throw new Error('GoogleService: exceptionService must be of type object');
-    }
-    if (typeof exceptionService.executeWithRetry !== 'function') {
-      throw new Error('GoogleService: exceptionService must have method: executeWithRetry');
-    }
+    ValidationUtils.validateDependency(logger, 'logger', 'GoogleService', [
+      'debug',
+      'info',
+      'warn',
+      'error'
+    ]);
+    ValidationUtils.validateDependency(cache, 'cache', 'GoogleService', ['get', 'put', 'remove']);
+    ValidationUtils.validateDependency(utils, 'utils', 'GoogleService');
+    ValidationUtils.validateDependency(exceptionService, 'exceptionService', 'GoogleService', [
+      'executeWithRetry'
+    ]);
 
     /**
      * Logger service for recording operations and errors.

@@ -34,23 +34,13 @@ describe('Exports Validation', () => {
       'HashUtils',
       'RegexUtils',
       'ValidationUtils',
-      'ConfigurationBuilder',
-      'ServiceValidator',
-      'PlaceholderUtils',
-      'CacheUtils',
       'PiiRedactor',
-      // Data structures
-      'BoundedMap',
       // Error classes
       'BaseError',
       // Constants
       'TimeConstants',
       // Type Guards
       'TypeGuards',
-      // Interface definitions
-      'InterfaceRegistry',
-      'validateInterface',
-      'implementsInterface',
       // LodashFacade
       'LodashFacade'
     ];
@@ -149,18 +139,10 @@ describe('Exports Validation', () => {
       'LockService',
       'UtilitiesService',
       'UiService',
-      'RateLimiter',
       // UI Builders
       'MenuBuilder',
       'SidebarBuilder',
-      'DialogBuilder',
-      // Error handling
-      'ErrorHandler',
-      'ServiceError',
-      'QuotaExceededError',
-      'PermissionDeniedError',
-      'ResourceNotFoundError',
-      'ServiceUnavailableError'
+      'DialogBuilder'
     ];
 
     it.each(wrapperExports)('should export %s', (name) => {
@@ -171,19 +153,7 @@ describe('Exports Validation', () => {
   // ─── SheetDBLib (Layer 2) ───────────────────────────────────────────
 
   describe('SheetDBLib exports', () => {
-    const sheetExports = [
-      'DatabaseService',
-      'TableService',
-      'AdvancedQueryBuilder',
-      // Dynamic schema
-      'ColumnType',
-      'SchemaResolver',
-      'DynamicColumnAccessor',
-      // Multi-database
-      'RoutingStrategy',
-      'MultiDatabaseManager',
-      'CrossPartitionQuery'
-    ];
+    const sheetExports = ['DatabaseService', 'TableService', 'AdvancedQueryBuilder'];
 
     it.each(sheetExports)('should export %s', (name) => {
       expect(global[name]).toBeDefined();
@@ -237,23 +207,10 @@ describe('Exports Validation', () => {
     const pipelineExports = [
       'Pipeline',
       'Step',
-      'PostProcessableStep',
       'PipelineContext',
       'PipelineError',
       'StepExecutionError',
-      'ContextValidationError',
-      // PostProcessor
-      'WhenCondition',
-      'PostProcessor',
-      'PostProcessorChain',
-      'PostProcessorRegistry',
-      'ValueResolver',
-      // Built-in processors
-      'CellUpdatePostProcessor',
-      'LogAuditPostProcessor',
-      'CounterUpdatePostProcessor',
-      'FieldUpdatePostProcessor',
-      'createDefaultRegistry'
+      'ContextValidationError'
     ];
 
     it.each(pipelineExports)('should export %s', (name) => {
@@ -308,7 +265,6 @@ describe('Exports Validation', () => {
       'Entity',
       'ValueObject',
       'Repository',
-      'Aggregate',
       // Specifications
       'Specification',
       'SpecificationBuilder',
@@ -318,10 +274,7 @@ describe('Exports Validation', () => {
       'MappingConfiguration',
       // Validation
       'ZodValidator',
-      'z',
-      // Events
-      'DomainEvent',
-      'EventDispatcher'
+      'z'
     ];
 
     it.each(domainExports)('should export %s', (name) => {
@@ -411,27 +364,6 @@ describe('Exports Validation', () => {
     const monitorExports = ['ProcessMonitorService', 'ProcessState', 'StepState', 'DashboardUi'];
 
     it.each(monitorExports)('should export %s', (name) => {
-      expect(global[name]).toBeDefined();
-    });
-  });
-
-  // ─── Interface definitions ──────────────────────────────────────────
-
-  describe('Interface definitions', () => {
-    const interfaces = [
-      'LoggerInterface',
-      'CacheInterface',
-      'UtilsServiceInterface',
-      'ExceptionServiceInterface',
-      'MonitorInterface',
-      'DataProviderInterface',
-      'StepInterface',
-      'ExpressionEngineInterface',
-      'ProviderRegistryInterface',
-      'SpreadsheetServiceInterface'
-    ];
-
-    it.each(interfaces)('should export interface %s', (name) => {
       expect(global[name]).toBeDefined();
     });
   });

@@ -9,7 +9,7 @@
  * @file test/__tests__/integration/FullStack_PipelineExecution.test.js
  */
 
-import { Pipeline, Step, PipelineContext, ProducerStep, ConsumerStep } from '@PipelineFramework';
+import { Pipeline, Step, PipelineContext } from '@PipelineFramework';
 import { ExpressionEngineService } from '@GasExpressionEngineLib';
 import { ExceptionService } from '@GasResilienceLib';
 import { LoggerService, UtilsService } from '@CoreUtilsLib';
@@ -108,38 +108,6 @@ describe('Full Stack Integration: Pipeline Execution', () => {
     }
   }
 
-  // Producer-Consumer implementations
-  class DecisionStep extends ProducerStep {
-    constructor(logger, expressionEngine) {
-      super('Decision', logger, expressionEngine, {
-        outputKey: 'action_type',
-        requiredKeys: ['score']
-      });
-    }
-
-    evaluateRules(context) {
-      const score = context.get('score');
-      if (this.expressionEngine.evaluate('{{score}} >= 80', { score })) {
-        return 'APPROVE';
-      }
-      return 'REJECT';
-    }
-  }
-
-  class ActionStep extends ConsumerStep {
-    constructor(logger, mockApi) {
-      super('Action', logger, {
-        inputKey: 'action_type',
-        outputKey: 'api_result'
-      });
-      this._api = mockApi;
-    }
-
-    performAction(actionType) {
-      return this._api.call(actionType);
-    }
-  }
-
   // Test fixtures
   let mocks;
   let mockLogger;
@@ -202,26 +170,6 @@ describe('Full Stack Integration: Pipeline Execution', () => {
     });
   });
 
-  describe('Producer-Consumer Pattern', () => {
-    test('Producer makes decision and Consumer executes it', () => {
-      const mockApi = { call: jest.fn((type) => ({ status: 'ok', type })) };
-
-      const pipeline = new Pipeline(mockLogger)
-        .addStep(new DecisionStep(mockLogger, expressionEngine))
-        .addStep(new ActionStep(mockLogger, mockApi));
-
-      // Act: Run with high score (Approve)
-      const context1 = pipeline.execute({ score: 90 });
-      expect(context1.get('action_type')).toBe('APPROVE');
-      expect(mockApi.call).toHaveBeenCalledWith('APPROVE');
-
-      // Act: Run with low score (Reject)
-      const context2 = pipeline.execute({ score: 50 });
-      expect(context2.get('action_type')).toBe('REJECT');
-      expect(mockApi.call).toHaveBeenCalledWith('REJECT');
-    });
-  });
-
   describe('Conditional Execution', () => {
     test('Steps skip when conditions are not met', () => {
       const pipeline = new Pipeline(mockLogger)
@@ -262,7 +210,9 @@ describe('Full Stack Integration: Pipeline Execution', () => {
         getName: () => 'fail',
         execute: jest.fn(() => {
           attempts++;
-          if (attempts < 2) throw new Error('Transient');
+          if (attempts < 2) {
+            throw new Error('Transient');
+          }
           return { success: true };
         }),
         shouldExecute: () => true

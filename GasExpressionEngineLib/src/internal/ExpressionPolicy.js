@@ -18,7 +18,6 @@ export const defaultPolicy = Object.freeze({
     'Identifier',
     'MemberExpression',
     'BinaryExpression',
-    'LogicalExpression',
     'UnaryExpression',
     'CallExpression',
     'ArrayExpression'
@@ -40,7 +39,6 @@ export const defaultPolicy = Object.freeze({
     '&&',
     '||'
   ]),
-  logicalOperators: new Set(['&&', '||']),
   unaryOperators: new Set(['!']),
   callNames: new Set([
     'len',
@@ -101,9 +99,6 @@ function assertNode(node, policy) {
       return;
     case 'BinaryExpression':
       assertOperator(node, policy, policy.binaryOperators, 'binary');
-      return;
-    case 'LogicalExpression':
-      assertOperator(node, policy, policy.logicalOperators, 'logical');
       return;
     case 'UnaryExpression':
       if (!policy.unaryOperators.has(node.operator)) {

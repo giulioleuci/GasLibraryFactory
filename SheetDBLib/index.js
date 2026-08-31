@@ -358,33 +358,5 @@ export { DatabaseService } from './src/DatabaseService';
 // Query builder
 export { AdvancedQueryBuilder } from './src/query/AdvancedQueryBuilder';
 
-// Dynamic Schema - Column family pattern for dynamic columns
-export { ColumnType, coerceToType } from './src/internal/dynamic-columns/ColumnType';
-export { ColumnFamily, MemberSourceType } from './src/internal/dynamic-columns/ColumnFamily';
-export { SchemaTemplate } from './src/internal/dynamic-columns/SchemaTemplate';
-export { SchemaResolver } from './src/internal/dynamic-columns/SchemaResolver';
-export { DynamicColumnAccessor } from './src/internal/dynamic-columns/DynamicColumnAccessor';
-export { FamilyAggregator, AggregationType } from './src/internal/dynamic-columns/FamilyAggregator';
-
-// MultiDatabase - Multi-partition database management
-export {
-  RoutingStrategy,
-  isValidRoutingStrategy,
-  getRoutingStrategies
-} from './src/multi/RoutingStrategy';
-export { DatabasePartition } from './src/multi/DatabasePartition';
-export { PartitionConfiguration } from './src/multi/PartitionConfiguration';
-export { PartitionRouter } from './src/multi/PartitionRouter';
-export { CrossPartitionQuery } from './src/multi/CrossPartitionQuery';
-export { MultiDatabaseManager } from './src/multi/MultiDatabaseManager';
-export {
-  MultiDatabaseError,
-  PartitionNotFoundError,
-  PartitionConnectionError,
-  ReadOnlyPartitionError,
-  CrossPartitionQueryError,
-  CrossPartitionDisabledError
-} from './src/multi/MultiDatabaseError';
-
 // Testing Mocks (Standardized Testing SDK)
 export * as testing from './src/testing/mocks.js';

@@ -17,12 +17,6 @@ import {
 } from '@DomainRepositoryLib';
 import { DatabaseService } from '@SheetDBLib';
 import {
-  ServiceError,
-  QuotaExceededError,
-  PermissionDeniedError,
-  ResourceNotFoundError
-} from '@GoogleApiWrapper';
-import {
   ExceptionService,
   ErrorClassifier,
   TimeoutException,
@@ -376,7 +370,9 @@ describe('Cross-Cutting Concern: Error Propagation', () => {
           } catch (e) {
             lastError = e;
             // Simplified retry logic: only retry if code is 503
-            if (e.code !== 503) throw e;
+            if (e.code !== 503) {
+              throw e;
+            }
           }
         }
         throw lastError;
@@ -477,42 +473,6 @@ describe('Cross-Cutting Concern: Error Propagation', () => {
       expect(error).toBeInstanceOf(RateLimitExceededException);
       expect(error.operationName).toBe(operationName);
       expect(error.requiredWaitMs).toBe(requiredWaitMs);
-    });
-  });
-
-  describe('GoogleApiWrapper Error Types', () => {
-    test('QuotaExceededError includes quota context', () => {
-      // Arrange & Act
-      const error = new QuotaExceededError('API quota exceeded', 'DriveService', 'createFile');
-
-      // Assert
-      expect(error).toBeInstanceOf(ServiceError);
-      expect(error).toBeInstanceOf(QuotaExceededError);
-      expect(error.serviceName).toBe('DriveService');
-      expect(error.operation).toBe('createFile');
-    });
-
-    test('PermissionDeniedError includes permission context', () => {
-      // Arrange & Act
-      const error = new PermissionDeniedError(
-        'Access denied',
-        'SpreadsheetService',
-        'getSheetData'
-      );
-
-      // Assert
-      expect(error).toBeInstanceOf(ServiceError);
-      expect(error).toBeInstanceOf(PermissionDeniedError);
-      expect(error.serviceName).toBe('SpreadsheetService');
-    });
-
-    test('ResourceNotFoundError includes resource context', () => {
-      // Arrange & Act
-      const error = new ResourceNotFoundError('File not found', 'DriveService', 'getFileById');
-
-      // Assert
-      expect(error).toBeInstanceOf(ServiceError);
-      expect(error).toBeInstanceOf(ResourceNotFoundError);
     });
   });
 

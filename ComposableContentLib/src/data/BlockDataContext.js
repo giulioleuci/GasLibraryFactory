@@ -67,40 +67,11 @@ export class BlockDataContext {
   }
 
   /**
-   * @description Batch resolves multiple property paths into a single mapping object.
-   * @param {string[]} paths Array of target paths.
-   * @returns {Object} Key-value map of path to resolved value.
-   */
-  getMultiple(paths) {
-    const result = {};
-    for (const path of paths) {
-      result[path] = this.get(path);
-    }
-    return result;
-  }
-
-  /**
    * @description Returns a deep clone of the fully unified context state (local + global).
    * @returns {Object} Unified data clone.
    */
   getAll() {
     return cloneDeep(this._merged);
-  }
-
-  /**
-   * @description Returns a deep clone of the block-specific data payload, excluding global state.
-   * @returns {Object} Local data clone.
-   */
-  getRawData() {
-    return cloneDeep(this._data);
-  }
-
-  /**
-   * @description Returns a deep clone of the shared global state payload.
-   * @returns {Object} Global data clone.
-   */
-  getGlobalContext() {
-    return cloneDeep(this._globalContext);
   }
 
   /**
@@ -125,38 +96,6 @@ export class BlockDataContext {
   }
 
   /**
-   * @description Factory method generating a new context instance with augmented local data.
-   * @param {Object} additionalData Payload to overlay on the clone.
-   * @returns {BlockDataContext} New immutable context.
-   */
-  withData(additionalData) {
-    return new BlockDataContext({ ...this._data, ...additionalData }, this._globalContext);
-  }
-
-  /**
-   * @description Factory method generating a new context instance with augmented global data.
-   * @param {Object} additionalGlobal Payload to overlay on the global clone.
-   * @returns {BlockDataContext} New immutable context.
-   */
-  withGlobalContext(additionalGlobal) {
-    return new BlockDataContext(this._data, { ...this._globalContext, ...additionalGlobal });
-  }
-
-  /**
-   * @description Factory method generating a new context scoped to a specific property subtree.
-   * Maintains the original global context unmodified.
-   * @param {string} path Root path for the new scope.
-   * @returns {BlockDataContext} Scoped context instance.
-   */
-  scope(path) {
-    const scopedData = this.get(path, {});
-    return new BlockDataContext(
-      typeof scopedData === 'object' ? scopedData : { value: scopedData },
-      this._globalContext
-    );
-  }
-
-  /**
    * @description Evaluates if the unified context state contains zero enumerable keys.
    * @returns {boolean} True if entirely empty.
    */
@@ -170,24 +109,6 @@ export class BlockDataContext {
    */
   keys() {
     return Object.keys(this._merged);
-  }
-
-  /**
-   * @description Validates that the context satisfies an array of required keys.
-   * @param {string[]} requiredKeys Expected top-level keys.
-   * @returns {boolean} True if all exist.
-   */
-  hasAll(requiredKeys) {
-    return requiredKeys.every((key) => this.has(key));
-  }
-
-  /**
-   * @description Returns the subset of required keys that are missing from the context.
-   * @param {string[]} requiredKeys Expected top-level keys.
-   * @returns {string[]} Unfulfilled dependencies.
-   */
-  getMissingKeys(requiredKeys) {
-    return requiredKeys.filter((key) => !this.has(key));
   }
 
   /**

@@ -60,10 +60,8 @@ describe('ExpressionEngineService (Logic Library Pattern)', () => {
     });
 
     it('should initialize with AST caching enabled by default', () => {
-      const stats = engine.getCacheStats();
-      expect(stats.enabled).toBe(true);
-      expect(stats.size).toBe(0);
-      expect(stats.maxSize).toBe(1000);
+      expect(engine._astCacheEnabled).toBe(true);
+      expect(engine._astCache.size).toBe(0);
     });
   });
 
@@ -250,37 +248,35 @@ describe('ExpressionEngineService (Logic Library Pattern)', () => {
 
       // First evaluation - should parse and cache
       engine.evaluate(expression, { age: 20 });
-      expect(engine.getCacheStats().size).toBe(1);
+      expect(engine._astCache.size).toBe(1);
 
       // Second evaluation - should use cache
       engine.evaluate(expression, { age: 25 });
-      expect(engine.getCacheStats().size).toBe(1);
+      expect(engine._astCache.size).toBe(1);
 
       // Different expression - should create new cache entry
       engine.evaluate('{{age}} < 65', { age: 30 });
-      expect(engine.getCacheStats().size).toBe(2);
+      expect(engine._astCache.size).toBe(2);
     });
 
     it('should clear cache when requested', () => {
       engine.evaluate('{{age}} >= 18', { age: 20 });
       engine.evaluate('{{age}} < 65', { age: 30 });
 
-      expect(engine.getCacheStats().size).toBe(2);
+      expect(engine._astCache.size).toBe(2);
 
       engine.clearCache();
 
-      expect(engine.getCacheStats().size).toBe(0);
+      expect(engine._astCache.size).toBe(0);
     });
 
     it('should allow disabling cache', () => {
-      engine.setCacheEnabled(false);
-      expect(engine.getCacheStats().enabled).toBe(false);
+      engine._astCacheEnabled = false;
 
       engine.evaluate('{{age}} >= 18', { age: 20 });
-      expect(engine.getCacheStats().size).toBe(0); // Not cached
+      expect(engine._astCache.size).toBe(0); // Not cached
 
-      engine.setCacheEnabled(true);
-      expect(engine.getCacheStats().enabled).toBe(true);
+      engine._astCacheEnabled = true;
     });
 
     it('should enforce cache size limit and evict oldest entries', () => {
@@ -290,7 +286,7 @@ describe('ExpressionEngineService (Logic Library Pattern)', () => {
       }
 
       // Cache should be limited to 1000 entries
-      expect(engine.getCacheStats().size).toBe(1000);
+      expect(engine._astCache.size).toBe(1000);
 
       // Check that eviction was logged
       const debugLogs = logger.getLogsByLevel('DEBUG');
@@ -302,29 +298,14 @@ describe('ExpressionEngineService (Logic Library Pattern)', () => {
       ]);
     });
 
-    it('should throw error when setCacheEnabled receives non-boolean', () => {
-      expect(() => {
-        engine.setCacheEnabled('true');
-      }).toThrow('Invalid enabled value: must be a boolean');
-
-      expect(() => {
-        engine.setCacheEnabled(1);
-      }).toThrow('Invalid enabled value: must be a boolean');
-
-      expect(() => {
-        engine.setCacheEnabled(null);
-      }).toThrow('Invalid enabled value: must be a boolean');
-    });
-
     it('should not cache when caching is disabled', () => {
-      engine.setCacheEnabled(false);
+      engine._astCacheEnabled = false;
 
       engine.evaluate('{{x}} == 1', { x: 1 });
       engine.evaluate('{{y}} == 2', { y: 2 });
       engine.evaluate('{{z}} == 3', { z: 3 });
 
-      expect(engine.getCacheStats().size).toBe(0);
-      expect(engine.getCacheStats().enabled).toBe(false);
+      expect(engine._astCache.size).toBe(0);
     });
   });
 
@@ -368,7 +349,9 @@ describe('ExpressionEngineService (Logic Library Pattern)', () => {
       expect(errorLogs).toEqual([
         {
           level: 'ERROR',
-          message: expect.stringMatching(/^ExpressionEngineService\.evaluate\(\) failed: Failed to parse expression:/),
+          message: expect.stringMatching(
+            /^ExpressionEngineService\.evaluate\(\) failed: Failed to parse expression:/
+          ),
           context: null
         }
       ]);
@@ -412,7 +395,9 @@ describe('ExpressionEngineService (Logic Library Pattern)', () => {
         expect(errorLogs).toEqual([
           {
             level: 'ERROR',
-            message: expect.stringMatching(/^ExpressionEngineService\.parse\(\) failed: Failed to parse expression:/),
+            message: expect.stringMatching(
+              /^ExpressionEngineService\.parse\(\) failed: Failed to parse expression:/
+            ),
             context: null
           }
         ]);
@@ -425,14 +410,6 @@ describe('ExpressionEngineService (Logic Library Pattern)', () => {
   // ===================================================================
 
   describe('Utility Methods', () => {
-    it('should return library info', () => {
-      const info = engine.getInfo();
-
-      expect(info.name).toBe('GasExpressionEngineLib');
-      expect(info.version).toBe('1.0.0');
-      expect(info.dependencies).toContain('WorkspaceTemplateEngine');
-    });
-
     it('should parse expression to AST', () => {
       const ast = engine.parse('{{age}} >= 18');
 

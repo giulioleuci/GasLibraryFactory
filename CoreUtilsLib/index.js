@@ -176,41 +176,11 @@ export {
   isFalsy
 } from './src/TypeGuards.js';
 
-// Cache Utilities (Code Reuse Initiative)
-export { CacheUtils } from './src/internal/CacheUtils.js';
-export { BoundedMap } from './src/internal/BoundedMap.js';
-
 // PII Redaction (Code Reuse Initiative)
 export { PiiRedactor } from './src/internal/PiiRedactor.js';
 
-// Placeholder Utilities (Code Reuse Initiative)
-export { PlaceholderUtils } from './src/internal/PlaceholderUtils.js';
-
-// Service Validator (Code Reuse Initiative)
-export { ServiceValidator } from './src/ServiceValidator.js';
-
-// Configuration Builder (Code Reuse Initiative)
-export { ConfigurationBuilder } from './src/builders/ConfigurationBuilder.js';
-
 // Testing Mocks (Standardized Testing SDK)
 export * as testing from './src/testing/mocks.js';
-
-// Interface Definitions (Dependency Injection Support)
-export {
-  LoggerInterface,
-  CacheInterface,
-  UtilsServiceInterface,
-  ExceptionServiceInterface,
-  MonitorInterface,
-  DataProviderInterface,
-  StepInterface,
-  ExpressionEngineInterface,
-  ProviderRegistryInterface,
-  SpreadsheetServiceInterface,
-  InterfaceRegistry,
-  validateInterface,
-  implementsInterface
-} from './src/interfaces.js';
 
 // LodashFacade - Direct access to es-toolkit/compat utilities
 // Provides all utility functions as named exports for direct usage

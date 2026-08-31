@@ -7,9 +7,7 @@
  * Layers Tested:
  * - RoleResolutionLib - Resolve teachers, coordinators, and delegates
  * - ComposableContentLib - Generate notification emails with dynamic blocks
- * - SheetDBLib (MultiDatabase) - Access student/class data across partitions
- * - SheetDBLib (DynamicSchema) - Handle subject-specific grade columns
- * - PipelineFramework (PostProcessor) - Update records after operations
+ * - PipelineFramework - Compose and notify in a sequential pipeline
  * - ContextEngine - Assemble data from multiple providers
  * - GasExpressionEngineLib - Evaluate business rules
  *
@@ -47,14 +45,7 @@ import {
   EmptyBehavior,
   BlockDataContext
 } from '@ComposableContentLib';
-import { ColumnFamily, MemberSourceType } from '@SheetDBLib';
-import {
-  Pipeline,
-  Step,
-  PostProcessableStep,
-  ValueSource,
-  WhenCondition
-} from '@PipelineFramework';
+import { Pipeline, Step } from '@PipelineFramework';
 import { ContextAssembler, ProviderRegistry, DataProvider } from '@ContextEngine';
 import { ExpressionEngineService } from '@GasExpressionEngineLib';
 import { ExceptionService } from '@GasResilienceLib';
@@ -216,18 +207,6 @@ describe('Phase 4 End-to-End: SGSA Grade Report Workflow', () => {
         { id: 'stu-002', name: 'Luigi Bianchi', email: 'luigi@school.edu', classId: 'class-3A' },
         { id: 'stu-003', name: 'Peach Toadstool', email: 'peach@school.edu', classId: 'class-3A' }
       ];
-
-      // Define dynamic schema for grades (demonstrates the pattern)
-      const _gradeColumnFamily = new ColumnFamily({
-        id: 'grades',
-        namePattern: 'grade_{{key}}',
-        type: 'NUMBER',
-        nullable: true,
-        memberSource: {
-          type: MemberSourceType.STATIC,
-          members: ['math', 'science', 'english', 'history']
-        }
-      });
 
       // Verify students data is available
       expect(students.length).toBe(3);
@@ -492,7 +471,7 @@ describe('Phase 4 End-to-End: SGSA Grade Report Workflow', () => {
 
       // ----- 2.5 Setup PipelineFramework with PostProcessors -----
 
-      class GenerateReportStep extends PostProcessableStep {
+      class GenerateReportStep extends Step {
         constructor(name, logger, reportComposer) {
           super(name, logger);
           this._composer = reportComposer;
@@ -514,28 +493,9 @@ describe('Phase 4 End-to-End: SGSA Grade Report Workflow', () => {
             contentLength: result.content.length
           };
         }
-
-        getPostProcessors() {
-          return [
-            {
-              processorType: 'FieldUpdate',
-              instanceId: 'update-report-status',
-              when: WhenCondition.ON_SUCCESS,
-              config: {
-                table: 'REPORT_STATUS',
-                recordIdentifier: { strategy: 'PRIMARY_KEY', primaryKeySource: 'reportId' },
-                fields: {
-                  status: 'GENERATED',
-                  generatedAt: '$timestamp',
-                  generatedBy: '$context.currentUser.id'
-                }
-              }
-            }
-          ];
-        }
       }
 
-      class SendNotificationStep extends PostProcessableStep {
+      class SendNotificationStep extends Step {
         constructor(name, logger, emailService) {
           super(name, logger);
           this._emailService = emailService;
@@ -556,24 +516,6 @@ describe('Phase 4 End-to-End: SGSA Grade Report Workflow', () => {
           this.setResult(context, 'sentTo', coordinator.identifier);
 
           return { success: result.success };
-        }
-
-        getPostProcessors() {
-          return [
-            {
-              processorType: 'LogAudit',
-              instanceId: 'audit-notification',
-              when: WhenCondition.ALWAYS,
-              config: {
-                table: 'AUDIT_LOG',
-                fields: [
-                  { column: 'timestamp', value: ValueSource.timestamp() },
-                  { column: 'action', value: ValueSource.literal('NOTIFICATION_SENT') },
-                  { column: 'recipient', value: ValueSource.stepOutput('sentTo') }
-                ]
-              }
-            }
-          ];
         }
       }
 
@@ -663,33 +605,6 @@ describe('Phase 4 End-to-End: SGSA Grade Report Workflow', () => {
         // If it throws, that's also acceptable behavior
         expect(e).toBeDefined();
       }
-    });
-
-    test('Dynamic schema handles different subject configurations', () => {
-      // Test that column families can adapt to different configurations
-      const mathOnlyFamily = new ColumnFamily({
-        id: 'grades',
-        namePattern: 'grade_{{key}}',
-        type: 'NUMBER',
-        memberSource: {
-          type: MemberSourceType.STATIC,
-          members: ['math']
-        }
-      });
-
-      const fullFamily = new ColumnFamily({
-        id: 'grades',
-        namePattern: 'grade_{{key}}',
-        type: 'NUMBER',
-        memberSource: {
-          type: MemberSourceType.STATIC,
-          members: ['math', 'science', 'english', 'history']
-        }
-      });
-
-      // ColumnFamily stores members in memberSource.members for STATIC type
-      expect(mathOnlyFamily.memberSource.members).toHaveLength(1);
-      expect(fullFamily.memberSource.members).toHaveLength(4);
     });
 
     test('Expression engine evaluates grade thresholds correctly', () => {

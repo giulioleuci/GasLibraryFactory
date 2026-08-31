@@ -251,153 +251,6 @@ describe('RegexUtils - Comprehensive Test Suite', () => {
     });
   });
 
-  describe('testSafe() - Safe Test Method', () => {
-    it('should return true for matching strings', () => {
-      expect(RegexUtils.testSafe('hello@example.com', '^[^@]+@[^@]+\\.[^@]+$')).toBe(true);
-    });
-
-    it('should return false for non-matching strings', () => {
-      expect(RegexUtils.testSafe('invalid-email', '^[^@]+@[^@]+\\.[^@]+$')).toBe(false);
-    });
-
-    it('should support case-insensitive flag', () => {
-      expect(RegexUtils.testSafe('Hello', 'hello', 'i')).toBe(true);
-      expect(RegexUtils.testSafe('Hello', 'hello')).toBe(false);
-    });
-
-    it('should reject unsafe patterns', () => {
-      expect(() => RegexUtils.testSafe('test', '(a+)+')).toThrow(/nested quantifiers/i);
-    });
-
-    it('should validate before testing', () => {
-      const longPattern = 'a'.repeat(501);
-      expect(() => RegexUtils.testSafe('test', longPattern)).toThrow(/too long/);
-    });
-
-    it('should accept logger parameter', () => {
-      const mockLogger = { warn: jest.fn() };
-      const result = RegexUtils.testSafe('ab', '(a|b)+', '', mockLogger);
-      expect(result).toBe(true);
-    });
-  });
-
-  describe('matchSafe() - Safe Match Method', () => {
-    it('should return match array for matching strings', () => {
-      const match = RegexUtils.matchSafe('hello@example.com', '^([^@]+)@([^@]+)$');
-      expect(match).not.toBeNull();
-      expect(match[1]).toBe('hello');
-      expect(match[2]).toBe('example.com');
-    });
-
-    it('should return null for non-matching strings', () => {
-      const match = RegexUtils.matchSafe('invalid', '^\\d+$');
-      expect(match).toBeNull();
-    });
-
-    it('should support capturing groups', () => {
-      const match = RegexUtils.matchSafe('Price: $10.99', '\\$(\\d+\\.\\d+)');
-      expect(match).not.toBeNull();
-      expect(match[1]).toBe('10.99');
-    });
-
-    it('should support global flag for multiple matches', () => {
-      const match = RegexUtils.matchSafe('abc 123 def 456', '\\d+', 'g');
-      expect(match).toEqual(['123', '456']);
-    });
-
-    it('should reject unsafe patterns', () => {
-      expect(() => RegexUtils.matchSafe('test', '(a+)+')).toThrow(/nested quantifiers/i);
-    });
-
-    it('should accept logger parameter', () => {
-      const mockLogger = { warn: jest.fn() };
-      const match = RegexUtils.matchSafe('ab', '(a|b)+', '', mockLogger);
-      expect(match).not.toBeNull();
-    });
-  });
-
-  describe('checkSafety() - Non-throwing Safety Check', () => {
-    describe('Safe Patterns', () => {
-      it('should return safe=true for simple patterns', () => {
-        const result = RegexUtils.checkSafety('^[a-z]+$');
-        expect(result.safe).toBe(true);
-        expect(result.warnings).toEqual([]);
-      });
-
-      it('should return safe=true for digit patterns', () => {
-        const result = RegexUtils.checkSafety('\\d{3}-\\d{4}');
-        expect(result.safe).toBe(true);
-      });
-
-      it('should return safe=true for email patterns', () => {
-        const result = RegexUtils.checkSafety('[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+');
-        expect(result.safe).toBe(true);
-      });
-    });
-
-    describe('Unsafe Patterns', () => {
-      it('should return safe=false for nested quantifiers', () => {
-        const result = RegexUtils.checkSafety('(a+)+');
-        expect(result.safe).toBe(false);
-        expect(result.warnings.some((w) => w.includes('Nested quantifiers'))).toBe(true);
-      });
-
-      it('should return safe=false for excessive quantifiers', () => {
-        const result = RegexUtils.checkSafety('a{200}');
-        expect(result.safe).toBe(false);
-        expect(result.warnings.some((w) => w.includes('Excessive quantifier'))).toBe(true);
-      });
-
-      it('should return safe=false for patterns exceeding length', () => {
-        const longPattern = 'x'.repeat(501);
-        const result = RegexUtils.checkSafety(longPattern);
-        expect(result.safe).toBe(false);
-        expect(result.warnings.some((w) => w.includes('too long'))).toBe(true);
-      });
-    });
-
-    describe('Warnings', () => {
-      it('should include warning for alternation with quantifiers', () => {
-        const result = RegexUtils.checkSafety('(hello|world)+');
-        expect(result.safe).toBe(true); // Alternation is a warning, not unsafe
-        expect(result.warnings.some((w) => w.includes('Alternation'))).toBe(true);
-      });
-
-      it('should include multiple warnings if applicable', () => {
-        // This pattern has both excessive length and nested quantifiers
-        const longNestedPattern = 'a'.repeat(400) + '(b+)+' + 'c'.repeat(100);
-        const result = RegexUtils.checkSafety(longNestedPattern);
-        expect(result.safe).toBe(false);
-        expect(result.warnings.length).toBeGreaterThanOrEqual(1);
-      });
-    });
-
-    describe('Edge Cases', () => {
-      it('should handle empty string pattern', () => {
-        const result = RegexUtils.checkSafety('');
-        expect(result.safe).toBe(true);
-        expect(result.warnings).toEqual([]);
-      });
-
-      it('should handle single character pattern', () => {
-        const result = RegexUtils.checkSafety('a');
-        expect(result.safe).toBe(true);
-      });
-
-      it('should handle pattern at exact length limit', () => {
-        const pattern = 'a'.repeat(500);
-        const result = RegexUtils.checkSafety(pattern);
-        expect(result.safe).toBe(true);
-      });
-
-      it('should handle pattern just over length limit', () => {
-        const pattern = 'a'.repeat(501);
-        const result = RegexUtils.checkSafety(pattern);
-        expect(result.safe).toBe(false);
-      });
-    });
-  });
-
   describe('Real-World Scenarios', () => {
     it('should safely match email addresses', () => {
       const pattern = '^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\\.[a-zA-Z]{2,}$';
@@ -448,8 +301,7 @@ describe('RegexUtils - Comprehensive Test Suite', () => {
       ];
 
       for (const pattern of maliciousPatterns) {
-        const result = RegexUtils.checkSafety(pattern);
-        expect(result.safe).toBe(false);
+        expect(() => RegexUtils.validateSafety(pattern)).toThrow();
       }
     });
 
@@ -465,8 +317,7 @@ describe('RegexUtils - Comprehensive Test Suite', () => {
       const regexPattern = escaped.replace(/%/g, '.*').replace(/_/g, '.');
 
       // Validate the resulting pattern is safe
-      const safety = RegexUtils.checkSafety(regexPattern);
-      expect(safety.safe).toBe(true);
+      expect(() => RegexUtils.validateSafety(regexPattern)).not.toThrow();
     });
   });
 

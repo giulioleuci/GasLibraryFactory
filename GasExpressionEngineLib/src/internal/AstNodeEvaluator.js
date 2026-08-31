@@ -17,8 +17,6 @@ export class AstNodeEvaluator {
         return this._evaluateLiteral(node, context);
       case 'BinaryExpression':
         return this.facade._evaluateBinaryExpression(node, context);
-      case 'LogicalExpression':
-        return this.facade._evaluateLogicalExpression(node, context);
       case 'UnaryExpression':
         return this.facade._evaluateUnaryExpression(node, context);
       case 'CallExpression':

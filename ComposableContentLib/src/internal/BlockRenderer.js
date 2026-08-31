@@ -178,47 +178,6 @@ export class BlockRenderer {
 }
 
 /**
- * HTML-specialized renderer implementation.
- * @class
- * @extends BlockRenderer
- */
-export class HtmlRenderer extends BlockRenderer {
-  /**
-   * Returns 'html' format identifier.
-   * @returns {string}
-   */
-  getFormat() {
-    return 'html';
-  }
-
-  /**
-   * Wraps content in HTML structural elements (div, section) based on ContainerType.
-   * @param {string} content Rendered payload.
-   * @param {string} containerType Target container type.
-   * @param {Object} options Rendering options.
-   * @returns {string} HTML wrapped content.
-   * @protected
-   */
-  _wrapInContainer(content, containerType, options) {
-    const blockType = options.blockType || 'block';
-
-    switch (containerType) {
-      case ContainerType.BOX:
-        return `<div class="content-block content-block--${blockType}">${content}</div>`;
-
-      case ContainerType.CARD:
-        return `<div class="content-card content-card--${blockType}"><div class="content-card__body">${content}</div></div>`;
-
-      case ContainerType.SECTION:
-        return `<section class="content-section content-section--${blockType}">${content}</section>`;
-
-      default:
-        return content;
-    }
-  }
-}
-
-/**
  * Markdown-specialized renderer implementation.
  * @class
  * @extends BlockRenderer
@@ -287,6 +246,47 @@ export class PlainTextRenderer extends BlockRenderer {
 
       case ContainerType.SECTION:
         return `\n${content}\n`;
+
+      default:
+        return content;
+    }
+  }
+}
+
+/**
+ * HTML-specialized renderer implementation.
+ * @class
+ * @extends BlockRenderer
+ */
+export class HtmlRenderer extends BlockRenderer {
+  /**
+   * Returns 'html' format identifier.
+   * @returns {string}
+   */
+  getFormat() {
+    return 'html';
+  }
+
+  /**
+   * Wraps content in HTML structural elements (div, section) based on ContainerType.
+   * @param {string} content Rendered payload.
+   * @param {string} containerType Target container type.
+   * @param {Object} options Rendering options.
+   * @returns {string} HTML wrapped content.
+   * @protected
+   */
+  _wrapInContainer(content, containerType, options) {
+    const blockType = options.blockType || 'block';
+
+    switch (containerType) {
+      case ContainerType.BOX:
+        return `<div class="content-block content-block--${blockType}">${content}</div>`;
+
+      case ContainerType.CARD:
+        return `<div class="content-card content-card--${blockType}"><div class="content-card__body">${content}</div></div>`;
+
+      case ContainerType.SECTION:
+        return `<section class="content-section content-section--${blockType}">${content}</section>`;
 
       default:
         return content;

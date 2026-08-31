@@ -10,7 +10,6 @@
  */
 
 import { GoogleService } from '../../internal/core/GoogleService';
-import { ErrorHandler, ServiceError, QuotaExceededError } from '../../internal/core/ErrorHandler';
 import { ExceptionService } from '@GasResilienceLib';
 import { LoggerService, UtilsService } from '@CoreUtilsLib';
 
@@ -216,30 +215,6 @@ describe('ServiceFactory + GasResilienceLib Integration', () => {
           }
         });
       }
-
-      // Direct error throwing without retry wrapper for type testing
-      throwDirectError(errorType) {
-        switch (errorType) {
-          case 'quota':
-            throw new QuotaExceededError(
-              'Rate limit exceeded',
-              'ErrorTestService',
-              'throwDirectError',
-              null,
-              {}
-            );
-          case 'service':
-            throw new ServiceError(
-              'Service error',
-              'ErrorTestService',
-              'throwDirectError',
-              null,
-              {}
-            );
-          default:
-            throw new Error('Unknown error');
-        }
-      }
     }
 
     it('should propagate errors through executeWithRetry', () => {
@@ -248,13 +223,6 @@ describe('ServiceFactory + GasResilienceLib Integration', () => {
       // ExceptionService.executeWithRetry wraps errors in plain Error
       expect(() => service.causeError('quota')).toThrow(Error);
       expect(() => service.causeError('quota')).toThrow('Rate limit exceeded');
-    });
-
-    it('should preserve ServiceError type when thrown directly', () => {
-      const service = new ErrorTestService(logger, cache, utils, exceptionService);
-
-      expect(() => service.throwDirectError('quota')).toThrow(QuotaExceededError);
-      expect(() => service.throwDirectError('service')).toThrow(ServiceError);
     });
   });
 
@@ -298,61 +266,6 @@ describe('ServiceFactory + GasResilienceLib Integration', () => {
       expect(logger.info).toHaveBeenCalledWith(expect.stringContaining('[DRY-RUN]'), {
         test: true
       });
-    });
-  });
-});
-
-describe('ErrorHandler Integration', () => {
-  let logger;
-
-  beforeEach(() => {
-    logger = {
-      debug: jest.fn(),
-      info: jest.fn(),
-      warn: jest.fn(),
-      error: jest.fn()
-    };
-  });
-
-  describe('error classification', () => {
-    it('should create QuotaExceededError with correct properties', () => {
-      const error = new QuotaExceededError(
-        'API quota exceeded',
-        'TestService',
-        'testOperation',
-        null,
-        {}
-      );
-
-      expect(error).toBeInstanceOf(QuotaExceededError);
-      expect(error).toBeInstanceOf(ServiceError);
-      expect(error.message).toBe('API quota exceeded');
-      expect(error.retryable).toBe(true);
-      expect(error.retryAfter).toBe(60000);
-    });
-
-    it('should handle error from Google API response', () => {
-      const googleError = new Error('User-rate limit exceeded. Retry after 2025-01-24T00:00:00');
-      googleError.details = { quotaExceeded: true };
-
-      const handler = new ErrorHandler('TestService', logger);
-      const classifiedError = handler.classifyError(googleError, 'testOperation');
-
-      expect(classifiedError).toBeInstanceOf(QuotaExceededError);
-      expect(classifiedError.retryable).toBe(true);
-    });
-  });
-
-  describe('error context enrichment', () => {
-    it('should add context to errors', () => {
-      const error = new ServiceError('Test error', 'DriveService', 'createFile', null, {
-        fileId: '123'
-      });
-
-      expect(error.context).toEqual({ fileId: '123' });
-      expect(error.serviceName).toBe('DriveService');
-      expect(error.operation).toBe('createFile');
-      expect(error.context.fileId).toBe('123');
     });
   });
 });

@@ -259,22 +259,46 @@ export class DocumentContentExtractor {
 
       const seenTextIndices = new Set();
 
-      // PHASE 1: Extract tables from POJO structure
+      // PHASE 1: Extract tables from POJO structure.
+      //
+      // Ordinals are assigned via a depth-first walk that also descends into
+      // each cell's content, so a table nested inside another table's cell
+      // (e.g. a "signature box" built from two nested tables, as seen in the
+      // PDP-DSA template) gets its own ordinal at the position it actually
+      // occupies in document order — matching how DocumentApp.getBody()
+      // .getTables() flattens nested tables into its own list. `table.index`
+      // here is copied verbatim into `op.tableIndex` by
+      // DocumentProcessorTagScanner and later used as a raw array index into
+      // that same DocumentApp table list (DocumentTableManager); a
+      // top-level-only count would silently misalign the two once any nested
+      // table exists before the target table, routing operations at the
+      // wrong physical table ("Column index N out of bounds").
+      const tableOrdinalByStartIndex = new Map();
       let phase1IterationCount = 0;
       const PHASE1_MAX_ITERATIONS = 10000;
-      for (const element of structure.body.content) {
-        if (++phase1IterationCount > PHASE1_MAX_ITERATIONS) {
-          this._logger.warn(
-            `Reached maximum iteration limit (${PHASE1_MAX_ITERATIONS}) while extracting tables`
-          );
-          break;
-        }
-        if (element.type === 'TABLE') {
+      let phase1LimitReached = false;
+      const collectTables = (elements) => {
+        for (const element of elements) {
+          if (phase1LimitReached) {
+            return;
+          }
+          if (++phase1IterationCount > PHASE1_MAX_ITERATIONS) {
+            this._logger.warn(
+              `Reached maximum iteration limit (${PHASE1_MAX_ITERATIONS}) while extracting tables`
+            );
+            phase1LimitReached = true;
+            return;
+          }
+          if (element.type !== 'TABLE') {
+            continue;
+          }
+
           const tableData = {
             index: result.tables.length,
             startIndex: element.startIndex,
             rows: []
           };
+          tableOrdinalByStartIndex.set(element.startIndex, tableData.index);
 
           for (const tableRow of element.tableRows) {
             const rowData = {
@@ -294,18 +318,22 @@ export class DocumentContentExtractor {
           }
 
           result.tables.push(tableData);
+
+          for (const tableRow of element.tableRows) {
+            for (const cell of tableRow.cells) {
+              if (cell.content && cell.content.length > 0) {
+                collectTables(cell.content);
+              }
+            }
+          }
         }
-      }
+      };
+      collectTables(structure.body.content);
 
       // PHASE 2: Scan text content for pattern matches
       for (const pattern of textPatterns) {
         let iterationCount = 0;
         const MAX_ITERATIONS = 10000;
-        // Mirrors Phase 1's per-table ordinal (`result.tables[].index`) so callers
-        // can tell which table a TABLE_TEXT match belongs to (e.g. to skip cells
-        // already fully rendered by a row/column loop — see DocumentProcessor).
-        let tableOrdinal = -1;
-
         for (const element of structure.body.content) {
           if (++iterationCount > MAX_ITERATIONS) {
             this._logger.warn(
@@ -329,7 +357,11 @@ export class DocumentContentExtractor {
               seenTextIndices.add(elementIndex);
             }
           } else if (element.type === 'TABLE') {
-            tableOrdinal++;
+            // Looked up from Phase 1's map (built via the same depth-first,
+            // nested-table-aware walk) rather than a local top-level-only
+            // counter, so a TABLE_TEXT match's `tableIndex` always agrees
+            // with `result.tables[].index` / `op.tableIndex` — see Phase 1.
+            const tableOrdinal = tableOrdinalByStartIndex.get(element.startIndex);
             for (const tableRow of element.tableRows || []) {
               for (const cell of tableRow.cells) {
                 if (cell.text && cell.text.includes(pattern)) {

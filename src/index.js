@@ -68,18 +68,7 @@ function initializeServices() {
   };
 }
 
-function exampleUsage() {
-  const { logger, spreadsheetService } = initializeServices();
-  const spreadsheetId = 'YOUR_SPREADSHEET_ID';
-  const sheetName = 'Sheet1';
-  const range = `${sheetName}!A1:B10`;
-  const values = spreadsheetService.getRanges(spreadsheetId, range);
-  logger.info('Data retrieved: ' + JSON.stringify(values));
-  return values;
-}
-
 global.initializeServices = initializeServices;
-global.exampleUsage = exampleUsage;
 
 export {
   CoreUtilsLib,
@@ -98,6 +87,5 @@ export {
   RoleResolutionLib,
   ComposableContentLib,
   GasProcessMonitorLib,
-  initializeServices,
-  exampleUsage
+  initializeServices
 };

@@ -40,8 +40,8 @@ export class JobDefinitionRegistry {
    * Registers a job definition.
    */
   register(jobNameOrDefinition, jobDefinition) {
-    let jobName = jobNameOrDefinition;
-    let definition = jobDefinition;
+    const jobName = jobNameOrDefinition;
+    const definition = jobDefinition;
 
     if (typeof jobName !== 'string' || jobName.length === 0) {
       throw new Error('JobDefinitionRegistry.register: Job name must be a non-empty string');
@@ -87,26 +87,12 @@ export class JobDefinitionRegistry {
   }
 
   /**
-   * Alias for getDefinition.
-   */
-  get(jobName) {
-    return this.getDefinition(jobName);
-  }
-
-  /**
    * Lists all registered job identifiers.
    */
   listRegisteredJobs() {
     const jobs = Array.from(this.definitions.keys());
     this.logger.debug(`JobDefinitionRegistry.listRegisteredJobs: ${jobs.length} jobs registered`);
     return jobs;
-  }
-
-  /**
-   * Alias for listRegisteredJobs.
-   */
-  listAll() {
-    return this.listRegisteredJobs();
   }
 
   /**
@@ -117,40 +103,6 @@ export class JobDefinitionRegistry {
       return false;
     }
     return this.definitions.has(jobName);
-  }
-
-  /**
-   * Removes a job definition.
-   */
-  removeJob(jobName) {
-    if (typeof jobName !== 'string' || jobName.length === 0) {
-      this.logger.error('JobDefinitionRegistry.removeJob: Job name must be a non-empty string');
-      return false;
-    }
-    if (!this.definitions.has(jobName)) {
-      this.logger.warn(
-        `JobDefinitionRegistry.removeJob: Job '${jobName}' did not exist in registry`
-      );
-      return false;
-    }
-    this.definitions.unregister(jobName);
-    this.logger.debug(`JobDefinitionRegistry.removeJob: Job '${jobName}' removed from registry`);
-    return true;
-  }
-
-  /**
-   * Registry telemetry.
-   */
-  getStatistics() {
-    const stats = {
-      totalJobs: this.definitions.size,
-      jobsByCategory: this._calculateJobsByCategory(),
-      jobsWithParameters: this._countJobsWithParameters()
-    };
-    this.logger.debug(
-      `JobDefinitionRegistry.getStatistics: ${stats.totalJobs} total jobs in registry`
-    );
-    return stats;
   }
 
   /**
@@ -196,44 +148,5 @@ export class JobDefinitionRegistry {
         `JobDefinitionRegistry.register: Field 'finalAction' must be a function for job '${jobName}'`
       );
     }
-  }
-
-  /**
-   * @private
-   */
-  _calculateJobsByCategory() {
-    const categories = {};
-    for (const def of this.definitions.values()) {
-      const description = String(def.description || '').toLowerCase();
-      const name = String(def.name || '').toLowerCase();
-      const text = `${name} ${description}`;
-      let category;
-      if (/generat/.test(text)) {
-        category = 'Generation';
-      } else if (/email|mail/.test(text)) {
-        category = 'Email';
-      } else if (/import/.test(text)) {
-        category = 'Import';
-      } else if (/structur|folder|infrastructure/.test(text)) {
-        category = 'Infrastructure';
-      } else {
-        category = 'Other';
-      }
-      categories[category] = (categories[category] || 0) + 1;
-    }
-    return categories;
-  }
-
-  /**
-   * @private
-   */
-  _countJobsWithParameters() {
-    let count = 0;
-    for (const def of this.definitions.values()) {
-      if (Array.isArray(def.requiredParameters) && def.requiredParameters.length > 0) {
-        count++;
-      }
-    }
-    return count;
   }
 }

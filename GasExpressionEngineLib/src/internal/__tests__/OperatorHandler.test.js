@@ -4,8 +4,8 @@
 // Direct unit tests for OperatorHandler, exercised against a minimal fake
 // facade rather than through ExpressionEvaluatorService. This isolates
 // _evaluateBinaryExpression (the highest cognitive-complexity method in the
-// class) and its siblings (_evaluateLogicalExpression, _evaluateUnaryExpression,
-// _compare, _equals) from AST-dispatch/parsing concerns.
+// class) and its siblings (_evaluateUnaryExpression, _compare, _equals) from
+// AST-dispatch/parsing concerns.
 // ===================================================================
 
 import { OperatorHandler } from '../OperatorHandler';
@@ -63,50 +63,6 @@ describe('OperatorHandler - Direct Unit Tests', () => {
       const f = {};
       const h = new OperatorHandler(f);
       expect(h.facade).toBe(f);
-    });
-  });
-
-  // ===================================================================
-  // _evaluateLogicalExpression
-  // ===================================================================
-  describe('_evaluateLogicalExpression()', () => {
-    it('evaluates && short-circuiting on false left', () => {
-      const node = {
-        operator: '&&',
-        left: lit(false),
-        right: { type: 'Literal', value: undefined }
-      };
-      facade._evaluateNode = jest.fn((n) => n.value);
-      expect(handler._evaluateLogicalExpression(node, {})).toBe(false);
-      expect(facade._evaluateNode).toHaveBeenCalledTimes(1); // right never evaluated
-    });
-
-    it('evaluates && evaluating right when left is truthy', () => {
-      const node = { operator: '&&', left: lit(1), right: lit('yes') };
-      expect(handler._evaluateLogicalExpression(node, {})).toBe(true);
-    });
-
-    it('evaluates || short-circuiting on true left', () => {
-      const node = {
-        operator: '||',
-        left: lit(true),
-        right: { type: 'Literal', value: undefined }
-      };
-      facade._evaluateNode = jest.fn((n) => n.value);
-      expect(handler._evaluateLogicalExpression(node, {})).toBe(true);
-      expect(facade._evaluateNode).toHaveBeenCalledTimes(1);
-    });
-
-    it('evaluates || evaluating right when left is falsy', () => {
-      const node = { operator: '||', left: lit(0), right: lit('present') };
-      expect(handler._evaluateLogicalExpression(node, {})).toBe(true);
-    });
-
-    it('throws for unsupported logical operator', () => {
-      const node = { operator: '^^', left: lit(true), right: lit(true) };
-      expect(() => handler._evaluateLogicalExpression(node, {})).toThrow(
-        'Unsupported logical operator: ^^'
-      );
     });
   });
 

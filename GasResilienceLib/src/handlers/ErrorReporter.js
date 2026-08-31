@@ -7,7 +7,6 @@
 import { Delegation, PiiRedactor } from '@CoreUtilsLib';
 import { ErrorReporterRecorder } from './internal/ErrorReporterRecorder.js';
 import { ErrorReporterStatistics } from './internal/ErrorReporterStatistics.js';
-import { ErrorReporterSanitizer } from './internal/ErrorReporterSanitizer.js';
 
 export class ErrorReporter {
   /**
@@ -47,7 +46,6 @@ export class ErrorReporter {
     // Initialize managers
     this._recorder = new ErrorReporterRecorder(this);
     this._statistics = new ErrorReporterStatistics(this);
-    this._sanitizer = new ErrorReporterSanitizer(this);
 
     // Delegate methods
     Delegation.delegateMethods(this, [
@@ -58,10 +56,6 @@ export class ErrorReporter {
       {
         manager: this._statistics,
         methods: ['getSummary']
-      },
-      {
-        manager: this._sanitizer,
-        methods: ['_parseStackTrace']
       }
     ]);
   }

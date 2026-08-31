@@ -13,8 +13,7 @@ GoogleApiWrapper/
 ├── src/
 │   ├── core/               # Infrastructure logic
 │   │   ├── GoogleService.js  # Base class with common resilience logic
-│   │   ├── ServiceFactory.js # Centralized DI container for all services
-│   │   └── ErrorHandler.js   # Standardized error mapping and reporting
+│   │   └── ServiceFactory.js # Centralized DI container for all services
 │   ├── services/           # Concrete implementations (Adapter Layer)
 │   │   ├── DriveService.js   # Batch-first Drive v3 implementation
 │   │   ├── SpreadsheetService.js # Batch-first Sheets v4 implementation
@@ -26,7 +25,6 @@ GoogleApiWrapper/
 │   │   └── ... (Lock, Trigger, Ui, Utilities)
 │   ├── utils/              # Low-level helpers
 │   │   ├── BatchUtilities.js # Logic for multipart/mixed payload creation
-│   │   ├── RateLimiter.js    # Token Bucket implementation for throttling
 │   │   └── ... (Builders for UI: Dialog, Menu, Sidebar)
 │   └── __tests__/          # Extensive local and integration tests
 ```
@@ -37,7 +35,7 @@ GoogleApiWrapper/
 2.  **Bridge Pattern**: `GoogleService` (Abstraction) and the concrete services (Implementation) are separated to allow the base service to evolve its resilience logic independently of the specific API logic.
 3.  **Abstract Factory / Service Locator**: `ServiceFactory` acts as the single source of truth for instantiating and wiring services with their dependencies (Logger, Resilience, etc.).
 4.  **Builder Pattern**: Used extensively in `DocumentService` and UI utilities (`DialogBuilder`, `MenuBuilder`) to construct complex requests fluently.
-5.  **Strategy Pattern**: Rate limiting and batch execution use interchangeable strategies for handling high-volume traffic.
+5.  **Strategy Pattern**: Batch execution uses interchangeable strategies for handling high-volume traffic.
 
 ## 🌉 Overview
 
@@ -52,7 +50,6 @@ It is tightly integrated with `GasResilienceLib` to provide automatic retries, e
 - **Batch-First Architecture**: Operations like `deleteFiles`, `updateRanges`, or `shareWithUsers` accept arrays and execute via `multipart/mixed` batch requests or native batch endpoints.
 - **Resilience Integration**: Every API call is wrapped in a retry logic block that handles 429 (Too Many Requests), 5xx (Server Errors), and network timeouts automatically.
 - **Service Factory**: A centralized Dependency Injection container (`ServiceFactory`) that wires up all services with their required dependencies (Logger, Cache, Utils, ExceptionService), solving the "waterfall initialization" problem.
-- **Rate Limiting**: Built-in `RateLimiter` using the Token Bucket algorithm to smooth out traffic bursts and prevent quota exhaustion.
 - **Escape Hatches**: Hybrid design allows seamless switching between high-performance REST APIs and native GAS objects (e.g., `getStandardApp()`) when specific functionality (like Chart creation) is needed.
 - **Quota Management**: The `MailService` tracks daily email usage to prevent script lockouts.
 - **Dry-Run Mode**: All mutation services support dry-run mode for testing workflows without making real changes.
@@ -133,17 +130,11 @@ import { ServiceFactory, DriveService, SpreadsheetService } from '@GoogleApiWrap
 - `BatchRequestBuilder` - Construct multipart/mixed HTTP payloads
 - `BatchResponseParser` - Parse batch response data
 - `BatchExecutor` - Execute batch requests
-- `RateLimiter` - Token bucket algorithm for rate limiting
 
 **Error Handling:**
 
-- `ErrorHandler` - Base error handling class
-- `ServiceError` - Base service error
-- `QuotaExceededError` - Quota limit errors
-- `PermissionDeniedError` - Permission/authorization errors
-- `ResourceNotFoundError` - Resource not found errors
-- `ServiceUnavailableError` - Service unavailable errors
-- `ValidationError` - Input validation errors
+Services throw plain errors; retry/backoff and error classification are handled by
+`GasResilienceLib`'s `ExceptionService` (wired in via `ServiceFactory.getExceptionService()`).
 
 **Backward Compatibility:**
 
@@ -261,7 +252,6 @@ docService
 ### 6. Utilities & Helpers
 
 - **`BatchRequestBuilder`**: Helper to construct `multipart/mixed` HTTP payloads manually.
-- **`RateLimiter`**: Token bucket implementation for throttling.
 - **`CacheService`**: Facade for `CacheService` with JSON serialization support.
 - **`PropertiesService`**: Facade for `PropertiesService` with object serialization.
 
@@ -272,7 +262,7 @@ All services in this library automatically use `GasResilienceLib`. If a batch re
 1.  Catch the error.
 2.  Wait (using exponential backoff).
 3.  Retry the request (up to 3 times by default).
-4.  Throw a structured `ServiceError` only if all retries fail.
+4.  Re-throw the error only if all retries fail.
 
 ## 🧪 Testing
 

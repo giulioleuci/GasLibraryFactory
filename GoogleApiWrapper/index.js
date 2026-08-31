@@ -66,7 +66,6 @@
  * - `UtilitiesService` - Utilities wrapper (sleep, formatDate, etc.)
  *
  * ### Utilities
- * - `RateLimiter` - Token bucket rate limiting
  * - `MenuBuilder` - Fluent API for Google Workspace menus
  * - `SidebarBuilder` - Fluent API for sidebars
  * - `DialogBuilder` - Fluent API for dialogs
@@ -76,13 +75,8 @@
  * - `ServiceFactory` - Dependency injection container
  *
  * ### Error Handling
- * - `ErrorHandler` - Centralized error handling
- * - `ServiceError` - Base error class
- * - `QuotaExceededError` - Quota/rate limit errors
- * - `PermissionDeniedError` - Permission errors
- * - `ResourceNotFoundError` - Not found errors
- * - `ServiceUnavailableError` - Service unavailable errors
- * - `ValidationError` - Input validation errors
+ * Services throw plain errors; recovery/retry is handled by GasResilienceLib's
+ * ExceptionService (see `ServiceFactory.getExceptionService()`).
  *
  * ## Quick Start
  *
@@ -133,40 +127,16 @@
  * console.log(`Deleted: ${result.successful.length}`);
  * ```
  *
- * ### Rate Limiting
- *
- * ```javascript
- * import { RateLimiter } from '@GoogleApiWrapper';
- *
- * // Create rate limiter: 100 operations per minute
- * const limiter = new RateLimiter(100, 60000);
- *
- * function processItems(items) {
- *   items.forEach(item => {
- *     limiter.acquire(1); // Wait if necessary
- *     // Process item
- *   });
- * }
- * ```
- *
  * ### Error Handling
  *
  * ```javascript
- * import { DriveService, QuotaExceededError, PermissionDeniedError } from '@GoogleApiWrapper';
+ * import { DriveService, ServiceFactory } from '@GoogleApiWrapper';
  *
  * const driveService = ServiceFactory.getDriveService();
  *
- * try {
- *   const folder = driveService.createFolder('Reports').getResult();
- * } catch (error) {
- *   if (error instanceof QuotaExceededError) {
- *     console.error('Quota exceeded, retry later');
- *   } else if (error instanceof PermissionDeniedError) {
- *     console.error('Permission denied');
- *   } else {
- *     throw error;
- *   }
- * }
+ * // Retries/backoff are handled by the injected ExceptionService (GasResilienceLib);
+ * // services otherwise throw plain errors.
+ * const folder = driveService.createFolder('Reports').getResult();
  * ```
  *
  * ## Integration with Other Libraries
@@ -209,7 +179,6 @@
 export { LoggerService, UtilsService } from '@CoreUtilsLib';
 
 // Google-specific utilities (remain in GoogleApiWrapper)
-export { RateLimiter } from './src/internal/RateLimiter';
 export { MenuBuilder } from './src/builders/MenuBuilder';
 export { SidebarBuilder } from './src/builders/SidebarBuilder';
 export { DialogBuilder } from './src/builders/DialogBuilder';
@@ -222,17 +191,6 @@ export { GoogleService } from './src/internal/core/GoogleService';
 
 // Service Factory - Centralized dependency injection
 export { ServiceFactory } from './src/internal/core/ServiceFactory';
-
-// Error handling
-export {
-  ErrorHandler,
-  ServiceError,
-  QuotaExceededError,
-  PermissionDeniedError,
-  ResourceNotFoundError,
-  ServiceUnavailableError,
-  ValidationError
-} from './src/internal/core/ErrorHandler';
 
 // Google Workspace services
 export { CacheService, Cache } from './src/services/CacheService';

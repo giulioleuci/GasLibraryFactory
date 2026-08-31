@@ -8,7 +8,6 @@
 import {
   DefaultFilter,
   YesNoFilter,
-  FallbackFilter,
   TruncateFilter,
   SplitFilter,
   ReplaceFilter,
@@ -92,11 +91,11 @@ describe('Advanced Filters - Unit Tests', () => {
     });
   });
 
-  describe('FallbackFilter', () => {
+  describe('DefaultFilter registered as "fallback"', () => {
     let filter;
 
     beforeEach(() => {
-      filter = new FallbackFilter();
+      filter = new DefaultFilter('fallback');
     });
 
     it('should have correct name', () => {

@@ -40,7 +40,7 @@ describe('ImportConfiguration - Comprehensive Test Suite', () => {
       const config = new ImportConfiguration(recipe, mockLogger);
 
       expect(config).toBeInstanceOf(ImportConfiguration);
-      expect(config.name).toBe('Test Import');
+      expect(config.getName()).toBe('Test Import');
     });
 
     it('should throw error for missing name', () => {
@@ -128,8 +128,8 @@ describe('ImportConfiguration - Comprehensive Test Suite', () => {
 
       const config = new ImportConfiguration(recipe, mockLogger);
 
-      expect(config.source.type).toBe('SheetById');
-      expect(config.source.config.sheetId).toBe('ABC123');
+      expect(config.getSource().type).toBe('SheetById');
+      expect(config.getSource().config.sheetId).toBe('ABC123');
     });
 
     it('should validate Folder source type', () => {
@@ -149,7 +149,7 @@ describe('ImportConfiguration - Comprehensive Test Suite', () => {
 
       const config = new ImportConfiguration(recipe, mockLogger);
 
-      expect(config.source.type).toBe('Folder');
+      expect(config.getSource().type).toBe('Folder');
     });
   });
 
@@ -182,7 +182,7 @@ describe('ImportConfiguration - Comprehensive Test Suite', () => {
 
       const config = new ImportConfiguration(recipe, mockLogger);
 
-      expect(config.source.type).toBe('CustomTestSource');
+      expect(config.getSource().type).toBe('CustomTestSource');
     });
 
     it('registering the same type twice does not duplicate it', () => {
@@ -224,12 +224,12 @@ describe('ImportConfiguration - Comprehensive Test Suite', () => {
 
       const config = new ImportConfiguration(recipe, mockLogger);
 
-      expect(config.transform.mapping).toEqual({
+      expect(config.getTransform().mapping).toEqual({
         'First Name': 'FIRST_NAME',
         'Last Name': 'LAST_NAME',
         Email: 'EMAIL'
       });
-      expect(config.transform.mapping['First Name']).toBe('FIRST_NAME');
+      expect(config.getTransform().mapping['First Name']).toBe('FIRST_NAME');
     });
 
     it('should handle calculated fields', () => {
@@ -248,11 +248,11 @@ describe('ImportConfiguration - Comprehensive Test Suite', () => {
 
       const config = new ImportConfiguration(recipe, mockLogger);
 
-      expect(config.transform.calculated).toEqual({
+      expect(config.getTransform().calculated).toEqual({
         FULL_NAME: '{{FIRST_NAME}} {{LAST_NAME}}',
         UNIQUE_ID: '{{EMAIL}}-{{ID}}'
       });
-      expect(config.transform.calculated['FULL_NAME']).toBe('{{FIRST_NAME}} {{LAST_NAME}}');
+      expect(config.getTransform().calculated['FULL_NAME']).toBe('{{FIRST_NAME}} {{LAST_NAME}}');
     });
 
     it('should handle normalization options', () => {
@@ -274,14 +274,14 @@ describe('ImportConfiguration - Comprehensive Test Suite', () => {
 
       const config = new ImportConfiguration(recipe, mockLogger);
 
-      expect(config.transform.normalization).toEqual({
+      expect(config.getTransform().normalization).toEqual({
         trim: true,
         lowercaseColumns: ['email'],
         uppercaseColumns: ['code'],
         dateColumns: ['created_at'],
         dateFormat: 'yyyy-MM-dd'
       });
-      expect(config.transform.normalization.trim).toBe(true);
+      expect(config.getTransform().normalization.trim).toBe(true);
     });
 
     it('should handle empty transform configuration', () => {
@@ -294,7 +294,7 @@ describe('ImportConfiguration - Comprehensive Test Suite', () => {
 
       const config = new ImportConfiguration(recipe, mockLogger);
 
-      expect(config.transform).toEqual({});
+      expect(config.getTransform()).toEqual({});
     });
   });
 
@@ -316,7 +316,7 @@ describe('ImportConfiguration - Comprehensive Test Suite', () => {
 
       const config = new ImportConfiguration(recipe, mockLogger);
 
-      expect(config.load.conflictResolution).toBe('INSERT_ONLY');
+      expect(config.getLoad().conflictResolution).toBe('INSERT_ONLY');
     });
 
     it('should validate UPDATE_ONLY conflict resolution', () => {
@@ -333,7 +333,7 @@ describe('ImportConfiguration - Comprehensive Test Suite', () => {
 
       const config = new ImportConfiguration(recipe, mockLogger);
 
-      expect(config.load.conflictResolution).toBe('UPDATE_ONLY');
+      expect(config.getLoad().conflictResolution).toBe('UPDATE_ONLY');
     });
 
     it('should validate UPSERT conflict resolution', () => {
@@ -350,8 +350,8 @@ describe('ImportConfiguration - Comprehensive Test Suite', () => {
 
       const config = new ImportConfiguration(recipe, mockLogger);
 
-      expect(config.load.conflictResolution).toBe('UPSERT');
-      expect(config.load.conflictKey).toBe('EMAIL');
+      expect(config.getLoad().conflictResolution).toBe('UPSERT');
+      expect(config.getLoad().conflictKey).toBe('EMAIL');
     });
 
     it('should validate OVERWRITE conflict resolution', () => {
@@ -368,7 +368,7 @@ describe('ImportConfiguration - Comprehensive Test Suite', () => {
 
       const config = new ImportConfiguration(recipe, mockLogger);
 
-      expect(config.load.conflictResolution).toBe('OVERWRITE');
+      expect(config.getLoad().conflictResolution).toBe('OVERWRITE');
     });
 
     it('should throw error for invalid conflict resolution', () => {
@@ -405,11 +405,11 @@ describe('ImportConfiguration - Comprehensive Test Suite', () => {
 
       const config = new ImportConfiguration(recipe, mockLogger);
 
-      expect(config.load.updateIfNewer).toEqual({
+      expect(config.getLoad().updateIfNewer).toEqual({
         enabled: true,
         timestampColumn: 'UPDATED_AT'
       });
-      expect(config.load.updateIfNewer.enabled).toBe(true);
+      expect(config.getLoad().updateIfNewer.enabled).toBe(true);
     });
   });
 
@@ -454,7 +454,7 @@ describe('ImportConfiguration - Comprehensive Test Suite', () => {
       const config = new ImportConfiguration(recipe, mockLogger);
 
       expect(config).toBeInstanceOf(ImportConfiguration);
-      expect(config.name).toBe('Comprehensive Test');
+      expect(config.getName()).toBe('Comprehensive Test');
     });
 
     it('should handle null recipe', () => {
@@ -486,7 +486,7 @@ describe('ImportConfiguration - Comprehensive Test Suite', () => {
 
       const config = new ImportConfiguration(recipe, mockLogger);
 
-      expect(config.name).toBe(longName);
+      expect(config.getName()).toBe(longName);
     });
 
     it('should handle special characters in field names', () => {
@@ -505,7 +505,7 @@ describe('ImportConfiguration - Comprehensive Test Suite', () => {
 
       const config = new ImportConfiguration(recipe, mockLogger);
 
-      expect(config.transform.mapping['First Name (Legal)']).toBe('FIRST_NAME');
+      expect(config.getTransform().mapping['First Name (Legal)']).toBe('FIRST_NAME');
     });
   });
 
@@ -754,7 +754,7 @@ describe('ImportConfiguration - Comprehensive Test Suite', () => {
 
       const config = new ImportConfiguration(recipe, mockLogger);
 
-      expect(config.load.updateIfNewer).toEqual({
+      expect(config.getLoad().updateIfNewer).toEqual({
         enabled: true,
         timestampColumn: 'UPDATED_AT'
       });
@@ -773,7 +773,7 @@ describe('ImportConfiguration - Comprehensive Test Suite', () => {
 
       const config = new ImportConfiguration(recipe, mockLogger);
 
-      expect(config.load.updateIfNewer).toEqual({ enabled: false });
+      expect(config.getLoad().updateIfNewer).toEqual({ enabled: false });
     });
   });
 
@@ -811,10 +811,6 @@ describe('ImportConfiguration - Comprehensive Test Suite', () => {
       expect(config.getName()).toBe('Test Import');
     });
 
-    it('should get name via getter property', () => {
-      expect(config.name).toBe('Test Import');
-    });
-
     it('should get source via getSource() method', () => {
       const source = config.getSource();
 
@@ -824,27 +820,8 @@ describe('ImportConfiguration - Comprehensive Test Suite', () => {
       });
     });
 
-    it('should get source via getter property', () => {
-      const source = config.source;
-
-      expect(source).toEqual({
-        type: 'SheetById',
-        config: { sheetId: 'ABC123', range: 'A1:Z' }
-      });
-    });
-
     it('should get transform via getTransform() method', () => {
       const transform = config.getTransform();
-
-      expect(transform).toEqual({
-        mapping: { 'Source Col': 'DEST_COL' },
-        calculated: { FULL_NAME: '{{FIRST}} {{LAST}}' },
-        normalization: { trim: true, dateColumns: ['DATE'] }
-      });
-    });
-
-    it('should get transform via getter property', () => {
-      const transform = config.transform;
 
       expect(transform).toEqual({
         mapping: { 'Source Col': 'DEST_COL' },
@@ -863,21 +840,10 @@ describe('ImportConfiguration - Comprehensive Test Suite', () => {
       const minimalConfig = new ImportConfiguration(minimalRecipe, mockLogger);
 
       expect(minimalConfig.getTransform()).toEqual({});
-      expect(minimalConfig.transform).toEqual({});
     });
 
     it('should get load via getLoad() method', () => {
       const load = config.getLoad();
-
-      expect(load).toEqual({
-        targetTable: 'Users',
-        conflictResolution: 'UPSERT',
-        conflictKey: 'ID'
-      });
-    });
-
-    it('should get load via getter property', () => {
-      const load = config.load;
 
       expect(load).toEqual({
         targetTable: 'Users',

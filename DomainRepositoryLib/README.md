@@ -6,7 +6,7 @@
 
 ## 🏛️ Overview
 
-**DomainRepositoryLib** brings **Domain-Driven Design (DDD)** patterns to Google Apps Script. It provides a high-level abstraction over `SheetDBLib`, allowing developers to work with rich **Entities**, **Value Objects**, and **Aggregates** instead of raw database rows.
+**DomainRepositoryLib** brings **Domain-Driven Design (DDD)** patterns to Google Apps Script. It provides a high-level abstraction over `SheetDBLib`, allowing developers to work with rich **Entities** and **Value Objects** instead of raw database rows.
 
 ## 🏗️ File and Folder Structure
 
@@ -16,7 +16,6 @@ A DDD-aligned structure focused on domain logic and mapping:
 DomainRepositoryLib/
 ├── src/
 │   ├── Entity.js               # Base class for domain objects with identity
-│   ├── Aggregate.js            # Cluster of entities with invariant enforcement
 │   ├── ValueObject.js          # Objects with structural equality logic
 │   ├── Repository.js           # Generic base for persistence and hydration
 │   ├── mapping/                # Logic for data/entity conversion
@@ -28,9 +27,6 @@ DomainRepositoryLib/
 │   │   └── SpecificationBuilder.js # Fluent API for rule composition
 │   ├── query/                  # Domain-to-DB query translation
 │   │   └── QueryTranslator.js  # Translates Specifications into SheetDB queries
-│   ├── events/                 # Logic for side effects (Domain Events)
-│   │   ├── DomainEvent.js      # Base class for event payloads
-│   │   └── EventDispatcher.js  # Registry and notification engine
 │   ├── validation/             # Schema validation bridge (Zod)
 │   └── errors/                 # Domain-specific exceptions
 ```
@@ -39,24 +35,19 @@ DomainRepositoryLib/
 
 1.  **Repository Pattern**: Mediates between the domain and data mapping layers using a collection-like interface for accessing domain objects.
 2.  **Specification Pattern**: Encapsulates business rules as reusable objects that can be used for both validation and filtering.
-3.  **Aggregate Root Pattern**: Entities that act as entry points to a cluster of related objects (e.g., `Order` is the root for `OrderItems`).
-4.  **Identity Map**: Repositories track hydrated entities to ensure the same object is not loaded multiple times within the same session.
-5.  **Observer / Mediator**: `EventDispatcher` implements an observer pattern for decoupled side-effects across the domain.
-6.  **Data Mapper**: Decouples the domain objects from the database schema using explicit mapping configurations.
+3.  **Identity Map**: Repositories track hydrated entities to ensure the same object is not loaded multiple times within the same session.
+4.  **Data Mapper**: Decouples the domain objects from the database schema using explicit mapping configurations.
 
 ## ✨ Key Features
 
-It decouples your business logic from the underlying storage mechanism (Google Sheets), enabling cleaner, more maintainable, and testable code. It also introduces the **Specification Pattern** for encapsulating business rules and **Domain Events** for side effects.
+It decouples your business logic from the underlying storage mechanism (Google Sheets), enabling cleaner, more maintainable, and testable code. It also introduces the **Specification Pattern** for encapsulating business rules.
 
-## ✨ Key Features
-
-- **Entity & Aggregate Roots**: Base classes providing identity management, dirty checking, and lifecycle hooks.
+- **Entity**: Base class providing identity management, dirty checking, and lifecycle hooks (including a generic domain-event buffer via `addDomainEvent`/`getDomainEvents`).
 - **Repository Pattern**: Abstract base class for repositories with standard CRUD (`save`, `findById`, `delete`) and batch operations.
 - **Specification Pattern**: Encapsulate query logic (e.g., `new ActiveUserSpecification()`). These can be evaluated in-memory OR translated to `SheetDBLib` SQL-like queries automatically.
 - **Value Objects**: Immutable objects with structural equality (e.g., `Email`, `Money`).
 - **Data Mapper**: Automatically hydrates/dehydrates Entities to/from database rows.
 - **Validation**: Integrated **Zod** support for strict schema validation within entities.
-- **Domain Events**: Dispatch and handle events (e.g., `UserRegistered`) to decouple side effects.
 
 ## 📦 Installation
 
@@ -95,7 +86,7 @@ class User extends Entity {
   deactivate() {
     this.status = 'inactive';
     this.markDirty('status'); // Track change
-    this.addDomainEvent(new UserDeactivatedEvent(this.id));
+    this.addDomainEvent({ type: 'UserDeactivated', entityId: this.id });
   }
 }
 ```
@@ -153,21 +144,6 @@ class ActiveUserSpecification extends Specification {
 
 The `QueryTranslator` attempts to convert a Specification into a `SheetDBLib` query. If translation isn't possible (e.g., complex JS logic), the Repository automatically falls back to fetching all records and filtering in-memory.
 
-### Aggregates
-
-Aggregates enforce invariants across multiple entities.
-
-```javascript
-class Order extends Aggregate {
-  addItem(item) {
-    if (this.items.length >= 10) {
-      throw new InvariantViolationException('Max 10 items per order');
-    }
-    this.items.push(item);
-    this.markDirty('items');
-  }
-}
-```
 
 ## 🔧 Advanced Mapping
 

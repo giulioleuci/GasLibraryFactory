@@ -92,12 +92,14 @@ export class CapturingLogger {
   // ===================================================================
 
   /**
-   * Proxies and captures DEBUG message.
+   * Proxies and captures a log message at the given level.
+   * @private
+   * @param {string} level Log level name (debug|info|warn|error).
    * @param {string|Object|Function} message Raw message, object to stringify, or lazy evaluation function.
    * @param {Object|Function} [context] Optional metadata or lazy evaluation context function.
    * @returns {CapturingLogger} Current instance for chaining.
    */
-  debug(message, context = null) {
+  _proxy(level, message, context = null) {
     // Evaluate if message or context are functions (lazy evaluation)
     const evaluatedMessage = typeof message === 'function' ? message() : message;
     const evaluatedContext = context && typeof context === 'function' ? context() : context;
@@ -109,12 +111,22 @@ export class CapturingLogger {
         : String(evaluatedMessage);
 
     // Capture
-    this._capture('DEBUG', messageStr, evaluatedContext);
+    this._capture(level.toUpperCase(), messageStr, evaluatedContext);
 
     // Forward to real logger
-    this._realLogger.debug(message, context);
+    this._realLogger[level](message, context);
 
     return this;
+  }
+
+  /**
+   * Proxies and captures DEBUG message.
+   * @param {string|Object|Function} message Raw message, object to stringify, or lazy evaluation function.
+   * @param {Object|Function} [context] Optional metadata or lazy evaluation context function.
+   * @returns {CapturingLogger} Current instance for chaining.
+   */
+  debug(message, context = null) {
+    return this._proxy('debug', message, context);
   }
 
   /**
@@ -124,18 +136,7 @@ export class CapturingLogger {
    * @returns {CapturingLogger} Current instance for chaining.
    */
   info(message, context = null) {
-    const evaluatedMessage = typeof message === 'function' ? message() : message;
-    const evaluatedContext = context && typeof context === 'function' ? context() : context;
-
-    const messageStr =
-      typeof evaluatedMessage === 'object'
-        ? JSON.stringify(evaluatedMessage)
-        : String(evaluatedMessage);
-
-    this._capture('INFO', messageStr, evaluatedContext);
-    this._realLogger.info(message, context);
-
-    return this;
+    return this._proxy('info', message, context);
   }
 
   /**
@@ -145,18 +146,7 @@ export class CapturingLogger {
    * @returns {CapturingLogger} Current instance for chaining.
    */
   warn(message, context = null) {
-    const evaluatedMessage = typeof message === 'function' ? message() : message;
-    const evaluatedContext = context && typeof context === 'function' ? context() : context;
-
-    const messageStr =
-      typeof evaluatedMessage === 'object'
-        ? JSON.stringify(evaluatedMessage)
-        : String(evaluatedMessage);
-
-    this._capture('WARN', messageStr, evaluatedContext);
-    this._realLogger.warn(message, context);
-
-    return this;
+    return this._proxy('warn', message, context);
   }
 
   /**
@@ -166,18 +156,7 @@ export class CapturingLogger {
    * @returns {CapturingLogger} Current instance for chaining.
    */
   error(message, context = null) {
-    const evaluatedMessage = typeof message === 'function' ? message() : message;
-    const evaluatedContext = context && typeof context === 'function' ? context() : context;
-
-    const messageStr =
-      typeof evaluatedMessage === 'object'
-        ? JSON.stringify(evaluatedMessage)
-        : String(evaluatedMessage);
-
-    this._capture('ERROR', messageStr, evaluatedContext);
-    this._realLogger.error(message, context);
-
-    return this;
+    return this._proxy('error', message, context);
   }
 
   /**
@@ -336,15 +315,6 @@ export class CapturingLogger {
   // ===================================================================
 
   /**
-   * Retrieves raw capture buffer.
-   * @returns {Array<{level: string, timestamp: Date, message: string, context: Object|null}>} Chronological logs.
-   */
-  getCapturedLogs() {
-    // Return a shallow copy to prevent external modification
-    return [...this._capturedLogs];
-  }
-
-  /**
    * Formats captured logs as plain text.
    * @param {string} [separator='\n'] Line delimiter.
    * @returns {string} Formatted string: `[LEVEL] ISO_TIMESTAMP - MESSAGE {JSON_CONTEXT}`.
@@ -404,13 +374,6 @@ export class CapturingLogger {
    */
   _escapeHtml(text) {
     return HtmlSanitizer.escapeHtml(text);
-  }
-
-  /**
-   * Clears internal memory buffer. Does not affect realLogger.
-   */
-  clearCapturedLogs() {
-    this._capturedLogs = [];
   }
 
   /**

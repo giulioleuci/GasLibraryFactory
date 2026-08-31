@@ -91,36 +91,4 @@ export class ExpressionParserService {
     assertAllowedExpressionAst(ast, defaultPolicy);
     return ast;
   }
-
-  // ===================================================================
-  // LEGACY PRIVATE METHODS (Delegated for backward compatibility)
-  // ===================================================================
-
-  /**
-   * @private
-   */
-  _configureJSEP() {
-    this._astBuilder._configureJSEP();
-  }
-
-  /**
-   * @private
-   */
-  _convertNumericPathSegments(expression) {
-    return this._tokenScanner._convertNumericPathSegments(expression);
-  }
-
-  /**
-   * @private
-   */
-  _convertPlaceholders(expression) {
-    return this._tokenScanner._convertPlaceholders(expression);
-  }
-
-  /**
-   * @private
-   */
-  _convertBetweenOperator(expression) {
-    return this._tokenScanner._convertBetweenOperator(expression);
-  }
 }

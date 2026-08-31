@@ -162,14 +162,4 @@ export class ErrorClassifier {
   clearCache() {
     this._classificationCache.clear();
   }
-
-  /**
-   * Generates a deterministic SHA-256 identifier for an error context.
-   * @private
-   * @param {string} str diagnostic context string.
-   * @returns {string} 64-character hex hash.
-   */
-  _hashString(str) {
-    return HashUtils.generateHash(str);
-  }
 }

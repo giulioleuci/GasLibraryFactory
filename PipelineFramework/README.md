@@ -14,13 +14,6 @@ PipelineFramework/
 │   ├── Pipeline.js             # The main orchestrator (Engine)
 │   ├── PipelineContext.js      # Shared state container with metadata and history
 │   ├── Step.js                 # Base class for all pipeline tasks
-│   ├── ProducerStep.js         # Domain-decision step (Decoupled logic)
-│   ├── ConsumerStep.js         # Infrastructure-action step (Decoupled execution)
-│   ├── PostProcessableStep.js  # Decorator for steps with post-processing needs
-│   ├── postprocessor/          # Post-processing engine for step results
-│   │   ├── PostProcessorChain.js # Sequence of transformations
-│   │   ├── PostProcessorRegistry.js # Centralized library of processors
-│   │   └── builtin/            # Common processors (Mapping, Formatting, etc.)
 │   ├── errors/                 # Framework exceptions (Validation, Execution)
 │   └── __tests__/              # Pipeline unit and integration tests
 ```
@@ -31,8 +24,6 @@ PipelineFramework/
 2.  **Template Method Pattern**: The `Step` base class defines the invariant execution logic (hooks, logging, validation) while leaving the specific task implementation to subclasses via the `_executeLogic` method.
 3.  **Command Pattern**: Each `Step` is a command object that encapsulates everything needed to perform a task at a later time.
 4.  **Observer Pattern**: The pipeline uses lifecycle hooks (`beforeStep`, `afterStep`, `onError`, `onComplete`) to allow external logic to observe and react to its execution.
-5.  **Decorator Pattern**: `PostProcessableStep` wraps standard steps to add post-processing capabilities without changing their core logic.
-6.  **Producer-Consumer Pattern**: A specialized architectural pattern for strictly decoupling business decisions (Producers) from infrastructure actions (Consumers).
 
 ## ⛓️ Overview
 
@@ -219,138 +210,6 @@ graph LR
     I -- No --> F
 ```
 
-## 🔄 Producer-Consumer Pattern
-
-**NEW in v1.0.0**: Strictly decoupled Producer-Consumer step pattern for separating business logic (decision) from infrastructure logic (execution).
-
-### Overview
-
-The Producer-Consumer pattern enforces a strict separation of concerns:
-
-- **ProducerStep** (Decision): Evaluates business rules using `GasExpressionEngineLib` and writes scalar results to context
-- **ConsumerStep** (Action): Reads values from context and performs technical operations without knowing the business logic
-
-This pattern ensures that:
-
-- Business logic is centralized in ProducerSteps
-- Infrastructure code (ConsumerSteps) is reusable across different business contexts
-- The PipelineFramework remains lightweight (ConsumerSteps have zero dependencies on ExpressionEngine)
-
-### ProducerStep
-
-Abstract base class for decision-making steps.
-
-```javascript
-import { ProducerStep } from '@PipelineFramework';
-import { ExpressionEngineService } from '@GasExpressionEngineLib';
-
-class TemplateSelectorStep extends ProducerStep {
-  constructor(logger, expressionEngine) {
-    super('TemplateSelector', logger, expressionEngine, {
-      outputKey: 'selected_template_id',
-      requiredKeys: ['grade', 'absences']
-    });
-  }
-
-  evaluateRules(context) {
-    // Business logic: Evaluate expressions
-    if (this.expressionEngine.evaluate('{{grade}} >= 6 && {{absences}} < 5', context.getData())) {
-      return 'TEMPLATE_PASS';
-    }
-    if (this.expressionEngine.evaluate('{{grade}} < 6', context.getData())) {
-      return 'TEMPLATE_FAIL';
-    }
-    return 'TEMPLATE_DEFAULT';
-  }
-}
-```
-
-**Key Features:**
-
-- Depends on `GasExpressionEngineLib` for expression evaluation
-- Must return a scalar value (string/number/boolean)
-- Writes result to configured `outputKey` in context
-- Performs NO external actions (no API calls, no file operations)
-
-### ConsumerStep
-
-Abstract base class for action-performing steps.
-
-```javascript
-import { ConsumerStep } from '@PipelineFramework';
-
-class GenerateDocumentStep extends ConsumerStep {
-  constructor(logger, driveService) {
-    super('GenerateDocument', logger, {
-      inputKey: 'selected_template_id',
-      outputKey: 'generated_document',
-      requiredKeys: ['selected_template_id', 'student_name']
-    });
-    this.driveService = driveService;
-  }
-
-  performAction(templateId, context) {
-    // Infrastructure logic: Create document
-    // Does NOT know WHY this templateId was chosen
-    const studentName = context.get('student_name');
-    const doc = this.driveService.createDocumentFromTemplate(templateId);
-
-    return {
-      id: doc.getId(),
-      url: doc.getUrl(),
-      name: `${studentName} - Report`
-    };
-  }
-}
-```
-
-**Key Features:**
-
-- **Zero dependencies** on `GasExpressionEngineLib`
-- Reads input value from configured `inputKey`
-- Performs technical operations (API calls, file creation, etc.)
-- Optionally writes result to `outputKey`
-- Agnostic to business logic
-
-### Complete Example
-
-```javascript
-import { Pipeline, ProducerStep, ConsumerStep } from '@PipelineFramework';
-import { ExpressionEngineService } from '@GasExpressionEngineLib';
-import { LoggerService } from '@CoreUtilsLib';
-
-// Setup
-const logger = new LoggerService();
-const expressionEngine = new ExpressionEngineService({ logger });
-const driveService = new DriveService({ logger });
-
-// Create pipeline with Producer → Consumer
-const pipeline = new Pipeline(logger);
-
-pipeline
-  .addStep(new TemplateSelectorStep(logger, expressionEngine))
-  .addStep(new GenerateDocumentStep(logger, driveService));
-
-// Execute
-const result = pipeline.execute({
-  grade: 8,
-  absences: 2,
-  student_name: 'John Doe'
-});
-
-// Result:
-// - selected_template_id: 'TEMPLATE_PASS' (from Producer)
-// - generated_document: { id: '...', url: '...', name: '...' } (from Consumer)
-```
-
-### Benefits
-
-1. **Separation of Concerns**: Business logic (ProducerStep) is completely separate from infrastructure (ConsumerStep)
-2. **Reusability**: ConsumerSteps can be reused with different ProducerSteps
-3. **Testability**: Producer and Consumer can be tested independently
-4. **Maintainability**: Changing business rules doesn't require changing infrastructure code
-5. **Lightweight Framework**: Projects without ExpressionEngine can still use ConsumerSteps
-
 ## 🧪 Testing
 
 Steps can be tested in isolation by mocking the `PipelineContext`.
@@ -369,4 +228,4 @@ npm run test:integration
 
 ### Online Tests
 
-The `__testOnline__` directory contains real-world tests that run in Google Apps Script environment, including Producer-Consumer pattern tests with actual Drive file creation.
+The `__testOnline__` directory contains real-world tests that run in the Google Apps Script environment.

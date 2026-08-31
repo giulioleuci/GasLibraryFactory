@@ -20,9 +20,6 @@ export class QueueStateManager {
   static get STATE_PENDING() {
     return 'pending';
   }
-  static get LOCK_RETRY_DELAY_MS() {
-    return 100;
-  }
 
   constructor(jobName, propertiesService, utils, lockService) {
     if (!jobName || typeof jobName !== 'string') {

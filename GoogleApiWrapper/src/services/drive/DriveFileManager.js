@@ -25,7 +25,7 @@ export class DriveFileManager {
    * @param {Object} [options={}] Operation settings.
    * @param {boolean} [options.permanently=false] Skip trash (irreversible).
    * @returns {Object} Result summary {successful: Array<{id, status, data}>, failed: Array<{id, status, error}>}.
-   * @throws {ServiceError} On execution failure.
+   * @throws {Error} On execution failure.
    * @throws {ValidationError} On invalid input.
    */
   deleteFiles(fileIds, options = {}) {
@@ -146,7 +146,7 @@ export class DriveFileManager {
    * @param {Object|Object[]} copyRequests Collection of {fileId, name, destinationFolder}.
    * @param {Object} [options={}] Operation settings.
    * @returns {Object} Result summary {successful: Array<{id, status, data}>, failed: Array<{id, status, error}>}.
-   * @throws {ServiceError} On execution failure.
+   * @throws {Error} On execution failure.
    * @throws {ValidationError} On invalid request format.
    */
   copyFiles(copyRequests, options = {}) {
@@ -216,7 +216,7 @@ export class DriveFileManager {
    * @param {Object|Object[]} moveRequests Collection of {fileId, newParent, removeFromOtherParents}.
    * @param {Object} [options={}] Operation settings.
    * @returns {Object} Result summary {successful: Array<{id, status, data}>, failed: Array<{id, status, error}>}.
-   * @throws {ServiceError} On execution failure.
+   * @throws {Error} On execution failure.
    * @throws {ValidationError} On invalid request format.
    */
   moveFiles(moveRequests, options = {}) {
@@ -322,7 +322,7 @@ export class DriveFileManager {
    * @param {Object|Object[]} renameRequests Collection of {fileId, newName}.
    * @param {Object} [options={}] Operation settings.
    * @returns {Object} Result summary {successful: Array<{id, status, data}>, failed: Array<{id, status, error}>}.
-   * @throws {ServiceError} On execution failure.
+   * @throws {Error} On execution failure.
    * @throws {ValidationError} On missing names or invalid format.
    */
   renameFiles(renameRequests, options = {}) {
@@ -387,8 +387,8 @@ export class DriveFileManager {
    * @description Accesses file/folder via native DriveApp (standard API). Auto-detects resource type.
    * @param {string} fileId Target resource identifier.
    * @returns {GoogleAppsScript.Drive.File|GoogleAppsScript.Drive.Folder} Native GAS Drive object.
-   * @throws {ResourceNotFoundError} If resource is missing.
-   * @throws {PermissionDeniedError} If access is denied.
+   * @throws {Error} If resource is missing.
+   * @throws {Error} If access is denied.
    */
   getFileByIdStandard(fileId) {
     try {

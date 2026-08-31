@@ -6,8 +6,6 @@
  * - Repository pattern for domain-oriented data access
  * - Specification pattern for reusable business rules
  * - Value Objects for immutable domain concepts
- * - Aggregates for managing complex entity graphs
- * - Domain Events for decoupled communication
  *
  * @module DomainRepositoryLib
  * @version 1.0.0
@@ -17,7 +15,6 @@
 export { Entity } from './src/Entity.js';
 export { ValueObject } from './src/ValueObject.js';
 export { Repository } from './src/Repository.js';
-export { Aggregate } from './src/Aggregate.js';
 
 // Specification pattern
 export { Specification } from './src/specifications/Specification.js';
@@ -41,15 +38,6 @@ export { QueryTranslator } from './src/internal/query/QueryTranslator.js';
 
 // Validation — re-exported from GasSchemaValidatorLib for backwards compatibility
 export { SchemaValidator as ZodValidator, ValidationException, z } from '@GasSchemaValidatorLib';
-
-// Domain events
-export {
-  DomainEvent,
-  EntityCreatedEvent,
-  EntityUpdatedEvent,
-  EntityDeletedEvent
-} from './src/events/DomainEvent.js';
-export { EventDispatcher } from './src/events/EventDispatcher.js';
 
 // Error classes
 export { DomainException } from './src/internal/errors/DomainException.js';

@@ -64,24 +64,6 @@ export class NoActorFoundError extends RoleResolutionError {
 }
 
 /**
- * @class ActorNotFoundError
- * @extends RoleResolutionError
- * @description Thrown when a specific actor ID cannot be resolved.
- */
-export class ActorNotFoundError extends RoleResolutionError {
-  /**
-   * @constructor
-   * @param {string} actorId - The missing actor identifier.
-   * @param {Object} [context={}] - Additional metadata.
-   */
-  constructor(actorId, context = {}) {
-    super(`Actor not found: ${actorId}`, { ...context, actorId });
-    this.name = 'ActorNotFoundError';
-    this.actorId = actorId;
-  }
-}
-
-/**
  * @class CircularDelegationError
  * @extends RoleResolutionError
  * @description Thrown when a loop is detected in the delegation graph.

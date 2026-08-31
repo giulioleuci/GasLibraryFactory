@@ -228,29 +228,11 @@ class ImportConfiguration {
   }
 
   /**
-   * Gets the import name
-   *
-   * @returns {string} Import name
-   */
-  get name() {
-    return this._recipe.name;
-  }
-
-  /**
    * Returns the identification name of the import process.
    * @returns {string} Import name.
    */
   getName() {
-    return this.name;
-  }
-
-  /**
-   * Gets the source configuration
-   *
-   * @returns {Object} Source configuration
-   */
-  get source() {
-    return this._recipe.source;
+    return this._recipe.name;
   }
 
   /**
@@ -258,16 +240,7 @@ class ImportConfiguration {
    * @returns {Object} Source parameters.
    */
   getSource() {
-    return this.source;
-  }
-
-  /**
-   * Gets the transform configuration
-   *
-   * @returns {Object} Transform configuration
-   */
-  get transform() {
-    return this._recipe.transform || {};
+    return this._recipe.source;
   }
 
   /**
@@ -275,16 +248,7 @@ class ImportConfiguration {
    * @returns {Object} Transform parameters.
    */
   getTransform() {
-    return this.transform;
-  }
-
-  /**
-   * Gets the load configuration
-   *
-   * @returns {Object} Load configuration
-   */
-  get load() {
-    return this._recipe.load;
+    return this._recipe.transform || {};
   }
 
   /**
@@ -292,7 +256,7 @@ class ImportConfiguration {
    * @returns {Object} Load parameters.
    */
   getLoad() {
-    return this.load;
+    return this._recipe.load;
   }
 
   /**

@@ -7,6 +7,7 @@
 
 import { ErrorClassifier } from '../ErrorClassifier';
 import { ResilienceConfiguration } from '../../Configuration';
+import { HashUtils } from '@CoreUtilsLib';
 
 describe('ErrorClassifier - Comprehensive Test Suite', () => {
   let classifier;
@@ -437,7 +438,7 @@ describe('ErrorClassifier - Comprehensive Test Suite', () => {
 
       // Get first error hash
       const firstError = errors[0];
-      const firstHash = classifier._hashString(`${firstError.message} ${firstError.stack}`);
+      const firstHash = HashUtils.generateHash(`${firstError.message} ${firstError.stack}`);
 
       expect(classifier._classificationCache.has(firstHash)).toBe(true);
 
@@ -480,55 +481,6 @@ describe('ErrorClassifier - Comprehensive Test Suite', () => {
 
       // Restore classifiers
       classifier._classifiers = originalClassifiers;
-    });
-  });
-
-  // ===================================================================
-  // HASH FUNCTION
-  // ===================================================================
-
-  describe('Hash Function (_hashString)', () => {
-    it('should generate consistent hashes for same input', () => {
-      const hash1 = classifier._hashString('Quota exceeded');
-      const hash2 = classifier._hashString('Quota exceeded');
-
-      expect(hash1).toBe(hash2);
-    });
-
-    it('should generate different hashes for different inputs', () => {
-      const hash1 = classifier._hashString('Quota exceeded');
-      const hash2 = classifier._hashString('Permission denied');
-
-      expect(hash1).not.toBe(hash2);
-    });
-
-    it('should return hex string', () => {
-      const hash = classifier._hashString('test');
-
-      expect(typeof hash).toBe('string');
-      expect(hash).toMatch(/^[0-9a-f]+$/);
-    });
-
-    it('should handle empty string', () => {
-      const hash = classifier._hashString('');
-
-      expect(typeof hash).toBe('string');
-      expect(hash).toHaveLength(64);
-    });
-
-    it('should handle special characters', () => {
-      const hash = classifier._hashString('Error: ñ, é, 中文, 🚀');
-
-      expect(typeof hash).toBe('string');
-      expect(hash).toMatch(/^[0-9a-f]+$/);
-    });
-
-    it('should handle very long strings', () => {
-      const longString = 'A'.repeat(10000);
-      const hash = classifier._hashString(longString);
-
-      expect(typeof hash).toBe('string');
-      expect(hash).toMatch(/^[0-9a-f]+$/);
     });
   });
 

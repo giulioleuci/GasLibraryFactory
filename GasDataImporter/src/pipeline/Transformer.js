@@ -56,7 +56,7 @@ class Transformer {
       },
       {
         manager: this._validationGuard,
-        methods: ['_applyValidation', 'validateConfig']
+        methods: ['_applyValidation']
       }
     ]);
   }

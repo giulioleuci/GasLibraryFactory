@@ -5,28 +5,6 @@ export class OperatorHandler {
     this.facade = facade;
   }
 
-  _evaluateLogicalExpression(node, context) {
-    const operator = node.operator;
-
-    if (operator === '&&') {
-      const left = this.facade._evaluateNode(node.left, context);
-      if (!left) {
-        return false;
-      }
-      return Boolean(this.facade._evaluateNode(node.right, context));
-    }
-
-    if (operator === '||') {
-      const left = this.facade._evaluateNode(node.left, context);
-      if (left) {
-        return true;
-      }
-      return Boolean(this.facade._evaluateNode(node.right, context));
-    }
-
-    throw new Error(`Unsupported logical operator: ${operator}`);
-  }
-
   _evaluateBinaryExpression(node, context) {
     const operator = node.operator;
 

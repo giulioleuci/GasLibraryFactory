@@ -88,7 +88,7 @@ describe('GoogleService - Comprehensive Test Suite', () => {
 
       expect(() => {
         new ConcreteService(mocks.logger, mocks.cache, mocks.utils, null);
-      }).toThrow('GoogleService: exceptionService is required and cannot be null or undefined');
+      }).toThrow('GoogleService: exceptionService is required and must be an object');
     });
 
     it('should export GoogleService as alias for backwards compatibility', () => {
@@ -489,7 +489,7 @@ describe('GoogleService - Comprehensive Test Suite', () => {
           mocks.utils,
           null // No exception service
         );
-      }).toThrow('GoogleService: exceptionService is required and cannot be null or undefined');
+      }).toThrow('GoogleService: exceptionService is required and must be an object');
     });
 
     it('should require exceptionService to have executeWithRetry method', () => {
@@ -506,7 +506,7 @@ describe('GoogleService - Comprehensive Test Suite', () => {
 
       expect(() => {
         new ConcreteService(mocks.logger, mocks.cache, mocks.utils, exceptionServiceWithoutRetry);
-      }).toThrow('GoogleService: exceptionService must have method: executeWithRetry');
+      }).toThrow('GoogleService: exceptionService.executeWithRetry must be a function');
     });
 
     it('should use default context and maxAttempts when not specified', () => {
@@ -550,7 +550,7 @@ describe('GoogleService - Comprehensive Test Suite', () => {
 
       expect(() => {
         new ConcreteService(mocks.logger, mocks.cache, mocks.utils, undefined);
-      }).toThrow('GoogleService: exceptionService is required and cannot be null or undefined');
+      }).toThrow('GoogleService: exceptionService is required and must be an object');
     });
   });
 

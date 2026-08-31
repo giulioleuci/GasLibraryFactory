@@ -157,55 +157,10 @@ export class ExpressionEngineService {
   }
 
   /**
-   * Retrieves library classification and version metadata.
-   * @returns {Object} Library identity.
-   */
-  getInfo() {
-    return {
-      name: 'GasExpressionEngineLib',
-      version: '1.0.0',
-      description: 'Expression parser and evaluator for dynamic business logic',
-      dependencies: ['WorkspaceTemplateEngine']
-    };
-  }
-
-  /**
-   * Gets AST cache statistics for monitoring and debugging.
-   *
-   * @returns {Object} Cache statistics containing:
-   *   - size {number} - Current number of cached ASTs
-   *   - enabled {boolean} - Whether caching is enabled
-   *   - maxSize {number} - Maximum cache size (1000 entries)
-   */
-  getCacheStats() {
-    return {
-      size: this._astCache.size,
-      enabled: this._astCacheEnabled,
-      maxSize: 1000
-    };
-  }
-
-  /**
    * Clears the AST cache.
    */
   clearCache() {
     this._astCache.clear();
     this.logger.debug('AST cache cleared');
-  }
-
-  /**
-   * Enables or disables AST caching.
-   *
-   * @param {boolean} enabled - Whether to enable caching
-   * @throws {Error} If enabled is not a boolean
-   */
-  setCacheEnabled(enabled) {
-    // GEL-H004: Add input validation
-    if (typeof enabled !== 'boolean') {
-      throw new Error('Invalid enabled value: must be a boolean');
-    }
-
-    this._astCacheEnabled = enabled;
-    this.logger.debug(`AST cache ${this._astCacheEnabled ? 'enabled' : 'disabled'}`);
   }
 }

@@ -3,33 +3,34 @@
 import { SystemEnvironmentUtils } from './SystemEnvironmentUtils.js';
 import { SystemScriptSettings } from './SystemScriptSettings.js';
 import {
-  clamp,
+  chunk,
   compact,
+  difference,
   differenceBy,
-  flatten,
+  every,
+  filter,
+  find,
+  flattenDeep,
+  forEach,
   groupBy,
+  intersection,
   keyBy,
+  map,
   maxBy,
   meanBy,
   minBy,
   orderBy,
-  sumBy,
-  uniqBy,
-  unique
-} from './collections.js';
-import {
-  chunk,
-  difference,
-  every,
-  filter,
-  find,
-  forEach,
-  intersection,
-  map,
   reduce,
   size,
-  some
+  some,
+  sumBy,
+  uniq,
+  uniqBy
 } from '../facades/LodashFacade.js';
+
+const clamp = (n, lo, hi) => Math.min(Math.max(n, lo), hi);
+// LodashFacade's flatten() has no depth param; SystemUtils' public flatten(array, depth) needs one.
+const flatten = (a, depth = 1) => (Array.isArray(a) ? a.flat(depth) : []);
 
 export class SystemUtils {
   constructor(sleepFn = null) {
@@ -78,7 +79,7 @@ export class SystemUtils {
     return chunk(...args);
   }
   unique(...args) {
-    return unique(...args);
+    return uniq(...args);
   }
   flatten(...args) {
     return flatten(...args);
@@ -87,7 +88,7 @@ export class SystemUtils {
     return flatten(array);
   }
   flattenDeep(array) {
-    return flatten(array, Infinity);
+    return flattenDeep(array);
   }
   compact(...args) {
     return compact(...args);
@@ -111,7 +112,7 @@ export class SystemUtils {
     return orderBy(...args);
   }
   uniq(...args) {
-    return unique(...args);
+    return uniq(...args);
   }
   uniqBy(...args) {
     return uniqBy(...args);

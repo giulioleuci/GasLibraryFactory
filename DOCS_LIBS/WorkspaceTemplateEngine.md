@@ -2257,7 +2257,7 @@ Enables backward compatibility with functional filter registrations.
 ## CLASS: MyMustache
 **File Path:** `WorkspaceTemplateEngine/src/facades/Mustache.js`
 **Constructor Usage:** `const instance = new MyMustache();`
-**Description:** Advanced Mustache engine with Handlebars meta-variables (@index, @first) and Liquid-style filters.
+**Description:** Advanced Mustache engine with Handlebars meta-variables (@index, @number, @first, @last, @odd, @even, @total, @key) and Liquid-style filters.
 Implements template caching, prototype pollution protection, and Strategy-based filter registry.
 @class
 
@@ -2268,7 +2268,7 @@ const result = mustache.render('{{items | join:", "}}', { items: [1, 2, 3] });
 ### Raw JSDoc Context:
 ```javascript
 /**
- * @description Advanced Mustache engine with Handlebars meta-variables (@index, @first) and Liquid-style filters.
+ * @description Advanced Mustache engine with Handlebars meta-variables (@index, @number, @first, @last, @odd, @even, @total, @key) and Liquid-style filters.
  * Implements template caching, prototype pollution protection, and Strategy-based filter registry.
  * @class
  * @version 2.1.0
