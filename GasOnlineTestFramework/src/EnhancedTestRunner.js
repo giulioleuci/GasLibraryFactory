@@ -37,15 +37,9 @@ export class EnhancedTestRunner {
    */
   run(filter = null) {
     const testsToRun = this.registry.filter((test) => {
-      if (!filter) {
-        return true;
-      }
-      if (typeof filter === 'string') {
-        return test.path.includes(filter);
-      }
-      if (filter instanceof RegExp) {
-        return filter.test(test.path);
-      }
+      if (!filter) return true;
+      if (typeof filter === 'string') return test.path.includes(filter);
+      if (filter instanceof RegExp) return filter.test(test.path);
       return true;
     });
 
