@@ -11,9 +11,11 @@ import { HashUtils } from '@CoreUtilsLib';
 
 describe('ErrorClassifier - Comprehensive Test Suite', () => {
   let classifier;
+  let defaultConfig;
 
   beforeEach(() => {
-    classifier = new ErrorClassifier();
+    defaultConfig = new ResilienceConfiguration();
+    classifier = new ErrorClassifier(defaultConfig);
   });
 
   afterEach(() => {
@@ -26,7 +28,7 @@ describe('ErrorClassifier - Comprehensive Test Suite', () => {
 
   describe('Constructor and Initialization', () => {
     it('should create instance with default patterns', () => {
-      const classifier = new ErrorClassifier();
+      const classifier = new ErrorClassifier(defaultConfig);
 
       expect(classifier).toBeInstanceOf(ErrorClassifier);
       expect(Object.keys(classifier._classifiers)).toEqual([
@@ -43,7 +45,7 @@ describe('ErrorClassifier - Comprehensive Test Suite', () => {
     });
 
     it('should initialize with all default error patterns', () => {
-      const classifier = new ErrorClassifier();
+      const classifier = new ErrorClassifier(defaultConfig);
 
       expect(classifier._classifiers.AUTH_REQUIRED).toEqual({
         pattern: /authorization is required|access_token/i,
@@ -113,26 +115,30 @@ describe('ErrorClassifier - Comprehensive Test Suite', () => {
       expect(result.recoverable).toBe(true);
     });
 
-    it('should throw error for invalid config (not object)', () => {
+    it('should throw error for missing or invalid config', () => {
+      expect(() => {
+        new ErrorClassifier();
+      }).toThrow('ErrorClassifier: config is required and must implement getErrorPatterns()');
+
+      expect(() => {
+        new ErrorClassifier(null);
+      }).toThrow('ErrorClassifier: config is required and must implement getErrorPatterns()');
+
       expect(() => {
         new ErrorClassifier('invalid');
-      }).toThrow('ErrorClassifier: config must be an object or null');
+      }).toThrow('ErrorClassifier: config is required and must implement getErrorPatterns()');
 
       expect(() => {
         new ErrorClassifier(123);
-      }).toThrow('ErrorClassifier: config must be an object or null');
-    });
+      }).toThrow('ErrorClassifier: config is required and must implement getErrorPatterns()');
 
-    it('should accept null config', () => {
-      expect(new ErrorClassifier(null)).toBeInstanceOf(ErrorClassifier);
-    });
-
-    it('should accept undefined config', () => {
-      expect(new ErrorClassifier(undefined)).toBeInstanceOf(ErrorClassifier);
+      expect(() => {
+        new ErrorClassifier({});
+      }).toThrow('ErrorClassifier: config is required and must implement getErrorPatterns()');
     });
 
     it('should initialize empty cache', () => {
-      const classifier = new ErrorClassifier();
+      const classifier = new ErrorClassifier(defaultConfig);
 
       expect(classifier._classificationCache.size).toBe(0);
       expect(classifier._cacheMaxSize).toBe(100);

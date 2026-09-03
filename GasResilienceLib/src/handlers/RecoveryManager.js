@@ -17,11 +17,11 @@ export class RecoveryManager {
   } // Cap maximum wait time at 5 minutes
 
   /**
-   * Initializes the recovery manager with sleep utilities and optional behavior configuration.
+   * Initializes the recovery manager with sleep utilities and behavior configuration.
    * @param {Object} utils CoreUtilsLib service for temporal delays.
    * @param {Function} utils.sleep Logic to pause execution.
-   * @param {Object} [config] optional central settings (ResilienceConfiguration).
-   * @throws {Error} If utils or sleep function are missing.
+   * @param {Object} config central settings (ResilienceConfiguration) providing getRecoveryStrategies().
+   * @throws {Error} If utils, utils.sleep, or config are missing/invalid.
    */
   constructor(utils, config) {
     // Validate utils
@@ -32,9 +32,11 @@ export class RecoveryManager {
       throw new Error('RecoveryManager: utils.sleep must be a function');
     }
 
-    // Validate config if provided
-    if (config !== undefined && config !== null && typeof config !== 'object') {
-      throw new Error('RecoveryManager: config must be an object or null');
+    // GRL-M002: ResilienceConfiguration is the sole source of recovery strategies
+    if (!config || typeof config.getRecoveryStrategies !== 'function') {
+      throw new Error(
+        'RecoveryManager: config is required and must implement getRecoveryStrategies()'
+      );
     }
 
     this._utils = utils;
@@ -44,44 +46,8 @@ export class RecoveryManager {
      * Each strategy defines the retry action, maximum attempts, and base interval.
      * @private
      */
-    // GRL-M002: Use configuration object instead of hard-coded values
-    if (config && typeof config.getRecoveryStrategies === 'function') {
-      this._strategies = config.getRecoveryStrategies();
-      this._config = config;
-    } else {
-      // Fallback to default strategies for backward compatibility
-      this._strategies = {
-        DEFAULT: {
-          action: 'RETRY_BACKOFF',
-          maxAttempts: 3,
-          interval: 2000 // 2 seconds base interval
-        },
-        FATAL: {
-          action: 'NOTIFY_ADMIN',
-          maxAttempts: 1
-        },
-        QUOTA: {
-          action: 'RETRY_BACKOFF_LONG',
-          maxAttempts: 3,
-          interval: 60000 // 1 minute base interval
-        },
-        SERVICE: {
-          action: 'RETRY_BACKOFF',
-          maxAttempts: 5,
-          interval: 5000 // 5 seconds base interval
-        },
-        NETWORK: {
-          action: 'RETRY_IMMEDIATE',
-          maxAttempts: 3,
-          interval: 2000 // 2 seconds base interval
-        },
-        PERMISSIONS: {
-          action: 'NOTIFY_ADMIN',
-          maxAttempts: 1
-        }
-      };
-      this._config = null;
-    }
+    this._strategies = config.getRecoveryStrategies();
+    this._config = config;
   }
 
   /**

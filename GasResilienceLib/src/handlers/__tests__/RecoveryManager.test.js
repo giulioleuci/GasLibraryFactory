@@ -10,14 +10,16 @@ import { ResilienceConfiguration } from '../../Configuration';
 
 describe('RecoveryManager - Comprehensive Test Suite', () => {
   let utils;
+  let config;
   let manager;
 
   beforeEach(() => {
     utils = {
       sleep: jest.fn()
     };
+    config = new ResilienceConfiguration();
 
-    manager = new RecoveryManager(utils);
+    manager = new RecoveryManager(utils, config);
   });
 
   afterEach(() => {
@@ -29,8 +31,8 @@ describe('RecoveryManager - Comprehensive Test Suite', () => {
   // ===================================================================
 
   describe('Constructor and Initialization', () => {
-    it('should create instance with valid utils', () => {
-      const manager = new RecoveryManager(utils);
+    it('should create instance with valid utils and config', () => {
+      const manager = new RecoveryManager(utils, config);
 
       expect(manager).toBeInstanceOf(RecoveryManager);
       expect(manager._utils).toBe(utils);
@@ -66,24 +68,30 @@ describe('RecoveryManager - Comprehensive Test Suite', () => {
       }).toThrow('RecoveryManager: utils.sleep must be a function');
     });
 
-    it('should throw error for invalid config (not object)', () => {
+    it('should throw error for missing or invalid config', () => {
+      expect(() => {
+        new RecoveryManager(utils);
+      }).toThrow('RecoveryManager: config is required and must implement getRecoveryStrategies()');
+
+      expect(() => {
+        new RecoveryManager(utils, null);
+      }).toThrow('RecoveryManager: config is required and must implement getRecoveryStrategies()');
+
       expect(() => {
         new RecoveryManager(utils, 'invalid');
-      }).toThrow('RecoveryManager: config must be an object or null');
+      }).toThrow('RecoveryManager: config is required and must implement getRecoveryStrategies()');
 
       expect(() => {
         new RecoveryManager(utils, 123);
-      }).toThrow('RecoveryManager: config must be an object or null');
-    });
+      }).toThrow('RecoveryManager: config is required and must implement getRecoveryStrategies()');
 
-    it('should accept null or undefined config', () => {
-      expect(new RecoveryManager(utils, null)).toBeInstanceOf(RecoveryManager);
-
-      expect(new RecoveryManager(utils, undefined)).toBeInstanceOf(RecoveryManager);
+      expect(() => {
+        new RecoveryManager(utils, {});
+      }).toThrow('RecoveryManager: config is required and must implement getRecoveryStrategies()');
     });
 
     it('should initialize default strategies', () => {
-      const manager = new RecoveryManager(utils);
+      const manager = new RecoveryManager(utils, config);
 
       expect(manager._strategies.DEFAULT).toEqual({
         action: 'RETRY_BACKOFF',
@@ -349,7 +357,7 @@ describe('RecoveryManager - Comprehensive Test Suite', () => {
 
     it('should handle zero interval gracefully', () => {
       // Create custom strategy with zero interval
-      const customManager = new RecoveryManager(utils);
+      const customManager = new RecoveryManager(utils, config);
       customManager._strategies.ZERO_INTERVAL = {
         action: 'RETRY_BACKOFF',
         maxAttempts: 3,
@@ -503,111 +511,105 @@ describe('RecoveryManager - Comprehensive Test Suite', () => {
   // ===================================================================
 
   describe('applyStrategy() - Input Validation', () => {
-    it('should throw error for null classification', () => {
-      expect(() => {
-        manager.applyStrategy(null, 1, 'RECOVERY');
-      }).toThrow('RecoveryManager.applyStrategy: classification must be an object');
-    });
+    const validClassification = { category: 'QUOTA', recoverable: true };
 
-    it('should throw error for undefined classification', () => {
-      expect(() => {
-        manager.applyStrategy(undefined, 1, 'RECOVERY');
-      }).toThrow('RecoveryManager.applyStrategy: classification must be an object');
-    });
-
-    it('should throw error for classification not object', () => {
-      expect(() => {
-        manager.applyStrategy('invalid', 1, 'RECOVERY');
-      }).toThrow('RecoveryManager.applyStrategy: classification must be an object');
-    });
-
-    it('should throw error for missing category', () => {
-      expect(() => {
-        manager.applyStrategy({ recoverable: true }, 1, 'RECOVERY');
-      }).toThrow('RecoveryManager.applyStrategy: classification.category must be a string');
-    });
-
-    it('should throw error for invalid category (not string)', () => {
-      expect(() => {
-        manager.applyStrategy({ category: 123, recoverable: true }, 1, 'RECOVERY');
-      }).toThrow('RecoveryManager.applyStrategy: classification.category must be a string');
-    });
-
-    it('should throw error for missing recoverable', () => {
-      expect(() => {
-        manager.applyStrategy({ category: 'QUOTA' }, 1, 'RECOVERY');
-      }).toThrow('RecoveryManager.applyStrategy: classification.recoverable must be a boolean');
-    });
-
-    it('should throw error for invalid recoverable (not boolean)', () => {
-      expect(() => {
-        manager.applyStrategy({ category: 'QUOTA', recoverable: 'yes' }, 1, 'RECOVERY');
-      }).toThrow('RecoveryManager.applyStrategy: classification.recoverable must be a boolean');
-    });
-
-    it('should throw error for invalid attempt (negative)', () => {
-      const classification = { category: 'QUOTA', recoverable: true };
-
-      expect(() => {
-        manager.applyStrategy(classification, -1, 'RECOVERY');
-      }).toThrow('RecoveryManager.applyStrategy: attempt must be a positive integer');
-    });
-
-    it('should throw error for invalid attempt (zero)', () => {
-      const classification = { category: 'QUOTA', recoverable: true };
-
-      expect(() => {
-        manager.applyStrategy(classification, 0, 'RECOVERY');
-      }).toThrow('RecoveryManager.applyStrategy: attempt must be a positive integer');
-    });
-
-    it('should throw error for invalid attempt (float)', () => {
-      const classification = { category: 'QUOTA', recoverable: true };
-
-      expect(() => {
-        manager.applyStrategy(classification, 1.5, 'RECOVERY');
-      }).toThrow('RecoveryManager.applyStrategy: attempt must be a positive integer');
-    });
-
-    it('should throw error for invalid attempt (not number)', () => {
-      const classification = { category: 'QUOTA', recoverable: true };
-
-      expect(() => {
-        manager.applyStrategy(classification, '1', 'RECOVERY');
-      }).toThrow('RecoveryManager.applyStrategy: attempt must be a positive integer');
-    });
-
-    it('should throw error for invalid customMaxAttempts (negative)', () => {
-      const classification = { category: 'QUOTA', recoverable: true };
-
-      expect(() => {
-        manager.applyStrategy(classification, 1, 'RECOVERY', -1);
-      }).toThrow('RecoveryManager.applyStrategy: customMaxAttempts must be a positive integer');
-    });
-
-    it('should throw error for invalid customMaxAttempts (zero)', () => {
-      const classification = { category: 'QUOTA', recoverable: true };
-
-      expect(() => {
-        manager.applyStrategy(classification, 1, 'RECOVERY', 0);
-      }).toThrow('RecoveryManager.applyStrategy: customMaxAttempts must be a positive integer');
-    });
-
-    it('should throw error for invalid customMaxAttempts (float)', () => {
-      const classification = { category: 'QUOTA', recoverable: true };
-
-      expect(() => {
-        manager.applyStrategy(classification, 1, 'RECOVERY', 2.5);
-      }).toThrow('RecoveryManager.applyStrategy: customMaxAttempts must be a positive integer');
-    });
-
-    it('should throw error for invalid customMaxAttempts (not number)', () => {
-      const classification = { category: 'QUOTA', recoverable: true };
-
-      expect(() => {
-        manager.applyStrategy(classification, 1, 'RECOVERY', '5');
-      }).toThrow('RecoveryManager.applyStrategy: customMaxAttempts must be a positive integer');
-    });
+    // Table-driven: one row per invalid-input category (GRL shrink — was one it() per case).
+    it.each([
+      ['null classification', null, 1, undefined, 'classification must be an object'],
+      ['undefined classification', undefined, 1, undefined, 'classification must be an object'],
+      ['classification not an object', 'invalid', 1, undefined, 'classification must be an object'],
+      [
+        'missing category',
+        { recoverable: true },
+        1,
+        undefined,
+        'classification.category must be a string'
+      ],
+      [
+        'invalid category (not string)',
+        { category: 123, recoverable: true },
+        1,
+        undefined,
+        'classification.category must be a string'
+      ],
+      [
+        'missing recoverable',
+        { category: 'QUOTA' },
+        1,
+        undefined,
+        'classification.recoverable must be a boolean'
+      ],
+      [
+        'invalid recoverable (not boolean)',
+        { category: 'QUOTA', recoverable: 'yes' },
+        1,
+        undefined,
+        'classification.recoverable must be a boolean'
+      ],
+      [
+        'invalid attempt (negative)',
+        validClassification,
+        -1,
+        undefined,
+        'attempt must be a positive integer'
+      ],
+      [
+        'invalid attempt (zero)',
+        validClassification,
+        0,
+        undefined,
+        'attempt must be a positive integer'
+      ],
+      [
+        'invalid attempt (float)',
+        validClassification,
+        1.5,
+        undefined,
+        'attempt must be a positive integer'
+      ],
+      [
+        'invalid attempt (not number)',
+        validClassification,
+        '1',
+        undefined,
+        'attempt must be a positive integer'
+      ],
+      [
+        'invalid customMaxAttempts (negative)',
+        validClassification,
+        1,
+        -1,
+        'customMaxAttempts must be a positive integer'
+      ],
+      [
+        'invalid customMaxAttempts (zero)',
+        validClassification,
+        1,
+        0,
+        'customMaxAttempts must be a positive integer'
+      ],
+      [
+        'invalid customMaxAttempts (float)',
+        validClassification,
+        1,
+        2.5,
+        'customMaxAttempts must be a positive integer'
+      ],
+      [
+        'invalid customMaxAttempts (not number)',
+        validClassification,
+        1,
+        '5',
+        'customMaxAttempts must be a positive integer'
+      ]
+    ])(
+      'should throw error for %s',
+      (_label, classification, attempt, customMaxAttempts, expectedMessage) => {
+        expect(() => {
+          manager.applyStrategy(classification, attempt, 'RECOVERY', customMaxAttempts);
+        }).toThrow(`RecoveryManager.applyStrategy: ${expectedMessage}`);
+      }
+    );
   });
 
   // ===================================================================

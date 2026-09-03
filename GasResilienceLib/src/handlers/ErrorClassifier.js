@@ -11,14 +11,14 @@ import { HashUtils } from '@CoreUtilsLib';
  */
 export class ErrorClassifier {
   /**
-   * Initializes the classifier with matching rules from configuration or system defaults.
-   * @param {Object} [config] optional central settings (ResilienceConfiguration).
-   * @throws {Error} If config is provided but invalid.
+   * Initializes the classifier with matching rules from configuration.
+   * @param {Object} config central settings (ResilienceConfiguration) providing getErrorPatterns().
+   * @throws {Error} If config is missing or does not implement getErrorPatterns().
    */
   constructor(config) {
-    // Validate config if provided
-    if (config !== undefined && config !== null && typeof config !== 'object') {
-      throw new Error('ErrorClassifier: config must be an object or null');
+    // GRL-M002: ResilienceConfiguration is the sole source of classification patterns
+    if (!config || typeof config.getErrorPatterns !== 'function') {
+      throw new Error('ErrorClassifier: config is required and must implement getErrorPatterns()');
     }
 
     /**
@@ -26,59 +26,7 @@ export class ErrorClassifier {
      * Each classifier defines a regex pattern, category name, and recoverability.
      * @private
      */
-    // GRL-M002: Use configuration object instead of hard-coded values
-    if (config && typeof config.getErrorPatterns === 'function') {
-      this._classifiers = config.getErrorPatterns();
-    } else {
-      // Fallback to default patterns for backward compatibility
-      // Note: Patterns are evaluated in order - more specific patterns should come first
-      this._classifiers = {
-        // Fatal errors that should never be retried (must come first)
-        AUTH_REQUIRED: {
-          pattern: /authorization is required|access_token/i,
-          category: 'FATAL',
-          recoverable: false
-        },
-        SCRIPT_ERROR: {
-          pattern: /script error|syntax error|reference error|type error|is not a function/i,
-          category: 'FATAL',
-          recoverable: false
-        },
-        // Recoverable and non-recoverable errors
-        // TIMEOUT must come before QUOTA to prevent `limit.*exceeded` from matching
-        // across message+stack boundary of TimeoutException errors
-        TIMEOUT: {
-          pattern: /timeout|time.*limit|execution.*time.*exceeded|exceeded.*time/i,
-          category: 'TIMEOUT',
-          recoverable: false
-        },
-        QUOTA_EXCEEDED: {
-          pattern: /quota|limit.*exceeded|too many (requests|times)|service invoked too many/i,
-          category: 'QUOTA',
-          recoverable: true
-        },
-        PERMISSION_DENIED: {
-          pattern: /permission.*(denied|to access)|unauthorized|you do not have permission/i,
-          category: 'PERMISSIONS',
-          recoverable: false
-        },
-        SERVICE_UNAVAILABLE: {
-          pattern: /service.*(unavailable|error|failed)|503/i,
-          category: 'SERVICE',
-          recoverable: true
-        },
-        NOT_FOUND: {
-          pattern: /not found|(?:^|\s)404(?:\s|$)/i,
-          category: 'NOT_FOUND',
-          recoverable: false
-        },
-        NETWORK_ERROR: {
-          pattern: /network.*error|connection.*(refused|failed)|failed to establish connection/i,
-          category: 'NETWORK',
-          recoverable: true
-        }
-      };
-    }
+    this._classifiers = config.getErrorPatterns();
 
     // GRL-M004: Cache for classification results to avoid re-classifying the same errors
     this._classificationCache = new Map();

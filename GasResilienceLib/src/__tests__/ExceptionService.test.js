@@ -11,6 +11,7 @@ import { ErrorClassifier } from '../handlers/ErrorClassifier';
 import { ErrorReporter } from '../handlers/ErrorReporter';
 import { RecoveryManager } from '../handlers/RecoveryManager';
 import { CircuitBreaker } from '../handlers/CircuitBreaker';
+import { ResilienceConfiguration } from '../Configuration';
 import { testing as CoreUtilsTesting } from '@CoreUtilsLib';
 
 describe('ExceptionService - Comprehensive Test Suite', () => {
@@ -50,7 +51,7 @@ describe('ExceptionService - Comprehensive Test Suite', () => {
     });
 
     it('should accept custom dependencies via dependency injection', () => {
-      const customClassifier = new ErrorClassifier();
+      const customClassifier = new ErrorClassifier(new ResilienceConfiguration());
       const customService = new ExceptionService(logger, utils, {
         classifier: customClassifier
       });

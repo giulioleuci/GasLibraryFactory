@@ -19,6 +19,7 @@ import { DatabaseService } from '@SheetDBLib';
 import {
   ExceptionService,
   ErrorClassifier,
+  ResilienceConfiguration,
   TimeoutException,
   RateLimitExceededException
 } from '@GasResilienceLib';
@@ -60,7 +61,7 @@ describe('Cross-Cutting Concern: Error Propagation', () => {
       quotaError.code = 429;
 
       // Act
-      const classifier = new ErrorClassifier(mockLogger);
+      const classifier = new ErrorClassifier(new ResilienceConfiguration());
       const category = classifier.classify(quotaError);
 
       // Assert
@@ -74,7 +75,7 @@ describe('Cross-Cutting Concern: Error Propagation', () => {
       permError.code = 403;
 
       // Act
-      const classifier = new ErrorClassifier(mockLogger);
+      const classifier = new ErrorClassifier(new ResilienceConfiguration());
       const category = classifier.classify(permError);
 
       // Assert
@@ -88,7 +89,7 @@ describe('Cross-Cutting Concern: Error Propagation', () => {
       notFoundError.code = 404;
 
       // Act
-      const classifier = new ErrorClassifier(mockLogger);
+      const classifier = new ErrorClassifier(new ResilienceConfiguration());
       const category = classifier.classify(notFoundError);
 
       // Assert
@@ -102,7 +103,7 @@ describe('Cross-Cutting Concern: Error Propagation', () => {
       serviceError.code = 503;
 
       // Act
-      const classifier = new ErrorClassifier(mockLogger);
+      const classifier = new ErrorClassifier(new ResilienceConfiguration());
       const category = classifier.classify(serviceError);
 
       // Assert

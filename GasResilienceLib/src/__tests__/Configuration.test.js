@@ -31,40 +31,40 @@ describe('ResilienceConfiguration - Comprehensive Test Suite', () => {
       expect(Object.keys(patterns)).toEqual([
         'AUTH_REQUIRED',
         'SCRIPT_ERROR',
+        'TIMEOUT',
         'QUOTA_EXCEEDED',
         'PERMISSION_DENIED',
         'SERVICE_UNAVAILABLE',
         'NOT_FOUND',
-        'TIMEOUT',
         'NETWORK_ERROR'
       ]);
       expect(patterns.QUOTA_EXCEEDED).toEqual({
-        pattern: /quota|limit.*exceeded|too many requests|too many times|service invoked too many/i,
+        pattern: /quota|limit.*exceeded|too many (requests|times)|service invoked too many/i,
         category: 'QUOTA',
         recoverable: true
       });
       expect(patterns.PERMISSION_DENIED).toEqual({
-        pattern: /permission.*denied|unauthorized/i,
+        pattern: /permission.*(denied|to access)|unauthorized|you do not have permission/i,
         category: 'PERMISSIONS',
         recoverable: false
       });
       expect(patterns.SERVICE_UNAVAILABLE).toEqual({
-        pattern: /service.*unavailable|service.*error|service.*failed|503/i,
+        pattern: /service.*(unavailable|error|failed)|503/i,
         category: 'SERVICE',
         recoverable: true
       });
       expect(patterns.NOT_FOUND).toEqual({
-        pattern: /not found|404/i,
+        pattern: /not found|(?:^|\s)404(?:\s|$)/i,
         category: 'NOT_FOUND',
         recoverable: false
       });
       expect(patterns.TIMEOUT).toEqual({
-        pattern: /timeout|execution.*time.*exceeded|exceeded.*maximum.*execution.*time/i,
+        pattern: /timeout|time.*limit|execution.*time.*exceeded|exceeded.*time/i,
         category: 'TIMEOUT',
         recoverable: false
       });
       expect(patterns.NETWORK_ERROR).toEqual({
-        pattern: /network.*error|connection.*refused/i,
+        pattern: /network.*error|connection.*(refused|failed)|failed to establish connection/i,
         category: 'NETWORK',
         recoverable: true
       });
@@ -172,7 +172,7 @@ describe('ResilienceConfiguration - Comprehensive Test Suite', () => {
       const pattern = config.getErrorPattern('QUOTA_EXCEEDED');
 
       expect(pattern).toEqual({
-        pattern: /quota|limit.*exceeded|too many requests|too many times|service invoked too many/i,
+        pattern: /quota|limit.*exceeded|too many (requests|times)|service invoked too many/i,
         category: 'QUOTA',
         recoverable: true
       });
@@ -185,7 +185,7 @@ describe('ResilienceConfiguration - Comprehensive Test Suite', () => {
       const pattern = config.getErrorPattern('PERMISSION_DENIED');
 
       expect(pattern).toEqual({
-        pattern: /permission.*denied|unauthorized/i,
+        pattern: /permission.*(denied|to access)|unauthorized|you do not have permission/i,
         category: 'PERMISSIONS',
         recoverable: false
       });
@@ -197,7 +197,7 @@ describe('ResilienceConfiguration - Comprehensive Test Suite', () => {
       const pattern = config.getErrorPattern('SERVICE_UNAVAILABLE');
 
       expect(pattern).toEqual({
-        pattern: /service.*unavailable|service.*error|service.*failed|503/i,
+        pattern: /service.*(unavailable|error|failed)|503/i,
         category: 'SERVICE',
         recoverable: true
       });
@@ -208,7 +208,11 @@ describe('ResilienceConfiguration - Comprehensive Test Suite', () => {
     it('should have NOT_FOUND pattern', () => {
       const pattern = config.getErrorPattern('NOT_FOUND');
 
-      expect(pattern).toEqual({ pattern: /not found|404/i, category: 'NOT_FOUND', recoverable: false });
+      expect(pattern).toEqual({
+        pattern: /not found|(?:^|\s)404(?:\s|$)/i,
+        category: 'NOT_FOUND',
+        recoverable: false
+      });
       expect(pattern.category).toBe('NOT_FOUND');
       expect(pattern.recoverable).toBe(false);
     });
@@ -217,7 +221,7 @@ describe('ResilienceConfiguration - Comprehensive Test Suite', () => {
       const pattern = config.getErrorPattern('TIMEOUT');
 
       expect(pattern).toEqual({
-        pattern: /timeout|execution.*time.*exceeded|exceeded.*maximum.*execution.*time/i,
+        pattern: /timeout|time.*limit|execution.*time.*exceeded|exceeded.*time/i,
         category: 'TIMEOUT',
         recoverable: false
       });
@@ -229,7 +233,7 @@ describe('ResilienceConfiguration - Comprehensive Test Suite', () => {
       const pattern = config.getErrorPattern('NETWORK_ERROR');
 
       expect(pattern).toEqual({
-        pattern: /network.*error|connection.*refused/i,
+        pattern: /network.*error|connection.*(refused|failed)|failed to establish connection/i,
         category: 'NETWORK',
         recoverable: true
       });
@@ -253,7 +257,7 @@ describe('ResilienceConfiguration - Comprehensive Test Suite', () => {
       const pattern = config.getErrorPattern('SCRIPT_ERROR');
 
       expect(pattern).toEqual({
-        pattern: /script error|syntax error|reference error/i,
+        pattern: /script error|syntax error|reference error|type error|is not a function/i,
         category: 'FATAL',
         recoverable: false
       });
@@ -456,12 +460,12 @@ describe('ResilienceConfiguration - Comprehensive Test Suite', () => {
 
       // Default patterns should still exist
       expect(customConfig.getErrorPattern('QUOTA_EXCEEDED')).toEqual({
-        pattern: /quota|limit.*exceeded|too many requests|too many times|service invoked too many/i,
+        pattern: /quota|limit.*exceeded|too many (requests|times)|service invoked too many/i,
         category: 'QUOTA',
         recoverable: true
       });
       expect(customConfig.getErrorPattern('TIMEOUT')).toEqual({
-        pattern: /timeout|execution.*time.*exceeded|exceeded.*maximum.*execution.*time/i,
+        pattern: /timeout|time.*limit|execution.*time.*exceeded|exceeded.*time/i,
         category: 'TIMEOUT',
         recoverable: false
       });
@@ -618,7 +622,7 @@ describe('ResilienceConfiguration - Comprehensive Test Suite', () => {
 
       // Should still have default patterns
       expect(config.getErrorPattern('QUOTA_EXCEEDED')).toEqual({
-        pattern: /quota|limit.*exceeded|too many requests|too many times|service invoked too many/i,
+        pattern: /quota|limit.*exceeded|too many (requests|times)|service invoked too many/i,
         category: 'QUOTA',
         recoverable: true
       });

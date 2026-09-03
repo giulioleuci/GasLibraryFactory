@@ -32,39 +32,40 @@ export class ResilienceConfiguration {
           recoverable: false
         },
         SCRIPT_ERROR: {
-          pattern: /script error|syntax error|reference error/i,
+          pattern: /script error|syntax error|reference error|type error|is not a function/i,
           category: 'FATAL',
           recoverable: false
         },
         // Recoverable and non-recoverable errors
+        // TIMEOUT must come before QUOTA to prevent `limit.*exceeded` from matching
+        // across message+stack boundary of TimeoutException errors
+        TIMEOUT: {
+          pattern: /timeout|time.*limit|execution.*time.*exceeded|exceeded.*time/i,
+          category: 'TIMEOUT',
+          recoverable: false
+        },
         QUOTA_EXCEEDED: {
-          pattern:
-            /quota|limit.*exceeded|too many requests|too many times|service invoked too many/i,
+          pattern: /quota|limit.*exceeded|too many (requests|times)|service invoked too many/i,
           category: 'QUOTA',
           recoverable: true
         },
         PERMISSION_DENIED: {
-          pattern: /permission.*denied|unauthorized/i,
+          pattern: /permission.*(denied|to access)|unauthorized|you do not have permission/i,
           category: 'PERMISSIONS',
           recoverable: false
         },
         SERVICE_UNAVAILABLE: {
-          pattern: /service.*unavailable|service.*error|service.*failed|503/i,
+          pattern: /service.*(unavailable|error|failed)|503/i,
           category: 'SERVICE',
           recoverable: true
         },
         NOT_FOUND: {
-          pattern: /not found|404/i,
+          pattern: /not found|(?:^|\s)404(?:\s|$)/i,
           category: 'NOT_FOUND',
           recoverable: false
         },
-        TIMEOUT: {
-          pattern: /timeout|execution.*time.*exceeded|exceeded.*maximum.*execution.*time/i,
-          category: 'TIMEOUT',
-          recoverable: false
-        },
         NETWORK_ERROR: {
-          pattern: /network.*error|connection.*refused/i,
+          pattern: /network.*error|connection.*(refused|failed)|failed to establish connection/i,
           category: 'NETWORK',
           recoverable: true
         }
