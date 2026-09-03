@@ -11,9 +11,9 @@
 
 import { Entity, Repository, ValueObject } from '@DomainRepositoryLib';
 import { DatabaseService, TableService } from '@SheetDBLib';
-import { SpreadsheetService, LoggerService, UtilsService } from '@GoogleApiWrapper';
+import { SpreadsheetService } from '@GoogleApiWrapper';
 import { ExceptionService } from '@GasResilienceLib';
-import { HashUtils } from '@CoreUtilsLib';
+import { HashUtils, LoggerService, UtilsService } from '@CoreUtilsLib';
 
 describe('Full Stack Integration: Domain Entity to Google API', () => {
   // Test Value Objects

@@ -5,170 +5,19 @@
 // ===================================================================
 
 /**
- * GoogleApiWrapper - Comprehensive wrapper for Google Workspace APIs
+ * GoogleApiWrapper (L2) — GAS-native wrappers for Drive, Sheets, Docs, Gmail,
+ * Properties, Cache, Triggers, Locks, and UI, plus a ServiceFactory DI
+ * container and GasResilienceLib-backed retry. Full API reference and usage
+ * examples live in `DOCS_LIBS/GoogleApiWrapper.md`.
+ *
+ * Exports: MenuBuilder, SidebarBuilder, DialogBuilder, TextStyleMapper,
+ * GoogleService, ServiceFactory, CacheService/Cache, DocumentService,
+ * DriveService, LockService, MailService, PermissionService,
+ * PropertiesService, SpreadsheetService, TriggerService, UiService,
+ * UserService, UtilitiesService, plus `testing` mocks. Also re-exports
+ * LoggerService/UtilsService from @CoreUtilsLib (deprecated — see below).
  *
  * @module GoogleApiWrapper
- *
- * @description
- * GoogleApiWrapper is a comprehensive library for working with Google Apps Script services.
- * It provides a clean, consistent API for interacting with Google Drive, Documents, Spreadsheets,
- * and other Google Workspace services with built-in error handling and resilience.
- *
- * ## Architecture
- *
- * GoogleApiWrapper follows a **layered architecture** with service-oriented design:
- *
- * 1. **Base Layer**: GoogleService abstract base class provides common functionality
- * 2. **Service Layer**: Specialized services (DriveService, SpreadsheetService, etc.)
- * 3. **Utility Layer**: Batch operations, rate limiting, error handling
- * 4. **Factory Layer**: ServiceFactory for centralized dependency injection
- *
- * ### Design Patterns
- *
- * - **Service Factory Pattern**: Centralized DI container for managing service instances
- * - **Advanced Service Integration**: Native use of Drive, Sheets, Docs, and Gmail advanced services
- * - **Fluent API**: Method chaining for readable, composable code
- * - **Error Recovery**: Automatic retry with exponential backoff via GasResilienceLib integration
- *
- * ## Key Features
- *
- * - **Resilient Error Handling**: Integrates with GasResilienceLib for automatic retry and error recovery
- * - **Fluent API**: Method chaining for cleaner, more readable code
- * - **Comprehensive Services**: Full coverage of Google Workspace APIs (10 services)
- * - **Native Batching**: Uses built-in batch capabilities of Advanced Services (where available)
- * - **Rate Limiting**: Token bucket algorithm to prevent quota exhaustion
- * - **Service Factory**: Centralized DI for consistent service instantiation
- * - **Error Classes**: Specialized exceptions (QuotaExceeded, PermissionDenied, etc.)
- * - **Well-Documented**: Extensive JSDoc comments and examples
- *
- * ## Dependencies
- *
- * - **CoreUtilsLib** (Layer 0): LoggerService, UtilsService, HashUtils
- * - **GasResilienceLib** (Layer 1): ExceptionService for error recovery
- * - **External**: None (pure Google Apps Script APIs)
- *
- * ## Exported Components
- *
- * ### Core Services (Re-exported from CoreUtilsLib)
- * - `LoggerService` - Structured logging with log levels (from @CoreUtilsLib)
- * - `UtilsService` - 60+ utility methods (from @CoreUtilsLib)
- *
- * ### Google Workspace Services
- * - `DriveService` - Google Drive file/folder operations
- * - `SpreadsheetService` - Google Sheets operations
- * - `DocumentService` - Google Docs operations
- * - `MailService` - Gmail sending with attachments
- * - `PermissionService` - File sharing and permissions
- * - `CacheService` - Script/User/Document cache operations
- * - `PropertiesService` - Script/User/Document properties storage
- * - `TriggerService` - Time-based and event-based triggers
- * - `LockService` - Script/User/Document locks for concurrency
- * - `UtilitiesService` - Utilities wrapper (sleep, formatDate, etc.)
- *
- * ### Utilities
- * - `MenuBuilder` - Fluent API for Google Workspace menus
- * - `SidebarBuilder` - Fluent API for sidebars
- * - `DialogBuilder` - Fluent API for dialogs
- *
- * ### Core Classes
- * - `GoogleService` - Abstract base class for all services
- * - `ServiceFactory` - Dependency injection container
- *
- * ### Error Handling
- * Services throw plain errors; recovery/retry is handled by GasResilienceLib's
- * ExceptionService (see `ServiceFactory.getExceptionService()`).
- *
- * ## Quick Start
- *
- * ### Basic Usage with Manual DI
- *
- * ```javascript
- * import { LoggerService, UtilsService, DriveService, CacheService } from '@GoogleApiWrapper';
- * import { ExceptionService } from '@GasResilienceLib';
- *
- * // Initialize dependencies
- * const logger = new LoggerService();
- * const utils = new UtilsService();
- * const cacheService = new CacheService(logger);
- * const cache = cacheService.getScriptCache();
- * const exceptionService = new ExceptionService(logger, utils);
- *
- * // Create a Drive service
- * const driveService = new DriveService(logger, cache, utils, exceptionService);
- *
- * // Create a folder with automatic retry
- * const folder = driveService.createFolder('My Reports', null, true, true).getResult();
- * console.log('Folder created:', folder.getName());
- * ```
- *
- * ### Using ServiceFactory (Recommended)
- *
- * ```javascript
- * import { ServiceFactory } from '@GoogleApiWrapper';
- *
- * // Get pre-configured services from factory
- * const driveService = ServiceFactory.getDriveService();
- * const spreadsheetService = ServiceFactory.getSpreadsheetService();
- *
- * // Services are ready to use with all dependencies injected
- * const folder = driveService.createFolder('Reports').getResult();
- * const sheet = spreadsheetService.createSpreadsheet('Data').getResult();
- * ```
- *
- * ### Batch Operations
- *
- * ```javascript
- * import { DriveService } from '@GoogleApiWrapper';
- *
- * const driveService = ServiceFactory.getDriveService();
- *
- * // Operations on multiple items are performed individually with retry
- * const result = driveService.deleteFiles(['id1', 'id2', 'id3']);
- * console.log(`Deleted: ${result.successful.length}`);
- * ```
- *
- * ### Error Handling
- *
- * ```javascript
- * import { DriveService, ServiceFactory } from '@GoogleApiWrapper';
- *
- * const driveService = ServiceFactory.getDriveService();
- *
- * // Retries/backoff are handled by the injected ExceptionService (GasResilienceLib);
- * // services otherwise throw plain errors.
- * const folder = driveService.createFolder('Reports').getResult();
- * ```
- *
- * ## Integration with Other Libraries
- *
- * GoogleApiWrapper is used by higher-level libraries:
- *
- * - **WorkspaceTemplateEngine**: Uses DocumentService, SpreadsheetService for template processing
- * - **SheetDBLib**: Uses SpreadsheetService for database operations
- * - **JobRunnerLib**: Uses PropertiesService, TriggerService for job persistence
- * - **ContextEngine**: Uses DriveService, SpreadsheetService for data providers
- * - **GasDataImporter**: Uses SpreadsheetService for ETL operations
- * - **DomainRepositoryLib**: Uses SheetDBLib (which uses GoogleApiWrapper)
- *
- * ## Backward Compatibility
- *
- * GoogleApiWrapper re-exports LoggerService and UtilsService from CoreUtilsLib for backward
- * compatibility. **New code should import directly from @CoreUtilsLib:**
- *
- * ```javascript
- * // ✅ Recommended (new code)
- * import { LoggerService, UtilsService } from '@CoreUtilsLib';
- *
- * // ⚠️ Deprecated (backward compatibility only)
- * import { LoggerService, UtilsService } from '@GoogleApiWrapper';
- * ```
- *
- * @version 3.0.0
- * @author GasLibraryFactory
- * @license MIT
- *
- * @see {@link module:CoreUtilsLib} for LoggerService and UtilsService documentation
- * @see {@link module:GasResilienceLib} for error recovery and retry logic
  */
 
 // Core services - Re-exported from CoreUtilsLib for backward compatibility.

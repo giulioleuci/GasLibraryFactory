@@ -100,17 +100,6 @@ export class PermissionService extends GoogleService {
   }
 
   /**
-   * @description Convenience method for cross-product batch sharing (Files × Users).
-   * @param {string[]} fileIds Collection of resource IDs.
-   * @param {Object[]} userPermissions Collection of access parameters.
-   * @param {Object} [options={}] Operation settings.
-   * @returns {Object} Result summary.
-   */
-  shareFilesWithUsers(fileIds, userPermissions, options = {}) {
-    return this.shareWithUsers(fileIds, userPermissions, options);
-  }
-
-  /**
    * @description Revokes access for user(s) from file(s) in batch. Auto-resolves emails to permission IDs.
    * @param {string|string[]} fileIds Resource ID(s).
    * @param {string|string[]} emailsOrPermissionIds Identifiers for removal.

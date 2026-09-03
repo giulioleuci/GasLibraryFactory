@@ -113,8 +113,6 @@ export class CacheService {
  * @property {Object} _cache Native GAS Cache instance.
  * @property {LoggerService} _logger Diagnostic logger.
  * @property {string} _type Cache scope identifier ('script', 'user', 'document').
- * @property {Set<string>} _trackedKeys Set of keys modified in current instance.
- * @property {boolean} _autoTrackKeys Enable/disable key tracking.
  */
 export class Cache {
   /**
@@ -127,19 +125,6 @@ export class Cache {
     this._cache = gasCache;
     this._logger = logger;
     this._type = type;
-    /**
-     * Set of tracked cache keys for prefix-based operations.
-     * Keys are added when put() is called with trackKey=true or when enableKeyTracking() is called.
-     * @private
-     * @type {Set<string>}
-     */
-    this._trackedKeys = new Set();
-    /**
-     * Whether to automatically track all keys on put() operations.
-     * @private
-     * @type {boolean}
-     */
-    this._autoTrackKeys = false;
   }
 
   /**
@@ -195,11 +180,6 @@ export class Cache {
 
       this._cache.put(key, stringValue, cappedExpiration);
 
-      // Track key if auto-tracking is enabled
-      if (this._autoTrackKeys) {
-        this._trackedKeys.add(key);
-      }
-
       this._logger.debug(`Cached (${this._type}): ${key} (expires in ${cappedExpiration}s)`);
     } catch (error) {
       this._logger.error(`Error caching key ${key}: ${error.message}`);
@@ -226,11 +206,6 @@ export class Cache {
 
       this._cache.putAll(stringValues, cappedExpiration);
 
-      // Track keys if auto-tracking is enabled
-      if (this._autoTrackKeys) {
-        Object.keys(values).forEach((key) => this._trackedKeys.add(key));
-      }
-
       this._logger.debug(`Cached ${Object.keys(values).length} keys (${this._type})`);
     } catch (error) {
       this._logger.error(`Error caching multiple keys: ${error.message}`);
@@ -246,8 +221,6 @@ export class Cache {
   remove(key) {
     try {
       this._cache.remove(key);
-      // Also remove from tracked keys
-      this._trackedKeys.delete(key);
       this._logger.debug(`Removed from ${this._type} cache: ${key}`);
     } catch (error) {
       this._logger.error(`Error removing cache key ${key}: ${error.message}`);
@@ -264,8 +237,6 @@ export class Cache {
     try {
       if (keys && keys.length > 0) {
         this._cache.removeAll(keys);
-        // Also remove from tracked keys
-        keys.forEach((key) => this._trackedKeys.delete(key));
         this._logger.debug(`Removed ${keys.length} keys from ${this._type} cache`);
       } else {
         // If no keys provided, remove all (not supported by GAS, so we do nothing)
@@ -275,98 +246,6 @@ export class Cache {
       this._logger.error(`Error removing multiple cache keys: ${error.message}`);
       throw error;
     }
-  }
-
-  /**
-   * @description Purges cached entries matching prefix. Relies on internal key tracking.
-   * @param {string} prefix Key prefix filter.
-   * @returns {number} Count of removed entries.
-   * @throws {Error} If prefix removal fails.
-   */
-  removeByPrefix(prefix) {
-    try {
-      if (this._trackedKeys.size === 0) {
-        this._logger.debug(`removeByPrefix: No tracked keys in ${this._type} cache`);
-        return 0;
-      }
-
-      // Find all keys that start with the prefix
-      const keysToRemove = [];
-      for (const key of this._trackedKeys) {
-        if (key.startsWith(prefix)) {
-          keysToRemove.push(key);
-        }
-      }
-
-      if (keysToRemove.length === 0) {
-        this._logger.debug(
-          `removeByPrefix: No keys matching prefix '${prefix}' in ${this._type} cache`
-        );
-        return 0;
-      }
-
-      // Remove from cache
-      this._cache.removeAll(keysToRemove);
-
-      // Remove from tracked keys
-      keysToRemove.forEach((key) => this._trackedKeys.delete(key));
-
-      this._logger.debug(
-        `Removed ${keysToRemove.length} keys with prefix '${prefix}' from ${this._type} cache`
-      );
-      return keysToRemove.length;
-    } catch (error) {
-      this._logger.error(`Error removing cache keys by prefix '${prefix}': ${error.message}`);
-      throw error;
-    }
-  }
-
-  /**
-   * @description Enables automatic key tracking for all subsequent put/putAll operations. Required for removeByPrefix.
-   * @returns {Cache} Current instance for chaining.
-   */
-  enableKeyTracking() {
-    this._autoTrackKeys = true;
-    this._logger.debug(`Key tracking enabled for ${this._type} cache`);
-    return this;
-  }
-
-  /**
-   * @description Disables automatic key tracking. Existing tracked keys are retained.
-   * @returns {Cache} Current instance for chaining.
-   */
-  disableKeyTracking() {
-    this._autoTrackKeys = false;
-    this._logger.debug(`Key tracking disabled for ${this._type} cache`);
-    return this;
-  }
-
-  /**
-   * @description Manually registers a key in the internal tracking set.
-   * @param {string} key Cache key to track.
-   * @returns {Cache} Current instance for chaining.
-   */
-  trackKey(key) {
-    this._trackedKeys.add(key);
-    return this;
-  }
-
-  /**
-   * @description Returns the number of keys currently being tracked.
-   * @returns {number} Tracked key count.
-   */
-  getTrackedKeyCount() {
-    return this._trackedKeys.size;
-  }
-
-  /**
-   * @description Clears the internal tracking set without modifying cached data.
-   * @returns {Cache} Current instance for chaining.
-   */
-  clearTrackedKeys() {
-    this._trackedKeys.clear();
-    this._logger.debug(`Cleared tracked keys for ${this._type} cache`);
-    return this;
   }
 
   /**

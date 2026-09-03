@@ -220,38 +220,6 @@ describe('PermissionService - Comprehensive Test Suite', () => {
   });
 
   // ===================================================================
-  // shareFilesWithUsers() METHOD
-  // ===================================================================
-
-  describe('shareFilesWithUsers() Method', () => {
-    it('should be alias for shareWithUsers', () => {
-      const spy = jest.spyOn(service, 'shareWithUsers');
-
-      service.shareFilesWithUsers(['fileId1'], [{ email: 'user@example.com', role: 'reader' }]);
-
-      expect(spy).toHaveBeenCalledWith(
-        ['fileId1'],
-        [{ email: 'user@example.com', role: 'reader' }],
-        {}
-      );
-    });
-
-    it('should handle batch operations across files and users', () => {
-      const result = service.shareFilesWithUsers(
-        ['fileId1', 'fileId2', 'fileId3'],
-        [
-          { email: 'user1@example.com', role: 'reader' },
-          { email: 'user2@example.com', role: 'writer' }
-        ]
-      );
-
-      expect(global.Drive.Permissions.create).toHaveBeenCalledTimes(6);
-      expect(result.successful).toHaveLength(6);
-      expect(result.failed).toEqual([]);
-    });
-  });
-
-  // ===================================================================
   // removeAccess() METHOD
   // ===================================================================
 

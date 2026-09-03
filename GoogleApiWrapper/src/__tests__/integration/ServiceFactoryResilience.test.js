@@ -182,10 +182,6 @@ describe('ServiceFactory + GasResilienceLib Integration', () => {
       invalidate(key) {
         this._invalidateCache(key);
       }
-
-      invalidateByPrefix(prefix) {
-        this._invalidateCacheByPrefix(prefix);
-      }
     }
 
     it('should invalidate single cache entry', () => {

@@ -146,21 +146,6 @@ export class GoogleService {
 
   /**
    * @protected
-   * @description Purges all keys matching prefix.
-   * @param {string} prefix Key prefix filter.
-   */
-  _invalidateCacheByPrefix(prefix) {
-    // Note: This assumes the cache service has a removeByPrefix method
-    if (typeof this._cache.removeByPrefix === 'function') {
-      this._cache.removeByPrefix(prefix);
-      this._logger.debug(`Invalidated cache with prefix: ${prefix}`);
-    } else {
-      this._logger.warn('Cache service does not support prefix-based invalidation');
-    }
-  }
-
-  /**
-   * @protected
    * @description Executes function with resilient retry logic via exceptionService.
    * @param {Function} func Logic to execute.
    * @param {Object} [context={}] Metadata for error classification.

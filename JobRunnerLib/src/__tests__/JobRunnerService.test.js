@@ -175,7 +175,7 @@ describe('JobRunnerService (Stateful Library Pattern)', () => {
           yield { percentage: 30 };
 
           // Capture state after first yield
-          stateSnapshot = services.properties.getScriptPropertyJSON('job:state-test-job');
+          stateSnapshot = services.properties.getObjectProperty('job:state-test-job');
 
           yield { percentage: 100 };
           return { done: true };

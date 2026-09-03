@@ -12,9 +12,6 @@ describe('GoogleService - Comprehensive Test Suite', () => {
   beforeEach(() => {
     mocks = MockFactory.createAllJest();
 
-    // Extend cache mock with removeByPrefix for GoogleService
-    mocks.cache.removeByPrefix = jest.fn();
-
     // Extend exceptionService mock with executeWithBypass for GoogleService
     mocks.exceptionService.executeWithBypass = jest.fn();
 
@@ -369,83 +366,6 @@ describe('GoogleService - Comprehensive Test Suite', () => {
 
       expect(mocks.cache.remove).toHaveBeenCalledTimes(3);
       expect(mocks.logger.debug).toHaveBeenCalledTimes(3);
-    });
-  });
-
-  // ===================================================================
-  // _invalidateCacheByPrefix Tests
-  // ===================================================================
-  describe('_invalidateCacheByPrefix', () => {
-    let service;
-
-    beforeEach(() => {
-      class ConcreteService extends GoogleService {
-        invalidateByPrefix(prefix) {
-          return this._invalidateCacheByPrefix(prefix);
-        }
-      }
-      service = new ConcreteService(mocks.logger, mocks.cache, mocks.utils, mocks.exceptionService);
-    });
-
-    it('should call removeByPrefix when cache service supports it', () => {
-      service.invalidateByPrefix('drive_');
-
-      expect(mocks.cache.removeByPrefix).toHaveBeenCalledWith('drive_');
-      expect(mocks.logger.debug).toHaveBeenCalledWith('Invalidated cache with prefix: drive_');
-    });
-
-    it('should log warning when cache service does not support removeByPrefix', () => {
-      const cacheWithoutPrefix = {
-        get: jest.fn(),
-        put: jest.fn(),
-        remove: jest.fn()
-        // No removeByPrefix method
-      };
-
-      class ConcreteService extends GoogleService {
-        invalidateByPrefix(prefix) {
-          return this._invalidateCacheByPrefix(prefix);
-        }
-      }
-
-      const serviceNoPrefix = new ConcreteService(
-        mocks.logger,
-        cacheWithoutPrefix,
-        mocks.utils,
-        mocks.exceptionService
-      );
-
-      serviceNoPrefix.invalidateByPrefix('test_');
-
-      expect(mocks.logger.warn).toHaveBeenCalledWith(
-        'Cache service does not support prefix-based invalidation'
-      );
-    });
-
-    it('should handle different prefixes', () => {
-      service.invalidateByPrefix('drive_file123_');
-      service.invalidateByPrefix('sheet_abc_');
-      service.invalidateByPrefix('doc_');
-
-      expect(mocks.cache.removeByPrefix).toHaveBeenCalledTimes(3);
-      expect(mocks.logger.debug).toHaveBeenCalledTimes(3);
-    });
-
-    it('should handle empty prefix', () => {
-      service.invalidateByPrefix('');
-
-      expect(mocks.cache.removeByPrefix).toHaveBeenCalledWith('');
-      expect(mocks.logger.debug).toHaveBeenCalledWith('Invalidated cache with prefix: ');
-    });
-
-    it('should handle cache service with removeByPrefix as undefined', () => {
-      mocks.cache.removeByPrefix = undefined;
-
-      service.invalidateByPrefix('test_');
-
-      expect(mocks.logger.warn).toHaveBeenCalledWith(
-        'Cache service does not support prefix-based invalidation'
-      );
     });
   });
 

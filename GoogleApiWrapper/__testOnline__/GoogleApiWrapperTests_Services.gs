@@ -52,28 +52,8 @@ function initGoogleApiWrapperTests_Services(NS) {
     const prefix = 'PREFIX_' + deps.utils.generateUuid().substring(0, 4);
     const key1 = prefix + '_1';
     const key2 = prefix + '_2';
-    const otherKey = 'OTHER_' + deps.utils.generateUuid().substring(0, 4);
 
-    // 1. Enable key tracking
-    scriptCache.enableKeyTracking();
-
-    // 2. Put values
-    scriptCache.put(key1, 'VAL1', 300);
-    scriptCache.put(key2, 'VAL2', 300);
-    scriptCache.put(otherKey, 'VAL_OTHER', 300);
-
-    SmartAssert.equals(scriptCache.get(key1), 'VAL1', 'Key1 should be cached');
-    SmartAssert.equals(scriptCache.get(key2), 'VAL2', 'Key2 should be cached');
-
-    // 3. Remove by prefix (uses tracking)
-    const removedCount = scriptCache.removeByPrefix(prefix);
-    SmartAssert.equals(removedCount, 2, 'Should have removed 2 tracked keys by prefix');
-
-    SmartAssert.isNull(scriptCache.get(key1), 'Key1 should be removed');
-    SmartAssert.isNull(scriptCache.get(key2), 'Key2 should be removed');
-    SmartAssert.equals(scriptCache.get(otherKey), 'VAL_OTHER', 'OtherKey should still be there');
-
-    // 4. PutAll and GetAll
+    // PutAll and GetAll
     const values = {};
     values[key1] = 'NEW1';
     values[key2] = 'NEW2';
@@ -84,7 +64,7 @@ function initGoogleApiWrapperTests_Services(NS) {
     SmartAssert.equals(retrieved[key2], 'NEW2', 'Key2 should be updated');
 
     // Cleanup
-    scriptCache.removeAll([key1, key2, otherKey]);
+    scriptCache.removeAll([key1, key2]);
   });
 
   runner.register(`${NS}/CacheService/UserCache`, () => {
