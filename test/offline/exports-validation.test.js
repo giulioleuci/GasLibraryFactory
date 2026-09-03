@@ -166,8 +166,7 @@ describe('Exports Validation', () => {
     const expressionExports = [
       'ExpressionEngineService',
       'ExpressionParserService',
-      'ExpressionEvaluatorService',
-      'ErrorHelper'
+      'ExpressionEvaluatorService'
     ];
 
     it.each(expressionExports)('should export %s', (name) => {

@@ -82,7 +82,6 @@
  * - **ExpressionEngineService** - Facade combining parser and evaluator (recommended for most use cases)
  * - **ExpressionParserService** - AST parser (advanced use cases)
  * - **ExpressionEvaluatorService** - AST evaluator (advanced use cases)
- * - **ErrorHelper** - Standardized error message formatting
  *
  * ## Supported Operators
  *
@@ -284,7 +283,6 @@
  */
 
 // Core services
-export { ErrorHelper } from './src/handlers/ErrorHelper';
 export { ExpressionParserService } from './src/ExpressionParserService';
 export { ExpressionEvaluatorService } from './src/ExpressionEvaluatorService';
 export { ExpressionEngineService } from './src/ExpressionEngineService';

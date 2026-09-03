@@ -6,8 +6,7 @@
  * @version 2.1.0 - Refactored with Facade/Delegation pattern
  */
 
-import { TokenScanner } from './internal/parser/TokenScanner.js';
-import { AstBuilder } from './internal/parser/AstBuilder.js';
+import jsep from 'jsep';
 import { assertAllowedExpressionAst, defaultPolicy } from './internal/ExpressionPolicy.js';
 
 /**
@@ -48,17 +47,7 @@ export class ExpressionParserService {
     // SEC-004: Maximum input length to prevent resource exhaustion
     this.MAX_INPUT_LENGTH = 10000;
 
-    /**
-     * @type {TokenScanner}
-     * @private
-     */
-    this._tokenScanner = new TokenScanner();
-
-    /**
-     * @type {AstBuilder}
-     * @private
-     */
-    this._astBuilder = new AstBuilder(this.logger);
+    this._configureJSEP();
   }
 
   /**
@@ -82,13 +71,122 @@ export class ExpressionParserService {
     this.logger.debug(`Parsing expression: "${expressionString}"`);
 
     // Phase 1: Preprocess the expression
-    const preprocessed = this._tokenScanner.preprocess(expressionString);
+    const preprocessed = this._preprocess(expressionString);
     this.logger.debug(`Preprocessed expression: "${preprocessed}"`);
 
-    // Phase 2: Parse using JSEP via AstBuilder and accept only the AST shape
-    // the evaluator supports. This is validation only; nothing is evaluated.
-    const ast = this._astBuilder.buildAst(preprocessed);
+    // Phase 2: Parse using JSEP and accept only the AST shape the evaluator
+    // supports. This is validation only; nothing is evaluated.
+    const ast = this._buildAst(preprocessed);
     assertAllowedExpressionAst(ast, defaultPolicy);
     return ast;
+  }
+
+  // =============================================================================
+  // TOKEN PREPROCESSING (formerly TokenScanner)
+  // =============================================================================
+
+  /**
+   * Orchestrates the normalization of expression syntax, converting {{placeholders}}, numeric paths, and special operators into JSEP-compatible tokens.
+   * @param {string} expressionString raw logic template.
+   * @returns {string} preprocessed expression string.
+   * @private
+   */
+  _preprocess(expressionString) {
+    let result = expressionString;
+
+    // Step 1: Convert placeholders {{...}} to plain identifiers
+    result = this._convertPlaceholders(result);
+
+    // Step 2: Convert numeric path segments (e.g. items.0.value → items[0].value)
+    result = this._convertNumericPathSegments(result);
+
+    // Step 3: Convert 'between' operator to function call
+    result = this._convertBetweenOperator(result);
+
+    return result;
+  }
+
+  /**
+   * Transforms dot-notation numeric segments into bracketed array accessors (e.g., 'items.0' -> 'items[0]').
+   * @private
+   * @param {string} expression Logic template fragment.
+   * @returns {string} Normalized fragment.
+   */
+  _convertNumericPathSegments(expression) {
+    return expression.replace(/(?<=[a-zA-Z_\]])\.\s*(\d+)/g, '[$1]');
+  }
+
+  /**
+   * Strips Mustache-style {{ }} delimiters from identifiers, iteratively resolving nested occurrences.
+   * @private
+   * @param {string} expression Logic template fragment.
+   * @returns {string} Delimiter-free identifiers.
+   */
+  _convertPlaceholders(expression) {
+    let result = expression;
+    let hasChanges = true;
+
+    while (hasChanges) {
+      const before = result;
+
+      // Match {{...}} where ... doesn't contain {{ or }}
+      result = result.replace(/\{\{([^{}]+)\}\}/g, (match, content) => {
+        return content.trim();
+      });
+
+      hasChanges = result !== before;
+    }
+
+    return result;
+  }
+
+  /**
+   * Rewrites 'between' keyword syntax into functional call notation (e.g., 'x between y, z' -> 'between(x, y, z)').
+   * @private
+   * @param {string} expression Logic template fragment.
+   * @returns {string} Normalized functional logic.
+   */
+  _convertBetweenOperator(expression) {
+    const betweenPattern =
+      /\b(\S+(?:\s*\([^)]*\))?)\s+between\s+(\S+(?:\s*\([^)]*\))?)\s*,\s*(\S+(?:\s*\([^)]*\))?)\b/gi;
+
+    return expression.replace(betweenPattern, (match, value, min, max) => {
+      return `between(${value}, ${min}, ${max})`;
+    });
+  }
+
+  // =============================================================================
+  // AST BUILDING (formerly AstBuilder)
+  // =============================================================================
+
+  /**
+   * Extends JSEP grammar with domain-specific binary operators (in, match).
+   * @private
+   */
+  _configureJSEP() {
+    // Add 'in' operator
+    jsep.addBinaryOp('in', 6);
+
+    // Add 'match' operator
+    jsep.addBinaryOp('match', 6);
+
+    this.logger.debug('JSEP configured with custom operators: in, match');
+  }
+
+  /**
+   * Generates a structured Abstract Syntax Tree from a normalized expression string using JSEP.
+   * @param {string} preprocessedExpression Normalized logic template.
+   * @returns {Object} Structured JSEP AST.
+   * @throws {Error} If the expression violates JSEP grammar rules.
+   * @private
+   */
+  _buildAst(preprocessedExpression) {
+    try {
+      const ast = jsep(preprocessedExpression);
+      this.logger.debug(`AST generated successfully`);
+      return ast;
+    } catch (error) {
+      throw new Error(`Failed to parse expression: ${error.message}`);
+    }
   }
 }

@@ -15,7 +15,6 @@ GasExpressionEngineLib/
 │   ├── ExpressionEngineService.js    # Main facade: coordinates parsing and evaluation
 │   ├── ExpressionParserService.js    # Pre-processes strings and generates JSEP AST
 │   ├── ExpressionEvaluatorService.js # Recursively traverses and evaluates the AST
-│   ├── ErrorHelper.js                # Standardized error reporting for syntax/runtime
 │   └── __tests__/                    # Extensive unit and AST integration tests
 ```
 

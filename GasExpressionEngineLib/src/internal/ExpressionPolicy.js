@@ -8,9 +8,9 @@
 const unsafeMemberNames = new Set(['__proto__', 'prototype', 'constructor']);
 
 /**
- * The exact node types and operators implemented by AstNodeEvaluator and
- * OperatorHandler. Call expressions are deliberately limited to registered
- * built-ins, whose callee must be a plain identifier.
+ * The exact node types and operators implemented by ExpressionEvaluatorService's
+ * node-evaluation and operator methods. Call expressions are deliberately
+ * limited to registered built-ins, whose callee must be a plain identifier.
  */
 export const defaultPolicy = Object.freeze({
   allowedNodeTypes: new Set([
