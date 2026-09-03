@@ -49,14 +49,6 @@ export class EntityMapper {
   }
 
   /**
-   * Retrieves the active mapping configuration container.
-   * @returns {MappingConfiguration} current configuration state.
-   */
-  getMappingConfiguration() {
-    return this._mappingConfig;
-  }
-
-  /**
    * Converts a domain Entity into a plain data record suitable for persistence, applying all registered transformers and expansions.
    * @param {Object} entity Domain entity to dehydrate.
    * @returns {Object|null} Persistence data record or null if entity is missing.

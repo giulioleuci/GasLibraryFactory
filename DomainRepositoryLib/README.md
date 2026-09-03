@@ -23,8 +23,7 @@ DomainRepositoryLib/
 │   │   ├── HydrationService.js # Logic for deep entity reconstruction
 │   │   └── DynamicFieldMapping.js # Maps map-like entity properties
 │   ├── specifications/         # Encapsulated business rules and query logic
-│   │   ├── Specification.js    # Base interface for rules
-│   │   └── SpecificationBuilder.js # Fluent API for rule composition
+│   │   └── Specification.js    # Base interface for rules
 │   ├── query/                  # Domain-to-DB query translation
 │   │   └── QueryTranslator.js  # Translates Specifications into SheetDB queries
 │   ├── validation/             # Schema validation bridge (Zod)
@@ -42,7 +41,7 @@ DomainRepositoryLib/
 
 It decouples your business logic from the underlying storage mechanism (Google Sheets), enabling cleaner, more maintainable, and testable code. It also introduces the **Specification Pattern** for encapsulating business rules.
 
-- **Entity**: Base class providing identity management, dirty checking, and lifecycle hooks (including a generic domain-event buffer via `addDomainEvent`/`getDomainEvents`).
+- **Entity**: Base class providing identity management, dirty checking, and lifecycle hooks.
 - **Repository Pattern**: Abstract base class for repositories with standard CRUD (`save`, `findById`, `delete`) and batch operations.
 - **Specification Pattern**: Encapsulate query logic (e.g., `new ActiveUserSpecification()`). These can be evaluated in-memory OR translated to `SheetDBLib` SQL-like queries automatically.
 - **Value Objects**: Immutable objects with structural equality (e.g., `Email`, `Money`).
@@ -86,7 +85,6 @@ class User extends Entity {
   deactivate() {
     this.status = 'inactive';
     this.markDirty('status'); // Track change
-    this.addDomainEvent({ type: 'UserDeactivated', entityId: this.id });
   }
 }
 ```
@@ -147,59 +145,7 @@ The `QueryTranslator` attempts to convert a Specification into a `SheetDBLib` qu
 
 ## 🔧 Advanced Mapping
 
-**NEW**: DomainRepositoryLib now supports advanced mapping patterns for handling dynamic data structures and JSON-expanded properties.
-
-### Schema-Driven Dynamic Mapping
-
-Map multiple database columns into a single Map/Dictionary property on entities. Perfect for domains with configuration-driven schemas (e.g., school subjects, product categories).
-
-```javascript
-class ClassRepository extends Repository {
-  constructor(database, logger, cache) {
-    super(database, 'Classes', ClassEntity, logger, cache);
-
-    this.entityMapper.configureDynamicField({
-      propertyName: 'chairs', // Map property on entity
-      schemaProvider: () => ['MATH', 'HIST', 'SCI'], // Schema keys
-      columnPattern: (key) => ({ main: key, assistant: `${key}.assistant` }),
-      aggregate: (row, key, columns) => ({
-        main: row[columns.main],
-        assistant: row[columns.assistant]
-      }),
-      expand: (value, key, columns) => ({
-        [columns.main]: value.main,
-        [columns.assistant]: value.assistant
-      })
-    });
-  }
-}
-
-// Use Map properties naturally
-const chairsMap = new Map();
-chairsMap.set('MATH', { main: 'teacher@school.com', assistant: 'assistant@school.com' });
-entity.chairs = chairsMap;
-```
-
-### JSON Expansion Mapping
-
-Expand a single JSON column into multiple first-class entity properties. Ideal for grouping sparse or auxiliary data.
-
-```javascript
-class ClassRepository extends Repository {
-  constructor(database, logger, cache) {
-    super(database, 'ClassRoles', ClassEntity, logger, cache);
-
-    this.entityMapper.configureJsonExpansion({
-      column: 'ROLES', // Database column with JSON
-      properties: ['tutor', 'secretary', 'coordinator'] // Entity properties
-    });
-  }
-}
-
-// Access properties directly (no JSON parsing needed)
-entity.tutor = 'tutor@school.com';
-entity.secretary = 'secretary@school.com';
-```
+DomainRepositoryLib supports advanced mapping patterns for handling dynamic data structures and JSON-expanded properties (schema-driven dynamic mapping, JSON expansion mapping).
 
 📖 **See [ADVANCED_MAPPING.md](./ADVANCED_MAPPING.md) for complete documentation and examples.**
 

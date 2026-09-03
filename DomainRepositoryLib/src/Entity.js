@@ -25,7 +25,6 @@ export class Entity {
     this._updatedAt = this._parseDate(data.updatedAt) || new Date();
     this._dirtyFields = new Set();
     this._originalData = {};
-    this._domainEvents = [];
     this._validationErrors = [];
     this._dynamicColumns = {};
   }
@@ -200,31 +199,6 @@ export class Entity {
   setDynamicColumn(column, value) {
     this._dynamicColumns[column] = value;
     this.markDirty(column);
-  }
-
-  /**
-   * Adds a domain event to the entity.
-   *
-   * @param {Object} event - The domain event
-   */
-  addDomainEvent(event) {
-    this._domainEvents.push(event);
-  }
-
-  /**
-   * Gets all domain events.
-   *
-   * @returns {Array<Object>} Array of domain events
-   */
-  getDomainEvents() {
-    return [...this._domainEvents];
-  }
-
-  /**
-   * Clears all domain events.
-   */
-  clearDomainEvents() {
-    this._domainEvents = [];
   }
 
   /**
