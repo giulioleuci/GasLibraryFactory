@@ -189,10 +189,6 @@ export class ContextStepExecutor {
     }
   }
 
-  assembleAsync(recipe, initialParams = {}, options = {}) {
-    return this.assemble(recipe, initialParams, options);
-  }
-
   /**
    * Invokes a single provider in "mutate" mode: the provider receives the
    * shared target object directly (instead of resolved `@`/`$` parameters)

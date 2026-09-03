@@ -394,21 +394,6 @@ describe('ContextStepExecutor', () => {
     });
   });
 
-  describe('assembleAsync', () => {
-    it('should call assemble with the same arguments', () => {
-      jest.spyOn(executor, 'assemble').mockReturnValue({ result: true });
-
-      const recipe = { p: 1 };
-      const params = { a: 1 };
-      const options = { b: 2 };
-
-      const result = executor.assembleAsync(recipe, params, options);
-
-      expect(result).toEqual({ result: true });
-      expect(executor.assemble).toHaveBeenCalledWith(recipe, params, options);
-    });
-  });
-
   describe('_executeMutatingProvider', () => {
     let providerConfig;
     let mockProvider;
@@ -576,10 +561,7 @@ describe('ContextStepExecutor', () => {
       facade._providerRegistry.get.mockReturnValue(provider);
 
       const sharedTarget = { untouched: true };
-      const clock = jest
-        .spyOn(Date, 'now')
-        .mockReturnValueOnce(1000)
-        .mockReturnValueOnce(1012);
+      const clock = jest.spyOn(Date, 'now').mockReturnValueOnce(1000).mockReturnValueOnce(1012);
       const result = executor.assembleInto(sharedTarget, recipe, {}, {});
       clock.mockRestore();
 

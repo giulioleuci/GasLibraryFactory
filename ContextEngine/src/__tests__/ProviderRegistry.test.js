@@ -1,8 +1,13 @@
 // ===================================================================
 // FILE: ContextEngine/src/__tests__/ProviderRegistry.test.js
 // ===================================================================
-// Comprehensive test suite for ProviderRegistry
-// Coverage: All methods and features
+// Test suite for ProviderRegistry.
+// ProviderRegistry is a thin TypedRegistry subclass (see internal/TypedRegistry.js);
+// the shared singleton/factory registration and retrieval mechanics it inherits are
+// already exercised end-to-end by InterceptorRegistry.test.js (the other TypedRegistry
+// subclass). This suite covers only what's specific to ProviderRegistry's own wiring:
+// its 'ProviderRegistry' label, the 'provide' required method, and its use of
+// ProviderNotFoundError (a distinct class from InterceptorRegistry's plain Error).
 // ===================================================================
 
 import { ProviderRegistry } from '../ProviderRegistry';
@@ -53,10 +58,6 @@ describe('ProviderRegistry - Comprehensive Test Suite', () => {
         'ProviderRegistry: logger must have debug, info, warn, and error methods'
       );
     });
-
-    it('should start with no registered providers', () => {
-      expect(registry.getRegisteredTypes()).toEqual([]);
-    });
   });
 
   // ===================================================================
@@ -69,12 +70,6 @@ describe('ProviderRegistry - Comprehensive Test Suite', () => {
 
       expect(registry.get('TestProvider')).toBe(mockProvider);
       expect(registry.getRegisteredTypes()).toContain('TestProvider');
-    });
-
-    it('should support method chaining for registerSingleton', () => {
-      const result = registry.registerSingleton('TestProvider', mockProvider);
-
-      expect(result).toBe(registry);
     });
 
     it('should throw error if type is invalid', () => {
@@ -104,26 +99,6 @@ describe('ProviderRegistry - Comprehensive Test Suite', () => {
         'ProviderRegistry.registerSingleton: instance must have a provide method'
       );
     });
-
-    it('should allow overwriting existing singleton', () => {
-      const newProvider = { provide: jest.fn(() => ({ data: 'new' })) };
-
-      registry.registerSingleton('TestProvider', mockProvider);
-      registry.registerSingleton('TestProvider', newProvider);
-
-      const provider = registry.get('TestProvider');
-      expect(provider).toBe(newProvider);
-    });
-
-    it('should return same instance on multiple gets', () => {
-      registry.registerSingleton('TestProvider', mockProvider);
-
-      const instance1 = registry.get('TestProvider');
-      const instance2 = registry.get('TestProvider');
-
-      expect(instance1).toBe(instance2);
-      expect(instance1).toBe(mockProvider);
-    });
   });
 
   // ===================================================================
@@ -138,13 +113,6 @@ describe('ProviderRegistry - Comprehensive Test Suite', () => {
 
       expect(registry.get('TestProvider')).not.toBeNull();
       expect(registry.getRegisteredTypes()).toContain('TestProvider');
-    });
-
-    it('should support method chaining for registerFactory', () => {
-      const factory = jest.fn(() => mockProvider);
-      const result = registry.registerFactory('TestProvider', factory);
-
-      expect(result).toBe(registry);
     });
 
     it('should throw error if type is invalid', () => {
@@ -165,27 +133,6 @@ describe('ProviderRegistry - Comprehensive Test Suite', () => {
       expect(() => registry.registerFactory('Test', null)).toThrow(
         'ProviderRegistry.registerFactory: factory is required and must be a function'
       );
-    });
-
-    it('should call factory on get', () => {
-      const factory = jest.fn(() => mockProvider);
-
-      registry.registerFactory('TestProvider', factory);
-      registry.get('TestProvider');
-
-      expect(factory).toHaveBeenCalledTimes(1);
-    });
-
-    it('should create new instance on each get', () => {
-      const factory = jest.fn(() => ({ provide: jest.fn() }));
-
-      registry.registerFactory('TestProvider', factory);
-
-      const instance1 = registry.get('TestProvider');
-      const instance2 = registry.get('TestProvider');
-
-      expect(factory).toHaveBeenCalledTimes(2);
-      expect(instance1).not.toBe(instance2);
     });
 
     it('should throw error if factory returns invalid object', () => {
@@ -219,18 +166,6 @@ describe('ProviderRegistry - Comprehensive Test Suite', () => {
       registry.registerFactory('FactoryProvider', () => mockProvider);
     });
 
-    it('should get singleton provider', () => {
-      const provider = registry.get('SingletonProvider');
-
-      expect(provider).toBe(mockProvider);
-    });
-
-    it('should get factory provider', () => {
-      const provider = registry.get('FactoryProvider');
-
-      expect(provider).toBe(mockProvider);
-    });
-
     it('should throw error if provider type is invalid', () => {
       expect(() => registry.get('')).toThrow(
         'ProviderRegistry.get: type is required and must be a non-empty string'
@@ -252,82 +187,6 @@ describe('ProviderRegistry - Comprehensive Test Suite', () => {
         expect(error.context.registeredProviders).toContain('SingletonProvider');
         expect(error.context.registeredProviders).toContain('FactoryProvider');
       }
-    });
-  });
-
-  // ===================================================================
-  // GET REGISTERED TYPES
-  // ===================================================================
-
-  describe('Get Registered Types', () => {
-    it('should return empty array initially', () => {
-      expect(registry.getRegisteredTypes()).toEqual([]);
-    });
-
-    it('should return registered singleton types', () => {
-      registry.registerSingleton('Provider1', mockProvider);
-      registry.registerSingleton('Provider2', mockProvider);
-
-      const types = registry.getRegisteredTypes();
-
-      expect(types).toHaveLength(2);
-      expect(types).toContain('Provider1');
-      expect(types).toContain('Provider2');
-    });
-
-    it('should return registered factory types', () => {
-      registry.registerFactory('Provider1', () => mockProvider);
-      registry.registerFactory('Provider2', () => mockProvider);
-
-      const types = registry.getRegisteredTypes();
-
-      expect(types).toHaveLength(2);
-      expect(types).toContain('Provider1');
-      expect(types).toContain('Provider2');
-    });
-
-    it('should return both singleton and factory types', () => {
-      registry.registerSingleton('Singleton1', mockProvider);
-      registry.registerFactory('Factory1', () => mockProvider);
-
-      const types = registry.getRegisteredTypes();
-
-      expect(types).toHaveLength(2);
-      expect(types).toContain('Singleton1');
-      expect(types).toContain('Factory1');
-    });
-  });
-
-  // ===================================================================
-  // INTEGRATION TESTS
-  // ===================================================================
-
-  describe('Integration Tests', () => {
-    it('should handle mixed registration and retrieval', () => {
-      const singleton = { provide: jest.fn(() => 'singleton') };
-      const factory = jest.fn(() => ({ provide: jest.fn(() => 'factory') }));
-
-      registry.registerSingleton('Singleton', singleton).registerFactory('Factory', factory);
-
-      const s1 = registry.get('Singleton');
-      const s2 = registry.get('Singleton');
-      const f1 = registry.get('Factory');
-      const f2 = registry.get('Factory');
-
-      expect(s1).toBe(s2);
-      expect(f1).not.toBe(f2);
-      expect(factory).toHaveBeenCalledTimes(2);
-    });
-
-    it('should handle provider replacement workflow', () => {
-      const provider1 = { provide: jest.fn(() => 'v1') };
-      const provider2 = { provide: jest.fn(() => 'v2') };
-
-      registry.registerSingleton('Provider', provider1);
-      expect(registry.get('Provider')).toBe(provider1);
-
-      registry.registerSingleton('Provider', provider2);
-      expect(registry.get('Provider')).toBe(provider2);
     });
   });
 });

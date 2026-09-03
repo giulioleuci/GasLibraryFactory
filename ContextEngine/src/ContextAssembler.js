@@ -196,7 +196,6 @@ export class ContextAssembler {
       '_executeProvider',
       '_executeMutatingProvider',
       'assemble',
-      'assembleAsync',
       'assembleInto'
     ];
     executionMethods.forEach((m) => {
@@ -225,32 +224,5 @@ export class ContextAssembler {
    */
   get providerRegistry() {
     return this._providerRegistry;
-  }
-
-  /**
-   * Engine for reference resolution (@param, $provider).
-   * @type {DependencyResolver}
-   * @readonly
-   */
-  get dependencyResolver() {
-    return this._dependencyResolver;
-  }
-
-  /**
-   * Engine for structural recipe validation.
-   * @type {RecipeParser}
-   * @readonly
-   */
-  get recipeParser() {
-    return this._recipeParser;
-  }
-
-  /**
-   * Engine for data transformation pipelines.
-   * @type {PostProcessor}
-   * @readonly
-   */
-  get postProcessor() {
-    return this._postProcessor;
   }
 }

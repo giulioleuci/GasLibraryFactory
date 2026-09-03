@@ -9,9 +9,6 @@ import { ContextAssembler } from '../ContextAssembler';
 import { ProviderRegistry } from '../ProviderRegistry';
 import { DataProvider } from '../DataProvider';
 import { ContextEngineError } from '../internal/errors/ContextEngineError';
-import { DependencyResolver } from '../internal/DependencyResolver';
-import { RecipeParser } from '../internal/RecipeParser';
-import { PostProcessor } from '../PostProcessor';
 import { MockFactory } from '../../../test/fakes';
 
 // Create test providers
@@ -183,18 +180,6 @@ describe('ContextAssembler - Comprehensive Test Suite', () => {
 
     it('should return provider registry', () => {
       expect(assembler.providerRegistry).toBe(mockRegistry);
-    });
-
-    it('should return dependency resolver', () => {
-      expect(assembler.dependencyResolver).toBeInstanceOf(DependencyResolver);
-    });
-
-    it('should return recipe parser', () => {
-      expect(assembler.recipeParser).toBeInstanceOf(RecipeParser);
-    });
-
-    it('should return post processor', () => {
-      expect(assembler.postProcessor).toBeInstanceOf(PostProcessor);
     });
   });
 
@@ -701,35 +686,6 @@ describe('ContextAssembler - Comprehensive Test Suite', () => {
   });
 
   // ===================================================================
-  // ASSEMBLE ASYNC
-  // ===================================================================
-
-  describe('assembleAsync', () => {
-    it('should call assemble (placeholder for future async support)', () => {
-      const recipe = {
-        providers: [
-          {
-            name: 'userData',
-            type: 'UserDataProvider',
-            parameters: { userId: '@userId' }
-          }
-        ]
-      };
-
-      const context = assembler.assembleAsync(recipe, { userId: 123 });
-
-      expect(context).toEqual({
-        userData: {
-          id: 123,
-          name: 'User 123',
-          email: 'user123@example.com',
-          isActive: true
-        }
-      });
-    });
-  });
-
-  // ===================================================================
   // INTEGRATION TESTS
   // ===================================================================
 
@@ -820,10 +776,7 @@ describe('ContextAssembler - Comprehensive Test Suite', () => {
         ]
       };
 
-      const clock = jest
-        .spyOn(Date, 'now')
-        .mockReturnValueOnce(1000)
-        .mockReturnValueOnce(1015);
+      const clock = jest.spyOn(Date, 'now').mockReturnValueOnce(1000).mockReturnValueOnce(1015);
       assembler.assemble(recipe, { userId: 123 });
       clock.mockRestore();
 
