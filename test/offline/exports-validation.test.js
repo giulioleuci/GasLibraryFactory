@@ -267,7 +267,6 @@ describe('Exports Validation', () => {
       'Repository',
       // Specifications
       'Specification',
-      'SpecificationBuilder',
       // Mapping
       'EntityMapper',
       'HydrationService',
