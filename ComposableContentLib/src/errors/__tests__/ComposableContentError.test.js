@@ -7,7 +7,6 @@ import {
   ComposableContentError,
   BlockNotFoundError,
   RenderingError,
-  CompositionError,
   RecipeValidationError,
   RendererNotFoundError,
   TemplateNotFoundError,
@@ -77,31 +76,6 @@ describe('ComposableContentError classes', () => {
 
     it('should handle null cause', () => {
       const error = new RenderingError('msg', 'type', 'fmt');
-      expect(error.cause).toBeNull();
-      expect(error.details.cause).toBeNull();
-    });
-  });
-
-  describe('CompositionError', () => {
-    it('should create an instance with message, recipeId and cause', () => {
-      const message = 'Composition failed';
-      const recipeId = 'recipe-123';
-      const cause = new Error('Original error');
-      const error = new CompositionError(message, recipeId, cause);
-
-      expect(error).toBeInstanceOf(ComposableContentError);
-      expect(error.name).toBe('CompositionError');
-      expect(error.message).toBe(message);
-      expect(error.recipeId).toBe(recipeId);
-      expect(error.cause).toBe(cause);
-      expect(error.details).toEqual({
-        recipeId,
-        cause: cause.message
-      });
-    });
-
-    it('should handle null cause', () => {
-      const error = new CompositionError('msg', 'id');
       expect(error.cause).toBeNull();
       expect(error.details.cause).toBeNull();
     });

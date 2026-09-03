@@ -15,15 +15,13 @@ export class CompositionResult {
    * Initializes and freezes a composition result instance.
    * @param {Object} result Initialization payload.
    * @param {string} result.recipeId Source recipe identifier.
-   * @param {string} [result.outputFormat] Target output format (e.g., 'html', 'markdown', 'plain_text').
-   * @param {string} [result.format] Alias for outputFormat.
+   * @param {string} result.outputFormat Target output format (e.g., 'html', 'markdown', 'plain_text').
    * @param {string} result.content Fully concatenated rendering output.
    * @param {BlockResult[]} [result.blocks=[]] Collection of executed block results.
-   * @param {BlockResult[]} [result.blockResults] Alias for blocks.
    * @param {Error[]} [result.errors=[]] Top-level orchestration errors.
    * @param {number} [result.processingTime=0] Total orchestration duration in ms.
    * @param {Object} [result.metadata={}] Global orchestration metadata.
-   * @throws {Error} If recipeId, outputFormat/format, or content is null/undefined.
+   * @throws {Error} If recipeId, outputFormat, or content is null/undefined.
    * @throws {Error} If result is not a valid object.
    */
   constructor(result) {
@@ -33,18 +31,13 @@ export class CompositionResult {
 
     const {
       recipeId,
-      outputFormat: _outputFormat,
-      format,
+      outputFormat,
       content,
-      blocks: _blocks,
-      blockResults,
+      blocks = [],
       errors = [],
       processingTime = 0,
       metadata = {}
     } = result;
-
-    const outputFormat = _outputFormat || format;
-    const blocks = _blocks || blockResults || [];
 
     if (!recipeId || typeof recipeId !== 'string') {
       throw new Error('CompositionResult recipeId is required');
@@ -69,13 +62,6 @@ export class CompositionResult {
      * @readonly
      */
     this.outputFormat = outputFormat;
-
-    /**
-     * Output format (alias).
-     * @type {string}
-     * @readonly
-     */
-    this.format = outputFormat;
 
     /**
      * Final composed content.
@@ -142,15 +128,6 @@ export class CompositionResult {
    */
   isSuccess() {
     return this.errors.length === 0 && !this.blocks.some((b) => b.isError && b.isError());
-  }
-
-  /**
-   * Resolves a block result by its instance ID.
-   * @param {string} instanceId Target instance identifier.
-   * @returns {BlockResult|null} Matched block result or null.
-   */
-  getBlockResult(instanceId) {
-    return this.getBlockById(instanceId);
   }
 
   /**

@@ -70,29 +70,6 @@ export class RenderingError extends ComposableContentError {
 }
 
 /**
- * @description Exception thrown during top-level recipe composition orchestration.
- * @class
- * @extends ComposableContentError
- */
-export class CompositionError extends ComposableContentError {
-  /**
-   * @description Initializes an orchestration error.
-   * @param {string} message Specific failure reason.
-   * @param {string} recipeId Target recipe identifier.
-   * @param {Error} [cause] Original caught exception.
-   */
-  constructor(message, recipeId, cause = null) {
-    super(message, {
-      recipeId,
-      cause: cause?.message || null
-    });
-    this.name = 'CompositionError';
-    this.recipeId = recipeId;
-    this.cause = cause;
-  }
-}
-
-/**
  * @description Exception thrown when a Recipe definition manifest fails structural validation.
  * @class
  * @extends ComposableContentError

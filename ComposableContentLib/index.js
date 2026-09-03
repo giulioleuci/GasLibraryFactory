@@ -121,7 +121,6 @@ export {
   ComposableContentError,
   BlockNotFoundError,
   RenderingError,
-  CompositionError,
   RecipeValidationError,
   RendererNotFoundError
 } from './src/errors/ComposableContentError.js';
