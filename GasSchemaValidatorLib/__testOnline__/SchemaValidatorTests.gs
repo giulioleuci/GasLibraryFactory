@@ -23,21 +23,6 @@ function runSchemaValidatorTests() {
     SmartAssert.isTrue(threw, 'Should have thrown');
   });
 
-  runner.test('SchemaValidator - WeakMap cache benchmark (1000 rows)', () => {
-    const logger = new LoggerService();
-    const validator = new SchemaValidator(logger);
-    const schema = z.object({ id: z.string(), name: z.string() });
-    const data = { id: 'abc', name: 'test' };
-
-    const start = Date.now();
-    for (let i = 0; i < 1000; i++) {
-      validator.validate(schema, data);
-    }
-    const elapsed = Date.now() - start;
-    Logger.log('1000 validations completed in ' + elapsed + 'ms');
-    SmartAssert.isTrue(elapsed < 5000, 'Should complete within GAS time limits');
-  });
-
   runner.test('ValidationException - serializes cleanly', () => {
     const ex = new ValidationException('Test', 'Entity', [{ field: 'x', message: 'bad' }]);
     const json = JSON.stringify(ex.toObject());

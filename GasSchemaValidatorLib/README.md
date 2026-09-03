@@ -21,7 +21,6 @@ A high-performance, **Zod-powered validation engine** for Google Apps Script. Pa
 ## 🚀 Key Features
 
 - **Zod Integration**: Full support for the `zod` ecosystem, allowing for complex, nested schemas and custom transformations.
-- **Efficient Caching**: Uses a `WeakMap` to cache `safeParse` functions, minimizing overhead during repeated validations of the same schema.
 - **Detailed Error Reporting**: Automatically formats Zod errors into a clean, field-based structure (`{ field: string, message: string }`).
 - **Flexible Validation Modes**:
   - `validate()`: Throws a `ValidationException` on failure (ideal for fail-fast logic).

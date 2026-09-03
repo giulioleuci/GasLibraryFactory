@@ -63,23 +63,6 @@ describe('SchemaValidator', () => {
     });
   });
 
-  describe('WeakMap caching', () => {
-    it('caches bound parse function on first call', () => {
-      const schema = z.string();
-      validator.validate(schema, 'hello');
-      expect(validator._cache.has(schema)).toBe(true);
-    });
-
-    it('creates separate cache entry for different schema references', () => {
-      const schema1 = z.string();
-      const schema2 = z.string();
-      validator.validate(schema1, 'a');
-      validator.validate(schema2, 'b');
-      expect(validator._cache.has(schema1)).toBe(true);
-      expect(validator._cache.has(schema2)).toBe(true);
-    });
-  });
-
   describe('formatZodError() static', () => {
     it('flattens nested Zod errors using .issues (Zod v4)', () => {
       const schema = z.object({ user: z.object({ email: z.string().email() }) });
