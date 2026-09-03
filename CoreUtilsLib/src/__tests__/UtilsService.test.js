@@ -22,24 +22,6 @@ describe('UtilsService', () => {
     });
   });
 
-  describe('Static Constants', () => {
-    it('MILLIS_PER_DAY should be 86400000', () => {
-      expect(MyUtilsService.MILLIS_PER_DAY).toBe(86400000);
-    });
-
-    it('MILLIS_PER_HOUR should be 3600000', () => {
-      expect(MyUtilsService.MILLIS_PER_HOUR).toBe(3600000);
-    });
-
-    it('MILLIS_PER_MINUTE should be 60000', () => {
-      expect(MyUtilsService.MILLIS_PER_MINUTE).toBe(60000);
-    });
-
-    it('MILLIS_PER_SECOND should be 1000', () => {
-      expect(MyUtilsService.MILLIS_PER_SECOND).toBe(1000);
-    });
-  });
-
   describe('Constructor', () => {
     it('should create instance without sleep function', () => {
       const u = new UtilsService();

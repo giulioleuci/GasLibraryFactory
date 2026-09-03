@@ -2,7 +2,7 @@
 // FILE: CoreUtilsLib/src/__tests__/TypeGuards.test.js
 // ===================================================================
 // Comprehensive test suite for TypeGuards
-// Coverage: 100% of all 27 static methods
+// Coverage: 100% of all 24 static methods
 // ===================================================================
 
 import {
@@ -17,7 +17,6 @@ import {
   isBoolean,
   isPlainObject,
   isObject,
-  isValidObject,
   isNonEmptyObject,
   isArray,
   isNonEmptyArray,
@@ -31,9 +30,7 @@ import {
   isRegExp,
   isPromise,
   isError,
-  isEmpty,
-  isTruthy,
-  isFalsy
+  isEmpty
 } from '../TypeGuards';
 
 describe('TypeGuards - Comprehensive Test Suite', () => {
@@ -285,25 +282,6 @@ describe('TypeGuards - Comprehensive Test Suite', () => {
       it('should work as standalone export', () => {
         expect(isObject({})).toBe(true);
         expect(isObject(null)).toBe(false);
-      });
-    });
-
-    describe('isValidObject()', () => {
-      it('should return true for non-null objects', () => {
-        expect(TypeGuards.isValidObject({})).toBe(true);
-        expect(TypeGuards.isValidObject([])).toBe(true);
-        expect(TypeGuards.isValidObject(new Date())).toBe(true);
-      });
-
-      it('should return false for null and non-objects', () => {
-        expect(TypeGuards.isValidObject(null)).toBe(false);
-        expect(TypeGuards.isValidObject(undefined)).toBe(false);
-        expect(TypeGuards.isValidObject('string')).toBe(false);
-      });
-
-      it('should work as standalone export', () => {
-        expect(isValidObject({})).toBe(true);
-        expect(isValidObject(null)).toBe(false);
       });
     });
 
@@ -602,10 +580,10 @@ describe('TypeGuards - Comprehensive Test Suite', () => {
   });
 
   // ===================================================================
-  // EMPTY/TRUTHY/FALSY GUARDS
+  // EMPTY GUARDS
   // ===================================================================
 
-  describe('Empty/Truthy/Falsy Guards', () => {
+  describe('Empty Guards', () => {
     describe('isEmpty()', () => {
       it('should return true for empty values', () => {
         expect(TypeGuards.isEmpty('')).toBe(true);
@@ -626,53 +604,6 @@ describe('TypeGuards - Comprehensive Test Suite', () => {
       it('should work as standalone export', () => {
         expect(isEmpty('')).toBe(true);
         expect(isEmpty('a')).toBe(false);
-      });
-    });
-
-    describe('isTruthy()', () => {
-      it('should return true for truthy values', () => {
-        expect(TypeGuards.isTruthy(true)).toBe(true);
-        expect(TypeGuards.isTruthy(1)).toBe(true);
-        expect(TypeGuards.isTruthy('a')).toBe(true);
-        expect(TypeGuards.isTruthy({})).toBe(true);
-        expect(TypeGuards.isTruthy([])).toBe(true);
-      });
-
-      it('should return false for falsy values', () => {
-        expect(TypeGuards.isTruthy(false)).toBe(false);
-        expect(TypeGuards.isTruthy(0)).toBe(false);
-        expect(TypeGuards.isTruthy('')).toBe(false);
-        expect(TypeGuards.isTruthy(null)).toBe(false);
-        expect(TypeGuards.isTruthy(undefined)).toBe(false);
-        expect(TypeGuards.isTruthy(NaN)).toBe(false);
-      });
-
-      it('should work as standalone export', () => {
-        expect(isTruthy(1)).toBe(true);
-        expect(isTruthy(0)).toBe(false);
-      });
-    });
-
-    describe('isFalsy()', () => {
-      it('should return true for falsy values', () => {
-        expect(TypeGuards.isFalsy(false)).toBe(true);
-        expect(TypeGuards.isFalsy(0)).toBe(true);
-        expect(TypeGuards.isFalsy('')).toBe(true);
-        expect(TypeGuards.isFalsy(null)).toBe(true);
-        expect(TypeGuards.isFalsy(undefined)).toBe(true);
-        expect(TypeGuards.isFalsy(NaN)).toBe(true);
-      });
-
-      it('should return false for truthy values', () => {
-        expect(TypeGuards.isFalsy(true)).toBe(false);
-        expect(TypeGuards.isFalsy(1)).toBe(false);
-        expect(TypeGuards.isFalsy('a')).toBe(false);
-        expect(TypeGuards.isFalsy({})).toBe(false);
-      });
-
-      it('should work as standalone export', () => {
-        expect(isFalsy(0)).toBe(true);
-        expect(isFalsy(1)).toBe(false);
       });
     });
   });

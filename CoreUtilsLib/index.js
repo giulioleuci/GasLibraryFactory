@@ -157,7 +157,6 @@ export {
   isBoolean,
   isPlainObject,
   isObject,
-  isValidObject,
   isNonEmptyObject,
   isArray,
   isNonEmptyArray,
@@ -171,9 +170,7 @@ export {
   isRegExp,
   isPromise,
   isError,
-  isEmpty as isEmptyValue,
-  isTruthy,
-  isFalsy
+  isEmpty as isEmptyValue
 } from './src/TypeGuards.js';
 
 // PII Redaction (Code Reuse Initiative)
@@ -275,15 +272,6 @@ export {
  * - Timeout thresholds (e.g., `if (elapsed > TimeConstants.MILLIS_PER_DAY)`)
  * - Time calculations (e.g., `const weekInMs = TimeConstants.MILLIS_PER_DAY * 7`)
  *
- * **Note:**
- * These same constants are also available as static getters on `MyUtilsService`:
- * - `MyUtilsService.MILLIS_PER_DAY`
- * - `MyUtilsService.MILLIS_PER_HOUR`
- * - `MyUtilsService.MILLIS_PER_MINUTE`
- * - `MyUtilsService.MILLIS_PER_SECOND`
- *
- * Use `TimeConstants` when you don't need the full UtilsService.
- *
  * @constant {Object} TimeConstants
  * @property {number} MILLIS_PER_SECOND - Milliseconds in one second (1,000)
  * @property {number} MILLIS_PER_MINUTE - Milliseconds in one minute (60,000)
@@ -324,8 +312,6 @@ export {
  *   retryInterval: TimeConstants.MILLIS_PER_MINUTE * 5,
  *   maxSessionAge: TimeConstants.MILLIS_PER_DAY
  * };
- *
- * @see MyUtilsService For static getter equivalents
  */
 export const TimeConstants = {
   /** Milliseconds in one second (1,000) */

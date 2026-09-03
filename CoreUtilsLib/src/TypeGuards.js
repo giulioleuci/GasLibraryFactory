@@ -186,21 +186,6 @@ export class TypeGuards {
   }
 
   /**
-   * Checks if value is a non-null object (shorthand for common pattern).
-   *
-   * @param {*} value - The value to check
-   * @returns {boolean} True if value is an object and not null
-   *
-   * @example
-   * TypeGuards.isValidObject({});    // true
-   * TypeGuards.isValidObject([]);    // true
-   * TypeGuards.isValidObject(null);  // false
-   */
-  static isValidObject(value) {
-    return value !== null && typeof value === 'object';
-  }
-
-  /**
    * Checks if value is a non-empty plain object.
    *
    * @param {*} value - The value to check
@@ -402,7 +387,7 @@ export class TypeGuards {
   }
 
   // ============================================================================
-  // Empty/Truthy/Falsy Guards
+  // Empty Guards
   // ============================================================================
 
   /**
@@ -434,26 +419,6 @@ export class TypeGuards {
     }
     return false;
   }
-
-  /**
-   * Checks if value is truthy.
-   *
-   * @param {*} value - The value to check
-   * @returns {boolean} True if value is truthy
-   */
-  static isTruthy(value) {
-    return Boolean(value);
-  }
-
-  /**
-   * Checks if value is falsy.
-   *
-   * @param {*} value - The value to check
-   * @returns {boolean} True if value is falsy
-   */
-  static isFalsy(value) {
-    return !value;
-  }
 }
 
 // Export individual functions for direct import convenience
@@ -467,7 +432,6 @@ export const isNonNegativeInteger = TypeGuards.isNonNegativeInteger;
 export const isBoolean = TypeGuards.isBoolean;
 export const isPlainObject = TypeGuards.isPlainObject;
 export const isObject = TypeGuards.isObject;
-export const isValidObject = TypeGuards.isValidObject;
 export const isNonEmptyObject = TypeGuards.isNonEmptyObject;
 export const isArray = TypeGuards.isArray;
 export const isNonEmptyArray = TypeGuards.isNonEmptyArray;
@@ -482,5 +446,3 @@ export const isRegExp = TypeGuards.isRegExp;
 export const isPromise = TypeGuards.isPromise;
 export const isError = TypeGuards.isError;
 export const isEmpty = TypeGuards.isEmpty;
-export const isTruthy = TypeGuards.isTruthy;
-export const isFalsy = TypeGuards.isFalsy;
