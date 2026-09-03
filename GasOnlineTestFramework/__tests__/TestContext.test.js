@@ -83,11 +83,6 @@ describe('TestContext.getOrCreateNamedFolder', () => {
     expect(parent.createFolder).toHaveBeenCalledWith('CHILD');
     expect(folder.getId()).toBe('parent-id/CHILD');
   });
-
-  test('tracks an API call for both the lookup and (when needed) the creation', () => {
-    ctx.getOrCreateNamedFolder('MY_FOLDER');
-    expect(ctx.apiCallCount).toBe(2);
-  });
 });
 
 describe('TestContext.getOrCreateNamedSpreadsheet', () => {

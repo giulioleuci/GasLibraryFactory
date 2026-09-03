@@ -13,16 +13,6 @@ export class TestContext {
     this._rootFolder = null;
     this._spreadsheet = null;
     this._document = null;
-
-    this.apiCallCount = 0;
-  }
-
-  /**
-   * Increments the internal counter for outbound Google service requests.
-   * @private
-   */
-  _trackApiCall() {
-    this.apiCallCount++;
   }
 
   /**
@@ -46,14 +36,12 @@ export class TestContext {
    * @returns {GoogleAppsScript.Drive.Folder} The existing or newly-created folder.
    */
   getOrCreateNamedFolder(name, parentFolder = null) {
-    this._trackApiCall();
     const folders = parentFolder
       ? parentFolder.getFoldersByName(name)
       : DriveApp.getFoldersByName(name);
     if (folders.hasNext()) {
       return folders.next();
     }
-    this._trackApiCall();
     return parentFolder ? parentFolder.createFolder(name) : DriveApp.createFolder(name);
   }
 
@@ -80,16 +68,13 @@ export class TestContext {
    * @returns {GoogleAppsScript.Spreadsheet.Spreadsheet} The existing or newly-created spreadsheet.
    */
   getOrCreateNamedSpreadsheet(name, parentFolder = null) {
-    this._trackApiCall();
     const files = parentFolder ? parentFolder.getFilesByName(name) : DriveApp.getFilesByName(name);
     if (files.hasNext()) {
       return SpreadsheetApp.openById(files.next().getId());
     }
-    this._trackApiCall();
     const spreadsheet = SpreadsheetApp.create(name);
     if (parentFolder) {
       const file = DriveApp.getFileById(spreadsheet.getId());
-      this._trackApiCall();
       file.moveTo(parentFolder);
     }
     return spreadsheet;
@@ -106,22 +91,18 @@ export class TestContext {
         return this._document;
       } catch (_e) {
         // Document might be closed
-        this._trackApiCall();
         this._document = DocumentApp.openById(this._document.getId());
         return this._document;
       }
     }
 
-    this._trackApiCall();
     const files = DriveApp.getFilesByName(this.TEST_DOC_NAME);
     if (files.hasNext()) {
       const file = files.next();
       this._document = DocumentApp.openById(file.getId());
     } else {
-      this._trackApiCall();
       this._document = DocumentApp.create(this.TEST_DOC_NAME);
       const file = DriveApp.getFileById(this._document.getId());
-      this._trackApiCall();
       file.moveTo(this.getRootFolder());
     }
     return this._document;
@@ -133,19 +114,16 @@ export class TestContext {
    */
   resetSpreadsheet(ss) {
     const targetSs = ss || this.getSpreadsheet();
-    this._trackApiCall();
 
     // 1. Clear protected ranges
     const protections = targetSs.getProtections(SpreadsheetApp.ProtectionType.RANGE);
     protections.forEach((p) => {
-      this._trackApiCall();
       p.remove();
     });
 
     // Also clear sheet-specific protections
     targetSs.getSheets().forEach((sheet) => {
       sheet.getProtections(SpreadsheetApp.ProtectionType.SHEET).forEach((p) => {
-        this._trackApiCall();
         p.remove();
       });
     });
@@ -153,7 +131,6 @@ export class TestContext {
     // 2. Clear named ranges
     const namedRanges = targetSs.getNamedRanges();
     namedRanges.forEach((nr) => {
-      this._trackApiCall();
       nr.remove();
     });
 
@@ -165,12 +142,10 @@ export class TestContext {
     } else {
       const firstSheet = sheets[0];
       firstSheet.setName('TEMP_RESET_' + new Date().getTime());
-      this._trackApiCall();
       firstSheet.clear().clearContents().clearFormats().clearNotes();
 
       // Delete all other sheets
       for (let i = 1; i < sheets.length; i++) {
-        this._trackApiCall();
         targetSs.deleteSheet(sheets[i]);
       }
       firstSheet.setName('Sheet1');
@@ -198,7 +173,6 @@ export class TestContext {
    * @returns {SampleSpreadsheetBuilder}
    */
   buildSampleSpreadsheetById(spreadsheetId) {
-    this._trackApiCall();
     const spreadsheet = SpreadsheetApp.openById(spreadsheetId);
     this.resetSpreadsheet(spreadsheet);
     return new SampleSpreadsheetBuilder(spreadsheet);
@@ -209,7 +183,6 @@ export class TestContext {
    */
   resetDocument() {
     const doc = this.getDocument();
-    this._trackApiCall();
     try {
       this._clearBodySafely(doc.getBody());
     } catch (_e) {
@@ -242,13 +215,12 @@ export class TestContext {
   }
 
   /**
-   * Orchestrates a full state reset across all persistent test artifacts and resets the API counter.
+   * Orchestrates a full state reset across all persistent test artifacts.
    */
   resetAll() {
     this.resetSpreadsheet();
     this.resetDocument();
-    this._log(`TestContext reset completed. API calls in this session: ${this.apiCallCount}`);
-    this.apiCallCount = 0;
+    this._log('TestContext reset completed.');
   }
 
   /**
