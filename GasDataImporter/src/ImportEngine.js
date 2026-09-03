@@ -9,8 +9,6 @@ import { Transformer } from './pipeline/Transformer.js';
 import { Loader } from './internal/load/Loader.js';
 import { ImportError } from './internal/errors/ImportError.js';
 import { ImportPipelineExecutor } from './pipeline/ImportPipelineExecutor.js';
-import { ImportStrategyRegistry } from './ImportStrategyRegistry.js';
-import { ImportRecipeValidator } from './ImportRecipeValidator.js';
 
 /**
  * Primary facade for the ETL pipeline, orchestrating extraction, transformation, and database persistence with built-in resilience and dry-run support.
@@ -55,8 +53,6 @@ class ImportEngine {
 
     // Facade Delegation
     this._pipelineExecutor = new ImportPipelineExecutor(this);
-    this._strategyRegistry = new ImportStrategyRegistry(this);
-    this._recipeValidator = new ImportRecipeValidator(this);
 
     const pipelineMethods = [
       'runImport',
@@ -71,13 +67,63 @@ class ImportEngine {
     pipelineMethods.forEach((m) => {
       this[m] = this._pipelineExecutor[m].bind(this._pipelineExecutor);
     });
+  }
 
-    const registryMethods = ['registerCustomSource', 'getAvailableSourceTypes', 'getConfigSummary'];
-    registryMethods.forEach((m) => {
-      this[m] = this._strategyRegistry[m].bind(this._strategyRegistry);
-    });
+  /**
+   * Registers a custom source-extraction strategy and whitelists its type for recipe validation.
+   * @param {string} name Source type identifier.
+   * @param {Function} strategyClass Strategy class implementing the source-extraction contract.
+   */
+  registerCustomSource(name, strategyClass) {
+    this.logger.debug(`[ImportEngine] Registering custom source strategy: ${name}`);
+    this._sourceFactory.registerStrategy(name, strategyClass);
+    // Also whitelist the type for recipe validation — otherwise a recipe using
+    // this custom source is rejected by ImportConfiguration before extraction
+    // ever runs, defeating the point of registering a custom strategy.
+    ImportConfiguration.registerSourceType(name);
+  }
 
-    this.validateRecipe = this._recipeValidator.validateRecipe.bind(this._recipeValidator);
+  /**
+   * @returns {Array<string>} Registered source-strategy type identifiers.
+   */
+  getAvailableSourceTypes() {
+    return this._sourceFactory.getAvailableStrategies();
+  }
+
+  /**
+   * @returns {Object} Summary of the engine's configured capabilities.
+   */
+  getConfigSummary() {
+    return {
+      sourceStrategies: this._sourceFactory.getAvailableStrategies(),
+      hasExpressionEngine: !!this._transformer._expressionEngine,
+      hasExceptionService: !!this._exceptionService,
+      hasMonitor: !!this._monitor
+    };
+  }
+
+  /**
+   * Validates an import recipe without executing it.
+   * @param {Object} recipe Import configuration (see ImportConfiguration).
+   * @returns {{valid: boolean, summary: Object, message: string}|{valid: boolean, error: string, code: string}}
+   */
+  validateRecipe(recipe) {
+    try {
+      const config = new ImportConfiguration(recipe, this.logger);
+      const summary = config.getSummary();
+
+      return {
+        valid: true,
+        summary,
+        message: 'Recipe is valid'
+      };
+    } catch (error) {
+      return {
+        valid: false,
+        error: error.message,
+        code: error.code || 'VALIDATION_ERROR'
+      };
+    }
   }
 
   /**

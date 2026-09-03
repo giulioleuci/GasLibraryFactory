@@ -6,7 +6,6 @@
 // ===================================================================
 
 import { ImportEngine } from '../../ImportEngine.js';
-import { ImportRecipeValidator } from '../../ImportRecipeValidator.js';
 import { ImportConfiguration } from '../../ImportConfiguration.js';
 import { Transformer } from '../../pipeline/Transformer.js';
 import { Loader } from '../../internal/load/Loader.js';
@@ -31,7 +30,6 @@ describe('Integration Test 13: Importer-Recipe Parsing', () => {
   let spreadsheetService;
   let databaseService;
   let engine;
-  let validator;
 
   beforeEach(() => {
     logger = MockFactory.createJestLogger();
@@ -40,7 +38,6 @@ describe('Integration Test 13: Importer-Recipe Parsing', () => {
     databaseService = MockFactory.createJestDatabase({ logger });
 
     engine = new ImportEngine(logger, driveService, spreadsheetService, databaseService);
-    validator = new ImportRecipeValidator(engine);
   });
 
   describe('Recipe Structure Validation', () => {
@@ -57,7 +54,7 @@ describe('Integration Test 13: Importer-Recipe Parsing', () => {
         }
       };
 
-      const result = validator.validateRecipe(recipe);
+      const result = engine.validateRecipe(recipe);
       expect(result.valid).toBe(true);
       expect(result.summary.name).toBe('Valid Recipe');
     });
@@ -71,7 +68,7 @@ describe('Integration Test 13: Importer-Recipe Parsing', () => {
         }
       };
 
-      const result = validator.validateRecipe(recipeMissingSource);
+      const result = engine.validateRecipe(recipeMissingSource);
       expect(result.valid).toBe(false);
       expect(result.error).toContain('source');
     });
@@ -89,7 +86,7 @@ describe('Integration Test 13: Importer-Recipe Parsing', () => {
         }
       };
 
-      const result = validator.validateRecipe(recipeInvalidSource);
+      const result = engine.validateRecipe(recipeInvalidSource);
       expect(result.valid).toBe(false);
       expect(result.error).toContain('Invalid source type');
     });
