@@ -529,15 +529,4 @@ export class DashboardUi {
     })();
   </script>`;
   }
-
-  /**
-   * Retrieves library classification and version metadata.
-   * @returns {Object} Library identity.
-   */
-  getConfigSummary() {
-    return {
-      defaultPollingInterval: DashboardUi.DEFAULT_POLLING_INTERVAL,
-      defaultWidth: DashboardUi.DEFAULT_WIDTH
-    };
-  }
 }

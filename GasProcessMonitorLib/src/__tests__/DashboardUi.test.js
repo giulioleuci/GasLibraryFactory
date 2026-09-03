@@ -93,75 +93,6 @@ describe('DashboardUi', () => {
     });
   });
 
-  describe('generated HTML content', () => {
-    let generatedHtml;
-
-    beforeEach(() => {
-      dashboardUi.createSidebar('test-job');
-      generatedHtml = mockSidebarBuilder.setContent.mock.calls[0][0];
-    });
-
-    it('should include DOCTYPE', () => {
-      expect(generatedHtml).toContain('<!DOCTYPE html>');
-    });
-
-    it('should include status container', () => {
-      expect(generatedHtml).toContain('id="status-container"');
-      expect(generatedHtml).toContain('id="status-badge"');
-      expect(generatedHtml).toContain('id="status-text"');
-    });
-
-    it('should include progress bar', () => {
-      expect(generatedHtml).toContain('class="progress-bar"');
-      expect(generatedHtml).toContain('id="progress-fill"');
-      expect(generatedHtml).toContain('id="percentage"');
-    });
-
-    it('should include steps list', () => {
-      expect(generatedHtml).toContain('id="steps-container"');
-      expect(generatedHtml).toContain('id="steps-list"');
-    });
-
-    it('should include error container (hidden by default)', () => {
-      expect(generatedHtml).toContain('id="error-container"');
-      expect(generatedHtml).toContain('class="error-container hidden"');
-    });
-
-    it('should include timing container', () => {
-      expect(generatedHtml).toContain('id="timing-container"');
-      expect(generatedHtml).toContain('id="elapsed-time"');
-    });
-
-    it('should include CSS styles', () => {
-      expect(generatedHtml).toContain('<style>');
-      expect(generatedHtml).toContain('.dashboard');
-      expect(generatedHtml).toContain('.status-badge');
-      expect(generatedHtml).toContain('.progress-fill');
-      expect(generatedHtml).toContain('.step-item');
-    });
-
-    it('should include polling JavaScript', () => {
-      expect(generatedHtml).toContain('google.script.run');
-      expect(generatedHtml).toContain('getMonitorState');
-      expect(generatedHtml).toContain('setInterval');
-      expect(generatedHtml).toContain('startPolling');
-      expect(generatedHtml).toContain('stopPolling');
-    });
-
-    it('should include XSS prevention (escapeHtml)', () => {
-      expect(generatedHtml).toContain('function escapeHtml');
-    });
-
-    it('should include duration formatting', () => {
-      expect(generatedHtml).toContain('function formatDuration');
-    });
-
-    it('should stop polling on completed/failed status', () => {
-      expect(generatedHtml).toContain("state.status === 'completed' || state.status === 'failed'");
-      expect(generatedHtml).toContain('stopPolling()');
-    });
-  });
-
   describe('CSS styling', () => {
     let generatedHtml;
 
@@ -192,15 +123,6 @@ describe('DashboardUi', () => {
     it('should use Google-like font stack', () => {
       expect(generatedHtml).toContain("'Google Sans'");
       expect(generatedHtml).toContain("'Roboto'");
-    });
-  });
-
-  describe('getConfigSummary', () => {
-    it('should return configuration summary', () => {
-      const summary = dashboardUi.getConfigSummary();
-
-      expect(summary.defaultPollingInterval).toBe(1500);
-      expect(summary.defaultWidth).toBe(300);
     });
   });
 

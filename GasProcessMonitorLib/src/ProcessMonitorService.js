@@ -522,20 +522,4 @@ export class ProcessMonitorService {
     this._logger.info(`[ProcessMonitorService] Job state cleared: ${jobId}`);
     return this;
   }
-
-  // ===================================================================
-  // PUBLIC API: Utility Methods
-  // ===================================================================
-
-  /**
-   * Retrieves high-level configuration parameters for the monitoring service.
-   * @returns {Object} Service metadata.
-   */
-  getConfigSummary() {
-    return {
-      cachePrefix: ProcessMonitorService.CACHE_PREFIX,
-      propsPrefix: ProcessMonitorService.PROPS_PREFIX,
-      cacheExpirationSeconds: ProcessMonitorService.CACHE_EXPIRATION
-    };
-  }
 }

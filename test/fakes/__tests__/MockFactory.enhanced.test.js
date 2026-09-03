@@ -147,16 +147,15 @@ describe('MockFactory - Enhanced Methods', () => {
     it('should create monitor mock with all methods', () => {
       const monitor = MockFactory.createJestMonitor();
 
-      expect(monitor.logJobStart).toBeDefined();
-      expect(monitor.logJobComplete).toBeDefined();
-      expect(monitor.logJobError).toBeDefined();
+      expect(monitor.registerJob).toBeDefined();
       expect(monitor.logStepStart).toBeDefined();
       expect(monitor.logStepComplete).toBeDefined();
-      expect(monitor.logStepError).toBeDefined();
+      expect(monitor.logStepSkipped).toBeDefined();
       expect(monitor.updateProgress).toBeDefined();
+      expect(monitor.completeJob).toBeDefined();
 
-      monitor.logJobStart('job-1', 'Test Job');
-      expect(monitor.logJobStart).toHaveBeenCalledWith('job-1', 'Test Job');
+      monitor.logStepStart('job-1', 'Test Job');
+      expect(monitor.logStepStart).toHaveBeenCalledWith('job-1', 'Test Job');
     });
   });
 

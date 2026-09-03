@@ -367,15 +367,6 @@ describe('ProcessMonitorService', () => {
     });
   });
 
-  describe('getConfigSummary', () => {
-    it('should return configuration summary', () => {
-      const summary = service.getConfigSummary();
-      expect(summary.cachePrefix).toBe('PROCESS_MONITOR_');
-      expect(summary.propsPrefix).toBe('PM_');
-      expect(summary.cacheExpirationSeconds).toBe(21600); // 6 hours
-    });
-  });
-
   describe('integration: full lifecycle', () => {
     it('should track complete job lifecycle', () => {
       // Register
