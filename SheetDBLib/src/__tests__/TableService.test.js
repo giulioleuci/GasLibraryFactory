@@ -343,9 +343,7 @@ describe('TableService - Comprehensive Test Suite', () => {
     });
 
     it('should insert multiple rows efficiently', () => {
-      mocks.utils.generateUuid
-        .mockReturnValueOnce('UUID_DAVID')
-        .mockReturnValueOnce('UUID_DIANA');
+      mocks.utils.generateUuid.mockReturnValueOnce('UUID_DAVID').mockReturnValueOnce('UUID_DIANA');
       const newRows = [
         { name: 'David Lee', email: 'david@example.com', age: 28, status: 'active' },
         { name: 'Diana Prince', email: 'diana@example.com', age: 32, status: 'active' }
@@ -519,6 +517,31 @@ describe('TableService - Comprehensive Test Suite', () => {
       expect(table._dataLoaded).toBe(true);
       expect(table._rowsCache).not.toBeNull();
       expect(table._rowsCache.length).toBe(initialLength - 1);
+    });
+
+    it('removes a pending update for the same id (delete wins over queued update)', () => {
+      table.updateRowById('USER_001', { name: 'Changed' });
+      expect(table._updateQueue.has('USER_001')).toBe(true);
+
+      table.deleteRowById('USER_001');
+
+      expect(table._updateQueue.has('USER_001')).toBe(false);
+    });
+
+    it('cancels a same-transaction insert instead of queueing a remote delete for a never-persisted row', () => {
+      const inserted = table.insertRow({
+        name: 'New Guy',
+        email: 'new@example.com',
+        age: 40,
+        status: 'active'
+      });
+
+      const result = table.deleteRowById(inserted.ID);
+
+      expect(result).toEqual(inserted);
+      expect(table._insertQueue.find((r) => r.ID === inserted.ID)).toBeUndefined();
+      // Never pushed remotely, so no remote delete should be queued either.
+      expect(table._deleteQueue.has(inserted.ID)).toBe(false);
     });
 
     it('should throw error if service reports an error', () => {
