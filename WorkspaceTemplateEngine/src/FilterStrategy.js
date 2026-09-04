@@ -28,15 +28,6 @@ export class FilterStrategy {
   }
 
   /**
-   * @description Returns a technical description of the filter transformation logic.
-   * @returns {string} Human-readable functional summary.
-   * @abstract
-   */
-  getDescription() {
-    throw new Error('FilterStrategy.getDescription() must be implemented by subclass');
-  }
-
-  /**
    * @description Performs the core value transformation.
    * @param {*} value Input value to be transformed.
    * @param {...*} args Optional arguments passed from the template expression.

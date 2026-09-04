@@ -34,13 +34,6 @@ describe('FilterStrategy and FilterRegistry - Comprehensive Test Suite', () => {
       expect(() => filter.getName()).toThrow('getName() must be implemented');
     });
 
-    it('should throw error if getDescription() is not implemented', () => {
-      class IncompleteFilter extends FilterStrategy {}
-      const filter = new IncompleteFilter();
-
-      expect(() => filter.getDescription()).toThrow('getDescription() must be implemented');
-    });
-
     it('should throw error if execute() is not implemented', () => {
       class IncompleteFilter extends FilterStrategy {}
       const filter = new IncompleteFilter();

@@ -29,8 +29,6 @@ export class PlaceholderService {
    * @param {Object} options Configuration options.
    * @param {LoggerService} options.logger Diagnostic logger instance.
    * @param {Mustache} options.mustache Initialized Mustache engine.
-   * @param {UtilsService} [options.utils] Optional utility service for formatting.
-   * @param {Cache} [options.cache] Optional cache service for template storage.
    * @param {boolean} [options.strictFilters=false] If true, filter errors throw exceptions.
    * @throws {Error} If required mustache dependency is missing.
    */
@@ -38,8 +36,6 @@ export class PlaceholderService {
     // Accept basic dependencies
     this.logger = options.logger || console;
     this.mustache = options.mustache;
-    this.utils = options.utils;
-    this.cache = options.cache;
 
     // Validate required dependencies
     if (!this.mustache) {

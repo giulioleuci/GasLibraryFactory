@@ -312,13 +312,6 @@ describe('Mustache - Comprehensive Test Suite', () => {
       expect(Object.keys(mustache.templateCache)).toEqual(['{{name}}:{{:}}']);
     });
 
-    it('should clear cache', () => {
-      mustache.render('{{name}}', { name: 'test' });
-      expect(Object.keys(mustache.templateCache)).toEqual(['{{name}}:{{:}}']);
-      mustache.clearCache();
-      expect(Object.keys(mustache.templateCache).length).toBe(0);
-    });
-
     it('should use cached templates for better performance', () => {
       const template = '{{name}}';
       mustache.render(template, { name: 'first' });
@@ -329,24 +322,6 @@ describe('Mustache - Comprehensive Test Suite', () => {
   });
 
   describe('Partial Templates', () => {
-    it('should add single partial', () => {
-      mustache.addPartial('header', '<h1>{{title}}</h1>');
-      const result = mustache.render('{{>header}}', { title: 'Test' });
-      expect(result).toBe('<h1>Test</h1>');
-    });
-
-    it('should add multiple partials', () => {
-      mustache.addPartials({
-        header: '<h1>{{title}}</h1>',
-        footer: '<p>{{text}}</p>'
-      });
-      const result = mustache.render('{{>header}}{{>footer}}', {
-        title: 'Title',
-        text: 'Footer'
-      });
-      expect(result).toBe('<h1>Title</h1><p>Footer</p>');
-    });
-
     it('should use additional partials in render', () => {
       const result = mustache.render(
         '{{>temp}}',
@@ -411,25 +386,6 @@ describe('Mustache - Comprehensive Test Suite', () => {
       expect(() => {
         mustache.registerFilter(() => 'value');
       }).toThrow();
-    });
-  });
-
-  describe('Compile Method', () => {
-    it('should compile template to function', () => {
-      const compiled = mustache.compile('Hello {{name}}!');
-      expect(typeof compiled).toBe('function');
-    });
-
-    it('should render compiled template with data', () => {
-      const compiled = mustache.compile('Hello {{name}}!');
-      const result = compiled({ name: 'World' });
-      expect(result).toBe('Hello World!');
-    });
-
-    it('should reuse compiled template', () => {
-      const compiled = mustache.compile('{{value}}');
-      expect(compiled({ value: 'first' })).toBe('first');
-      expect(compiled({ value: 'second' })).toBe('second');
     });
   });
 

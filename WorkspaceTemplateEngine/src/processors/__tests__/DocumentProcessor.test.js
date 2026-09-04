@@ -167,8 +167,6 @@ describe('DocumentProcessor - Core Functionality Tests (Reverse-Order Strategy)'
     });
 
     it('should set security limits', () => {
-      expect(processor.MAX_TEMPLATE_SIZE).toBe(1000000);
-      expect(processor.MAX_NESTING_DEPTH).toBe(100);
       expect(processor.MAX_ITERATIONS).toBe(10000);
       expect(processor.MAX_TEMPLATE_MATCH_SIZE).toBe(100000);
     });
@@ -179,10 +177,6 @@ describe('DocumentProcessor - Core Functionality Tests (Reverse-Order Strategy)'
       });
 
       expect(strictProcessor.strictFilters).toBe(true);
-    });
-
-    it('should initialize recursion depth tracker', () => {
-      expect(processor._currentDepth).toBe(0);
     });
   });
 
@@ -897,8 +891,6 @@ describe('DocumentProcessor - Core Functionality Tests (Reverse-Order Strategy)'
     });
 
     it('should respect all security limits', () => {
-      expect(processor.MAX_TEMPLATE_SIZE).toBeGreaterThan(0);
-      expect(processor.MAX_NESTING_DEPTH).toBeGreaterThan(0);
       expect(processor.MAX_ITERATIONS).toBeGreaterThan(0);
       expect(processor.MAX_TEMPLATE_MATCH_SIZE).toBeGreaterThan(0);
     });

@@ -26,12 +26,9 @@ class _DocumentProcessor {
       simpleExceptionService
     );
 
-    this.MAX_TEMPLATE_SIZE = 1000000;
-    this.MAX_NESTING_DEPTH = 100;
     this.MAX_ITERATIONS = 10000;
     this.MAX_TEMPLATE_MATCH_SIZE = 100000;
     this.strictFilters = options.strictFilters || false;
-    this._currentDepth = 0;
 
     // Initialize managers
     this._tagScanner = new DocumentProcessorTagScanner(this);

@@ -423,30 +423,6 @@ export class MyMustache {
   }
 
   /**
-   * @description Purges the internal template cache to reclaim memory.
-   */
-  clearCache() {
-    this.templateCache = {};
-  }
-
-  /**
-   * @description Registers a named partial template for global inclusion.
-   * @param {string} name Unique partial identifier.
-   * @param {string} template Partial template string.
-   */
-  addPartial(name, template) {
-    this.partials[name] = template;
-  }
-
-  /**
-   * @description Batch registers multiple partial templates.
-   * @param {Object.<string, string>} partialsObject Map of names to template strings.
-   */
-  addPartials(partialsObject) {
-    Object.assign(this.partials, partialsObject);
-  }
-
-  /**
    * @description Registers a custom filter strategy.
    * @param {FilterStrategy|string} filterStrategyOrName FilterStrategy instance or name for backward compatibility.
    * @param {Function} [fn] Filter function (v1.x compatibility).
@@ -468,15 +444,6 @@ export class MyMustache {
       );
     }
     this.filterRegistry.register(filterStrategyOrName);
-  }
-
-  /**
-   * @description Compiles a template into a reusable execution function.
-   * @param {string} template Mustache template string.
-   * @returns {function(Object): string} Renderer function bound to this engine instance.
-   */
-  compile(template) {
-    return (data) => this.render(template, data);
   }
 
   /**
