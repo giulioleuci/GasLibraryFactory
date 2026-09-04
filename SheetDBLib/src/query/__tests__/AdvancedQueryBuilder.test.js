@@ -300,7 +300,7 @@ describe('AdvancedQueryBuilder - Comprehensive Test Suite', () => {
   describe('whereFuzzy()', () => {
     it('delegates fuzzy matching for materialized candidates to the table search engine once', () => {
       const table = mockDatabase.tables.Users;
-      const fuzzySearchRows = jest.spyOn(table.searchEngine, 'fuzzySearchRows');
+      const fuzzySearchRows = jest.spyOn(table, 'fuzzySearchRows');
 
       const rows = queryBuilder
         .from('Users')
@@ -313,15 +313,30 @@ describe('AdvancedQueryBuilder - Comprehensive Test Suite', () => {
       expect(fuzzySearchRows).toHaveBeenCalledWith(
         [
           {
-            row: { 'Users.ID': '1', 'Users.name': 'Alice', 'Users.age': 30, 'Users.status': 'active' },
+            row: {
+              'Users.ID': '1',
+              'Users.name': 'Alice',
+              'Users.age': 30,
+              'Users.status': 'active'
+            },
             value: 'Alice'
           },
           {
-            row: { 'Users.ID': '2', 'Users.name': 'Bob', 'Users.age': 25, 'Users.status': 'active' },
+            row: {
+              'Users.ID': '2',
+              'Users.name': 'Bob',
+              'Users.age': 25,
+              'Users.status': 'active'
+            },
             value: 'Bob'
           },
           {
-            row: { 'Users.ID': '4', 'Users.name': 'David', 'Users.age': 28, 'Users.status': 'active' },
+            row: {
+              'Users.ID': '4',
+              'Users.name': 'David',
+              'Users.age': 28,
+              'Users.status': 'active'
+            },
             value: 'David'
           }
         ],
@@ -372,9 +387,25 @@ describe('AdvancedQueryBuilder - Comprehensive Test Suite', () => {
       ['name', 17, {}],
       ['name', 'alice', { threshold: -0.01 }],
       ['name', 'alice', { threshold: 1.01 }],
+      ['name', 'alice', { threshold: Infinity }],
       ['name', 'alice', { includeScore: true }]
     ])('rejects invalid fuzzy arguments', (field, query, options) => {
       expect(() => queryBuilder.whereFuzzy(field, query, options)).toThrow();
+    });
+
+    it('creates an immutable fuzzy condition with the default threshold merged in', () => {
+      queryBuilder.from('Users').whereFuzzy('name', 'alce');
+
+      const [condition] = queryBuilder.conditions;
+      expect(condition).toEqual({
+        kind: 'FUZZY',
+        field: 'name',
+        query: 'alce',
+        options: { threshold: 0.4 },
+        type: 'AND'
+      });
+      expect(Object.isFrozen(condition)).toBe(true);
+      expect(Object.isFrozen(condition.options)).toBe(true);
     });
   });
 
@@ -657,308 +688,6 @@ describe('AdvancedQueryBuilder - Comprehensive Test Suite', () => {
   });
 
   // ===================================================================
-  // QUERY CONDITION CLASS - COMPREHENSIVE TESTS
-  // ===================================================================
-
-  describe('QueryCondition Class', () => {
-    const { QueryCondition } = require('../AdvancedQueryBuilder');
-
-    it('should create condition with default AND type', () => {
-      const cond = new QueryCondition('age', '>', 18);
-
-      expect(cond.field).toBe('age');
-      expect(cond.operator).toBe('>');
-      expect(cond.value).toBe(18);
-      expect(cond.type).toBe('AND');
-    });
-
-    it('should support OR type', () => {
-      const cond = new QueryCondition('status', '=', 'active', 'OR');
-
-      expect(cond.type).toBe('OR');
-    });
-
-    it('should normalize type to uppercase', () => {
-      const cond = new QueryCondition('field', '=', 'value', 'and');
-
-      expect(cond.type).toBe('AND');
-    });
-
-    it('should use default operator = when null', () => {
-      const cond = new QueryCondition('field', null, 'value');
-
-      expect(cond.operator).toBe('=');
-    });
-
-    it('should support adding sub-conditions', () => {
-      const root = new QueryCondition('age', '>', 18);
-      root.addSubCondition(new QueryCondition('status', '=', 'active'));
-
-      expect(root.subConditions).toHaveLength(1);
-    });
-
-    it('should evaluate LIKE with pattern matching', () => {
-      const cond = new QueryCondition('name', 'LIKE', 'Al%');
-
-      expect(cond.compareValue('Alice')).toBe(true);
-      expect(cond.compareValue('Bob')).toBe(false);
-    });
-
-    it('should evaluate IN operator', () => {
-      const cond = new QueryCondition('status', 'IN', ['active', 'pending']);
-
-      expect(cond.compareValue('active')).toBe(true);
-      expect(cond.compareValue('deleted')).toBe(false);
-    });
-
-    it('should evaluate NOT IN operator', () => {
-      const cond = new QueryCondition('status', 'NOT IN', ['deleted', 'archived']);
-
-      expect(cond.compareValue('active')).toBe(true);
-      expect(cond.compareValue('deleted')).toBe(false);
-    });
-
-    it('should evaluate CONTAINS operator', () => {
-      const cond = new QueryCondition('description', 'CONTAINS', 'test');
-
-      expect(cond.compareValue('This is a test')).toBe(true);
-      expect(cond.compareValue('No match')).toBe(false);
-    });
-
-    it('should handle null values with = operator', () => {
-      const cond = new QueryCondition('value', '=', null);
-
-      expect(cond.compareValue(null)).toBe(true);
-      expect(cond.compareValue(undefined)).toBe(true);
-      expect(cond.compareValue('test')).toBe(false);
-    });
-
-    it('should handle null values with != operator', () => {
-      const cond = new QueryCondition('value', '!=', null);
-
-      expect(cond.compareValue('test')).toBe(true);
-      expect(cond.compareValue(null)).toBe(false);
-    });
-
-    it('should evaluate complex nested conditions', () => {
-      const root = new QueryCondition('age', '>', 18, 'AND');
-      root.addSubCondition(new QueryCondition('status', '=', 'active', 'AND'));
-
-      expect(root.evaluate({ age: 25, status: 'active' })).toBe(true);
-      expect(root.evaluate({ age: 25, status: 'inactive' })).toBe(false);
-    });
-
-    it('should handle table-prefixed fields', () => {
-      const cond = new QueryCondition('name', '=', 'Alice');
-
-      expect(cond.evaluate({ 'Users.name': 'Alice' })).toBe(true);
-    });
-
-    it('should return chaining from addSubCondition', () => {
-      const cond = new QueryCondition('field', '=', 'value');
-      const result = cond.addSubCondition(new QueryCondition('other', '>', 5));
-
-      expect(result).toBe(cond);
-    });
-  });
-
-  // ===================================================================
-  // QUERY AGGREGATION CLASS - COMPREHENSIVE TESTS
-  // ===================================================================
-
-  describe('QueryAggregation Class', () => {
-    const { QueryAggregation } = require('../AdvancedQueryBuilder');
-
-    const testData = [
-      { price: 10, count: 5 },
-      { price: 20, count: 3 },
-      { price: 15, count: 4 },
-      { price: null, count: 2 }
-    ];
-
-    it('should create aggregation with default alias', () => {
-      const agg = new QueryAggregation('SUM', 'price');
-
-      expect(agg.alias).toBe('SUM_price');
-    });
-
-    it('should create aggregation with custom alias', () => {
-      const agg = new QueryAggregation('AVG', 'salary', 'avg_salary');
-
-      expect(agg.alias).toBe('avg_salary');
-    });
-
-    it('should normalize function name to uppercase', () => {
-      const agg = new QueryAggregation('sum', 'field');
-
-      expect(agg.function).toBe('SUM');
-    });
-
-    it('should calculate COUNT', () => {
-      const agg = new QueryAggregation('COUNT', 'price');
-
-      expect(agg.calculate(testData)).toBe(3); // excludes null
-    });
-
-    it('should calculate SUM', () => {
-      const agg = new QueryAggregation('SUM', 'price');
-
-      expect(agg.calculate(testData)).toBe(45);
-    });
-
-    it('should calculate AVG', () => {
-      const agg = new QueryAggregation('AVG', 'price');
-
-      expect(agg.calculate(testData)).toBe(15);
-    });
-
-    it('should calculate MIN', () => {
-      const agg = new QueryAggregation('MIN', 'price');
-
-      expect(agg.calculate(testData)).toBe(10);
-    });
-
-    it('should calculate MAX', () => {
-      const agg = new QueryAggregation('MAX', 'price');
-
-      expect(agg.calculate(testData)).toBe(20);
-    });
-
-    it('should return null for empty array', () => {
-      const agg = new QueryAggregation('SUM', 'field');
-
-      expect(agg.calculate([])).toBeNull();
-    });
-
-    it('should return null for null input', () => {
-      const agg = new QueryAggregation('COUNT', 'field');
-
-      expect(agg.calculate(null)).toBeNull();
-    });
-
-    it('should return null when all values are null', () => {
-      const agg = new QueryAggregation('AVG', 'value');
-      const nullData = [{ value: null }, { value: null }];
-
-      expect(agg.calculate(nullData)).toBeNull();
-    });
-
-    it('should handle non-numeric values safely', () => {
-      const agg = new QueryAggregation('SUM', 'value');
-      const mixedData = [{ value: 10 }, { value: 'invalid' }, { value: 5 }];
-
-      expect(agg.calculate(mixedData)).toBe(15);
-    });
-
-    it('should return null for unknown aggregation function', () => {
-      const agg = new QueryAggregation('MEDIAN', 'field');
-
-      expect(agg.calculate(testData)).toBeNull();
-    });
-  });
-
-  // ===================================================================
-  // QUERY GROUP CLASS - COMPREHENSIVE TESTS
-  // ===================================================================
-
-  describe('QueryGroup Class', () => {
-    const { QueryGroup, QueryAggregation, QueryCondition } = require('../AdvancedQueryBuilder');
-
-    const salesData = [
-      { dept: 'Sales', region: 'East', revenue: 1000 },
-      { dept: 'Sales', region: 'West', revenue: 1500 },
-      { dept: 'Engineering', region: 'East', revenue: 2000 },
-      { dept: 'Sales', region: 'East', revenue: 800 }
-    ];
-
-    it('should create group with single field', () => {
-      const group = new QueryGroup('dept');
-
-      expect(group.fields).toEqual(['dept']);
-    });
-
-    it('should create group with array of fields', () => {
-      const group = new QueryGroup(['dept', 'region']);
-
-      expect(group.fields).toEqual(['dept', 'region']);
-    });
-
-    it('should group by single field', () => {
-      const group = new QueryGroup('dept');
-      group.addAggregation(new QueryAggregation('COUNT', 'revenue', 'count'));
-
-      const result = group.group(salesData);
-
-      expect(result).toHaveLength(2); // Sales, Engineering
-      expect(result.find((r) => r.dept === 'Sales').count).toBe(3);
-    });
-
-    it('should group by multiple fields', () => {
-      const group = new QueryGroup(['dept', 'region']);
-      group.addAggregation(new QueryAggregation('SUM', 'revenue', 'total'));
-
-      const result = group.group(salesData);
-
-      expect(result).toHaveLength(3); // Sales-East, Sales-West, Engineering-East
-    });
-
-    it('should apply aggregations', () => {
-      const group = new QueryGroup('dept');
-      group.addAggregation(new QueryAggregation('SUM', 'revenue', 'total'));
-      group.addAggregation(new QueryAggregation('AVG', 'revenue', 'avg'));
-
-      const result = group.group(salesData);
-      const sales = result.find((r) => r.dept === 'Sales');
-
-      expect(sales.total).toBe(3300);
-      expect(sales.avg).toBeCloseTo(1100, 1);
-    });
-
-    it('should apply HAVING condition', () => {
-      const group = new QueryGroup('dept');
-      group.addAggregation(new QueryAggregation('SUM', 'revenue', 'total'));
-      group.setCondition(new QueryCondition('total', '>', 2500));
-
-      const result = group.group(salesData);
-
-      expect(result).toHaveLength(1);
-      expect(result[0].dept).toBe('Sales');
-    });
-
-    it('should handle null/undefined in grouping key', () => {
-      const dataWithNull = [
-        { category: 'A', value: 1 },
-        { category: null, value: 2 },
-        { category: undefined, value: 3 }
-      ];
-
-      const group = new QueryGroup('category');
-      const result = group.group(dataWithNull);
-
-      expect(result).toHaveLength(2); // 'A' and 'NULL'
-    });
-
-    it('should return empty array for null input', () => {
-      const group = new QueryGroup('field');
-
-      expect(group.group(null)).toEqual([]);
-    });
-
-    it('should return empty array for empty input', () => {
-      const group = new QueryGroup('field');
-
-      expect(group.group([])).toEqual([]);
-    });
-
-    it('should preserve grouping field values', () => {
-      const group = new QueryGroup('dept');
-      const result = group.group(salesData);
-
-      expect(result.every((r) => r.dept)).toBe(true);
-    });
-  });
-
-  // ===================================================================
   // QUERY CACHE CLASS - COMPREHENSIVE TESTS
   // ===================================================================
 
@@ -1030,6 +759,18 @@ describe('AdvancedQueryBuilder - Comprehensive Test Suite', () => {
       expect(queryCache.get(mockQuery)).toBeNull();
     });
 
+    it('should return null when the cached payload is corrupted JSON', () => {
+      cacheService.get.mockReturnValue('{not-valid-json');
+
+      expect(queryCache.get(mockQuery)).toBeNull();
+    });
+
+    it('should return null when the cache service returns undefined', () => {
+      cacheService.get.mockReturnValue(undefined);
+
+      expect(queryCache.get(mockQuery)).toBeNull();
+    });
+
     it('should store in cache', () => {
       const results = [{ name: 'Alice' }];
 
@@ -1050,12 +791,6 @@ describe('AdvancedQueryBuilder - Comprehensive Test Suite', () => {
 
     it('should invalidate table cache', () => {
       queryCache.invalidateTable('Users');
-
-      expect(cacheService.removeAll).toHaveBeenCalled();
-    });
-
-    it('should clear all cache', () => {
-      queryCache.clear();
 
       expect(cacheService.removeAll).toHaveBeenCalled();
     });

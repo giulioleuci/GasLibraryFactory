@@ -1,15 +1,19 @@
 // ===================================================================
-// FILE: SheetDBLib/src/internal/query-builders/__tests__/AdvancedQueryCompiler.test.js
+// FILE: SheetDBLib/src/query/__tests__/AdvancedQueryBuilder.compilerInternals.test.js
 // ===================================================================
-// Direct unit tests for AdvancedQueryCompiler and QueryCache, exercised
-// against a minimal fake "facade" (the shape AdvancedQueryBuilder
-// provides: dbService, conditions, tableName, _optimizedField).
+// Direct unit tests for the private query-execution methods folded into
+// AdvancedQueryBuilder from the former AdvancedQueryCompiler collaborator
+// (see SheetDBLib/DOCS_LIBS ponytail cleanup — the collaborator class was
+// merged directly into AdvancedQueryBuilder; these tests were migrated
+// from the deleted internal/query-builders/__tests__/AdvancedQueryCompiler.test.js
+// to call the same logic as the builder's own private methods instead).
 //
 // SheetDBLib/src/query/__tests__/AdvancedQueryBuilder_Joins.test.js already
 // gives _performJoin broad functional coverage (INNER/LEFT/RIGHT/FULL,
 // multi-join chains, null keys, non-equality operators) through the public
-// builder API. This file targets the compiler module directly, focusing on
-// paths that are hard or impossible to reach through the builder:
+// builder API. This file targets the execution-engine methods directly,
+// focusing on paths that are hard or impossible to reach through the public
+// fluent API:
 //  - _tryIndexOptimization (no existing test populates `_indices` with real
 //    entries; every builder-level test uses `_indices: {}`), including
 //    smallest-cardinality selection among multiple AND-equality conditions
@@ -17,10 +21,9 @@
 //  - _extractFieldValue's fallback resolution branches in isolation.
 //  - _performJoin edge cases: empty right table for LEFT/FULL (no null-key
 //    fill), calling the method directly without going through execute().
-//  - QueryCache's JSON.parse failure path (corrupted cache payload).
 // ===================================================================
 
-import { AdvancedQueryCompiler, QueryCache } from '../AdvancedQueryCompiler.js';
+import { AdvancedQueryBuilder } from '../AdvancedQueryBuilder.js';
 
 function makeTable({ rows, keyField = 'id', indices = {} }) {
   return {
@@ -33,50 +36,49 @@ function makeTable({ rows, keyField = 'id', indices = {} }) {
   };
 }
 
-function makeFacade({ dbService, conditions = [], tableName = null } = {}) {
-  return {
-    dbService,
-    conditions,
-    tableName,
-    _optimizedField: null
-  };
+function makeBuilder({ dbService, conditions = [], tableName = null } = {}) {
+  const builder = new AdvancedQueryBuilder(dbService || {});
+  builder.conditions = conditions;
+  builder.tableName = tableName;
+  builder._optimizedField = null;
+  return builder;
 }
 
-describe('AdvancedQueryCompiler', () => {
+describe('AdvancedQueryBuilder execution-engine internals (folded compiler)', () => {
   describe('_extractFieldValue()', () => {
-    let compiler;
+    let builder;
     beforeEach(() => {
-      compiler = new AdvancedQueryCompiler(makeFacade());
+      builder = makeBuilder();
     });
 
     it('returns the value for a direct key match', () => {
-      expect(compiler._extractFieldValue({ name: 'Alice' }, 'name')).toBe('Alice');
+      expect(builder._extractFieldValue({ name: 'Alice' }, 'name')).toBe('Alice');
     });
 
     it('resolves a dotted-path field to its plain suffix key', () => {
-      expect(compiler._extractFieldValue({ name: 'Alice' }, 'Users.name')).toBe('Alice');
+      expect(builder._extractFieldValue({ name: 'Alice' }, 'Users.name')).toBe('Alice');
     });
 
     it('resolves a dotted-path field to a differently-prefixed key via suffix scan', () => {
-      expect(compiler._extractFieldValue({ 'Users.name': 'Alice' }, 'Accounts.name')).toBe('Alice');
+      expect(builder._extractFieldValue({ 'Users.name': 'Alice' }, 'Accounts.name')).toBe('Alice');
     });
 
     it('returns undefined when the field cannot be resolved', () => {
-      expect(compiler._extractFieldValue({ name: 'Alice' }, 'age')).toBeUndefined();
+      expect(builder._extractFieldValue({ name: 'Alice' }, 'age')).toBeUndefined();
     });
 
     it('prefers a direct hasOwnProperty match over suffix scanning', () => {
       const row = { 'Users.name': 'Wrong', name: 'Right' };
-      expect(compiler._extractFieldValue(row, 'name')).toBe('Right');
+      expect(builder._extractFieldValue(row, 'name')).toBe('Right');
     });
   });
 
   describe('_performJoin()', () => {
     it('throws when the join target table is not registered', () => {
       const dbService = { tables: {} };
-      const compiler = new AdvancedQueryCompiler(makeFacade({ dbService }));
+      const builder = makeBuilder({ dbService });
       expect(() =>
-        compiler._performJoin([{ id: 1 }], {
+        builder._performJoin([{ id: 1 }], {
           type: 'INNER',
           table: 'Ghost',
           localField: 'id',
@@ -92,9 +94,9 @@ describe('AdvancedQueryCompiler', () => {
           Books: makeTable({ rows: [{ id: 'b1', author_id: '1', title: 'Book One' }] })
         }
       };
-      const compiler = new AdvancedQueryCompiler(makeFacade({ dbService }));
+      const builder = makeBuilder({ dbService });
       const leftRows = [{ id: '1', name: 'Alice' }];
-      const result = compiler._performJoin(leftRows, {
+      const result = builder._performJoin(leftRows, {
         type: 'INNER',
         table: 'Books',
         localField: 'id',
@@ -123,9 +125,9 @@ describe('AdvancedQueryCompiler', () => {
           })
         }
       };
-      const compiler = new AdvancedQueryCompiler(makeFacade({ dbService }));
+      const builder = makeBuilder({ dbService });
       const leftRows = [{ id: 'i1', price: 5 }];
-      const result = compiler._performJoin(leftRows, {
+      const result = builder._performJoin(leftRows, {
         type: 'INNER',
         table: 'Ranges',
         localField: 'price',
@@ -138,8 +140,8 @@ describe('AdvancedQueryCompiler', () => {
 
     it('excludes unmatched left rows for INNER join', () => {
       const dbService = { tables: { Books: makeTable({ rows: [] }) } };
-      const compiler = new AdvancedQueryCompiler(makeFacade({ dbService }));
-      const result = compiler._performJoin([{ id: '1' }], {
+      const builder = makeBuilder({ dbService });
+      const result = builder._performJoin([{ id: '1' }], {
         type: 'INNER',
         table: 'Books',
         localField: 'id',
@@ -151,8 +153,8 @@ describe('AdvancedQueryCompiler', () => {
 
     it('includes unmatched left rows with no null-fill when the right table is empty (LEFT)', () => {
       const dbService = { tables: { Books: makeTable({ rows: [] }) } };
-      const compiler = new AdvancedQueryCompiler(makeFacade({ dbService }));
-      const result = compiler._performJoin([{ id: '1', name: 'Alice' }], {
+      const builder = makeBuilder({ dbService });
+      const result = builder._performJoin([{ id: '1', name: 'Alice' }], {
         type: 'LEFT',
         table: 'Books',
         localField: 'id',
@@ -167,8 +169,8 @@ describe('AdvancedQueryCompiler', () => {
       const dbService = {
         tables: { Books: makeTable({ rows: [{ id: 'b1', author_id: '99', title: 'Orphan' }] }) }
       };
-      const compiler = new AdvancedQueryCompiler(makeFacade({ dbService }));
-      const result = compiler._performJoin([{ id: '1', name: 'Alice' }], {
+      const builder = makeBuilder({ dbService });
+      const result = builder._performJoin([{ id: '1', name: 'Alice' }], {
         type: 'LEFT',
         table: 'Books',
         localField: 'id',
@@ -184,9 +186,9 @@ describe('AdvancedQueryCompiler', () => {
       const dbService = {
         tables: { Books: makeTable({ rows: [{ id: 'b1', author_id: '99' }] }) }
       };
-      const compiler = new AdvancedQueryCompiler(makeFacade({ dbService }));
+      const builder = makeBuilder({ dbService });
       // leftRow already carries a 'Books.id' key (e.g., from a prior join step).
-      const result = compiler._performJoin([{ id: '1', 'Books.id': 'preexisting' }], {
+      const result = builder._performJoin([{ id: '1', 'Books.id': 'preexisting' }], {
         type: 'LEFT',
         table: 'Books',
         localField: 'id',
@@ -203,8 +205,8 @@ describe('AdvancedQueryCompiler', () => {
           Books: makeTable({ rows: [{ id: 'b1', author_id: '99', title: 'Orphan' }] })
         }
       };
-      const compiler = new AdvancedQueryCompiler(makeFacade({ dbService }));
-      const result = compiler._performJoin([{ id: '1', name: 'Alice' }], {
+      const builder = makeBuilder({ dbService });
+      const result = builder._performJoin([{ id: '1', name: 'Alice' }], {
         type: 'RIGHT',
         table: 'Books',
         localField: 'id',
@@ -228,8 +230,8 @@ describe('AdvancedQueryCompiler', () => {
           })
         }
       };
-      const compiler = new AdvancedQueryCompiler(makeFacade({ dbService }));
-      const result = compiler._performJoin(
+      const builder = makeBuilder({ dbService });
+      const result = builder._performJoin(
         [
           { id: '1', name: 'Alice' },
           { id: '2', name: 'Orphan Author' }
@@ -261,8 +263,8 @@ describe('AdvancedQueryCompiler', () => {
           })
         }
       };
-      const compiler = new AdvancedQueryCompiler(makeFacade({ dbService }));
-      const result = compiler._performJoin([{ id: '1', name: 'Alice' }], {
+      const builder = makeBuilder({ dbService });
+      const result = builder._performJoin([{ id: '1', name: 'Alice' }], {
         type: 'INNER',
         table: 'Books',
         localField: 'id',
@@ -277,9 +279,9 @@ describe('AdvancedQueryCompiler', () => {
       const dbService = {
         tables: { Books: makeTable({ rows: [{ id: 'b1', author_id: '1' }] }) }
       };
-      const compiler = new AdvancedQueryCompiler(makeFacade({ dbService }));
+      const builder = makeBuilder({ dbService });
       const leftRows = [{ 'Authors.id': '1' }];
-      const result = compiler._performJoin(leftRows, {
+      const result = builder._performJoin(leftRows, {
         type: 'INNER',
         table: 'Books',
         localField: 'Authors.id',
@@ -293,9 +295,9 @@ describe('AdvancedQueryCompiler', () => {
 
   describe('_tryIndexOptimization()', () => {
     it('returns null when there are no conditions', () => {
-      const compiler = new AdvancedQueryCompiler(makeFacade({ conditions: [] }));
+      const builder = makeBuilder({ conditions: [] });
       const table = makeTable({ rows: [] });
-      expect(compiler._tryIndexOptimization(table)).toBeNull();
+      expect(builder._tryIndexOptimization(table)).toBeNull();
     });
 
     it('uses getRowById for a single primary-key equality condition', () => {
@@ -304,23 +306,21 @@ describe('AdvancedQueryCompiler', () => {
         { id: 'u2', name: 'Bob' }
       ];
       const table = makeTable({ rows });
-      const facade = makeFacade({
+      const builder = makeBuilder({
         conditions: [{ field: 'id', operator: '=', value: 'u2', type: 'AND' }]
       });
-      const compiler = new AdvancedQueryCompiler(facade);
-      const result = compiler._tryIndexOptimization(table);
+      const result = builder._tryIndexOptimization(table);
       expect(table.getRowById).toHaveBeenCalledWith('u2');
       expect(result).toEqual([{ id: 'u2', name: 'Bob' }]);
-      expect(facade._optimizedField).toBe('id');
+      expect(builder._optimizedField).toBe('id');
     });
 
     it('returns an empty array when the primary key lookup misses', () => {
       const table = makeTable({ rows: [{ id: 'u1', name: 'Alice' }] });
-      const facade = makeFacade({
+      const builder = makeBuilder({
         conditions: [{ field: 'id', operator: '=', value: 'ghost', type: 'AND' }]
       });
-      const compiler = new AdvancedQueryCompiler(facade);
-      expect(compiler._tryIndexOptimization(table)).toEqual([]);
+      expect(builder._tryIndexOptimization(table)).toEqual([]);
     });
 
     it('probes a secondary index for a single non-AND-equality condition', () => {
@@ -338,48 +338,44 @@ describe('AdvancedQueryCompiler', () => {
           ])
         }
       });
-      const facade = makeFacade({
+      const builder = makeBuilder({
         conditions: [{ field: 'status', operator: '=', value: 'active', type: 'OR' }]
       });
-      const compiler = new AdvancedQueryCompiler(facade);
-      const result = compiler._tryIndexOptimization(table);
+      const result = builder._tryIndexOptimization(table);
       expect(result).toHaveLength(2);
       expect(result.map((r) => r.id).sort()).toEqual(['u1', 'u2']);
-      expect(facade._optimizedField).toBe('status');
+      expect(builder._optimizedField).toBe('status');
     });
 
     it('returns null for a single non-equality, non-indexed condition', () => {
       const table = makeTable({ rows: [] });
-      const facade = makeFacade({
+      const builder = makeBuilder({
         conditions: [{ field: 'age', operator: '>', value: 18, type: 'AND' }]
       });
-      const compiler = new AdvancedQueryCompiler(facade);
-      expect(compiler._tryIndexOptimization(table)).toBeNull();
+      expect(builder._tryIndexOptimization(table)).toBeNull();
     });
 
     it('returns null when multiple conditions are not all AND-equality', () => {
       const table = makeTable({ rows: [] });
-      const facade = makeFacade({
+      const builder = makeBuilder({
         conditions: [
           { field: 'status', operator: '=', value: 'active', type: 'AND' },
           { field: 'age', operator: '>', value: 18, type: 'AND' }
         ]
       });
-      const compiler = new AdvancedQueryCompiler(facade);
-      expect(compiler._tryIndexOptimization(table)).toBeNull();
+      expect(builder._tryIndexOptimization(table)).toBeNull();
     });
 
     it('short-circuits on the primary key among multiple AND-equality conditions', () => {
       const rows = [{ id: 'u1', status: 'active', dept: 'Eng' }];
       const table = makeTable({ rows });
-      const facade = makeFacade({
+      const builder = makeBuilder({
         conditions: [
           { field: 'status', operator: '=', value: 'active', type: 'AND' },
           { field: 'id', operator: '=', value: 'u1', type: 'AND' }
         ]
       });
-      const compiler = new AdvancedQueryCompiler(facade);
-      const result = compiler._tryIndexOptimization(table);
+      const result = builder._tryIndexOptimization(table);
       expect(table.getRowById).toHaveBeenCalledWith('u1');
       expect(result).toEqual([{ id: 'u1', status: 'active', dept: 'Eng' }]);
     });
@@ -400,40 +396,37 @@ describe('AdvancedQueryCompiler', () => {
           ]) // cardinality 2 for 'Eng'
         }
       });
-      const facade = makeFacade({
+      const builder = makeBuilder({
         conditions: [
           { field: 'status', operator: '=', value: 'active', type: 'AND' },
           { field: 'dept', operator: '=', value: 'Eng', type: 'AND' }
         ]
       });
-      const compiler = new AdvancedQueryCompiler(facade);
-      const result = compiler._tryIndexOptimization(table);
+      const result = builder._tryIndexOptimization(table);
       // Should probe 'dept' (cardinality 2) and then filter remaining 'status' condition.
-      expect(facade._optimizedField).toBe('dept');
+      expect(builder._optimizedField).toBe('dept');
       expect(result).toHaveLength(2);
       expect(result.every((r) => r.dept === 'Eng' && r.status === 'active')).toBe(true);
     });
 
     it('returns null when no condition field has a usable index', () => {
       const table = makeTable({ rows: [{ id: 'u1', status: 'active', dept: 'Eng' }] });
-      const facade = makeFacade({
+      const builder = makeBuilder({
         conditions: [
           { field: 'status', operator: '=', value: 'active', type: 'AND' },
           { field: 'dept', operator: '=', value: 'Eng', type: 'AND' }
         ]
       });
-      const compiler = new AdvancedQueryCompiler(facade);
-      expect(compiler._tryIndexOptimization(table)).toBeNull();
+      expect(builder._tryIndexOptimization(table)).toBeNull();
     });
   });
 
   describe('_getRemainingConditions()', () => {
     it('returns all conditions when no field was optimized', () => {
       const conditions = [{ field: 'a', operator: '=', value: 1, type: 'AND' }];
-      const facade = makeFacade({ conditions });
-      facade._optimizedField = null;
-      const compiler = new AdvancedQueryCompiler(facade);
-      expect(compiler._getRemainingConditions()).toBe(conditions);
+      const builder = makeBuilder({ conditions });
+      builder._optimizedField = null;
+      expect(builder._getRemainingConditions()).toBe(conditions);
     });
 
     it('excludes the optimized field from the remaining conditions', () => {
@@ -441,10 +434,9 @@ describe('AdvancedQueryCompiler', () => {
         { field: 'a', operator: '=', value: 1, type: 'AND' },
         { field: 'b', operator: '=', value: 2, type: 'AND' }
       ];
-      const facade = makeFacade({ conditions });
-      facade._optimizedField = 'a';
-      const compiler = new AdvancedQueryCompiler(facade);
-      expect(compiler._getRemainingConditions()).toEqual([
+      const builder = makeBuilder({ conditions });
+      builder._optimizedField = 'a';
+      expect(builder._getRemainingConditions()).toEqual([
         { field: 'b', operator: '=', value: 2, type: 'AND' }
       ]);
     });
@@ -452,43 +444,43 @@ describe('AdvancedQueryCompiler', () => {
 
   describe('_getFieldValue()', () => {
     it('resolves a direct key', () => {
-      const facade = makeFacade({ tableName: 'Users' });
-      const compiler = new AdvancedQueryCompiler(facade);
-      expect(compiler._getFieldValue({ name: 'Alice' }, 'name')).toBe('Alice');
+      const builder = makeBuilder({ tableName: 'Users' });
+      expect(builder._getFieldValue({ name: 'Alice' }, 'name')).toBe('Alice');
     });
 
-    it('resolves via the facade tableName prefix', () => {
-      const facade = makeFacade({ tableName: 'Users' });
-      const compiler = new AdvancedQueryCompiler(facade);
-      expect(compiler._getFieldValue({ 'Users.name': 'Alice' }, 'name')).toBe('Alice');
+    it('resolves via the builder tableName prefix', () => {
+      const builder = makeBuilder({ tableName: 'Users' });
+      expect(builder._getFieldValue({ 'Users.name': 'Alice' }, 'name')).toBe('Alice');
     });
 
     it('resolves via a suffix scan for other prefixes', () => {
-      const facade = makeFacade({ tableName: 'Users' });
-      const compiler = new AdvancedQueryCompiler(facade);
-      expect(compiler._getFieldValue({ 'Accounts.name': 'Alice' }, 'name')).toBe('Alice');
+      const builder = makeBuilder({ tableName: 'Users' });
+      expect(builder._getFieldValue({ 'Accounts.name': 'Alice' }, 'name')).toBe('Alice');
     });
 
     it('returns undefined when nothing matches', () => {
-      const facade = makeFacade({ tableName: 'Users' });
-      const compiler = new AdvancedQueryCompiler(facade);
-      expect(compiler._getFieldValue({}, 'name')).toBeUndefined();
+      const builder = makeBuilder({ tableName: 'Users' });
+      expect(builder._getFieldValue({}, 'name')).toBeUndefined();
     });
   });
 
   describe('_applyConditionsFiltered() / _applyConditions()', () => {
     it('applies ordinary conditions without requiring a database service', () => {
-      const compiler = new AdvancedQueryCompiler(makeFacade({ tableName: 'Users' }));
+      const builder = makeBuilder({ tableName: 'Users' });
 
-      expect(compiler._applyConditionsFiltered(
-        [{ name: 'Alice', age: 30 }, { name: 'Bob', age: 20 }],
-        [{ field: 'age', operator: '>=', value: 25, type: 'AND' }]
-      )).toEqual([{ name: 'Alice', age: 30 }]);
+      expect(
+        builder._applyConditionsFiltered(
+          [
+            { name: 'Alice', age: 30 },
+            { name: 'Bob', age: 20 }
+          ],
+          [{ field: 'age', operator: '>=', value: 25, type: 'AND' }]
+        )
+      ).toEqual([{ name: 'Alice', age: 30 }]);
     });
 
     it('applies AND semantics across all conditions', () => {
-      const facade = makeFacade({ tableName: 'Users' });
-      const compiler = new AdvancedQueryCompiler(facade);
+      const builder = makeBuilder({ tableName: 'Users' });
       const rows = [
         { name: 'Alice', age: 30 },
         { name: 'Bob', age: 20 }
@@ -497,14 +489,13 @@ describe('AdvancedQueryCompiler', () => {
         { field: 'age', operator: '>=', value: 25, type: 'AND' },
         { field: 'name', operator: '=', value: 'Alice', type: 'AND' }
       ];
-      expect(compiler._applyConditionsFiltered(rows, conditions)).toEqual([
+      expect(builder._applyConditionsFiltered(rows, conditions)).toEqual([
         { name: 'Alice', age: 30 }
       ]);
     });
 
     it('applies OR semantics when mixed with AND', () => {
-      const facade = makeFacade({ tableName: 'Users' });
-      const compiler = new AdvancedQueryCompiler(facade);
+      const builder = makeBuilder({ tableName: 'Users' });
       const rows = [
         { name: 'Alice', age: 30 },
         { name: 'Bob', age: 20 },
@@ -515,52 +506,48 @@ describe('AdvancedQueryCompiler', () => {
         { field: 'age', operator: '>=', value: 100, type: 'AND' },
         { field: 'name', operator: '=', value: 'Bob', type: 'OR' }
       ];
-      const result = compiler._applyConditionsFiltered(rows, conditions);
+      const result = builder._applyConditionsFiltered(rows, conditions);
       expect(result.map((r) => r.name)).toEqual(['Bob']);
     });
 
     it('returns an empty array for an empty input set', () => {
-      const facade = makeFacade({ tableName: 'Users' });
-      const compiler = new AdvancedQueryCompiler(facade);
+      const builder = makeBuilder({ tableName: 'Users' });
       expect(
-        compiler._applyConditionsFiltered([], [{ field: 'a', operator: '=', value: 1 }])
+        builder._applyConditionsFiltered([], [{ field: 'a', operator: '=', value: 1 }])
       ).toEqual([]);
     });
 
-    it('_applyConditions() delegates to facade.conditions', () => {
-      const facade = makeFacade({
+    it('_applyConditions() delegates to this.conditions', () => {
+      const builder = makeBuilder({
         tableName: 'Users',
         conditions: [{ field: 'age', operator: '>', value: 25, type: 'AND' }]
       });
-      const compiler = new AdvancedQueryCompiler(facade);
       const rows = [{ age: 30 }, { age: 10 }];
-      expect(compiler._applyConditions(rows)).toEqual([{ age: 30 }]);
+      expect(builder._applyConditions(rows)).toEqual([{ age: 30 }]);
     });
   });
 
   describe('_applyGroupBy()', () => {
     it('returns an empty array for empty/null input', () => {
-      const facade = makeFacade({ tableName: 'Users' });
-      facade.groupByFields = ['dept'];
-      facade.aggregations = [];
-      const compiler = new AdvancedQueryCompiler(facade);
-      expect(compiler._applyGroupBy([])).toEqual([]);
-      expect(compiler._applyGroupBy(null)).toEqual([]);
+      const builder = makeBuilder({ tableName: 'Users' });
+      builder.groupByFields = ['dept'];
+      builder.aggregations = [];
+      expect(builder._applyGroupBy([])).toEqual([]);
+      expect(builder._applyGroupBy(null)).toEqual([]);
     });
 
     it('groups rows and computes aggregations per group', () => {
-      const facade = makeFacade({ tableName: 'Products' });
-      facade.groupByFields = ['category'];
-      facade.aggregations = [
+      const builder = makeBuilder({ tableName: 'Products' });
+      builder.groupByFields = ['category'];
+      builder.aggregations = [
         { alias: 'total', calculate: (group) => group.reduce((s, r) => s + r.price, 0) }
       ];
-      const compiler = new AdvancedQueryCompiler(facade);
       const rows = [
         { category: 'Books', price: 10 },
         { category: 'Books', price: 20 },
         { category: 'Toys', price: 5 }
       ];
-      const result = compiler._applyGroupBy(rows);
+      const result = builder._applyGroupBy(rows);
       expect(result).toHaveLength(2);
       const books = result.find((r) => r.category === 'Books');
       expect(books.total).toBe(30);
@@ -569,50 +556,25 @@ describe('AdvancedQueryCompiler', () => {
     });
 
     it('treats null grouping values as a shared NULL bucket', () => {
-      const facade = makeFacade({ tableName: 'Products' });
-      facade.groupByFields = ['category'];
-      facade.aggregations = [];
-      const compiler = new AdvancedQueryCompiler(facade);
+      const builder = makeBuilder({ tableName: 'Products' });
+      builder.groupByFields = ['category'];
+      builder.aggregations = [];
       const rows = [{ category: null }, { category: null }, { category: 'Toys' }];
-      const result = compiler._applyGroupBy(rows);
+      const result = builder._applyGroupBy(rows);
       expect(result).toHaveLength(2);
     });
 
     it('supports multi-field grouping', () => {
-      const facade = makeFacade({ tableName: 'Sales' });
-      facade.groupByFields = ['region', 'quarter'];
-      facade.aggregations = [];
-      const compiler = new AdvancedQueryCompiler(facade);
+      const builder = makeBuilder({ tableName: 'Sales' });
+      builder.groupByFields = ['region', 'quarter'];
+      builder.aggregations = [];
       const rows = [
         { region: 'EU', quarter: 'Q1' },
         { region: 'EU', quarter: 'Q2' },
         { region: 'US', quarter: 'Q1' }
       ];
-      const result = compiler._applyGroupBy(rows);
+      const result = builder._applyGroupBy(rows);
       expect(result).toHaveLength(3);
     });
-  });
-});
-
-describe('QueryCache', () => {
-  // NOTE: QueryCache already has broad direct coverage in
-  // src/query/__tests__/AdvancedQueryBuilder.test.js. This block only
-  // adds the JSON-parse-failure path, which was not previously covered.
-  it('returns null when the cached payload is corrupted JSON', () => {
-    const service = {
-      get: jest.fn(() => '{not-valid-json'),
-      put: jest.fn(),
-      removeAll: jest.fn()
-    };
-    const cache = new QueryCache(service);
-    const query = { selectedColumns: ['*'], tableName: 'Users', conditions: [] };
-    expect(cache.get(query)).toBeNull();
-  });
-
-  it('returns null when the cache service returns undefined', () => {
-    const service = { get: jest.fn(() => undefined), put: jest.fn(), removeAll: jest.fn() };
-    const cache = new QueryCache(service);
-    const query = { selectedColumns: ['*'], tableName: 'Users', conditions: [] };
-    expect(cache.get(query)).toBeNull();
   });
 });

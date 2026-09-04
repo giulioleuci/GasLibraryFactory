@@ -17,10 +17,19 @@
  * @requires fuse.js (npm) - For fuzzy search with configurable scoring
  */
 
-import { isEqual, OperationError, isPlainObject, CellValueCoercion } from '@CoreUtilsLib';
-import { TableDataModifier } from './TableDataModifier.js';
-import { TableSchemaValidator } from './TableSchemaValidator.js';
-import { TableSearchEngine } from './TableSearchEngine.js';
+import {
+  isEqual,
+  OperationError,
+  isPlainObject,
+  CellValueCoercion,
+  ConfigurationError
+} from '@CoreUtilsLib';
+import { ValidationException, z } from '@GasSchemaValidatorLib';
+import Fuse from 'fuse.js';
+
+const zodSchemaProtocol = z.object({
+  safeParse: z.function()
+});
 
 /**
  * @class TableService
@@ -43,7 +52,7 @@ export class TableService {
    * @param {LoggerService} logger - Injected logging.
    * @param {UtilsService} utils - Provides UUID generation.
    * @param {Array<Array<*>>} [preloadedData=null] - Raw 2D array for Eager Loading.
-   * @param {TableSchemaValidator} [schemaValidator=null] - Pre-instantiated validator.
+   * @param {SchemaValidator} [schemaValidator=null] - Pre-instantiated GasSchemaValidatorLib validator.
    */
   constructor(
     sheetName,
@@ -78,13 +87,6 @@ export class TableService {
     this._updateQueue = new Map();
     this._deleteQueue = new Set();
 
-    // Facade delegate instantiation. Public methods are exposed via explicit
-    // delegating methods below (see the "Delegated sub-service methods" section)
-    // rather than dynamic bind-loops, so the public surface is statically visible.
-    this.dataModifier = new TableDataModifier(this);
-    this.schemaValidator = new TableSchemaValidator(this);
-    this.searchEngine = new TableSearchEngine(this);
-
     if (preloadedData) {
       this._logger.debug('EAGER initialization for table: ' + this.sheetName);
       const { columns, rows } = this._processRawData(preloadedData);
@@ -105,78 +107,527 @@ export class TableService {
     }
   }
 
-  // --- Delegated sub-service methods (explicit, statically visible) ---
-  // These forward to the TableDataModifier / TableSchemaValidator / TableSearchEngine
-  // collaborators. Rest args preserve each sub-service method's exact signature.
+  // --- Data-modification methods (folded from the former TableDataModifier) ---
 
-  /** @description Inserts a single row. @returns {*} Result from TableDataModifier. */
-  insertRow(...args) {
-    return this.dataModifier.insertRow(...args);
+  /**
+   * @function insertRow
+   * @description Single row insertion with schema validation.
+   * @param {Object} rowObj - Data to insert.
+   * @returns {Object|null} The inserted row with generated ID and virtual columns.
+   * @throws {Error} On schema violation.
+   */
+  insertRow(rowObj) {
+    const results = this.insertRows([rowObj]);
+    return results.length > 0 ? results[0] : null;
   }
 
-  /** @description Inserts multiple rows. @returns {*} Result from TableDataModifier. */
-  insertRows(...args) {
-    return this.dataModifier.insertRows(...args);
+  /**
+   * @function insertRows
+   * @description Batch insertion with UUID generation and write-through cache update.
+   * @param {Object[]} rowsArray - Multiple data objects.
+   * @returns {Object[]} Processed rows added to the queue.
+   * @throws {Error} If validation fails for any row.
+   */
+  insertRows(rowsArray) {
+    if (!Array.isArray(rowsArray) || rowsArray.length === 0) {
+      this._logger.warn('insertRows called with empty or invalid array');
+      return [];
+    }
+
+    this._ensureDataLoaded();
+
+    const completeRows = [];
+
+    // OPTIMIZATION: Process all rows in memory first
+    for (const rowObj of rowsArray) {
+      // Validate row against schema
+      const validatedRow = this._validateRow(rowObj, false);
+      const completeRow = { ...validatedRow };
+
+      // Generate primary key if not present
+      if (this._keyField && !completeRow[this._keyField]) {
+        completeRow[this._keyField] = this.utils.generateUuid();
+      }
+
+      // Apply virtual columns
+      this._applyVirtualColumns(completeRow);
+
+      completeRows.push(completeRow);
+    }
+
+    try {
+      this._logger.debug(
+        `Queuing batch insert of ${rowsArray.length} rows for '${this.sheetName}'`
+      );
+
+      // BATCH QUEUE: Add rows to queue instead of writing immediately
+      this._insertQueue.push(...completeRows);
+
+      this._logger.debug(`Successfully queued ${completeRows.length} rows for '${this.sheetName}'`);
+
+      // WRITE-THROUGH CACHE: Add all rows to cache instead of invalidating
+      this._rowsCache.push(...completeRows);
+      // Invalidate processed cache to recompute virtual columns
+      this._processedRowsCache = null;
+      // Invalidate indices as data changed
+      this.invalidateIndex();
+
+      // OPTIMIZATION: Store original row data for dirty checking
+      for (const row of completeRows) {
+        this._storeOriginalRowData(row);
+      }
+
+      return completeRows;
+    } catch (e) {
+      this._logger.error(`Failed to queue batch insert rows in '${this.sheetName}': ${e.message}`);
+      throw e;
+    }
   }
 
-  /** @description Updates a row by id. @returns {*} Result from TableDataModifier. */
-  updateRowById(...args) {
-    return this.dataModifier.updateRowById(...args);
+  /**
+   * @function updateRowById
+   * @description Performs full row update with dirty checking. Skips if data is identical.
+   * @param {string|number} id - PK of target row.
+   * @param {Object} rowObj - New data state.
+   * @returns {Object} The updated row.
+   * @throws {OperationError} If ID not found.
+   * @throws {Error} On schema violation.
+   */
+  updateRowById(id, rowObj) {
+    this._logger.debug(
+      `Starting update of row with ${this._keyField}=${id} in '${this.sheetName}'`
+    );
+
+    this._ensureDataLoaded();
+
+    // SDL-M010: Validate row against schema (allow partial updates)
+    const validatedRow = this._validateRow(rowObj, true);
+
+    const targetRowIndex = this._findRowIndexById(id);
+
+    if (targetRowIndex === -1) {
+      this._logger.error(`No row found with ${this._keyField}=${id} in ${this.sheetName}`);
+      throw new OperationError(
+        `No row found with ${this._keyField}=${id} in ${this.sheetName}`,
+        'updateRowById',
+        false,
+        { keyField: this._keyField, id, sheetName: this.sheetName }
+      );
+    }
+
+    const originalRow = this._rowsCache[targetRowIndex];
+    const rowToUpdate = { ...originalRow, ...validatedRow };
+
+    this._applyVirtualColumns(rowToUpdate);
+
+    const physicalColumns = this.columns.filter((col) => !this._virtualColumns[col]);
+
+    // OPTIMIZATION: Dirty checking - extract physical data for comparison
+    const newPhysicalData = {};
+    for (const col of physicalColumns) {
+      newPhysicalData[col] = rowToUpdate[col] ?? '';
+    }
+
+    // OPTIMIZATION: Check if data has actually changed
+    const originalData = this._originalRowData.get(id);
+    if (originalData && isEqual(originalData, newPhysicalData)) {
+      this._logger.debug(`No changes detected for row ${id}, skipping API call`);
+      return rowToUpdate;
+    }
+
+    // Queue the update instead of writing immediately
+    try {
+      this._logger.debug(`Queuing update for row ${id} in '${this.sheetName}'`);
+
+      this._updateQueue.set(id, rowToUpdate);
+      this._logger.debug(`Row update queued successfully in '${this.sheetName}'`);
+
+      // WRITE-THROUGH CACHE: Update row in cache instead of invalidating
+      this._rowsCache[targetRowIndex] = rowToUpdate;
+      // Invalidate processed cache to recompute virtual columns
+      this._processedRowsCache = null;
+      // Invalidate indices as data changed
+      this.invalidateIndex();
+
+      return rowToUpdate;
+    } catch (e) {
+      this._logger.error(`Error queuing row update in '${this.sheetName}': ${e.message}`);
+      throw e;
+    }
   }
 
-  /** @description Patches a row. @returns {*} Result from TableDataModifier. */
-  patchRow(...args) {
-    return this.dataModifier.patchRow(...args);
+  /**
+   * @function patchRow
+   * @description Partial update focusing only on changed physical columns.
+   * @param {string|number} id - PK of target row.
+   * @param {Object} partialObj - Subset of row data.
+   * @returns {Object} The merged updated row.
+   * @throws {OperationError} If ID not found.
+   */
+  patchRow(id, partialObj) {
+    this._logger.debug(`Starting patch of row with ${this._keyField}=${id} in '${this.sheetName}'`);
+
+    this._ensureDataLoaded();
+
+    // Validate partial row against schema (allow partial updates)
+    const validatedPartial = this._validateRow(partialObj, true);
+
+    const targetRowIndex = this._findRowIndexById(id);
+
+    if (targetRowIndex === -1) {
+      this._logger.error(`No row found with ${this._keyField}=${id} in ${this.sheetName}`);
+      throw new OperationError(
+        `No row found with ${this._keyField}=${id} in ${this.sheetName}`,
+        'patchRow',
+        false,
+        { keyField: this._keyField, id, sheetName: this.sheetName }
+      );
+    }
+
+    const originalRow = this._rowsCache[targetRowIndex];
+    const physicalColumns = this.columns.filter((col) => !this._virtualColumns[col]);
+
+    // OPTIMIZATION: Identify which columns are actually changing
+    const changedColumns = [];
+    const changedValues = [];
+
+    for (const [key, newValue] of Object.entries(validatedPartial)) {
+      // Skip virtual columns (they're computed, not stored)
+      if (this._virtualColumns[key]) {
+        continue;
+      }
+
+      // Skip if column doesn't exist in table schema
+      if (!physicalColumns.includes(key)) {
+        this._logger.warn(`Column '${key}' not found in table schema, skipping`);
+        continue;
+      }
+
+      // Check if value actually changed
+      const oldValue = originalRow[key];
+      if (oldValue !== newValue) {
+        changedColumns.push(key);
+        changedValues.push(newValue);
+      }
+    }
+
+    // If nothing changed, return early
+    if (changedColumns.length === 0) {
+      this._logger.debug(`No changes detected for row ${id}, skipping update`);
+      const rowToReturn = { ...originalRow };
+      return this._applyVirtualColumns(rowToReturn);
+    }
+
+    // OPTIMIZATION: Update only the changed cells
+    this._logger.debug(
+      `Patching ${changedColumns.length} columns for row ${id}: ${changedColumns.join(', ')}`
+    );
+
+    try {
+      // BATCH QUEUE: Queue the updated complete row
+      const updatedRow = { ...originalRow, ...validatedPartial };
+      this._applyVirtualColumns(updatedRow);
+
+      this._updateQueue.set(id, updatedRow);
+
+      this._logger.debug(`Successfully queued patch row in '${this.sheetName}'`);
+
+      // WRITE-THROUGH CACHE: Update cache with new values
+      this._rowsCache[targetRowIndex] = updatedRow;
+      // Invalidate processed cache to recompute virtual columns
+      this._processedRowsCache = null;
+      // Invalidate indices as data changed
+      this.invalidateIndex();
+
+      return updatedRow;
+    } catch (e) {
+      this._logger.error(`Error queuing patched row in '${this.sheetName}': ${e.message}`);
+      throw e;
+    }
   }
 
-  /** @description Deletes a row by id. @returns {*} Result from TableDataModifier. */
-  deleteRowById(...args) {
-    return this.dataModifier.deleteRowById(...args);
+  /**
+   * @function deleteRowById
+   * @description Queues row for deletion and purges it from local caches.
+   * @param {string|number} id - PK of row to remove.
+   * @returns {Object|null} The deleted row object or null if not found.
+   * @throws {Error} If queueing fails.
+   */
+  deleteRowById(id) {
+    this._logger.debug(
+      `Starting deletion of row with ${this._keyField}=${id} in '${this.sheetName}'`
+    );
+
+    this._ensureDataLoaded();
+    const targetRowIndex = this._findRowIndexById(id);
+
+    if (targetRowIndex === -1) {
+      this._logger.warn(
+        `No row found with ${this._keyField}=${id} in ${this.sheetName} for deletion.`
+      );
+      return null; // SDL-M007: Return null instead of false for consistency
+    }
+
+    // SDL-M007: Store the row before deletion to return it
+    const deletedRow = { ...this._rowsCache[targetRowIndex] };
+
+    try {
+      this._logger.debug(`Queuing deletion for row in sheet '${this.sheetName}'`);
+
+      // Delegate deletion to Queue
+      this._deleteQueue.add(id);
+      this._updateQueue.delete(id); // If it was queued for update, it's now deleted
+      // Remove from insert queue if it was just added
+      const insertIndex = this._insertQueue.findIndex((r) => r[this._keyField] === id);
+      if (insertIndex !== -1) {
+        this._insertQueue.splice(insertIndex, 1);
+        this._deleteQueue.delete(id); // No need to delete from remote if it was never pushed
+      }
+
+      // WRITE-THROUGH CACHE: Remove row from cache instead of invalidating
+      this._rowsCache.splice(targetRowIndex, 1);
+      // Invalidate processed cache to recompute virtual columns
+      this._processedRowsCache = null;
+      // Invalidate indices as data changed
+      this.invalidateIndex();
+
+      // OPTIMIZATION: Remove from original data cache
+      this._originalRowData.delete(id);
+
+      this._logger.debug(`Row deletion queued successfully from '${this.sheetName}'`);
+      return deletedRow; // SDL-M007: Return the deleted row object
+    } catch (e) {
+      this._logger.error(`Error queuing row deletion from '${this.sheetName}': ${e.message}`);
+      throw e;
+    }
   }
 
-  /** @description Updates multiple rows by ids. @returns {*} Result from TableDataModifier. */
-  updateRowsByIds(...args) {
-    return this.dataModifier.updateRowsByIds(...args);
+  /**
+   * @function updateRowsByIds
+   * @description Batch patch operation.
+   * @param {Object.<string, Object>} updatesObj - ID-to-partial map.
+   * @returns {Object[]} Successful updates.
+   */
+  updateRowsByIds(updatesObj) {
+    if (!updatesObj || Object.keys(updatesObj).length === 0) {
+      return [];
+    }
+    const updatedRows = [];
+    for (const [id, updates] of Object.entries(updatesObj)) {
+      try {
+        const result = this.patchRow(id, updates);
+        updatedRows.push(result);
+      } catch (e) {
+        this._logger.warn(`Failed to process bulk update for ID ${id}: ${e.message}`);
+      }
+    }
+    return updatedRows;
   }
 
-  /** @description Deletes multiple rows by ids. @returns {*} Result from TableDataModifier. */
-  deleteRowsByIds(...args) {
-    return this.dataModifier.deleteRowsByIds(...args);
+  /**
+   * @function deleteRowsByIds
+   * @description Batch deletion.
+   * @param {(string|number)[]} ids - Array of PKs.
+   * @returns {Object[]} Successful deletions.
+   */
+  deleteRowsByIds(ids) {
+    if (!ids || ids.length === 0) {
+      return [];
+    }
+    const deletedRows = [];
+    for (const id of ids) {
+      try {
+        const result = this.deleteRowById(id);
+        if (result) {
+          deletedRows.push(result);
+        }
+      } catch (e) {
+        this._logger.warn(`Failed to process bulk delete for ID ${id}: ${e.message}`);
+      }
+    }
+    return deletedRows;
   }
 
-  /** @description Sets the validation schema. @returns {*} Result from TableSchemaValidator. */
-  setSchema(...args) {
-    return this.schemaValidator.setSchema(...args);
+  // --- Schema-validation methods (folded from the former TableSchemaValidator) ---
+
+  setSchema(zodSchema) {
+    if (!zodSchemaProtocol.safeParse(zodSchema).success) {
+      throw new ConfigurationError('setSchema() requires a Zod schema');
+    }
+    this._schema = zodSchema;
+    this._schemaValidationEnabled = true;
+    this._logger.debug(`Schema validation enabled for table '${this.sheetName}'`);
+    return this;
   }
 
-  /** @description Disables schema validation. @returns {*} Result from TableSchemaValidator. */
-  disableSchemaValidation(...args) {
-    return this.schemaValidator.disableSchemaValidation(...args);
+  disableSchemaValidation() {
+    this._schemaValidationEnabled = false;
+    this._logger.debug(`Schema validation disabled for table '${this.sheetName}'`);
+    return this;
   }
 
-  /** @description Enables schema validation. @returns {*} Result from TableSchemaValidator. */
-  enableSchemaValidation(...args) {
-    return this.schemaValidator.enableSchemaValidation(...args);
-  }
-
-  /** @description Fuzzy-searches rows. @returns {*} Result from TableSearchEngine. */
-  fuzzySearch(...args) {
-    return this.searchEngine.fuzzySearch(...args);
-  }
-
-  /** @description Creates an index. @returns {*} Result from TableSearchEngine. */
-  createIndex(...args) {
-    return this.searchEngine.createIndex(...args);
+  enableSchemaValidation() {
+    if (!this._schema) {
+      throw new ConfigurationError('Cannot enable schema validation: no schema has been set');
+    }
+    this._schemaValidationEnabled = true;
+    this._logger.debug(`Schema validation enabled for table '${this.sheetName}'`);
+    return this;
   }
 
   /** @private @description Validates a row against the schema. */
-  _validateRow(...args) {
-    return this.schemaValidator.validateRow(...args);
+  _validateRow(rowObj, isUpdate = false) {
+    if (!this._schemaValidationEnabled || !this._schema) {
+      return rowObj;
+    }
+
+    if (!this._schemaValidator) {
+      throw new ConfigurationError('Schema validation requires a SchemaValidator instance');
+    }
+
+    const schema = isUpdate ? this._schema.partial() : this._schema;
+    const result = this._schemaValidator.safeValidate(schema, rowObj);
+
+    if (!result.success) {
+      throw new ValidationException('Row validation failed', this.sheetName, result.errors);
+    }
+
+    return result.data;
+  }
+
+  // --- Search / indexing methods (folded from the former TableSearchEngine) ---
+
+  /**
+   * @function fuzzySearch
+   * @description Executes fuzzy match using Fuse.js across specified fields.
+   * @param {string} query - Search term.
+   * @param {string[]} fields - Columns to inspect.
+   * @param {number} [threshold=0.3] - Fuse.js sensitivity (0.0 to 1.0).
+   * @param {Object} [options={}] - Fuse.js configuration overrides.
+   * @returns {Object[]} Fuse.js result objects (item, refIndex, score).
+   * @throws {Error} If query is non-string or fields array is empty.
+   */
+  fuzzySearch(query, fields, threshold = 0.3, options = {}) {
+    if (!query || typeof query !== 'string') {
+      throw new Error('Query must be a non-empty string');
+    }
+
+    if (!fields || !Array.isArray(fields) || fields.length === 0) {
+      throw new Error('Fields must be a non-empty array of field names');
+    }
+
+    // Validate threshold
+    if (typeof threshold !== 'number' || threshold < 0 || threshold > 1) {
+      throw new Error('Threshold must be a number between 0 and 1');
+    }
+
+    this._ensureDataLoaded();
+
+    // Get rows with virtual columns applied
+    const rows = this.getRows();
+
+    const results = this.fuzzySearchRows(rows, query, fields, threshold, options);
+
+    this._logger.debug(
+      `Fuzzy search for "${query}" in fields [${fields.join(', ')}] ` +
+        `returned ${results.length} results (threshold: ${threshold})`
+    );
+
+    return results;
+  }
+
+  /**
+   * @description Executes fuzzy matching against an already materialized row set.
+   * This keeps all Fuse configuration within the table search boundary for callers
+   * such as AdvancedQueryBuilder that have already narrowed their candidates.
+   * @param {Object[]} rows - Candidate records to search.
+   * @param {string} query - Search term.
+   * @param {string[]} fields - Candidate fields to inspect.
+   * @param {number} [threshold=0.3] - Fuse.js sensitivity (0.0 to 1.0).
+   * @param {Object} [options={}] - Fuse.js configuration overrides.
+   * @returns {Object[]} Fuse.js result objects (item, refIndex, score).
+   */
+  fuzzySearchRows(rows, query, fields, threshold = 0.3, options = {}) {
+    if (!Array.isArray(rows)) {
+      throw new Error('Rows must be an array');
+    }
+    if (!query || typeof query !== 'string') {
+      throw new Error('Query must be a non-empty string');
+    }
+    if (!fields || !Array.isArray(fields) || fields.length === 0) {
+      throw new Error('Fields must be a non-empty array of field names');
+    }
+    if (typeof threshold !== 'number' || threshold < 0 || threshold > 1) {
+      throw new Error('Threshold must be a number between 0 and 1');
+    }
+
+    return new Fuse(rows, {
+      keys: fields,
+      threshold,
+      includeScore: true,
+      ...options
+    }).search(query);
+  }
+
+  /**
+   * @function createIndex
+   * @description Builds a Map-based memory index for O(1) lookups on a specific column.
+   * @param {string} columnName - Target physical column.
+   * @returns {TableService} The instance for chaining.
+   * @throws {Error} If columnName is missing from table schema.
+   */
+  createIndex(columnName) {
+    if (!this.columns.includes(columnName)) {
+      throw new Error(`Cannot create index on non-existent column: ${columnName}`);
+    }
+
+    this._ensureDataLoaded();
+
+    // Build the index as a Map from column value -> array of row indices
+    const index = new Map();
+    this._rowsCache.forEach((row, rowIndex) => {
+      const value = row[columnName];
+      if (value !== null && value !== undefined) {
+        if (!index.has(value)) {
+          index.set(value, []);
+        }
+        index.get(value).push(rowIndex);
+      }
+    });
+
+    this._indices[columnName] = index;
+    this._logger.debug(`Index created on column "${columnName}" with ${index.size} unique values`);
+    return this;
   }
 
   /** @private @description Performs an indexed lookup. */
-  _indexedLookup(...args) {
-    return this.searchEngine.indexedLookup(...args);
+  _indexedLookup(columnName, value) {
+    if (!this._indices[columnName]) {
+      return null; // No index available
+    }
+
+    const index = this._indices[columnName];
+    const rowIndices = index.get(value);
+
+    if (!rowIndices) {
+      return []; // No matches
+    }
+
+    // Return copies of the matching rows with virtual columns applied
+    return rowIndices.map((idx) => this._applyVirtualColumns({ ...this._rowsCache[idx] }));
+  }
+
+  /**
+   * @function invalidateIndex
+   * @description Purges memory indices.
+   * @param {string|null} [columnName=null] - Specific column ID or null for global purge.
+   */
+  invalidateIndex(columnName = null) {
+    if (columnName) {
+      delete this._indices[columnName];
+    } else {
+      this._indices = {};
+    }
   }
 
   // --- PUBLIC METHODS ---

@@ -4,7 +4,7 @@
  * @version 1.0.0
  */
 
-import { TableSearchEngine } from '../TableSearchEngine.js';
+import { TableService } from '../TableService.js';
 import { AdvancedQueryBuilder } from '../query/AdvancedQueryBuilder.js';
 
 /**
@@ -19,7 +19,10 @@ export class TableServiceMock {
   constructor(name = 'TestTable') {
     this.name = name;
     this._data = [];
-    this.searchEngine = new TableSearchEngine(this);
+    // fuzzySearchRows is a pure function of its (rows, query, fields, threshold, options)
+    // arguments — it doesn't touch table internals — so the real TableService
+    // implementation can be reused directly here for high-fidelity fuzzy-search mocking.
+    this.fuzzySearchRows = TableService.prototype.fuzzySearchRows;
 
     this.insertRow = jest.fn((row) => {
       const newRow = { ...row, id: row.id || `mock-id-${Math.random().toString(36).substr(2, 9)}` };
@@ -62,7 +65,9 @@ export class TableServiceMock {
 
     this.getRow = jest.fn((index) => this._data[index] || null);
     this.getRows = jest.fn((start, limit) => {
-      if (start === undefined) return [...this._data];
+      if (start === undefined) {
+        return [...this._data];
+      }
       return this._data.slice(start, start + limit);
     });
     this.getRowsWhere = jest.fn((predicate) => this._data.filter(predicate));

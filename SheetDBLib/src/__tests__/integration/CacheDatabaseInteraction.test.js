@@ -220,18 +220,6 @@ describe('Integration Test 12: Cache-Database Interaction', () => {
       expect(result).toBe(true);
       expect(mockCacheService.removeAll).toHaveBeenCalled();
     });
-
-    test('should clear all cache', () => {
-      // Arrange
-      const queryCache = new QueryCache(mockCacheService);
-
-      // Act
-      const result = queryCache.clear();
-
-      // Assert
-      expect(result).toBe(true);
-      expect(mockCacheService.removeAll).toHaveBeenCalled();
-    });
   });
 
   describe('Cache-Aside Pattern', () => {
@@ -272,7 +260,6 @@ describe('Integration Test 12: Cache-Database Interaction', () => {
       expect(queryCache.get(mockQuery)).toBeNull();
       expect(queryCache.store(mockQuery, mockResults)).toBe(false);
       expect(queryCache.invalidateTable('Users')).toBe(false);
-      expect(queryCache.clear()).toBe(false);
     });
   });
 
@@ -317,7 +304,7 @@ describe('Integration Test 12: Cache-Database Interaction', () => {
  * ✅ Cache configuration and initialization
  * ✅ QueryCache instance creation and setup
  * ✅ Cache key generation (unique per query)
- * ✅ Cache operations (get, store, invalidate, clear)
+ * ✅ Cache operations (get, store, invalidate)
  * ✅ Cache-aside pattern integration
  * ✅ Null cache service handling
  * ✅ Cache performance (key consistency)
