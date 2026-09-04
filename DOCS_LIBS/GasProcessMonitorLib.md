@@ -236,17 +236,6 @@
    */
 ```
 ---
-#### METHOD: ProcessMonitorService.getConfigSummary
-- **Scope:** instance
-- **LLM Call Syntax:** `const result = processMonitorService.getConfigSummary();`
-- **Pure JSDoc:**
-```javascript
-/**
-   * Retrieves high-level configuration parameters for the monitoring service.
-   * @returns {Object} Service metadata.
-   */
-```
----
 <br>
 
 ## CLASS: DashboardUi
@@ -318,17 +307,6 @@
    * @param {string} jobId target process identifier.
    * @param {number} pollingInterval local polling frequency.
    * @returns {string} Inline script block.
-   */
-```
----
-#### METHOD: DashboardUi.getConfigSummary
-- **Scope:** instance
-- **LLM Call Syntax:** `const result = dashboardUi.getConfigSummary();`
-- **Pure JSDoc:**
-```javascript
-/**
-   * Retrieves library classification and version metadata.
-   * @returns {Object} Library identity.
    */
 ```
 ---

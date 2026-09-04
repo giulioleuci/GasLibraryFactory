@@ -13,6 +13,52 @@
  */
 ```
 
+### Methods of ImportEngine
+
+#### METHOD: ImportEngine.registerCustomSource
+- **Scope:** instance
+- **LLM Call Syntax:** `importEngine.registerCustomSource(name, strategyClass);`
+- **Pure JSDoc:**
+```javascript
+/**
+   * Registers a custom source-extraction strategy and whitelists its type for recipe validation.
+   * @param {string} name Source type identifier.
+   * @param {Function} strategyClass Strategy class implementing the source-extraction contract.
+   */
+```
+---
+#### METHOD: ImportEngine.getAvailableSourceTypes
+- **Scope:** instance
+- **LLM Call Syntax:** `const result = importEngine.getAvailableSourceTypes();`
+- **Pure JSDoc:**
+```javascript
+/**
+   * @returns {Array<string>} Registered source-strategy type identifiers.
+   */
+```
+---
+#### METHOD: ImportEngine.getConfigSummary
+- **Scope:** instance
+- **LLM Call Syntax:** `const result = importEngine.getConfigSummary();`
+- **Pure JSDoc:**
+```javascript
+/**
+   * @returns {Object} Summary of the engine's configured capabilities.
+   */
+```
+---
+#### METHOD: ImportEngine.validateRecipe
+- **Scope:** instance
+- **LLM Call Syntax:** `const result = importEngine.validateRecipe(recipe);`
+- **Pure JSDoc:**
+```javascript
+/**
+   * Validates an import recipe without executing it.
+   * @param {Object} recipe Import configuration (see ImportConfiguration).
+   * @returns {{valid: boolean, summary: Object, message: string}|{valid: boolean, error: string, code: string}}
+   */
+```
+---
 <br>
 
 ## CLASS: ImportConfiguration
@@ -277,6 +323,128 @@ windows and resumed with `ImportEngine.runImportChunk`.
    * @param {Object} validation record-level integrity checks.
    * @returns {Object|null} Transformed record or null if validation fails.
    * @throws {TransformError} On circular dependencies or unrecoverable row failures.
+   */
+```
+---
+#### METHOD: Transformer._applyMapping
+- **Scope:** instance
+- **LLM Call Syntax:** `const result = transformer._applyMapping(sourceRow, mapping);`
+- **Pure JSDoc:**
+```javascript
+/**
+   * Transforms row attributes according to the provided mapping schema, renaming source columns to target identifiers.
+   * @private
+   * @param {Object} sourceRow raw input record.
+   * @param {Object} mapping field renaming rules.
+   * @returns {Object} mapped record state.
+   */
+```
+---
+#### METHOD: Transformer._applyCalculated
+- **Scope:** instance
+- **LLM Call Syntax:** `const result = transformer._applyCalculated(row, calculated);`
+- **Pure JSDoc:**
+```javascript
+/**
+   * Evaluates computed field expressions, managing dependency resolution and topological execution order.
+   * @private
+   * @param {Object} row current record state.
+   * @param {Object} calculated map of field names to logic expressions.
+   * @returns {Object} record state updated with computed values.
+   * @throws {TransformError} If a circular dependency is detected or evaluation fails.
+   */
+```
+---
+#### METHOD: Transformer._buildDependencyGraph
+- **Scope:** instance
+- **LLM Call Syntax:** `transformer._buildDependencyGraph();`
+- **Pure JSDoc:**
+```javascript
+/**
+   * @private
+   */
+```
+---
+#### METHOD: Transformer._extractPlaceholders
+- **Scope:** instance
+- **LLM Call Syntax:** `transformer._extractPlaceholders();`
+- **Pure JSDoc:**
+```javascript
+/**
+   * @private
+   */
+```
+---
+#### METHOD: Transformer._topologicalSort
+- **Scope:** instance
+- **LLM Call Syntax:** `transformer._topologicalSort();`
+- **Pure JSDoc:**
+```javascript
+/**
+   * @private
+   */
+```
+---
+#### METHOD: Transformer._evaluateExpression
+- **Scope:** instance
+- **LLM Call Syntax:** `transformer._evaluateExpression();`
+- **Pure JSDoc:**
+```javascript
+/**
+   * @private
+   */
+```
+---
+#### METHOD: Transformer._simpleTemplateSubstitution
+- **Scope:** instance
+- **LLM Call Syntax:** `transformer._simpleTemplateSubstitution();`
+- **Pure JSDoc:**
+```javascript
+/**
+   * @private
+   */
+```
+---
+#### METHOD: Transformer._formatDate
+- **Scope:** instance
+- **LLM Call Syntax:** `const result = transformer._formatDate(value, format);`
+- **Pure JSDoc:**
+```javascript
+/**
+   * Normalizes a raw input value into a formatted date string using CoreUtilsLib parsing and formatting.
+   * @private
+   * @param {*} value Raw temporal input.
+   * @param {string} format target date pattern (e.g., 'YYYY-MM-DD').
+   * @returns {string|*} Formatted date string or original value if parsing fails.
+   */
+```
+---
+#### METHOD: Transformer._applyNormalization
+- **Scope:** instance
+- **LLM Call Syntax:** `const result = transformer._applyNormalization(row, normalization);`
+- **Pure JSDoc:**
+```javascript
+/**
+   * Orchestrates data cleaning tasks including whitespace trimming, case normalization, and date reformatting.
+   * @private
+   * @param {Object} row raw record state.
+   * @param {Object} normalization set of cleaning rules (trim, dateColumns, uppercaseColumns, lowercaseColumns).
+   * @returns {Object} normalized record state.
+   */
+```
+---
+#### METHOD: Transformer._applyValidation
+- **Scope:** instance
+- **LLM Call Syntax:** `const result = transformer._applyValidation(row, validation, rowIndex);`
+- **Pure JSDoc:**
+```javascript
+/**
+   * Evaluates record-level integrity rules against a transformed row, rejecting records that fail any predicate.
+   * @private
+   * @param {Object} row transformed record attributes.
+   * @param {string|Array<string>} validation Logic expression or collection of rules.
+   * @param {number} rowIndex record position for diagnostic logging.
+   * @returns {boolean} True if all validation predicates are satisfied.
    */
 ```
 ---

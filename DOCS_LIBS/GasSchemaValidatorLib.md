@@ -60,14 +60,6 @@
 /** Method toValidationException */
 ```
 ---
-#### METHOD: SchemaValidator.if
-- **Scope:** instance
-- **LLM Call Syntax:** `schemaValidator.if(!parse);`
-- **Pure JSDoc:**
-```javascript
-/** Method if */
-```
----
 <br>
 
 ## CLASS: DatasetValidator

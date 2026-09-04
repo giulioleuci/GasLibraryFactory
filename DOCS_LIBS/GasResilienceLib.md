@@ -13,6 +13,160 @@
  */
 ```
 
+### Methods of ExceptionService
+
+#### METHOD: ExceptionService._generateCorrelationId
+- **Scope:** instance
+- **LLM Call Syntax:** `const result = exceptionService._generateCorrelationId();`
+- **Pure JSDoc:**
+```javascript
+/**
+   * Generates a collision-resistant correlation id for tracing a single execution attempt chain.
+   * @returns {string} 21-character compact random id.
+   */
+```
+---
+#### METHOD: ExceptionService.executeWithAdvancedHandling
+- **Scope:** instance
+- **LLM Call Syntax:** `const result = exceptionService.executeWithAdvancedHandling(func, parameters, options, options.operationName, options.mode, options.maxAttempts, options.correlationId, options.useCircuitBreaker);`
+- **Pure JSDoc:**
+```javascript
+/**
+   * Executes a function with classification, retry/backoff, and optional circuit-breaker protection,
+   * returning a detailed result object rather than throwing.
+   * @param {Function} func Operation to execute; receives `parameters`.
+   * @param {Object} [parameters={}] Arguments passed to `func`.
+   * @param {Object} [options={}] Execution behavior overrides.
+   * @param {string} [options.operationName] Label used in logs/circuit-breaker keys.
+   * @param {string} [options.mode] STRICT|LENIENT|RECOVERY.
+   * @param {number} [options.maxAttempts] Override for the strategy's max attempts.
+   * @param {string} [options.correlationId] Caller-supplied trace id.
+   * @param {boolean} [options.useCircuitBreaker] Defaults to true.
+   * @returns {Object} Detailed execution result (success, result, attempts, correlationId, error).
+   * @throws {Error} If func/parameters/options are invalid.
+   */
+```
+---
+#### METHOD: ExceptionService.executeWithRetry
+- **Scope:** instance
+- **LLM Call Syntax:** `const result = exceptionService.executeWithRetry(func, parameters, maxAttempts);`
+- **Pure JSDoc:**
+```javascript
+/**
+   * Executes a function with automatic retry, throwing the underlying error on final failure.
+   * @param {Function} func Operation to execute; receives `parameters`.
+   * @param {Object} [parameters={}] Arguments passed to `func`.
+   * @param {number} [maxAttempts=3] Maximum retry attempts.
+   * @returns {*} The operation's return value on success.
+   * @throws {Error} If func/parameters/maxAttempts are invalid, or on final failure.
+   */
+```
+---
+#### METHOD: ExceptionService.executeWithBypass
+- **Scope:** instance
+- **LLM Call Syntax:** `const result = exceptionService.executeWithBypass(func, parameters, defaultValue);`
+- **Pure JSDoc:**
+```javascript
+/**
+   * Executes a function leniently, returning a fallback value instead of throwing on failure.
+   * @param {Function} func Operation to execute; receives `parameters`.
+   * @param {Object} [parameters={}] Arguments passed to `func`.
+   * @param {*} [defaultValue=null] Value returned when the operation fails.
+   * @returns {*} The operation's return value on success, otherwise `defaultValue`.
+   * @throws {Error} If func/parameters are invalid.
+   */
+```
+---
+#### METHOD: ExceptionService.classifyError
+- **Scope:** instance
+- **LLM Call Syntax:** `const result = exceptionService.classifyError(error);`
+- **Pure JSDoc:**
+```javascript
+/**
+   * Classifies an error without executing retry logic.
+   * @param {Error|*} error target failure (non-Error throws are wrapped).
+   * @returns {Object} error classification state (type, category, recoverable, originalMessage).
+   * @throws {Error} If error is null or undefined.
+   */
+```
+---
+#### METHOD: ExceptionService.resetStatistics
+- **Scope:** instance
+- **LLM Call Syntax:** `exceptionService.resetStatistics();`
+- **Pure JSDoc:**
+```javascript
+/**
+   * Resets accumulated error statistics.
+   */
+```
+---
+#### METHOD: ExceptionService.getErrorSummary
+- **Scope:** instance
+- **LLM Call Syntax:** `const result = exceptionService.getErrorSummary();`
+- **Pure JSDoc:**
+```javascript
+/**
+   * Gets the current error summary (counters and recovery rate).
+   * @returns {Object} Error summary.
+   */
+```
+---
+#### METHOD: ExceptionService.printErrorAnalysis
+- **Scope:** instance
+- **LLM Call Syntax:** `exceptionService.printErrorAnalysis();`
+- **Pure JSDoc:**
+```javascript
+/**
+   * Logs a human-readable error analysis report.
+   */
+```
+---
+#### METHOD: ExceptionService.getStatistics
+- **Scope:** instance
+- **LLM Call Syntax:** `const result = exceptionService.getStatistics();`
+- **Pure JSDoc:**
+```javascript
+/**
+   * Gets aggregate execution statistics.
+   * @returns {Object} totalAttempts, recoveryRate, and counters.
+   */
+```
+---
+#### METHOD: ExceptionService.getCircuitBreaker
+- **Scope:** instance
+- **LLM Call Syntax:** `const result = exceptionService.getCircuitBreaker();`
+- **Pure JSDoc:**
+```javascript
+/**
+   * Gets the circuit breaker instance if configured.
+   * @returns {Object|null} Circuit breaker instance, or null if not configured.
+   */
+```
+---
+#### METHOD: ExceptionService.getCircuitBreakerStatistics
+- **Scope:** instance
+- **LLM Call Syntax:** `const result = exceptionService.getCircuitBreakerStatistics();`
+- **Pure JSDoc:**
+```javascript
+/**
+   * Gets circuit breaker statistics.
+   * @returns {Object} Statistics, or an empty object if no circuit breaker is configured.
+   */
+```
+---
+#### METHOD: ExceptionService.resetCircuit
+- **Scope:** instance
+- **LLM Call Syntax:** `const result = exceptionService.resetCircuit(operationName);`
+- **Pure JSDoc:**
+```javascript
+/**
+   * Resets the circuit breaker state for a given operation.
+   * @param {string} operationName Operation key to reset.
+   * @returns {boolean} True if reset was applied, false if no circuit breaker is configured.
+   * @throws {Error} If operationName is missing or not a string.
+   */
+```
+---
 <br>
 
 ## CLASS: ResilienceConfiguration
@@ -245,19 +399,6 @@
 ```javascript
 /**
    * Purges all cached classification results to force re-evaluation of subsequent errors.
-   */
-```
----
-#### METHOD: ErrorClassifier._hashString
-- **Scope:** instance
-- **LLM Call Syntax:** `const result = errorClassifier._hashString(str);`
-- **Pure JSDoc:**
-```javascript
-/**
-   * Generates a deterministic SHA-256 identifier for an error context.
-   * @private
-   * @param {string} str diagnostic context string.
-   * @returns {string} 64-character hex hash.
    */
 ```
 ---

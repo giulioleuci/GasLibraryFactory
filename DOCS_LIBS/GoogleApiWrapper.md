@@ -821,18 +821,6 @@ needs to touch `Session` directly.
    */
 ```
 ---
-#### METHOD: UiService._invalidateCacheByPrefix
-- **Scope:** instance
-- **LLM Call Syntax:** `uiService._invalidateCacheByPrefix(prefix);`
-- **Pure JSDoc:**
-```javascript
-/**
-   * @protected
-   * @description Purges all keys matching prefix.
-   * @param {string} prefix Key prefix filter.
-   */
-```
----
 #### METHOD: UiService._executeWithRetry
 - **Scope:** instance
 - **LLM Call Syntax:** `const result = uiService._executeWithRetry(func, context, maxAttempts);`
@@ -1009,18 +997,6 @@ needs to touch `Session` directly.
    * @protected
    * @description Purges specific key from cache.
    * @param {string} key Target cache key.
-   */
-```
----
-#### METHOD: UiService._invalidateCacheByPrefix
-- **Scope:** instance
-- **LLM Call Syntax:** `uiService._invalidateCacheByPrefix(prefix);`
-- **Pure JSDoc:**
-```javascript
-/**
-   * @protected
-   * @description Purges all keys matching prefix.
-   * @param {string} prefix Key prefix filter.
    */
 ```
 ---
@@ -1620,18 +1596,6 @@ needs to touch `Session` directly.
    */
 ```
 ---
-#### METHOD: SpreadsheetService._invalidateCacheByPrefix
-- **Scope:** instance
-- **LLM Call Syntax:** `spreadsheetService._invalidateCacheByPrefix(prefix);`
-- **Pure JSDoc:**
-```javascript
-/**
-   * @protected
-   * @description Purges all keys matching prefix.
-   * @param {string} prefix Key prefix filter.
-   */
-```
----
 #### METHOD: SpreadsheetService._executeWithRetry
 - **Scope:** instance
 - **LLM Call Syntax:** `const result = spreadsheetService._executeWithRetry(func, context, maxAttempts);`
@@ -1769,127 +1733,10 @@ needs to touch `Session` directly.
 ---
 #### METHOD: PropertiesService.setObjectProperty
 - **Scope:** instance
-- **LLM Call Syntax:** `propertiesService.setObjectProperty(key, object, key, object);`
+- **LLM Call Syntax:** `propertiesService.setObjectProperty(key, object);`
 - **Pure JSDoc:**
 ```javascript
 /**
-   * Saves an object as JSON in a script property.
-   *
-   * ## Behavior
-   *
-   * 1. Serializes the object to JSON using `JSON.stringify()`
-   * 2. Stores the JSON string via `setProperty()`
-   * 3. Logs the operation at DEBUG level
-   * 4. Date objects are automatically converted to ISO 8601 strings
-   *
-   * ## Date Handling
-   *
-   * Date objects are automatically serialized to ISO 8601 format:
-   * ```javascript
-   * const state = {
-   *   createdAt: new Date('2024-12-13T10:00:00Z')
-   * };
-   * // Stored as: { "createdAt": "2024-12-13T10:00:00.000Z" }
-   * ```
-   *
-   * When loaded via `getObjectProperty()`, the date string is automatically
-   * converted back to a Date object thanks to the `_dateReviver()` function.
-   *
-   * ## JSON Serialization Limitations
-   *
-   * Be aware of JSON.stringify() limitations:
-   * - **Functions**: Not serialized (silently omitted)
-   * - **undefined values**: Omitted from objects, converted to `null` in arrays
-   * - **Symbol keys**: Ignored
-   * - **Circular references**: Throws TypeError
-   * - **Special objects**: RegExp, Map, Set, etc. serialized as `{}` or `null`
-   *
-   * ## Size Limitations
-   *
-   * - **Maximum property size**: 9 KB (9,216 bytes)
-   * - If JSON exceeds this, consider:
-   *   - Splitting data across multiple properties
-   *   - Using CacheService for temporary large data
-   *   - Storing only essential state
-   *
-   * ## Typical Use Cases (JobRunnerLib Integration)
-   *
-   * 1. **Job State Persistence**:
-   *    - Job progress checkpoints
-   *    - Resume data for long-running operations
-   *    - Error tracking
-   *
-   * 2. **Configuration Objects**:
-   *    - Complex application settings
-   *    - User preferences
-   *    - Feature flags with metadata
-   *
-   * 3. **Metadata Storage**:
-   *    - Circuit breaker state (GasResilienceLib)
-   *    - Cache invalidation timestamps
-   *    - Quota tracking details
-   *
-   * @param {string} key - The property key. Convention: Use colons for namespacing.
-   * @param {Object} object - The object to serialize and save. Must be JSON-serializable.
-   *   Date objects are automatically handled.
-   *
-   * @throws {TypeError} If object contains circular references
-   * @throws {Error} If JSON exceeds 9 KB limit
-   * @throws {Error} If JSON.stringify() fails for any reason
-   * @throws {Error} If GAS PropertiesService operation fails
-   *
-   * @see {@link getObjectProperty} to load and deserialize the object
-   * @see {@link setProperty} for storing simple string values
-   *
-   * @example
-   * // Store configuration object
-   * const properties = new PropertiesService(logger);
-   * properties.setObjectProperty('app:config', {
-   *   theme: 'dark',
-   *   language: 'en',
-   *   notifications: true,
-   *   maxRetries: 3
-   * });
-   *
-   * @example
-   * // JobRunnerLib state persistence pattern
-   * const jobState = {
-   *   jobId: 'import-2024-12',
-   *   status: 'RUNNING',
-   *   currentIndex: 1500,
-   *   totalItems: 10000,
-   *   startedAt: new Date(),              // Automatically converted to ISO 8601
-   *   lastUpdate: new Date(),              // Automatically converted to ISO 8601
-   *   errors: []
-   * };
-   * properties.setObjectProperty('job:importTask', jobState);
-   *
-   * @example
-   * // Store array of objects
-   * const recentErrors = [
-   *   { timestamp: new Date(), message: 'Timeout', code: 'ETIMEDOUT' },
-   *   { timestamp: new Date(), message: 'Rate limit', code: 'RATE_LIMIT' }
-   * ];
-   * properties.setObjectProperty('errors:recent', recentErrors);
-   *
-   * @example
-   * // ❌ WRONG: Circular references throw error
-   * const circular = { name: 'test' };
-   * circular.self = circular;
-   * properties.setObjectProperty('bad', circular);  // TypeError: Converting circular structure to JSON
-   *
-   * @example
-   * // ❌ WRONG: Functions are silently omitted
-   * const withFunction = {
-   *   name: 'test',
-   *   handler: function() { return 42; }
-   * };
-   * properties.setObjectProperty('config', withFunction);
-   * const loaded = properties.getObjectProperty('config');
-   * console.log(loaded.handler);  // undefined - function not serialized!
-   *
-   * @example
-  /**
    * @description Managed JSON storage with automatic ISO date revival.
    * @param {string} key Property identifier.
    * @param {Object} object Entity to serialize.
@@ -1899,114 +1746,10 @@ needs to touch `Session` directly.
 ---
 #### METHOD: PropertiesService.getObjectProperty
 - **Scope:** instance
-- **LLM Call Syntax:** `const result = propertiesService.getObjectProperty(key, key);`
+- **LLM Call Syntax:** `const result = propertiesService.getObjectProperty(key);`
 - **Pure JSDoc:**
 ```javascript
 /**
-   * Loads and deserializes an object from a JSON property.
-   *
-   * ## Behavior
-   *
-   * 1. Retrieves the JSON string via `getProperty()`
-   * 2. Returns `null` immediately if property doesn't exist
-   * 3. Deserializes JSON using `JSON.parse()` with `_dateReviver()`
-   * 4. **Automatic Date Revival**: ISO 8601 date strings converted to Date objects
-   * 5. Returns `null` (not throws) if JSON parsing fails
-   * 6. Logs the operation at DEBUG level
-   *
-   * ## Date Revival (Critical for JobRunnerLib)
-   *
-   * This method automatically converts ISO 8601 date strings back to Date objects:
-   *
-   * ```javascript
-   * // Stored JSON: { "startedAt": "2024-12-13T10:00:00.000Z" }
-   * const state = properties.getObjectProperty('job:state');
-   * console.log(state.startedAt instanceof Date);  // true ✅
-   * console.log(state.startedAt.getFullYear());    // 2024 ✅
-   * ```
-   *
-   * **Why This Matters**: JobRunnerLib stores Date objects in job state. Without
-   * automatic date revival, resumed jobs would crash when trying to call Date methods
-   * on string values.
-   *
-   * ## Error Handling (Graceful Degradation)
-   *
-   * Unlike `setObjectProperty()`, this method does NOT throw on errors:
-   * - **Property doesn't exist**: Returns `null`
-   * - **Invalid JSON**: Logs error and returns `null`
-   * - **Corrupt data**: Logs error and returns `null`
-   *
-   * This graceful degradation prevents job crashes when property data is corrupt.
-   *
-   * ## Return Value
-   *
-   * - **Success**: Returns the deserialized object (with dates revived)
-   * - **Property missing**: Returns `null`
-   * - **JSON invalid**: Returns `null` (logs error)
-   * - **Parse error**: Returns `null` (logs error)
-   *
-   * ## Performance
-   *
-   * - **Read + parse**: ~30-70ms depending on JSON size
-   * - **Date revival**: Adds ~1-5ms per date string
-   *
-   * @param {string} key - The property key to retrieve.
-   *
-   * @returns {Object|null} The deserialized object with automatic date revival,
-   *   or `null` if the property doesn't exist or JSON parsing fails.
-   *   Date strings in ISO 8601 format are automatically converted to Date objects.
-   *
-   * @see {@link setObjectProperty} to serialize and store objects
-   * @see {@link _dateReviver} for date conversion implementation details
-   * @see {@link getScriptPropertyJSON} for backward compatibility alias
-   *
-   * @example
-   * // Load configuration object
-   * const properties = new PropertiesService(logger);
-   * const config = properties.getObjectProperty('app:config');
-   * if (config) {
-   *   console.log(`Theme: ${config.theme}`);
-   *   console.log(`Language: ${config.language}`);
-   * } else {
-   *   console.log('Configuration not found or invalid');
-   * }
-   *
-   * @example
-   * // JobRunnerLib resume pattern (with automatic date revival)
-   * const jobState = properties.getObjectProperty('job:importTask');
-   * if (jobState && jobState.status === 'RUNNING') {
-   *   // Dates are automatically revived - safe to call Date methods!
-   *   const elapsedMs = Date.now() - jobState.startedAt.getTime();  // ✅ Works!
-   *   console.log(`Resuming job after ${elapsedMs}ms`);
-   *   console.log(`Progress: ${jobState.currentIndex}/${jobState.totalItems}`);
-   * }
-   *
-   * @example
-   * // Graceful degradation on missing property
-   * const state = properties.getObjectProperty('job:nonExistent');
-   * console.log(state);  // null - no error thrown
-   *
-   * @example
-   * // Graceful degradation on corrupt JSON
-   * properties.setProperty('corrupt', '{invalid json}');
-   * const corrupt = properties.getObjectProperty('corrupt');
-   * console.log(corrupt);  // null - error logged but not thrown
-   *
-   * @example
-   * // Date revival demonstration
-   * const saved = {
-   *   createdAt: new Date('2024-12-13T10:00:00Z'),
-   *   updatedAt: new Date('2024-12-13T11:00:00Z'),
-   *   name: 'test'
-   * };
-   * properties.setObjectProperty('demo', saved);
-   *
-   * const loaded = properties.getObjectProperty('demo');
-   * console.log(loaded.createdAt instanceof Date);    // true ✅
-   * console.log(loaded.createdAt.getFullYear());      // 2024 ✅
-   * console.log(loaded.createdAt.toISOString());      // "2024-12-13T10:00:00.000Z" ✅
-   *
-  /**
    * @description Retrieves deserialized entity with automatic ISO date revival.
    * @param {string} key Property identifier.
    * @returns {Object|null} Deserialized entity with revived Date objects.
@@ -2015,125 +1758,15 @@ needs to touch `Session` directly.
 ---
 #### METHOD: PropertiesService._dateReviver
 - **Scope:** instance
-- **LLM Call Syntax:** `const result = propertiesService._dateReviver(key, value, key, value);`
+- **LLM Call Syntax:** `const result = propertiesService._dateReviver(key, value);`
 - **Pure JSDoc:**
 ```javascript
 /**
-   * JSON reviver function that automatically detects and converts ISO 8601 date strings
-   * back to native Date objects during deserialization.
-   *
-   * ## Purpose
-   *
-   * When objects containing Date instances are serialized with `JSON.stringify()`,
-   * dates are converted to ISO 8601 strings. Without automatic revival, loading
-   * these objects would return strings instead of Date objects, causing crashes
-   * when code tries to call Date methods.
-   *
-   * ## Algorithm
-   *
-   * 1. Check if value is a string
-   * 2. Test against ISO 8601 regex: `/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}(\.\d{3})?Z?$/`
-   * 3. Attempt to create Date object
-   * 4. Validate the Date is not Invalid Date
-   * 5. Return Date object or original value
-   *
-   * ## Supported Date Formats
-   *
-   * Detects and converts these ISO 8601 variants:
-   * - `"2024-12-13T10:00:00.000Z"` (with milliseconds + Z)
-   * - `"2024-12-13T10:00:00Z"` (without milliseconds + Z)
-   * - `"2024-12-13T10:00:00.000"` (with milliseconds, no Z)
-   * - `"2024-12-13T10:00:00"` (without milliseconds or Z)
-   *
-   * ## Non-Date Strings
-   *
-   * Regular strings are not affected:
-   * - `"hello"` → `"hello"` (unchanged)
-   * - `"2024-12-13"` → `"2024-12-13"` (no 'T', not converted)
-   * - `"invalid date"` → `"invalid date"` (doesn't match pattern)
-   *
-   * ## Integration
-   *
-   * This method is used automatically by `getObjectProperty()`:
-   * ```javascript
-   * JSON.parse(jsonString, this._dateReviver)
-   * ```
-   *
-   * ## Why JobRunnerLib Needs This
-   *
-   * JobRunnerLib stores execution timestamps in job state:
-   * ```javascript
-   * const state = {
-   *   startedAt: new Date(),
-   *   lastUpdate: new Date()
-   * };
-   * ```
-   *
-   * Without date revival, resumed jobs would crash:
-   * ```javascript
-   * // ❌ WITHOUT date revival:
-   * const resumed = properties.getObjectProperty('job:state');
-   * resumed.startedAt.getTime();  // TypeError: resumed.startedAt.getTime is not a function
-   *
-   * // ✅ WITH date revival:
-   * const resumed = properties.getObjectProperty('job:state');
-   * resumed.startedAt.getTime();  // Works! Returns timestamp
-   * ```
-   *
-   * @private
-   *
-   * @param {string} key - The property key being parsed (unused, required by JSON.parse signature)
-   * @param {*} value - The value being parsed
-   *
-   * @returns {*} The value, converted to a Date object if it's a valid ISO 8601 string,
-   *   otherwise the original value unchanged.
-   *
-   * @example
-   * // Automatic date revival during getObjectProperty()
-   * const saved = { timestamp: new Date('2024-12-13T10:00:00Z') };
-   * properties.setObjectProperty('test', saved);
-   * // Stored as: { "timestamp": "2024-12-13T10:00:00.000Z" }
-   *
-   * const loaded = properties.getObjectProperty('test');
-   * console.log(typeof loaded.timestamp);              // "object"
-   * console.log(loaded.timestamp instanceof Date);     // true ✅
-   * console.log(loaded.timestamp.toISOString());       // "2024-12-13T10:00:00.000Z"
-   *
-   * @example
-   * // Regular strings are not affected
-   * const saved = {
-   *   isoString: '2024-12-13T10:00:00.000Z',  // Looks like ISO 8601
-   *   regularString: 'hello',                  // Regular string
-   *   dateString: '2024-12-13'                 // Date but no time (not converted)
-   * };
-   * properties.setObjectProperty('test', saved);
-   *
-   * const loaded = properties.getObjectProperty('test');
-   * console.log(loaded.isoString instanceof Date);      // true (converted)
-   * console.log(typeof loaded.regularString);           // "string" (unchanged)
-   * console.log(typeof loaded.dateString);              // "string" (unchanged - no 'T')
-   *
-  /**
    * @private
    * @description JSON reviver for ISO 8601 string-to-Date conversion.
    * @param {string} key Current property key.
    * @param {*} value Current property value.
    * @returns {Date|*} Revived Date or original value.
-   */
-```
----
-#### METHOD: PropertiesService.getScriptPropertyJSON
-- **Scope:** instance
-- **LLM Call Syntax:** `const result = propertiesService.getScriptPropertyJSON(key);`
-- **Pure JSDoc:**
-```javascript
-/**
-   * Loads an object from a JSON property (alias for getObjectProperty).
-   * This method provides compatibility with test helpers.
-   * @param {string} key - The property key
-   * @returns {Object|null} The deserialized object or null if it doesn't exist or is invalid
-   * @example
-   * const state = properties.getScriptPropertyJSON('job:myJob');
    */
 ```
 ---
@@ -2367,127 +2000,10 @@ needs to touch `Session` directly.
 ---
 #### METHOD: PropertiesService.setObjectProperty
 - **Scope:** instance
-- **LLM Call Syntax:** `propertiesService.setObjectProperty(key, object, key, object);`
+- **LLM Call Syntax:** `propertiesService.setObjectProperty(key, object);`
 - **Pure JSDoc:**
 ```javascript
 /**
-   * Saves an object as JSON in a script property.
-   *
-   * ## Behavior
-   *
-   * 1. Serializes the object to JSON using `JSON.stringify()`
-   * 2. Stores the JSON string via `setProperty()`
-   * 3. Logs the operation at DEBUG level
-   * 4. Date objects are automatically converted to ISO 8601 strings
-   *
-   * ## Date Handling
-   *
-   * Date objects are automatically serialized to ISO 8601 format:
-   * ```javascript
-   * const state = {
-   *   createdAt: new Date('2024-12-13T10:00:00Z')
-   * };
-   * // Stored as: { "createdAt": "2024-12-13T10:00:00.000Z" }
-   * ```
-   *
-   * When loaded via `getObjectProperty()`, the date string is automatically
-   * converted back to a Date object thanks to the `_dateReviver()` function.
-   *
-   * ## JSON Serialization Limitations
-   *
-   * Be aware of JSON.stringify() limitations:
-   * - **Functions**: Not serialized (silently omitted)
-   * - **undefined values**: Omitted from objects, converted to `null` in arrays
-   * - **Symbol keys**: Ignored
-   * - **Circular references**: Throws TypeError
-   * - **Special objects**: RegExp, Map, Set, etc. serialized as `{}` or `null`
-   *
-   * ## Size Limitations
-   *
-   * - **Maximum property size**: 9 KB (9,216 bytes)
-   * - If JSON exceeds this, consider:
-   *   - Splitting data across multiple properties
-   *   - Using CacheService for temporary large data
-   *   - Storing only essential state
-   *
-   * ## Typical Use Cases (JobRunnerLib Integration)
-   *
-   * 1. **Job State Persistence**:
-   *    - Job progress checkpoints
-   *    - Resume data for long-running operations
-   *    - Error tracking
-   *
-   * 2. **Configuration Objects**:
-   *    - Complex application settings
-   *    - User preferences
-   *    - Feature flags with metadata
-   *
-   * 3. **Metadata Storage**:
-   *    - Circuit breaker state (GasResilienceLib)
-   *    - Cache invalidation timestamps
-   *    - Quota tracking details
-   *
-   * @param {string} key - The property key. Convention: Use colons for namespacing.
-   * @param {Object} object - The object to serialize and save. Must be JSON-serializable.
-   *   Date objects are automatically handled.
-   *
-   * @throws {TypeError} If object contains circular references
-   * @throws {Error} If JSON exceeds 9 KB limit
-   * @throws {Error} If JSON.stringify() fails for any reason
-   * @throws {Error} If GAS PropertiesService operation fails
-   *
-   * @see {@link getObjectProperty} to load and deserialize the object
-   * @see {@link setProperty} for storing simple string values
-   *
-   * @example
-   * // Store configuration object
-   * const properties = new PropertiesService(logger);
-   * properties.setObjectProperty('app:config', {
-   *   theme: 'dark',
-   *   language: 'en',
-   *   notifications: true,
-   *   maxRetries: 3
-   * });
-   *
-   * @example
-   * // JobRunnerLib state persistence pattern
-   * const jobState = {
-   *   jobId: 'import-2024-12',
-   *   status: 'RUNNING',
-   *   currentIndex: 1500,
-   *   totalItems: 10000,
-   *   startedAt: new Date(),              // Automatically converted to ISO 8601
-   *   lastUpdate: new Date(),              // Automatically converted to ISO 8601
-   *   errors: []
-   * };
-   * properties.setObjectProperty('job:importTask', jobState);
-   *
-   * @example
-   * // Store array of objects
-   * const recentErrors = [
-   *   { timestamp: new Date(), message: 'Timeout', code: 'ETIMEDOUT' },
-   *   { timestamp: new Date(), message: 'Rate limit', code: 'RATE_LIMIT' }
-   * ];
-   * properties.setObjectProperty('errors:recent', recentErrors);
-   *
-   * @example
-   * // ❌ WRONG: Circular references throw error
-   * const circular = { name: 'test' };
-   * circular.self = circular;
-   * properties.setObjectProperty('bad', circular);  // TypeError: Converting circular structure to JSON
-   *
-   * @example
-   * // ❌ WRONG: Functions are silently omitted
-   * const withFunction = {
-   *   name: 'test',
-   *   handler: function() { return 42; }
-   * };
-   * properties.setObjectProperty('config', withFunction);
-   * const loaded = properties.getObjectProperty('config');
-   * console.log(loaded.handler);  // undefined - function not serialized!
-   *
-   * @example
-  /**
    * @description Managed JSON storage with automatic ISO date revival.
    * @param {string} key Property identifier.
    * @param {Object} object Entity to serialize.
@@ -2497,114 +2013,10 @@ needs to touch `Session` directly.
 ---
 #### METHOD: PropertiesService.getObjectProperty
 - **Scope:** instance
-- **LLM Call Syntax:** `const result = propertiesService.getObjectProperty(key, key);`
+- **LLM Call Syntax:** `const result = propertiesService.getObjectProperty(key);`
 - **Pure JSDoc:**
 ```javascript
 /**
-   * Loads and deserializes an object from a JSON property.
-   *
-   * ## Behavior
-   *
-   * 1. Retrieves the JSON string via `getProperty()`
-   * 2. Returns `null` immediately if property doesn't exist
-   * 3. Deserializes JSON using `JSON.parse()` with `_dateReviver()`
-   * 4. **Automatic Date Revival**: ISO 8601 date strings converted to Date objects
-   * 5. Returns `null` (not throws) if JSON parsing fails
-   * 6. Logs the operation at DEBUG level
-   *
-   * ## Date Revival (Critical for JobRunnerLib)
-   *
-   * This method automatically converts ISO 8601 date strings back to Date objects:
-   *
-   * ```javascript
-   * // Stored JSON: { "startedAt": "2024-12-13T10:00:00.000Z" }
-   * const state = properties.getObjectProperty('job:state');
-   * console.log(state.startedAt instanceof Date);  // true ✅
-   * console.log(state.startedAt.getFullYear());    // 2024 ✅
-   * ```
-   *
-   * **Why This Matters**: JobRunnerLib stores Date objects in job state. Without
-   * automatic date revival, resumed jobs would crash when trying to call Date methods
-   * on string values.
-   *
-   * ## Error Handling (Graceful Degradation)
-   *
-   * Unlike `setObjectProperty()`, this method does NOT throw on errors:
-   * - **Property doesn't exist**: Returns `null`
-   * - **Invalid JSON**: Logs error and returns `null`
-   * - **Corrupt data**: Logs error and returns `null`
-   *
-   * This graceful degradation prevents job crashes when property data is corrupt.
-   *
-   * ## Return Value
-   *
-   * - **Success**: Returns the deserialized object (with dates revived)
-   * - **Property missing**: Returns `null`
-   * - **JSON invalid**: Returns `null` (logs error)
-   * - **Parse error**: Returns `null` (logs error)
-   *
-   * ## Performance
-   *
-   * - **Read + parse**: ~30-70ms depending on JSON size
-   * - **Date revival**: Adds ~1-5ms per date string
-   *
-   * @param {string} key - The property key to retrieve.
-   *
-   * @returns {Object|null} The deserialized object with automatic date revival,
-   *   or `null` if the property doesn't exist or JSON parsing fails.
-   *   Date strings in ISO 8601 format are automatically converted to Date objects.
-   *
-   * @see {@link setObjectProperty} to serialize and store objects
-   * @see {@link _dateReviver} for date conversion implementation details
-   * @see {@link getScriptPropertyJSON} for backward compatibility alias
-   *
-   * @example
-   * // Load configuration object
-   * const properties = new PropertiesService(logger);
-   * const config = properties.getObjectProperty('app:config');
-   * if (config) {
-   *   console.log(`Theme: ${config.theme}`);
-   *   console.log(`Language: ${config.language}`);
-   * } else {
-   *   console.log('Configuration not found or invalid');
-   * }
-   *
-   * @example
-   * // JobRunnerLib resume pattern (with automatic date revival)
-   * const jobState = properties.getObjectProperty('job:importTask');
-   * if (jobState && jobState.status === 'RUNNING') {
-   *   // Dates are automatically revived - safe to call Date methods!
-   *   const elapsedMs = Date.now() - jobState.startedAt.getTime();  // ✅ Works!
-   *   console.log(`Resuming job after ${elapsedMs}ms`);
-   *   console.log(`Progress: ${jobState.currentIndex}/${jobState.totalItems}`);
-   * }
-   *
-   * @example
-   * // Graceful degradation on missing property
-   * const state = properties.getObjectProperty('job:nonExistent');
-   * console.log(state);  // null - no error thrown
-   *
-   * @example
-   * // Graceful degradation on corrupt JSON
-   * properties.setProperty('corrupt', '{invalid json}');
-   * const corrupt = properties.getObjectProperty('corrupt');
-   * console.log(corrupt);  // null - error logged but not thrown
-   *
-   * @example
-   * // Date revival demonstration
-   * const saved = {
-   *   createdAt: new Date('2024-12-13T10:00:00Z'),
-   *   updatedAt: new Date('2024-12-13T11:00:00Z'),
-   *   name: 'test'
-   * };
-   * properties.setObjectProperty('demo', saved);
-   *
-   * const loaded = properties.getObjectProperty('demo');
-   * console.log(loaded.createdAt instanceof Date);    // true ✅
-   * console.log(loaded.createdAt.getFullYear());      // 2024 ✅
-   * console.log(loaded.createdAt.toISOString());      // "2024-12-13T10:00:00.000Z" ✅
-   *
-  /**
    * @description Retrieves deserialized entity with automatic ISO date revival.
    * @param {string} key Property identifier.
    * @returns {Object|null} Deserialized entity with revived Date objects.
@@ -2613,125 +2025,15 @@ needs to touch `Session` directly.
 ---
 #### METHOD: PropertiesService._dateReviver
 - **Scope:** instance
-- **LLM Call Syntax:** `const result = propertiesService._dateReviver(key, value, key, value);`
+- **LLM Call Syntax:** `const result = propertiesService._dateReviver(key, value);`
 - **Pure JSDoc:**
 ```javascript
 /**
-   * JSON reviver function that automatically detects and converts ISO 8601 date strings
-   * back to native Date objects during deserialization.
-   *
-   * ## Purpose
-   *
-   * When objects containing Date instances are serialized with `JSON.stringify()`,
-   * dates are converted to ISO 8601 strings. Without automatic revival, loading
-   * these objects would return strings instead of Date objects, causing crashes
-   * when code tries to call Date methods.
-   *
-   * ## Algorithm
-   *
-   * 1. Check if value is a string
-   * 2. Test against ISO 8601 regex: `/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}(\.\d{3})?Z?$/`
-   * 3. Attempt to create Date object
-   * 4. Validate the Date is not Invalid Date
-   * 5. Return Date object or original value
-   *
-   * ## Supported Date Formats
-   *
-   * Detects and converts these ISO 8601 variants:
-   * - `"2024-12-13T10:00:00.000Z"` (with milliseconds + Z)
-   * - `"2024-12-13T10:00:00Z"` (without milliseconds + Z)
-   * - `"2024-12-13T10:00:00.000"` (with milliseconds, no Z)
-   * - `"2024-12-13T10:00:00"` (without milliseconds or Z)
-   *
-   * ## Non-Date Strings
-   *
-   * Regular strings are not affected:
-   * - `"hello"` → `"hello"` (unchanged)
-   * - `"2024-12-13"` → `"2024-12-13"` (no 'T', not converted)
-   * - `"invalid date"` → `"invalid date"` (doesn't match pattern)
-   *
-   * ## Integration
-   *
-   * This method is used automatically by `getObjectProperty()`:
-   * ```javascript
-   * JSON.parse(jsonString, this._dateReviver)
-   * ```
-   *
-   * ## Why JobRunnerLib Needs This
-   *
-   * JobRunnerLib stores execution timestamps in job state:
-   * ```javascript
-   * const state = {
-   *   startedAt: new Date(),
-   *   lastUpdate: new Date()
-   * };
-   * ```
-   *
-   * Without date revival, resumed jobs would crash:
-   * ```javascript
-   * // ❌ WITHOUT date revival:
-   * const resumed = properties.getObjectProperty('job:state');
-   * resumed.startedAt.getTime();  // TypeError: resumed.startedAt.getTime is not a function
-   *
-   * // ✅ WITH date revival:
-   * const resumed = properties.getObjectProperty('job:state');
-   * resumed.startedAt.getTime();  // Works! Returns timestamp
-   * ```
-   *
-   * @private
-   *
-   * @param {string} key - The property key being parsed (unused, required by JSON.parse signature)
-   * @param {*} value - The value being parsed
-   *
-   * @returns {*} The value, converted to a Date object if it's a valid ISO 8601 string,
-   *   otherwise the original value unchanged.
-   *
-   * @example
-   * // Automatic date revival during getObjectProperty()
-   * const saved = { timestamp: new Date('2024-12-13T10:00:00Z') };
-   * properties.setObjectProperty('test', saved);
-   * // Stored as: { "timestamp": "2024-12-13T10:00:00.000Z" }
-   *
-   * const loaded = properties.getObjectProperty('test');
-   * console.log(typeof loaded.timestamp);              // "object"
-   * console.log(loaded.timestamp instanceof Date);     // true ✅
-   * console.log(loaded.timestamp.toISOString());       // "2024-12-13T10:00:00.000Z"
-   *
-   * @example
-   * // Regular strings are not affected
-   * const saved = {
-   *   isoString: '2024-12-13T10:00:00.000Z',  // Looks like ISO 8601
-   *   regularString: 'hello',                  // Regular string
-   *   dateString: '2024-12-13'                 // Date but no time (not converted)
-   * };
-   * properties.setObjectProperty('test', saved);
-   *
-   * const loaded = properties.getObjectProperty('test');
-   * console.log(loaded.isoString instanceof Date);      // true (converted)
-   * console.log(typeof loaded.regularString);           // "string" (unchanged)
-   * console.log(typeof loaded.dateString);              // "string" (unchanged - no 'T')
-   *
-  /**
    * @private
    * @description JSON reviver for ISO 8601 string-to-Date conversion.
    * @param {string} key Current property key.
    * @param {*} value Current property value.
    * @returns {Date|*} Revived Date or original value.
-   */
-```
----
-#### METHOD: PropertiesService.getScriptPropertyJSON
-- **Scope:** instance
-- **LLM Call Syntax:** `const result = propertiesService.getScriptPropertyJSON(key);`
-- **Pure JSDoc:**
-```javascript
-/**
-   * Loads an object from a JSON property (alias for getObjectProperty).
-   * This method provides compatibility with test helpers.
-   * @param {string} key - The property key
-   * @returns {Object|null} The deserialized object or null if it doesn't exist or is invalid
-   * @example
-   * const state = properties.getScriptPropertyJSON('job:myJob');
    */
 ```
 ---
@@ -2881,20 +2183,6 @@ needs to touch `Session` directly.
    */
 ```
 ---
-#### METHOD: PermissionService.shareFilesWithUsers
-- **Scope:** instance
-- **LLM Call Syntax:** `const result = permissionService.shareFilesWithUsers(fileIds, userPermissions, options);`
-- **Pure JSDoc:**
-```javascript
-/**
-   * @description Convenience method for cross-product batch sharing (Files × Users).
-   * @param {string[]} fileIds Collection of resource IDs.
-   * @param {Object[]} userPermissions Collection of access parameters.
-   * @param {Object} [options={}] Operation settings.
-   * @returns {Object} Result summary.
-   */
-```
----
 #### METHOD: PermissionService.removeAccess
 - **Scope:** instance
 - **LLM Call Syntax:** `const result = permissionService.removeAccess(fileIds, emailsOrPermissionIds);`
@@ -3479,18 +2767,6 @@ needs to touch `Session` directly.
    * @protected
    * @description Purges specific key from cache.
    * @param {string} key Target cache key.
-   */
-```
----
-#### METHOD: PermissionService._invalidateCacheByPrefix
-- **Scope:** instance
-- **LLM Call Syntax:** `permissionService._invalidateCacheByPrefix(prefix);`
-- **Pure JSDoc:**
-```javascript
-/**
-   * @protected
-   * @description Purges all keys matching prefix.
-   * @param {string} prefix Key prefix filter.
    */
 ```
 ---
@@ -3546,20 +2822,6 @@ needs to touch `Session` directly.
    */
 ```
 ---
-#### METHOD: PermissionService.shareFilesWithUsers
-- **Scope:** instance
-- **LLM Call Syntax:** `const result = permissionService.shareFilesWithUsers(fileIds, userPermissions, options);`
-- **Pure JSDoc:**
-```javascript
-/**
-   * @description Convenience method for cross-product batch sharing (Files × Users).
-   * @param {string[]} fileIds Collection of resource IDs.
-   * @param {Object[]} userPermissions Collection of access parameters.
-   * @param {Object} [options={}] Operation settings.
-   * @returns {Object} Result summary.
-   */
-```
----
 #### METHOD: PermissionService.removeAccess
 - **Scope:** instance
 - **LLM Call Syntax:** `const result = permissionService.removeAccess(fileIds, emailsOrPermissionIds);`
@@ -4144,18 +3406,6 @@ needs to touch `Session` directly.
    * @protected
    * @description Purges specific key from cache.
    * @param {string} key Target cache key.
-   */
-```
----
-#### METHOD: PermissionService._invalidateCacheByPrefix
-- **Scope:** instance
-- **LLM Call Syntax:** `permissionService._invalidateCacheByPrefix(prefix);`
-- **Pure JSDoc:**
-```javascript
-/**
-   * @protected
-   * @description Purges all keys matching prefix.
-   * @param {string} prefix Key prefix filter.
    */
 ```
 ---
@@ -4856,18 +4106,6 @@ needs to touch `Session` directly.
    */
 ```
 ---
-#### METHOD: DriveService._invalidateCacheByPrefix
-- **Scope:** instance
-- **LLM Call Syntax:** `driveService._invalidateCacheByPrefix(prefix);`
-- **Pure JSDoc:**
-```javascript
-/**
-   * @protected
-   * @description Purges all keys matching prefix.
-   * @param {string} prefix Key prefix filter.
-   */
-```
----
 #### METHOD: DriveService._executeWithRetry
 - **Scope:** instance
 - **LLM Call Syntax:** `const result = driveService._executeWithRetry(func, context, maxAttempts);`
@@ -4998,18 +4236,6 @@ needs to touch `Session` directly.
    */
 ```
 ---
-#### METHOD: DocumentService._invalidateCacheByPrefix
-- **Scope:** instance
-- **LLM Call Syntax:** `documentService._invalidateCacheByPrefix(prefix);`
-- **Pure JSDoc:**
-```javascript
-/**
-   * @protected
-   * @description Purges all keys matching prefix.
-   * @param {string} prefix Key prefix filter.
-   */
-```
----
 #### METHOD: DocumentService._executeWithRetry
 - **Scope:** instance
 - **LLM Call Syntax:** `const result = documentService._executeWithRetry(func, context, maxAttempts);`
@@ -5135,18 +4361,6 @@ needs to touch `Session` directly.
    * @protected
    * @description Purges specific key from cache.
    * @param {string} key Target cache key.
-   */
-```
----
-#### METHOD: DocumentService._invalidateCacheByPrefix
-- **Scope:** instance
-- **LLM Call Syntax:** `documentService._invalidateCacheByPrefix(prefix);`
-- **Pure JSDoc:**
-```javascript
-/**
-   * @protected
-   * @description Purges all keys matching prefix.
-   * @param {string} prefix Key prefix filter.
    */
 ```
 ---
@@ -5524,8 +4738,6 @@ needs to touch `Session` directly.
  * @property {Object} _cache Native GAS Cache instance.
  * @property {LoggerService} _logger Diagnostic logger.
  * @property {string} _type Cache scope identifier ('script', 'user', 'document').
- * @property {Set<string>} _trackedKeys Set of keys modified in current instance.
- * @property {boolean} _autoTrackKeys Enable/disable key tracking.
  */
 ```
 
@@ -5603,75 +4815,6 @@ needs to touch `Session` directly.
    * @description Deletes multiple keys in a single batch operation.
    * @param {string[]} keys Array of keys to remove.
    * @throws {Error} If batch removal fails.
-   */
-```
----
-#### METHOD: Cache.removeByPrefix
-- **Scope:** instance
-- **LLM Call Syntax:** `const result = cache.removeByPrefix(prefix);`
-- **Pure JSDoc:**
-```javascript
-/**
-   * @description Purges cached entries matching prefix. Relies on internal key tracking.
-   * @param {string} prefix Key prefix filter.
-   * @returns {number} Count of removed entries.
-   * @throws {Error} If prefix removal fails.
-   */
-```
----
-#### METHOD: Cache.enableKeyTracking
-- **Scope:** instance
-- **LLM Call Syntax:** `const result = cache.enableKeyTracking();`
-- **Pure JSDoc:**
-```javascript
-/**
-   * @description Enables automatic key tracking for all subsequent put/putAll operations. Required for removeByPrefix.
-   * @returns {Cache} Current instance for chaining.
-   */
-```
----
-#### METHOD: Cache.disableKeyTracking
-- **Scope:** instance
-- **LLM Call Syntax:** `const result = cache.disableKeyTracking();`
-- **Pure JSDoc:**
-```javascript
-/**
-   * @description Disables automatic key tracking. Existing tracked keys are retained.
-   * @returns {Cache} Current instance for chaining.
-   */
-```
----
-#### METHOD: Cache.trackKey
-- **Scope:** instance
-- **LLM Call Syntax:** `const result = cache.trackKey(key);`
-- **Pure JSDoc:**
-```javascript
-/**
-   * @description Manually registers a key in the internal tracking set.
-   * @param {string} key Cache key to track.
-   * @returns {Cache} Current instance for chaining.
-   */
-```
----
-#### METHOD: Cache.getTrackedKeyCount
-- **Scope:** instance
-- **LLM Call Syntax:** `const result = cache.getTrackedKeyCount();`
-- **Pure JSDoc:**
-```javascript
-/**
-   * @description Returns the number of keys currently being tracked.
-   * @returns {number} Tracked key count.
-   */
-```
----
-#### METHOD: Cache.clearTrackedKeys
-- **Scope:** instance
-- **LLM Call Syntax:** `const result = cache.clearTrackedKeys();`
-- **Pure JSDoc:**
-```javascript
-/**
-   * @description Clears the internal tracking set without modifying cached data.
-   * @returns {Cache} Current instance for chaining.
    */
 ```
 ---
@@ -5777,75 +4920,6 @@ needs to touch `Session` directly.
    * @description Deletes multiple keys in a single batch operation.
    * @param {string[]} keys Array of keys to remove.
    * @throws {Error} If batch removal fails.
-   */
-```
----
-#### METHOD: Cache.removeByPrefix
-- **Scope:** instance
-- **LLM Call Syntax:** `const result = cache.removeByPrefix(prefix);`
-- **Pure JSDoc:**
-```javascript
-/**
-   * @description Purges cached entries matching prefix. Relies on internal key tracking.
-   * @param {string} prefix Key prefix filter.
-   * @returns {number} Count of removed entries.
-   * @throws {Error} If prefix removal fails.
-   */
-```
----
-#### METHOD: Cache.enableKeyTracking
-- **Scope:** instance
-- **LLM Call Syntax:** `const result = cache.enableKeyTracking();`
-- **Pure JSDoc:**
-```javascript
-/**
-   * @description Enables automatic key tracking for all subsequent put/putAll operations. Required for removeByPrefix.
-   * @returns {Cache} Current instance for chaining.
-   */
-```
----
-#### METHOD: Cache.disableKeyTracking
-- **Scope:** instance
-- **LLM Call Syntax:** `const result = cache.disableKeyTracking();`
-- **Pure JSDoc:**
-```javascript
-/**
-   * @description Disables automatic key tracking. Existing tracked keys are retained.
-   * @returns {Cache} Current instance for chaining.
-   */
-```
----
-#### METHOD: Cache.trackKey
-- **Scope:** instance
-- **LLM Call Syntax:** `const result = cache.trackKey(key);`
-- **Pure JSDoc:**
-```javascript
-/**
-   * @description Manually registers a key in the internal tracking set.
-   * @param {string} key Cache key to track.
-   * @returns {Cache} Current instance for chaining.
-   */
-```
----
-#### METHOD: Cache.getTrackedKeyCount
-- **Scope:** instance
-- **LLM Call Syntax:** `const result = cache.getTrackedKeyCount();`
-- **Pure JSDoc:**
-```javascript
-/**
-   * @description Returns the number of keys currently being tracked.
-   * @returns {number} Tracked key count.
-   */
-```
----
-#### METHOD: Cache.clearTrackedKeys
-- **Scope:** instance
-- **LLM Call Syntax:** `const result = cache.clearTrackedKeys();`
-- **Pure JSDoc:**
-```javascript
-/**
-   * @description Clears the internal tracking set without modifying cached data.
-   * @returns {Cache} Current instance for chaining.
    */
 ```
 ---
@@ -6708,18 +5782,6 @@ needs to touch `Session` directly.
    */
 ```
 ---
-#### METHOD: GoogleService._invalidateCacheByPrefix
-- **Scope:** instance
-- **LLM Call Syntax:** `googleService._invalidateCacheByPrefix(prefix);`
-- **Pure JSDoc:**
-```javascript
-/**
-   * @protected
-   * @description Purges all keys matching prefix.
-   * @param {string} prefix Key prefix filter.
-   */
-```
----
 #### METHOD: GoogleService._executeWithRetry
 - **Scope:** instance
 - **LLM Call Syntax:** `const result = googleService._executeWithRetry(func, context, maxAttempts);`
@@ -6817,18 +5879,6 @@ needs to touch `Session` directly.
    */
 ```
 ---
-#### METHOD: GoogleService._invalidateCacheByPrefix
-- **Scope:** instance
-- **LLM Call Syntax:** `googleService._invalidateCacheByPrefix(prefix);`
-- **Pure JSDoc:**
-```javascript
-/**
-   * @protected
-   * @description Purges all keys matching prefix.
-   * @param {string} prefix Key prefix filter.
-   */
-```
----
 #### METHOD: GoogleService._executeWithRetry
 - **Scope:** instance
 - **LLM Call Syntax:** `const result = googleService._executeWithRetry(func, context, maxAttempts);`
@@ -6842,298 +5892,6 @@ needs to touch `Session` directly.
    * @param {number} [maxAttempts=3] Maximum execution attempts.
    * @returns {*} Function execution result.
    * @throws {Error} Propagates classified exceptions from exceptionService.
-   */
-```
----
-<br>
-
-## CLASS: ServiceError
-**File Path:** `GoogleApiWrapper/src/internal/core/ErrorHandler.js`
-**Constructor Usage:** `const instance = new ServiceError(message, serviceName, operation, originalError, context);`
-**Description:** Base infrastructure error for GoogleApiWrapper services (L1).
-High-density error structure preserving service identity, operation context, and original error chaining.
-Extends the shared {@link BaseError} to inherit standardized stack-trace capture and timestamping.
-
-### Raw JSDoc Context:
-```javascript
-/**
- * Base infrastructure error for GoogleApiWrapper services (L1).
- * High-density error structure preserving service identity, operation context, and original error chaining.
- * Extends the shared {@link BaseError} to inherit standardized stack-trace capture and timestamping.
- *
- * @class
- * @extends BaseError
- * @property {string} name - Error type name (default: 'ServiceError').
- * @property {string} serviceName - Originating service identifier.
- * @property {string} operation - Failed method or operation name.
- * @property {Error|null} originalError - Chained error instance for root cause analysis.
- * @property {Object} context - Diagnostic metadata (IDs, params, state).
- * @property {string} timestamp - ISO 8601 timestamp of error occurrence.
- */
-```
-
-### Methods of ServiceError
-
-#### METHOD: ServiceError.toLogObject
-- **Scope:** instance
-- **LLM Call Syntax:** `const result = serviceError.toLogObject();`
-- **Pure JSDoc:**
-```javascript
-/**
-   * Transforms error into structured POJO for logging.
-   *
-   * @returns {Object} Structured error data { name, message, serviceName, operation, timestamp, context, originalError: { message, stack } | null }.
-   */
-```
----
-<br>
-
-## CLASS: QuotaExceededError
-**File Path:** `GoogleApiWrapper/src/internal/core/ErrorHandler.js`
-**Constructor Usage:** `const instance = new QuotaExceededError(message, serviceName, operation, originalError, context);`
-**Description:** Error for Google API quota/rate limit violations (L1).
-Automatically classified from "User rate limit exceeded", "Quota exceeded", or 429 responses.
-
-### Raw JSDoc Context:
-```javascript
-/**
- * Error for Google API quota/rate limit violations (L1).
- * Automatically classified from "User rate limit exceeded", "Quota exceeded", or 429 responses.
- *
- * @class
- * @extends ServiceError
- * @property {string} name - Always 'QuotaExceededError'.
- * @property {boolean} retryable - Always true.
- * @property {number} retryAfter - Default wait time (60000ms) before retry.
- */
-```
-
-### Methods of QuotaExceededError
-
-#### METHOD: QuotaExceededError.toLogObject
-- **Scope:** instance
-- **LLM Call Syntax:** `const result = quotaExceededError.toLogObject();`
-- **Pure JSDoc:**
-```javascript
-/**
-   * Transforms error into structured POJO for logging.
-   *
-   * @returns {Object} Structured error data { name, message, serviceName, operation, timestamp, context, originalError: { message, stack } | null }.
-   */
-```
----
-<br>
-
-## CLASS: PermissionDeniedError
-**File Path:** `GoogleApiWrapper/src/internal/core/ErrorHandler.js`
-**Constructor Usage:** `const instance = new PermissionDeniedError(message, serviceName, operation, originalError, context);`
-**Description:** Error for authorization or permission failures (L1).
-Classified from "Permission denied", "Unauthorized" (401), or "Forbidden" (403).
-
-### Raw JSDoc Context:
-```javascript
-/**
- * Error for authorization or permission failures (L1).
- * Classified from "Permission denied", "Unauthorized" (401), or "Forbidden" (403).
- *
- * @class
- * @extends ServiceError
- * @property {string} name - Always 'PermissionDeniedError'.
- * @property {boolean} retryable - Always false.
- */
-```
-
-### Methods of PermissionDeniedError
-
-#### METHOD: PermissionDeniedError.toLogObject
-- **Scope:** instance
-- **LLM Call Syntax:** `const result = permissionDeniedError.toLogObject();`
-- **Pure JSDoc:**
-```javascript
-/**
-   * Transforms error into structured POJO for logging.
-   *
-   * @returns {Object} Structured error data { name, message, serviceName, operation, timestamp, context, originalError: { message, stack } | null }.
-   */
-```
----
-<br>
-
-## CLASS: ResourceNotFoundError
-**File Path:** `GoogleApiWrapper/src/internal/core/ErrorHandler.js`
-**Constructor Usage:** `const instance = new ResourceNotFoundError(message, serviceName, operation, originalError, context);`
-**Description:** Error for non-existent or deleted Google resources (L1).
-Classified from "not found", "does not exist", or 404 responses.
-
-### Raw JSDoc Context:
-```javascript
-/**
- * Error for non-existent or deleted Google resources (L1).
- * Classified from "not found", "does not exist", or 404 responses.
- *
- * @class
- * @extends ServiceError
- * @property {string} name - Always 'ResourceNotFoundError'.
- * @property {boolean} retryable - Always false.
- */
-```
-
-### Methods of ResourceNotFoundError
-
-#### METHOD: ResourceNotFoundError.toLogObject
-- **Scope:** instance
-- **LLM Call Syntax:** `const result = resourceNotFoundError.toLogObject();`
-- **Pure JSDoc:**
-```javascript
-/**
-   * Transforms error into structured POJO for logging.
-   *
-   * @returns {Object} Structured error data { name, message, serviceName, operation, timestamp, context, originalError: { message, stack } | null }.
-   */
-```
----
-<br>
-
-## CLASS: ServiceUnavailableError
-**File Path:** `GoogleApiWrapper/src/internal/core/ErrorHandler.js`
-**Constructor Usage:** `const instance = new ServiceUnavailableError(message, serviceName, operation, originalError, context);`
-**Description:** Error for temporary Google service outages or timeouts (L1).
-Classified from "service unavailable", 503, 502, or "timeout" responses.
-
-### Raw JSDoc Context:
-```javascript
-/**
- * Error for temporary Google service outages or timeouts (L1).
- * Classified from "service unavailable", 503, 502, or "timeout" responses.
- *
- * @class
- * @extends ServiceError
- * @property {string} name - Always 'ServiceUnavailableError'.
- * @property {boolean} retryable - Always true.
- * @property {number} retryAfter - Default wait time (5000ms) before retry.
- */
-```
-
-### Methods of ServiceUnavailableError
-
-#### METHOD: ServiceUnavailableError.toLogObject
-- **Scope:** instance
-- **LLM Call Syntax:** `const result = serviceUnavailableError.toLogObject();`
-- **Pure JSDoc:**
-```javascript
-/**
-   * Transforms error into structured POJO for logging.
-   *
-   * @returns {Object} Structured error data { name, message, serviceName, operation, timestamp, context, originalError: { message, stack } | null }.
-   */
-```
----
-<br>
-
-## CLASS: ValidationError
-**File Path:** `GoogleApiWrapper/src/internal/core/ErrorHandler.js`
-**Constructor Usage:** `const instance = new ValidationError(message, serviceName, operation, originalError, context);`
-**Description:** Error for input validation or business rule failures (L1).
-Used for pre-flight checks, schema validation, or malformed data detection.
-
-### Raw JSDoc Context:
-```javascript
-/**
- * Error for input validation or business rule failures (L1).
- * Used for pre-flight checks, schema validation, or malformed data detection.
- *
- * @class
- * @extends ServiceError
- * @property {string} name - Always 'ValidationError'.
- * @property {boolean} retryable - Always false.
- */
-```
-
-### Methods of ValidationError
-
-#### METHOD: ValidationError.toLogObject
-- **Scope:** instance
-- **LLM Call Syntax:** `const result = validationError.toLogObject();`
-- **Pure JSDoc:**
-```javascript
-/**
-   * Transforms error into structured POJO for logging.
-   *
-   * @returns {Object} Structured error data { name, message, serviceName, operation, timestamp, context, originalError: { message, stack } | null }.
-   */
-```
----
-<br>
-
-## CLASS: ErrorHandler
-**File Path:** `GoogleApiWrapper/src/internal/core/ErrorHandler.js`
-**Constructor Usage:** `const instance = new ErrorHandler(serviceName, logger);`
-**Description:** Standardized error handling, classification, and retry management for GoogleApiWrapper services (L1).
-Implements exponential backoff and structured error mapping (GAW-H003).
-
-### Raw JSDoc Context:
-```javascript
-/**
- * Standardized error handling, classification, and retry management for GoogleApiWrapper services (L1).
- * Implements exponential backoff and structured error mapping (GAW-H003).
- *
- * @class
- * @property {string} serviceName - Target service identity for error tagging.
- * @property {Object} logger - Logger instance for diagnostic output.
- */
-```
-
-### Methods of ErrorHandler
-
-#### METHOD: ErrorHandler.classifyError
-- **Scope:** instance
-- **LLM Call Syntax:** `const result = errorHandler.classifyError(error, operation, context);`
-- **Pure JSDoc:**
-```javascript
-/**
-   * Classifies error and wraps in ServiceError subclass.
-   * Priority: Quota (1) > Permission (2) > Resource (3) > Availability (4) > Default (5).
-   *
-   * @param {Error|string} error - Root error.
-   * @param {string} operation - Failed operation name.
-   * @param {Object} [context={}] - Diagnostic metadata.
-   * @returns {ServiceError} Specialized error instance (QuotaExceededError, etc.).
-   */
-```
----
-#### METHOD: ErrorHandler.wrap
-- **Scope:** instance
-- **LLM Call Syntax:** `const result = errorHandler.wrap(func, operation, context);`
-- **Pure JSDoc:**
-```javascript
-/**
-   * Executes callback and wraps any thrown error.
-   *
-   * @param {Function} func - Operation to execute.
-   * @param {string} operation - Operation name for tagging.
-   * @param {Object} [context={}] - Diagnostic metadata.
-   * @returns {*} Callback result.
-   * @throws {ServiceError} Classified error instance.
-   */
-```
----
-#### METHOD: ErrorHandler.withRetry
-- **Scope:** instance
-- **LLM Call Syntax:** `const result = errorHandler.withRetry(func, operation, options, options.maxAttempts, options.baseDelay, options.context);`
-- **Pure JSDoc:**
-```javascript
-/**
-   * Executes callback with exponential backoff retry logic.
-   * Uses bitshift optimization (GAW-M003). Retries only QuotaExceededError and ServiceUnavailableError.
-   *
-   * @param {Function} func - Operation to execute.
-   * @param {string} operation - Operation name for tagging.
-   * @param {Object} [options={}] - Retry configuration.
-   * @param {number} [options.maxAttempts=3] - Max execution attempts.
-   * @param {number} [options.baseDelay=1000] - Initial delay in ms.
-   * @param {Object} [options.context={}] - Diagnostic metadata.
-   * @returns {*} Callback result.
-   * @throws {ServiceError} Final error after all attempts fail.
    */
 ```
 ---
@@ -7591,15 +6349,100 @@ Implements exponential backoff and structured error mapping (GAW-H003).
    */
 ```
 ---
-#### METHOD: GoogleService._invalidateCacheByPrefix
+#### METHOD: GoogleService._executeWithRetry
 - **Scope:** instance
-- **LLM Call Syntax:** `googleService._invalidateCacheByPrefix(prefix);`
+- **LLM Call Syntax:** `const result = googleService._executeWithRetry(func, context, maxAttempts);`
 - **Pure JSDoc:**
 ```javascript
 /**
    * @protected
-   * @description Purges all keys matching prefix.
-   * @param {string} prefix Key prefix filter.
+   * @description Executes function with resilient retry logic via exceptionService.
+   * @param {Function} func Logic to execute.
+   * @param {Object} [context={}] Metadata for error classification.
+   * @param {number} [maxAttempts=3] Maximum execution attempts.
+   * @returns {*} Function execution result.
+   * @throws {Error} Propagates classified exceptions from exceptionService.
+   */
+```
+---
+<br>
+
+## CLASS: GoogleService
+**File Path:** `GoogleApiWrapper/src/internal/core/GoogleService.js`
+**Constructor Usage:** `const instance = new GoogleService(logger, cache, utils, exceptionService);`
+**Description:** Initializes service with validated dependencies. Enforces abstract class restriction.
+
+### Raw JSDoc Context:
+```javascript
+/**
+   * @protected
+   * @description Initializes service with validated dependencies. Enforces abstract class restriction.
+   *
+   * @param {LoggerService} logger Diagnostic logger (required methods: debug, info, warn, error).
+   * @param {Cache} cache GAS Cache service (required methods: get, put, remove).
+   * @param {UtilsService} utils Foundational utilities.
+   * @param {ExceptionService} exceptionService Resiliency provider (required methods: executeWithRetry).
+   *
+   * @throws {TypeError} If instantiated directly as GoogleService.
+   * @throws {Error} If any dependency is null, undefined, or missing required methods.
+   */
+```
+
+### Methods of GoogleService
+
+#### METHOD: GoogleService._verifyAdvancedService
+- **Scope:** instance
+- **LLM Call Syntax:** `const result = googleService._verifyAdvancedService(serviceName);`
+- **Pure JSDoc:**
+```javascript
+/**
+   * @protected
+   * @description Verifies availability of advanced Google service.
+   * @param {string} serviceName Service object name (e.g., 'Drive').
+   * @returns {boolean} True if service exists in globalThis.
+   */
+```
+---
+#### METHOD: GoogleService._generateCacheKey
+- **Scope:** instance
+- **LLM Call Syntax:** `const result = googleService._generateCacheKey(prefix, id, method);`
+- **Pure JSDoc:**
+```javascript
+/**
+   * @protected
+   * @description Generates standardized cache key: `{prefix}_{id}_{method}`.
+   * @param {string} prefix Logic domain prefix.
+   * @param {string} id Resource identifier.
+   * @param {string} method Operation name.
+   * @returns {string} Formatted cache key.
+   */
+```
+---
+#### METHOD: GoogleService._getOrExecute
+- **Scope:** instance
+- **LLM Call Syntax:** `const result = googleService._getOrExecute(key, func, expirationSeconds, useCache);`
+- **Pure JSDoc:**
+```javascript
+/**
+   * @protected
+   * @description Implements Get-or-Execute caching pattern.
+   * @param {string} key Cache key.
+   * @param {Function} func Execution logic for cache misses.
+   * @param {number} [expirationSeconds=600] TTL in seconds.
+   * @param {boolean} [useCache=true] Enable/disable cache lookups.
+   * @returns {*} Cached or computed result.
+   */
+```
+---
+#### METHOD: GoogleService._invalidateCache
+- **Scope:** instance
+- **LLM Call Syntax:** `googleService._invalidateCache(key);`
+- **Pure JSDoc:**
+```javascript
+/**
+   * @protected
+   * @description Purges specific key from cache.
+   * @param {string} key Target cache key.
    */
 ```
 ---
@@ -7700,18 +6543,6 @@ Implements exponential backoff and structured error mapping (GAW-H003).
    */
 ```
 ---
-#### METHOD: GoogleService._invalidateCacheByPrefix
-- **Scope:** instance
-- **LLM Call Syntax:** `googleService._invalidateCacheByPrefix(prefix);`
-- **Pure JSDoc:**
-```javascript
-/**
-   * @protected
-   * @description Purges all keys matching prefix.
-   * @param {string} prefix Key prefix filter.
-   */
-```
----
 #### METHOD: GoogleService._executeWithRetry
 - **Scope:** instance
 - **LLM Call Syntax:** `const result = googleService._executeWithRetry(func, context, maxAttempts);`
@@ -7809,18 +6640,6 @@ Implements exponential backoff and structured error mapping (GAW-H003).
    */
 ```
 ---
-#### METHOD: GoogleService._invalidateCacheByPrefix
-- **Scope:** instance
-- **LLM Call Syntax:** `googleService._invalidateCacheByPrefix(prefix);`
-- **Pure JSDoc:**
-```javascript
-/**
-   * @protected
-   * @description Purges all keys matching prefix.
-   * @param {string} prefix Key prefix filter.
-   */
-```
----
 #### METHOD: GoogleService._executeWithRetry
 - **Scope:** instance
 - **LLM Call Syntax:** `const result = googleService._executeWithRetry(func, context, maxAttempts);`
@@ -7915,127 +6734,6 @@ Implements exponential backoff and structured error mapping (GAW-H003).
    * @protected
    * @description Purges specific key from cache.
    * @param {string} key Target cache key.
-   */
-```
----
-#### METHOD: GoogleService._invalidateCacheByPrefix
-- **Scope:** instance
-- **LLM Call Syntax:** `googleService._invalidateCacheByPrefix(prefix);`
-- **Pure JSDoc:**
-```javascript
-/**
-   * @protected
-   * @description Purges all keys matching prefix.
-   * @param {string} prefix Key prefix filter.
-   */
-```
----
-#### METHOD: GoogleService._executeWithRetry
-- **Scope:** instance
-- **LLM Call Syntax:** `const result = googleService._executeWithRetry(func, context, maxAttempts);`
-- **Pure JSDoc:**
-```javascript
-/**
-   * @protected
-   * @description Executes function with resilient retry logic via exceptionService.
-   * @param {Function} func Logic to execute.
-   * @param {Object} [context={}] Metadata for error classification.
-   * @param {number} [maxAttempts=3] Maximum execution attempts.
-   * @returns {*} Function execution result.
-   * @throws {Error} Propagates classified exceptions from exceptionService.
-   */
-```
----
-<br>
-
-## CLASS: GoogleService
-**File Path:** `GoogleApiWrapper/src/internal/core/GoogleService.js`
-**Constructor Usage:** `const instance = new GoogleService(logger, cache, utils, exceptionService);`
-**Description:** Initializes service with validated dependencies. Enforces abstract class restriction.
-
-### Raw JSDoc Context:
-```javascript
-/**
-   * @protected
-   * @description Initializes service with validated dependencies. Enforces abstract class restriction.
-   *
-   * @param {LoggerService} logger Diagnostic logger (required methods: debug, info, warn, error).
-   * @param {Cache} cache GAS Cache service (required methods: get, put, remove).
-   * @param {UtilsService} utils Foundational utilities.
-   * @param {ExceptionService} exceptionService Resiliency provider (required methods: executeWithRetry).
-   *
-   * @throws {TypeError} If instantiated directly as GoogleService.
-   * @throws {Error} If any dependency is null, undefined, or missing required methods.
-   */
-```
-
-### Methods of GoogleService
-
-#### METHOD: GoogleService._verifyAdvancedService
-- **Scope:** instance
-- **LLM Call Syntax:** `const result = googleService._verifyAdvancedService(serviceName);`
-- **Pure JSDoc:**
-```javascript
-/**
-   * @protected
-   * @description Verifies availability of advanced Google service.
-   * @param {string} serviceName Service object name (e.g., 'Drive').
-   * @returns {boolean} True if service exists in globalThis.
-   */
-```
----
-#### METHOD: GoogleService._generateCacheKey
-- **Scope:** instance
-- **LLM Call Syntax:** `const result = googleService._generateCacheKey(prefix, id, method);`
-- **Pure JSDoc:**
-```javascript
-/**
-   * @protected
-   * @description Generates standardized cache key: `{prefix}_{id}_{method}`.
-   * @param {string} prefix Logic domain prefix.
-   * @param {string} id Resource identifier.
-   * @param {string} method Operation name.
-   * @returns {string} Formatted cache key.
-   */
-```
----
-#### METHOD: GoogleService._getOrExecute
-- **Scope:** instance
-- **LLM Call Syntax:** `const result = googleService._getOrExecute(key, func, expirationSeconds, useCache);`
-- **Pure JSDoc:**
-```javascript
-/**
-   * @protected
-   * @description Implements Get-or-Execute caching pattern.
-   * @param {string} key Cache key.
-   * @param {Function} func Execution logic for cache misses.
-   * @param {number} [expirationSeconds=600] TTL in seconds.
-   * @param {boolean} [useCache=true] Enable/disable cache lookups.
-   * @returns {*} Cached or computed result.
-   */
-```
----
-#### METHOD: GoogleService._invalidateCache
-- **Scope:** instance
-- **LLM Call Syntax:** `googleService._invalidateCache(key);`
-- **Pure JSDoc:**
-```javascript
-/**
-   * @protected
-   * @description Purges specific key from cache.
-   * @param {string} key Target cache key.
-   */
-```
----
-#### METHOD: GoogleService._invalidateCacheByPrefix
-- **Scope:** instance
-- **LLM Call Syntax:** `googleService._invalidateCacheByPrefix(prefix);`
-- **Pure JSDoc:**
-```javascript
-/**
-   * @protected
-   * @description Purges all keys matching prefix.
-   * @param {string} prefix Key prefix filter.
    */
 ```
 ---

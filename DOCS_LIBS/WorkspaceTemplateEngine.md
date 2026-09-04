@@ -1,81 +1,5 @@
 # API Reference: WorkspaceTemplateEngine
 
-## CLASS: for
-**File Path:** `WorkspaceTemplateEngine/index.js`
-**Constructor Usage:** `const instance = new for();`
-**Description:** N/A
-
-### Raw JSDoc Context:
-```javascript
-/** Class definition */
-```
-
-<br>
-
-## CLASS: CurrencyFilter
-**File Path:** `WorkspaceTemplateEngine/index.js`
-**Constructor Usage:** `const instance = new CurrencyFilter();`
-**Description:** N/A
-
-### Raw JSDoc Context:
-```javascript
-/** Class definition */
-```
-
-### Methods of CurrencyFilter
-
-#### METHOD: CurrencyFilter.getName
-- **Scope:** instance
-- **LLM Call Syntax:** `currencyFilter.getName();`
-- **Pure JSDoc:**
-```javascript
-/** Method getName */
-```
----
-#### METHOD: CurrencyFilter.execute
-- **Scope:** instance
-- **LLM Call Syntax:** `currencyFilter.execute(value, symbol);`
-- **Pure JSDoc:**
-```javascript
-/** Method execute */
-```
----
-<br>
-
-## CLASS: GenerateReportStep
-**File Path:** `WorkspaceTemplateEngine/index.js`
-**Constructor Usage:** `const instance = new GenerateReportStep();`
-**Description:** N/A
-
-### Raw JSDoc Context:
-```javascript
-/** Class definition */
-```
-
-### Methods of GenerateReportStep
-
-#### METHOD: GenerateReportStep.execute
-- **Scope:** instance
-- **LLM Call Syntax:** `generateReportStep.execute(context);`
-- **Pure JSDoc:**
-```javascript
-/** Method execute */
-```
----
-<br>
-
-## CLASS: for
-**File Path:** `WorkspaceTemplateEngine/index.js`
-**Constructor Usage:** `const instance = new for();`
-**Description:** N/A
-
-### Raw JSDoc Context:
-```javascript
-/** Class definition */
-```
-
-<br>
-
 ## CLASS: PlaceholderService
 **File Path:** `WorkspaceTemplateEngine/src/PlaceholderService.js`
 **Constructor Usage:** `const instance = new PlaceholderService();`
@@ -285,15 +209,6 @@ class UppercaseFilter extends FilterStrategy {
   }
 
   /**
-Returns a technical description of the filter transformation logic.
-@returns {string} Human-readable functional summary.
-@abstract
-/
-  getDescription() {
-    throw new Error('FilterStrategy.getDescription() must be implemented by subclass');
-  }
-
-  /**
 Performs the core value transformation.
 @param {*} value Input value to be transformed.
 @param {...*} args Optional arguments passed from the template expression.
@@ -329,15 +244,6 @@ Centralized registry for managing and resolving FilterStrategy instances.
    */
   getName() {
     throw new Error('FilterStrategy.getName() must be implemented by subclass');
-  }
-
-  /**
-   * @description Returns a technical description of the filter transformation logic.
-   * @returns {string} Human-readable functional summary.
-   * @abstract
-   */
-  getDescription() {
-    throw new Error('FilterStrategy.getDescription() must be implemented by subclass');
   }
 
   /**
@@ -398,6 +304,16 @@ Simulates core rendering logic, variable substitution, and basic filter executio
  */
 ```
 
+### Methods of MustacheMock
+
+#### METHOD: MustacheMock.if
+- **Scope:** instance
+- **LLM Call Syntax:** `mustacheMock.if(typeof template !);`
+- **Pure JSDoc:**
+```javascript
+/** Method if */
+```
+---
 <br>
 
 ## CLASS: _SheetProcessor
@@ -473,7 +389,55 @@ Implements cell-level substitutions and structural expansions (matrices, dynamic
 ---
 #### METHOD: DocumentProcessorValueResolver.if
 - **Scope:** instance
+- **LLM Call Syntax:** `documentProcessorValueResolver.if(this.facade.strictFilters);`
+- **Pure JSDoc:**
+```javascript
+/** Method if */
+```
+---
+#### METHOD: DocumentProcessorValueResolver.if
+- **Scope:** instance
+- **LLM Call Syntax:** `documentProcessorValueResolver.if(filter.args.length > 0);`
+- **Pure JSDoc:**
+```javascript
+/** Method if */
+```
+---
+#### METHOD: DocumentProcessorValueResolver.if
+- **Scope:** instance
+- **LLM Call Syntax:** `documentProcessorValueResolver.if(this.facade.strictFilters);`
+- **Pure JSDoc:**
+```javascript
+/** Method if */
+```
+---
+#### METHOD: DocumentProcessorValueResolver.if
+- **Scope:** instance
+- **LLM Call Syntax:** `documentProcessorValueResolver.if(this.facade.strictFilters);`
+- **Pure JSDoc:**
+```javascript
+/** Method if */
+```
+---
+#### METHOD: DocumentProcessorValueResolver.if
+- **Scope:** instance
 - **LLM Call Syntax:** `documentProcessorValueResolver.if(filter.args.length >);`
+- **Pure JSDoc:**
+```javascript
+/** Method if */
+```
+---
+#### METHOD: DocumentProcessorValueResolver.if
+- **Scope:** instance
+- **LLM Call Syntax:** `documentProcessorValueResolver.if(this.facade.strictFilters);`
+- **Pure JSDoc:**
+```javascript
+/** Method if */
+```
+---
+#### METHOD: DocumentProcessorValueResolver.if
+- **Scope:** instance
+- **LLM Call Syntax:** `documentProcessorValueResolver.if(this.facade.strictFilters);`
 - **Pure JSDoc:**
 ```javascript
 /** Method if */
@@ -485,6 +449,62 @@ Implements cell-level substitutions and structural expansions (matrices, dynamic
 - **Pure JSDoc:**
 ```javascript
 /** Method catch */
+```
+---
+#### METHOD: DocumentProcessorValueResolver.if
+- **Scope:** instance
+- **LLM Call Syntax:** `documentProcessorValueResolver.if(this.facade.strictFilters);`
+- **Pure JSDoc:**
+```javascript
+/** Method if */
+```
+---
+#### METHOD: DocumentProcessorValueResolver.if
+- **Scope:** instance
+- **LLM Call Syntax:** `documentProcessorValueResolver.if(valueA);`
+- **Pure JSDoc:**
+```javascript
+/** Method if */
+```
+---
+#### METHOD: DocumentProcessorValueResolver.if
+- **Scope:** instance
+- **LLM Call Syntax:** `documentProcessorValueResolver.if(valueA);`
+- **Pure JSDoc:**
+```javascript
+/** Method if */
+```
+---
+#### METHOD: DocumentProcessorValueResolver.if
+- **Scope:** instance
+- **LLM Call Syntax:** `documentProcessorValueResolver.if(valueB);`
+- **Pure JSDoc:**
+```javascript
+/** Method if */
+```
+---
+#### METHOD: DocumentProcessorValueResolver.if
+- **Scope:** instance
+- **LLM Call Syntax:** `documentProcessorValueResolver.if(typeof valueA);`
+- **Pure JSDoc:**
+```javascript
+/** Method if */
+```
+---
+#### METHOD: DocumentProcessorValueResolver.if
+- **Scope:** instance
+- **LLM Call Syntax:** `documentProcessorValueResolver.if(valueA < valueB);`
+- **Pure JSDoc:**
+```javascript
+/** Method if */
+```
+---
+#### METHOD: DocumentProcessorValueResolver.if
+- **Scope:** instance
+- **LLM Call Syntax:** `documentProcessorValueResolver.if(valueA > valueB);`
+- **Pure JSDoc:**
+```javascript
+/** Method if */
 ```
 ---
 <br>
@@ -548,6 +568,7 @@ Implements cell-level substitutions and structural expansions (matrices, dynamic
 /
 
 import { FilterStrategy } from '../../FilterStrategy.js';
+import { SortFilter } from './AdvancedFilters.js';
 
 // ==================== STRING FILTERS ====================
 
@@ -565,6 +586,7 @@ String transformer. Converts all characters to uppercase.
  */
 
 import { FilterStrategy } from '../../FilterStrategy.js';
+import { SortFilter } from './AdvancedFilters.js';
 
 // ==================== STRING FILTERS ====================
 
@@ -621,30 +643,50 @@ import { FilterStrategy } from '../../FilterStrategy.js';
 ## CLASS: UncapitalizeFilter
 **File Path:** `WorkspaceTemplateEngine/src/internal/filters/BuiltInFilters.js`
 **Constructor Usage:** `const instance = new UncapitalizeFilter();`
-**Description:** String transformer. Converts only the first character to lowercase and preserves all remaining characters. Unicode-safe.
+**Description:** String transformer. Converts only the first character to lowercase. Unicode-safe.
+@class
 
-### Template pipe
-
-```mustache
-{{value | uncapitalize}}
+### Raw JSDoc Context:
+```javascript
+/**
+ * @description String transformer. Converts only the first character to lowercase. Unicode-safe.
+ * @class
+ */
 ```
-
-For example, `MARIO` becomes `mARIO`.
 
 ### Methods of UncapitalizeFilter
 
 #### METHOD: UncapitalizeFilter.getName
 - **Scope:** instance
 - **LLM Call Syntax:** `uncapitalizeFilter.getName();`
-
+- **Pure JSDoc:**
+```javascript
+/** Method getName */
+```
+---
 #### METHOD: UncapitalizeFilter.getDescription
 - **Scope:** instance
 - **LLM Call Syntax:** `uncapitalizeFilter.getDescription();`
-
+- **Pure JSDoc:**
+```javascript
+/** Method getDescription */
+```
+---
 #### METHOD: UncapitalizeFilter.execute
 - **Scope:** instance
 - **LLM Call Syntax:** `uncapitalizeFilter.execute(value);`
-
+- **Pure JSDoc:**
+```javascript
+/** Method execute */
+```
+---
+#### METHOD: UncapitalizeFilter.if
+- **Scope:** instance
+- **LLM Call Syntax:** `uncapitalizeFilter.if(!value);`
+- **Pure JSDoc:**
+```javascript
+/** Method if */
+```
 ---
 <br>
 
@@ -920,96 +962,6 @@ Conditional string selector. Returns singular or plural form based on a numeric 
 
 <br>
 
-## CLASS: SortByFilter
-**File Path:** `WorkspaceTemplateEngine/src/internal/filters/BuiltInFilters.js`
-**Constructor Usage:** `const instance = new SortByFilter();`
-**Description:** Array sorter. Performs in-place sorting based on a specific property key. Includes prototype pollution protection.
-@class
-
-### Raw JSDoc Context:
-```javascript
-/**
- * @description Array sorter. Performs in-place sorting based on a specific property key. Includes prototype pollution protection.
- * @class
- */
-```
-
-### Methods of SortByFilter
-
-#### METHOD: SortByFilter.getName
-- **Scope:** instance
-- **LLM Call Syntax:** `sortByFilter.getName();`
-- **Pure JSDoc:**
-```javascript
-/** Method getName */
-```
----
-#### METHOD: SortByFilter.getDescription
-- **Scope:** instance
-- **LLM Call Syntax:** `sortByFilter.getDescription();`
-- **Pure JSDoc:**
-```javascript
-/** Method getDescription */
-```
----
-#### METHOD: SortByFilter.execute
-- **Scope:** instance
-- **LLM Call Syntax:** `sortByFilter.execute(array, key);`
-- **Pure JSDoc:**
-```javascript
-/** Method execute */
-```
----
-#### METHOD: SortByFilter.if
-- **Scope:** instance
-- **LLM Call Syntax:** `sortByFilter.if(valA);`
-- **Pure JSDoc:**
-```javascript
-/** Method if */
-```
----
-#### METHOD: SortByFilter.if
-- **Scope:** instance
-- **LLM Call Syntax:** `sortByFilter.if(valA !);`
-- **Pure JSDoc:**
-```javascript
-/** Method if */
-```
----
-#### METHOD: SortByFilter.if
-- **Scope:** instance
-- **LLM Call Syntax:** `sortByFilter.if(valA);`
-- **Pure JSDoc:**
-```javascript
-/** Method if */
-```
----
-#### METHOD: SortByFilter.if
-- **Scope:** instance
-- **LLM Call Syntax:** `sortByFilter.if(typeof valA !);`
-- **Pure JSDoc:**
-```javascript
-/** Method if */
-```
----
-#### METHOD: SortByFilter.if
-- **Scope:** instance
-- **LLM Call Syntax:** `sortByFilter.if(valA < valB);`
-- **Pure JSDoc:**
-```javascript
-/** Method if */
-```
----
-#### METHOD: SortByFilter.if
-- **Scope:** instance
-- **LLM Call Syntax:** `sortByFilter.if(valA > valB);`
-- **Pure JSDoc:**
-```javascript
-/** Method if */
-```
----
-<br>
-
 ## CLASS: WhereFilter
 **File Path:** `WorkspaceTemplateEngine/src/internal/filters/BuiltInFilters.js`
 **Constructor Usage:** `const instance = new WhereFilter();`
@@ -1134,93 +1086,73 @@ import { FilterStrategy } from '../../FilterStrategy.js';
 ## CLASS: YesNoFilter
 **File Path:** `WorkspaceTemplateEngine/src/internal/filters/AdvancedFilters.js`
 **Constructor Usage:** `const instance = new YesNoFilter();`
-**Description:** Boolean-to-string transformer. Format: "YesString,NoString".
+**Description:** @param {string} [name='default'] Registered filter name. Also registered
+  as 'fallback' — same null/undefined/empty-string(/array) behavior.
+/
+  constructor(name = 'default') {
+    super();
+    this._name = name;
+  }
+
+  getName() {
+    return this._name;
+  }
+  getDescription() {
+    return 'Returns the argument if value is null/undefined/empty';
+  }
+
+  execute(value, defaultValue = '') {
+    // Check for null, undefined, empty string, or empty array
+    if (value === null || value === undefined || value === '') {
+      return defaultValue;
+    }
+    if (Array.isArray(value) && value.length === 0) {
+      return defaultValue;
+    }
+    return value;
+  }
+}
+
+/**
+Boolean-to-string transformer. Format: "YesString,NoString".
 @class
 
 ### Raw JSDoc Context:
 ```javascript
+/**
+   * @param {string} [name='default'] Registered filter name. Also registered
+   *   as 'fallback' — same null/undefined/empty-string(/array) behavior.
+   */
+  constructor(name = 'default') {
+    super();
+    this._name = name;
+  }
+
+  getName() {
+    return this._name;
+  }
+  getDescription() {
+    return 'Returns the argument if value is null/undefined/empty';
+  }
+
+  execute(value, defaultValue = '') {
+    // Check for null, undefined, empty string, or empty array
+    if (value === null || value === undefined || value === '') {
+      return defaultValue;
+    }
+    if (Array.isArray(value) && value.length === 0) {
+      return defaultValue;
+    }
+    return value;
+  }
+}
+
 /**
  * @description Boolean-to-string transformer. Format: "YesString,NoString".
  * @class
  */
 ```
 
-### Methods of YesNoFilter
-
-#### METHOD: YesNoFilter.getName
-- **Scope:** instance
-- **LLM Call Syntax:** `yesNoFilter.getName();`
-- **Pure JSDoc:**
-```javascript
-/** Method getName */
-```
----
-#### METHOD: YesNoFilter.getDescription
-- **Scope:** instance
-- **LLM Call Syntax:** `yesNoFilter.getDescription();`
-- **Pure JSDoc:**
-```javascript
-/** Method getDescription */
-```
----
-#### METHOD: YesNoFilter.execute
-- **Scope:** instance
-- **LLM Call Syntax:** `yesNoFilter.execute(value, yesNoString, No');`
-- **Pure JSDoc:**
-```javascript
-/** Method execute */
-```
----
-<br>
-
-## CLASS: FallbackFilter
-**File Path:** `WorkspaceTemplateEngine/src/internal/filters/AdvancedFilters.js`
-**Constructor Usage:** `const instance = new FallbackFilter();`
-**Description:** Simple fallback mechanism. Returns fallbackValue if value is missing.
-@class
-
-### Raw JSDoc Context:
-```javascript
-/**
- * @description Simple fallback mechanism. Returns fallbackValue if value is missing.
- * @class
- */
-```
-
-### Methods of FallbackFilter
-
-#### METHOD: FallbackFilter.getName
-- **Scope:** instance
-- **LLM Call Syntax:** `fallbackFilter.getName();`
-- **Pure JSDoc:**
-```javascript
-/** Method getName */
-```
----
-#### METHOD: FallbackFilter.getDescription
-- **Scope:** instance
-- **LLM Call Syntax:** `fallbackFilter.getDescription();`
-- **Pure JSDoc:**
-```javascript
-/** Method getDescription */
-```
----
-#### METHOD: FallbackFilter.execute
-- **Scope:** instance
-- **LLM Call Syntax:** `fallbackFilter.execute(value, fallbackValue);`
-- **Pure JSDoc:**
-```javascript
-/** Method execute */
-```
----
-#### METHOD: FallbackFilter.if
-- **Scope:** instance
-- **LLM Call Syntax:** `fallbackFilter.if(value);`
-- **Pure JSDoc:**
-```javascript
-/** Method if */
-```
----
 <br>
 
 ## CLASS: TruncateFilter
@@ -1658,43 +1590,213 @@ import { FilterStrategy } from '../../FilterStrategy.js';
 ## CLASS: ReverseFilter
 **File Path:** `WorkspaceTemplateEngine/src/internal/filters/AdvancedFilters.js`
 **Constructor Usage:** `const instance = new ReverseFilter();`
-**Description:** Array order reverser. Creates a shallow copy before reversing.
+**Description:** @param {string} [name='sort'] Registered filter name. Also registered as
+  'sortBy' (BuiltInFilters) for the single-property-ascending call shape.
+/
+  constructor(name = 'sort') {
+    super();
+    this._name = name;
+  }
+
+  getName() {
+    return this._name;
+  }
+  getDescription() {
+    return 'Sorts array by property (optional: "desc")';
+  }
+
+  _isDangerousKey(key) {
+    return key === '__proto__' || key === 'constructor' || key === 'prototype';
+  }
+
+  execute(array, propertyOrDirection, direction) {
+    if (!Array.isArray(array)) {
+      return array;
+    }
+
+    // If array is empty, return as-is
+    if (array.length === 0) {
+      return array;
+    }
+
+    // Determine if first arg is property name or direction
+    let property = null;
+    let isDescending = false;
+
+    // Check if first argument is a direction keyword
+    if (propertyOrDirection === 'desc' || propertyOrDirection === 'asc') {
+      isDescending = propertyOrDirection === 'desc';
+    } else if (propertyOrDirection) {
+      property = propertyOrDirection;
+      isDescending = direction === 'desc';
+    } else {
+      // No arguments, sort primitive values
+      isDescending = false;
+    }
+
+    // Clone array to avoid mutation
+    const sorted = [...array];
+
+    sorted.sort((a, b) => {
+      let valA, valB;
+
+      if (property && !this._isDangerousKey(property)) {
+        // Sort by property
+        valA =
+          a && typeof a === 'object' && Object.prototype.hasOwnProperty.call(a, property)
+            ? a[property]
+            : null;
+        valB =
+          b && typeof b === 'object' && Object.prototype.hasOwnProperty.call(b, property)
+            ? b[property]
+            : null;
+      } else {
+        // Sort by value directly
+        valA = a;
+        valB = b;
+      }
+
+      // Handle null/undefined
+      if (valA == null && valB != null) {
+        return 1;
+      }
+      if (valA != null && valB == null) {
+        return -1;
+      }
+      if (valA == null && valB == null) {
+        return 0;
+      }
+
+      // String comparison
+      if (typeof valA === 'string' || typeof valB === 'string') {
+        const result = String(valA).localeCompare(String(valB), 'en', { sensitivity: 'base' });
+        return isDescending ? -result : result;
+      }
+
+      // Numeric comparison
+      if (valA < valB) {
+        return isDescending ? 1 : -1;
+      }
+      if (valA > valB) {
+        return isDescending ? -1 : 1;
+      }
+      return 0;
+    });
+
+    return sorted;
+  }
+}
+
+/**
+Array order reverser. Creates a shallow copy before reversing.
 @class
 
 ### Raw JSDoc Context:
 ```javascript
+/**
+   * @param {string} [name='sort'] Registered filter name. Also registered as
+   *   'sortBy' (BuiltInFilters) for the single-property-ascending call shape.
+   */
+  constructor(name = 'sort') {
+    super();
+    this._name = name;
+  }
+
+  getName() {
+    return this._name;
+  }
+  getDescription() {
+    return 'Sorts array by property (optional: "desc")';
+  }
+
+  _isDangerousKey(key) {
+    return key === '__proto__' || key === 'constructor' || key === 'prototype';
+  }
+
+  execute(array, propertyOrDirection, direction) {
+    if (!Array.isArray(array)) {
+      return array;
+    }
+
+    // If array is empty, return as-is
+    if (array.length === 0) {
+      return array;
+    }
+
+    // Determine if first arg is property name or direction
+    let property = null;
+    let isDescending = false;
+
+    // Check if first argument is a direction keyword
+    if (propertyOrDirection === 'desc' || propertyOrDirection === 'asc') {
+      isDescending = propertyOrDirection === 'desc';
+    } else if (propertyOrDirection) {
+      property = propertyOrDirection;
+      isDescending = direction === 'desc';
+    } else {
+      // No arguments, sort primitive values
+      isDescending = false;
+    }
+
+    // Clone array to avoid mutation
+    const sorted = [...array];
+
+    sorted.sort((a, b) => {
+      let valA, valB;
+
+      if (property && !this._isDangerousKey(property)) {
+        // Sort by property
+        valA =
+          a && typeof a === 'object' && Object.prototype.hasOwnProperty.call(a, property)
+            ? a[property]
+            : null;
+        valB =
+          b && typeof b === 'object' && Object.prototype.hasOwnProperty.call(b, property)
+            ? b[property]
+            : null;
+      } else {
+        // Sort by value directly
+        valA = a;
+        valB = b;
+      }
+
+      // Handle null/undefined
+      if (valA == null && valB != null) {
+        return 1;
+      }
+      if (valA != null && valB == null) {
+        return -1;
+      }
+      if (valA == null && valB == null) {
+        return 0;
+      }
+
+      // String comparison
+      if (typeof valA === 'string' || typeof valB === 'string') {
+        const result = String(valA).localeCompare(String(valB), 'en', { sensitivity: 'base' });
+        return isDescending ? -result : result;
+      }
+
+      // Numeric comparison
+      if (valA < valB) {
+        return isDescending ? 1 : -1;
+      }
+      if (valA > valB) {
+        return isDescending ? -1 : 1;
+      }
+      return 0;
+    });
+
+    return sorted;
+  }
+}
+
 /**
  * @description Array order reverser. Creates a shallow copy before reversing.
  * @class
  */
 ```
 
-### Methods of ReverseFilter
-
-#### METHOD: ReverseFilter.getName
-- **Scope:** instance
-- **LLM Call Syntax:** `reverseFilter.getName();`
-- **Pure JSDoc:**
-```javascript
-/** Method getName */
-```
----
-#### METHOD: ReverseFilter.getDescription
-- **Scope:** instance
-- **LLM Call Syntax:** `reverseFilter.getDescription();`
-- **Pure JSDoc:**
-```javascript
-/** Method getDescription */
-```
----
-#### METHOD: ReverseFilter.execute
-- **Scope:** instance
-- **LLM Call Syntax:** `reverseFilter.execute(array);`
-- **Pure JSDoc:**
-```javascript
-/** Method execute */
-```
----
 <br>
 
 ## CLASS: PlusFilter
@@ -2321,3 +2423,4 @@ const result = mustache.render('{{items | join:", "}}', { items: [1, 2, 3] });
 ```
 
 <br>
+

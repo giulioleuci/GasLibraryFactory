@@ -1,136 +1,11 @@
 # API Reference: CoreUtilsLib
 
-## CLASS: MyService
-**File Path:** `CoreUtilsLib/src/interfaces.js`
-**Constructor Usage:** `const instance = new MyService();`
-**Description:** N/A
-
-### Raw JSDoc Context:
-```javascript
-/** Class definition */
-```
-
-<br>
-
-## CLASS: MyLogger
-**File Path:** `CoreUtilsLib/src/interfaces.js`
-**Constructor Usage:** `const instance = new MyLogger();`
-**Description:** N/A
-
-### Raw JSDoc Context:
-```javascript
-/** Class definition */
-```
-
-### Methods of MyLogger
-
-#### METHOD: MyLogger.debug
-- **Scope:** instance
-- **LLM Call Syntax:** `myLogger.debug(message, context);`
-- **Pure JSDoc:**
-```javascript
-/** Method debug */
-```
----
-#### METHOD: MyLogger.info
-- **Scope:** instance
-- **LLM Call Syntax:** `myLogger.info(message, context);`
-- **Pure JSDoc:**
-```javascript
-/** Method info */
-```
----
-#### METHOD: MyLogger.warn
-- **Scope:** instance
-- **LLM Call Syntax:** `myLogger.warn(message, context);`
-- **Pure JSDoc:**
-```javascript
-/** Method warn */
-```
----
-#### METHOD: MyLogger.error
-- **Scope:** instance
-- **LLM Call Syntax:** `myLogger.error(message, context);`
-- **Pure JSDoc:**
-```javascript
-/** Method error */
-```
----
-<br>
-
-## CLASS: for
-**File Path:** `CoreUtilsLib/src/interfaces.js`
-**Constructor Usage:** `const instance = new for();`
-**Description:** N/A
-
-### Raw JSDoc Context:
-```javascript
-/** Class definition */
-```
-
-<br>
-
-## CLASS: UserDataProvider
-**File Path:** `CoreUtilsLib/src/interfaces.js`
-**Constructor Usage:** `const instance = new UserDataProvider();`
-**Description:** N/A
-
-### Raw JSDoc Context:
-```javascript
-/** Class definition */
-```
-
-### Methods of UserDataProvider
-
-#### METHOD: UserDataProvider.provide
-- **Scope:** instance
-- **LLM Call Syntax:** `userDataProvider.provide(name, params);`
-- **Pure JSDoc:**
-```javascript
-/** Method provide */
-```
----
-<br>
-
-## CLASS: ValidateInputStep
-**File Path:** `CoreUtilsLib/src/interfaces.js`
-**Constructor Usage:** `const instance = new ValidateInputStep();`
-**Description:** N/A
-
-### Raw JSDoc Context:
-```javascript
-/** Class definition */
-```
-
-### Methods of ValidateInputStep
-
-#### METHOD: ValidateInputStep.execute
-- **Scope:** instance
-- **LLM Call Syntax:** `validateInputStep.execute(context);`
-- **Pure JSDoc:**
-```javascript
-/** Method execute */
-```
----
-#### METHOD: ValidateInputStep.if
-- **Scope:** instance
-- **LLM Call Syntax:** `validateInputStep.if(!data);`
-- **Pure JSDoc:**
-```javascript
-/** Method if */
-```
----
-<br>
-
 ## CLASS: ValidationUtils
 **File Path:** `CoreUtilsLib/src/ValidationUtils.js`
 **Constructor Usage:** `const instance = new ValidationUtils();`
 **Description:** Centralized validation utilities for dependency and parameter validation.
 Eliminates duplicate validation code across all GasLibraryFactory libraries.
-
 /
-
-import { InterfaceRegistry } from './interfaces.js';
 
 /**
 Centralized utilities for static dependency and parameter validation across libraries.
@@ -142,10 +17,7 @@ Centralized utilities for static dependency and parameter validation across libr
  * @file CoreUtilsLib/src/ValidationUtils.js
  * @description Centralized validation utilities for dependency and parameter validation.
  * Eliminates duplicate validation code across all GasLibraryFactory libraries.
- * @version 1.1.0 - Added interface-based validation support
  */
-
-import { InterfaceRegistry } from './interfaces.js';
 
 /**
  * Centralized utilities for static dependency and parameter validation across libraries.
@@ -153,6 +25,131 @@ import { InterfaceRegistry } from './interfaces.js';
  */
 ```
 
+### Methods of ValidationUtils
+
+#### METHOD: ValidationUtils.validateLogger
+- **Scope:** static
+- **LLM Call Syntax:** `const result = ValidationUtils.validateLogger(logger, context);`
+- **Pure JSDoc:**
+```javascript
+/**
+   * Required methods for a valid logger interface.
+   * @static
+   * @type {string[]}
+   */
+  static get LOGGER_METHODS() {
+    return ['debug', 'info', 'warn', 'error'];
+  }
+
+  /**
+   * Validates that a logger object has all required logging methods.
+   *
+   * A valid logger must be a non-null object with debug, info, warn, and error
+   * methods that are all functions.
+   *
+   * @param {Object} logger - The logger object to validate
+   * @param {string} [context='ValidationUtils'] - Context for error messages (class/function name)
+   * @returns {boolean} True if validation passes
+   * @throws {Error} If logger is missing or invalid
+   *
+   * @example
+   * // In a constructor
+   * constructor(logger) {
+   *   ValidationUtils.validateLogger(logger, 'MyService');
+   *   this._logger = logger;
+   * }
+   *
+   * @example
+   * // Throws descriptive error
+   * ValidationUtils.validateLogger(null, 'MyService');
+   * // Error: 'MyService: logger is required and must be an object'
+   *
+   * ValidationUtils.validateLogger({ debug: 'not a function' }, 'MyService');
+   * // Error: 'MyService: logger.debug must be a function'
+   */
+```
+---
+#### METHOD: ValidationUtils.if
+- **Scope:** instance
+- **LLM Call Syntax:** `validationUtils.if(!logger || typeof logger !);`
+- **Pure JSDoc:**
+```javascript
+/** Method if */
+```
+---
+#### METHOD: ValidationUtils.for
+- **Scope:** instance
+- **LLM Call Syntax:** `validationUtils.for(const method of ValidationUtils.LOGGER_METHODS);`
+- **Pure JSDoc:**
+```javascript
+/** Method for */
+```
+---
+#### METHOD: ValidationUtils.if
+- **Scope:** instance
+- **LLM Call Syntax:** `validationUtils.if(typeof logger[method] !);`
+- **Pure JSDoc:**
+```javascript
+/** Method if */
+```
+---
+#### METHOD: ValidationUtils.validateDependency
+- **Scope:** static
+- **LLM Call Syntax:** `const result = ValidationUtils.validateDependency(dependency, name, context, requiredMethods, required);`
+- **Pure JSDoc:**
+```javascript
+/**
+   * Validates a dependency object, optionally checking for required methods.
+   *
+   * Validates that a dependency is a non-null object and optionally verifies
+   * that it has specific methods that are functions.
+   *
+   * @param {Object} dependency - The dependency object to validate
+   * @param {string} name - The name of the dependency (for error messages)
+   * @param {string} [context='ValidationUtils'] - Context for error messages
+   * @param {string[]} [requiredMethods=[]] - Array of method names that must exist
+   * @param {boolean} [required=true] - If false, allows null/undefined (optional dependency)
+   * @returns {boolean} True if validation passes
+   * @throws {Error} If validation fails for a required dependency
+   *
+   * @example
+   * // Required dependency with method validation
+   * ValidationUtils.validateDependency(utils, 'utils', 'MyService', ['sleep', 'delay']);
+   *
+   * @example
+   * // Optional dependency (won't throw if null)
+   * ValidationUtils.validateDependency(cache, 'cache', 'MyService', ['get', 'put'], false);
+   *
+   * @example
+   * // Simple object validation without method checking
+   * ValidationUtils.validateDependency(config, 'config', 'MyService');
+   */
+```
+---
+#### METHOD: ValidationUtils.if
+- **Scope:** instance
+- **LLM Call Syntax:** `validationUtils.if(!dependency || typeof dependency !);`
+- **Pure JSDoc:**
+```javascript
+/** Method if */
+```
+---
+#### METHOD: ValidationUtils.for
+- **Scope:** instance
+- **LLM Call Syntax:** `validationUtils.for(const method of requiredMethods);`
+- **Pure JSDoc:**
+```javascript
+/** Method for */
+```
+---
+#### METHOD: ValidationUtils.if
+- **Scope:** instance
+- **LLM Call Syntax:** `validationUtils.if(typeof dependency[method] !);`
+- **Pure JSDoc:**
+```javascript
+/** Method if */
+```
+---
 <br>
 
 ## CLASS: MyUtilsService
@@ -165,40 +162,6 @@ import { InterfaceRegistry } from './interfaces.js';
 /** Class definition */
 ```
 
-### Methods of MyUtilsService
-
-#### METHOD: MyUtilsService.MILLIS_PER_DAY
-- **Scope:** instance
-- **LLM Call Syntax:** `myUtilsService.MILLIS_PER_DAY();`
-- **Pure JSDoc:**
-```javascript
-/** Method MILLIS_PER_DAY */
-```
----
-#### METHOD: MyUtilsService.MILLIS_PER_HOUR
-- **Scope:** instance
-- **LLM Call Syntax:** `myUtilsService.MILLIS_PER_HOUR();`
-- **Pure JSDoc:**
-```javascript
-/** Method MILLIS_PER_HOUR */
-```
----
-#### METHOD: MyUtilsService.MILLIS_PER_MINUTE
-- **Scope:** instance
-- **LLM Call Syntax:** `myUtilsService.MILLIS_PER_MINUTE();`
-- **Pure JSDoc:**
-```javascript
-/** Method MILLIS_PER_MINUTE */
-```
----
-#### METHOD: MyUtilsService.MILLIS_PER_SECOND
-- **Scope:** instance
-- **LLM Call Syntax:** `myUtilsService.MILLIS_PER_SECOND();`
-- **Pure JSDoc:**
-```javascript
-/** Method MILLIS_PER_SECOND */
-```
----
 <br>
 
 ## CLASS: TypeGuards
@@ -420,24 +383,6 @@ Static type guard utilities for consistent runtime value validation.
    * TypeGuards.isObject({});     // true
    * TypeGuards.isObject([]);     // true
    * TypeGuards.isObject(null);   // false
-   */
-```
----
-#### METHOD: TypeGuards.isValidObject
-- **Scope:** static
-- **LLM Call Syntax:** `const result = TypeGuards.isValidObject(value);`
-- **Pure JSDoc:**
-```javascript
-/**
-   * Checks if value is a non-null object (shorthand for common pattern).
-   *
-   * @param {*} value - The value to check
-   * @returns {boolean} True if value is an object and not null
-   *
-   * @example
-   * TypeGuards.isValidObject({});    // true
-   * TypeGuards.isValidObject([]);    // true
-   * TypeGuards.isValidObject(null);  // false
    */
 ```
 ---
@@ -710,65 +655,6 @@ Static type guard utilities for consistent runtime value validation.
 /** Method if */
 ```
 ---
-#### METHOD: TypeGuards.isTruthy
-- **Scope:** static
-- **LLM Call Syntax:** `const result = TypeGuards.isTruthy(value);`
-- **Pure JSDoc:**
-```javascript
-/**
-   * Checks if value is truthy.
-   *
-   * @param {*} value - The value to check
-   * @returns {boolean} True if value is truthy
-   */
-```
----
-#### METHOD: TypeGuards.isFalsy
-- **Scope:** static
-- **LLM Call Syntax:** `const result = TypeGuards.isFalsy(value);`
-- **Pure JSDoc:**
-```javascript
-/**
-   * Checks if value is falsy.
-   *
-   * @param {*} value - The value to check
-   * @returns {boolean} True if value is falsy
-   */
-```
----
-<br>
-
-## CLASS: ServiceValidator
-**File Path:** `CoreUtilsLib/src/ServiceValidator.js`
-**Constructor Usage:** `const instance = new ServiceValidator();`
-**Description:** Service-specific validation utilities for constructor dependency validation.
-Centralizes the common validation patterns used across all GasLibraryFactory services.
-
-/
-
-import { ValidationUtils } from './ValidationUtils.js';
-
-/**
-Validates common service dependencies (logger, utils, cache, exceptions) to standardize constructor boilerplate.
-@class
-
-### Raw JSDoc Context:
-```javascript
-/**
- * @file CoreUtilsLib/src/ServiceValidator.js
- * @description Service-specific validation utilities for constructor dependency validation.
- * Centralizes the common validation patterns used across all GasLibraryFactory services.
- * @version 1.0.0
- */
-
-import { ValidationUtils } from './ValidationUtils.js';
-
-/**
- * Validates common service dependencies (logger, utils, cache, exceptions) to standardize constructor boilerplate.
- * @class
- */
-```
-
 <br>
 
 ## CLASS: Result
@@ -1686,420 +1572,6 @@ frozen immutability, richer payloads) on top of this contract.
 ---
 <br>
 
-## CLASS: SystemUtils
-**File Path:** `CoreUtilsLib/src/utils/SystemUtils.js`
-**Constructor Usage:** `const instance = new SystemUtils();`
-**Description:** N/A
-
-### Raw JSDoc Context:
-```javascript
-/** Class definition */
-```
-
-### Methods of SystemUtils
-
-#### METHOD: SystemUtils.sleep
-- **Scope:** instance
-- **LLM Call Syntax:** `systemUtils.sleep(...args);`
-- **Pure JSDoc:**
-```javascript
-/** Method sleep */
-```
----
-#### METHOD: SystemUtils.delay
-- **Scope:** instance
-- **LLM Call Syntax:** `systemUtils.delay(...args);`
-- **Pure JSDoc:**
-```javascript
-/** Method delay */
-```
----
-#### METHOD: SystemUtils.isValidEmail
-- **Scope:** instance
-- **LLM Call Syntax:** `systemUtils.isValidEmail(...args);`
-- **Pure JSDoc:**
-```javascript
-/** Method isValidEmail */
-```
----
-#### METHOD: SystemUtils.isValidUrl
-- **Scope:** instance
-- **LLM Call Syntax:** `systemUtils.isValidUrl(...args);`
-- **Pure JSDoc:**
-```javascript
-/** Method isValidUrl */
-```
----
-#### METHOD: SystemUtils.isEqual
-- **Scope:** instance
-- **LLM Call Syntax:** `systemUtils.isEqual(...args);`
-- **Pure JSDoc:**
-```javascript
-/** Method isEqual */
-```
----
-#### METHOD: SystemUtils.isNil
-- **Scope:** instance
-- **LLM Call Syntax:** `systemUtils.isNil(...args);`
-- **Pure JSDoc:**
-```javascript
-/** Method isNil */
-```
----
-#### METHOD: SystemUtils.isNumber
-- **Scope:** instance
-- **LLM Call Syntax:** `systemUtils.isNumber(...args);`
-- **Pure JSDoc:**
-```javascript
-/** Method isNumber */
-```
----
-#### METHOD: SystemUtils.isString
-- **Scope:** instance
-- **LLM Call Syntax:** `systemUtils.isString(...args);`
-- **Pure JSDoc:**
-```javascript
-/** Method isString */
-```
----
-#### METHOD: SystemUtils.isEmptyValue
-- **Scope:** instance
-- **LLM Call Syntax:** `systemUtils.isEmptyValue(...args);`
-- **Pure JSDoc:**
-```javascript
-/** Method isEmptyValue */
-```
----
-#### METHOD: SystemUtils.debounce
-- **Scope:** instance
-- **LLM Call Syntax:** `systemUtils.debounce(...args);`
-- **Pure JSDoc:**
-```javascript
-/** Method debounce */
-```
----
-#### METHOD: SystemUtils.once
-- **Scope:** instance
-- **LLM Call Syntax:** `systemUtils.once(...args);`
-- **Pure JSDoc:**
-```javascript
-/** Method once */
-```
----
-#### METHOD: SystemUtils.noop
-- **Scope:** instance
-- **LLM Call Syntax:** `systemUtils.noop(...args);`
-- **Pure JSDoc:**
-```javascript
-/** Method noop */
-```
----
-#### METHOD: SystemUtils.chunk
-- **Scope:** instance
-- **LLM Call Syntax:** `systemUtils.chunk(...args);`
-- **Pure JSDoc:**
-```javascript
-/** Method chunk */
-```
----
-#### METHOD: SystemUtils.unique
-- **Scope:** instance
-- **LLM Call Syntax:** `systemUtils.unique(...args);`
-- **Pure JSDoc:**
-```javascript
-/** Method unique */
-```
----
-#### METHOD: SystemUtils.flatten
-- **Scope:** instance
-- **LLM Call Syntax:** `systemUtils.flatten(...args);`
-- **Pure JSDoc:**
-```javascript
-/** Method flatten */
-```
----
-#### METHOD: SystemUtils.flattenShallow
-- **Scope:** instance
-- **LLM Call Syntax:** `systemUtils.flattenShallow(array);`
-- **Pure JSDoc:**
-```javascript
-/** Method flattenShallow */
-```
----
-#### METHOD: SystemUtils.flattenDeep
-- **Scope:** instance
-- **LLM Call Syntax:** `systemUtils.flattenDeep(array);`
-- **Pure JSDoc:**
-```javascript
-/** Method flattenDeep */
-```
----
-#### METHOD: SystemUtils.compact
-- **Scope:** instance
-- **LLM Call Syntax:** `systemUtils.compact(...args);`
-- **Pure JSDoc:**
-```javascript
-/** Method compact */
-```
----
-#### METHOD: SystemUtils.difference
-- **Scope:** instance
-- **LLM Call Syntax:** `systemUtils.difference(...args);`
-- **Pure JSDoc:**
-```javascript
-/** Method difference */
-```
----
-#### METHOD: SystemUtils.differenceBy
-- **Scope:** instance
-- **LLM Call Syntax:** `systemUtils.differenceBy(...args);`
-- **Pure JSDoc:**
-```javascript
-/** Method differenceBy */
-```
----
-#### METHOD: SystemUtils.groupBy
-- **Scope:** instance
-- **LLM Call Syntax:** `systemUtils.groupBy(...args);`
-- **Pure JSDoc:**
-```javascript
-/** Method groupBy */
-```
----
-#### METHOD: SystemUtils.intersection
-- **Scope:** instance
-- **LLM Call Syntax:** `systemUtils.intersection(...args);`
-- **Pure JSDoc:**
-```javascript
-/** Method intersection */
-```
----
-#### METHOD: SystemUtils.keyBy
-- **Scope:** instance
-- **LLM Call Syntax:** `systemUtils.keyBy(...args);`
-- **Pure JSDoc:**
-```javascript
-/** Method keyBy */
-```
----
-#### METHOD: SystemUtils.orderBy
-- **Scope:** instance
-- **LLM Call Syntax:** `systemUtils.orderBy(...args);`
-- **Pure JSDoc:**
-```javascript
-/** Method orderBy */
-```
----
-#### METHOD: SystemUtils.uniq
-- **Scope:** instance
-- **LLM Call Syntax:** `systemUtils.uniq(...args);`
-- **Pure JSDoc:**
-```javascript
-/** Method uniq */
-```
----
-#### METHOD: SystemUtils.uniqBy
-- **Scope:** instance
-- **LLM Call Syntax:** `systemUtils.uniqBy(...args);`
-- **Pure JSDoc:**
-```javascript
-/** Method uniqBy */
-```
----
-#### METHOD: SystemUtils.randomInt
-- **Scope:** instance
-- **LLM Call Syntax:** `systemUtils.randomInt(min, max);`
-- **Pure JSDoc:**
-```javascript
-/** Method randomInt */
-```
----
-#### METHOD: SystemUtils.round
-- **Scope:** instance
-- **LLM Call Syntax:** `systemUtils.round(number, decimals);`
-- **Pure JSDoc:**
-```javascript
-/** Method round */
-```
----
-#### METHOD: SystemUtils.clamp
-- **Scope:** instance
-- **LLM Call Syntax:** `systemUtils.clamp(...args);`
-- **Pure JSDoc:**
-```javascript
-/** Method clamp */
-```
----
-#### METHOD: SystemUtils.maxBy
-- **Scope:** instance
-- **LLM Call Syntax:** `systemUtils.maxBy(...args);`
-- **Pure JSDoc:**
-```javascript
-/** Method maxBy */
-```
----
-#### METHOD: SystemUtils.minBy
-- **Scope:** instance
-- **LLM Call Syntax:** `systemUtils.minBy(...args);`
-- **Pure JSDoc:**
-```javascript
-/** Method minBy */
-```
----
-#### METHOD: SystemUtils.sumBy
-- **Scope:** instance
-- **LLM Call Syntax:** `systemUtils.sumBy(...args);`
-- **Pure JSDoc:**
-```javascript
-/** Method sumBy */
-```
----
-#### METHOD: SystemUtils.meanBy
-- **Scope:** instance
-- **LLM Call Syntax:** `systemUtils.meanBy(...args);`
-- **Pure JSDoc:**
-```javascript
-/** Method meanBy */
-```
----
-#### METHOD: SystemUtils.every
-- **Scope:** instance
-- **LLM Call Syntax:** `systemUtils.every(...args);`
-- **Pure JSDoc:**
-```javascript
-/** Method every */
-```
----
-#### METHOD: SystemUtils.filter
-- **Scope:** instance
-- **LLM Call Syntax:** `systemUtils.filter(...args);`
-- **Pure JSDoc:**
-```javascript
-/** Method filter */
-```
----
-#### METHOD: SystemUtils.find
-- **Scope:** instance
-- **LLM Call Syntax:** `systemUtils.find(...args);`
-- **Pure JSDoc:**
-```javascript
-/** Method find */
-```
----
-#### METHOD: SystemUtils.forEach
-- **Scope:** instance
-- **LLM Call Syntax:** `systemUtils.forEach(...args);`
-- **Pure JSDoc:**
-```javascript
-/** Method forEach */
-```
----
-#### METHOD: SystemUtils.map
-- **Scope:** instance
-- **LLM Call Syntax:** `systemUtils.map(...args);`
-- **Pure JSDoc:**
-```javascript
-/** Method map */
-```
----
-#### METHOD: SystemUtils.reduce
-- **Scope:** instance
-- **LLM Call Syntax:** `systemUtils.reduce(...args);`
-- **Pure JSDoc:**
-```javascript
-/** Method reduce */
-```
----
-#### METHOD: SystemUtils.size
-- **Scope:** instance
-- **LLM Call Syntax:** `systemUtils.size(...args);`
-- **Pure JSDoc:**
-```javascript
-/** Method size */
-```
----
-#### METHOD: SystemUtils.some
-- **Scope:** instance
-- **LLM Call Syntax:** `systemUtils.some(...args);`
-- **Pure JSDoc:**
-```javascript
-/** Method some */
-```
----
-#### METHOD: SystemUtils.deepClone
-- **Scope:** instance
-- **LLM Call Syntax:** `systemUtils.deepClone(...args);`
-- **Pure JSDoc:**
-```javascript
-/** Method deepClone */
-```
----
-#### METHOD: SystemUtils.deepMerge
-- **Scope:** instance
-- **LLM Call Syntax:** `systemUtils.deepMerge(...args);`
-- **Pure JSDoc:**
-```javascript
-/** Method deepMerge */
-```
----
-#### METHOD: SystemUtils.getNestedProperty
-- **Scope:** instance
-- **LLM Call Syntax:** `systemUtils.getNestedProperty(...args);`
-- **Pure JSDoc:**
-```javascript
-/** Method getNestedProperty */
-```
----
-#### METHOD: SystemUtils.setNestedProperty
-- **Scope:** instance
-- **LLM Call Syntax:** `systemUtils.setNestedProperty(...args);`
-- **Pure JSDoc:**
-```javascript
-/** Method setNestedProperty */
-```
----
-#### METHOD: SystemUtils.has
-- **Scope:** instance
-- **LLM Call Syntax:** `systemUtils.has(...args);`
-- **Pure JSDoc:**
-```javascript
-/** Method has */
-```
----
-#### METHOD: SystemUtils.pick
-- **Scope:** instance
-- **LLM Call Syntax:** `systemUtils.pick(...args);`
-- **Pure JSDoc:**
-```javascript
-/** Method pick */
-```
----
-#### METHOD: SystemUtils.omit
-- **Scope:** instance
-- **LLM Call Syntax:** `systemUtils.omit(...args);`
-- **Pure JSDoc:**
-```javascript
-/** Method omit */
-```
----
-#### METHOD: SystemUtils.mapKeys
-- **Scope:** instance
-- **LLM Call Syntax:** `systemUtils.mapKeys(...args);`
-- **Pure JSDoc:**
-```javascript
-/** Method mapKeys */
-```
----
-#### METHOD: SystemUtils.mapValues
-- **Scope:** instance
-- **LLM Call Syntax:** `systemUtils.mapValues(...args);`
-- **Pure JSDoc:**
-```javascript
-/** Method mapValues */
-```
----
-<br>
-
 ## CLASS: SystemScriptSettings
 **File Path:** `CoreUtilsLib/src/utils/SystemScriptSettings.js`
 **Constructor Usage:** `const instance = new SystemScriptSettings();`
@@ -2930,6 +2402,14 @@ Wraps a zero-argument loader function, invoking it at most once.
 #### METHOD: IdGenerator.if
 - **Scope:** instance
 - **LLM Call Syntax:** `idGenerator.if(alphabet[byte]);`
+- **Pure JSDoc:**
+```javascript
+/** Method if */
+```
+---
+#### METHOD: IdGenerator.if
+- **Scope:** instance
+- **LLM Call Syntax:** `idGenerator.if(id.length);`
 - **Pure JSDoc:**
 ```javascript
 /** Method if */
@@ -3911,6 +3391,14 @@ High-fidelity mock for LoggerService with jest.fn() instrumentation and method c
 ---
 #### METHOD: LoggerServiceMock.if
 - **Scope:** instance
+- **LLM Call Syntax:** `loggerServiceMock.if(!mock || !mock.mock);`
+- **Pure JSDoc:**
+```javascript
+/** Method if */
+```
+---
+#### METHOD: LoggerServiceMock.if
+- **Scope:** instance
 - **LLM Call Syntax:** `loggerServiceMock.if(pattern instanceof RegExp);`
 - **Pure JSDoc:**
 ```javascript
@@ -4012,7 +3500,9 @@ High-fidelity mock for LoggerService with jest.fn() instrumentation and method c
   hasLog(level, pattern) {
     const methodName = level.toLowerCase();
     const mock = this[methodName];
-    if (!mock || !mock.mock) return false;
+    if (!mock || !mock.mock) {
+      return false;
+    }
 
     return mock.mock.calls.some((call) => {
       const msg = typeof call[0] === 'function' ? call[0]() : call[0];
@@ -4414,35 +3904,6 @@ Static security utility for safe regular expression handling and ReDoS preventio
 
 <br>
 
-## CLASS: PlaceholderUtils
-**File Path:** `CoreUtilsLib/src/internal/PlaceholderUtils.js`
-**Constructor Usage:** `const instance = new PlaceholderUtils();`
-**Description:** Utilities for working with placeholder patterns like {{fieldName}}.
-Centralizes placeholder extraction and manipulation across all GasLibraryFactory libraries.
-
-/
-
-/**
-Static utility for mustache-style placeholder extraction, detection, and basic replacement.
-@class PlaceholderUtils
-
-### Raw JSDoc Context:
-```javascript
-/**
- * @file CoreUtilsLib/src/PlaceholderUtils.js
- * @description Utilities for working with placeholder patterns like {{fieldName}}.
- * Centralizes placeholder extraction and manipulation across all GasLibraryFactory libraries.
- * @version 1.0.0
- */
-
-/**
- * Static utility for mustache-style placeholder extraction, detection, and basic replacement.
- * @class PlaceholderUtils
- */
-```
-
-<br>
-
 ## CLASS: PiiRedactor
 **File Path:** `CoreUtilsLib/src/internal/PiiRedactor.js`
 **Constructor Usage:** `const instance = new PiiRedactor();`
@@ -4517,214 +3978,6 @@ Static utility for detecting and masking Personally Identifiable Information (PI
    * Mask all recognized PII patterns within a text string.
    * @param {string} message - Input text to sanitize.
    * @returns {string} Sanitized string with masked placeholders.
-   */
-```
----
-#### METHOD: PiiRedactor.if
-- **Scope:** instance
-- **LLM Call Syntax:** `piiRedactor.if(typeof message !);`
-- **Pure JSDoc:**
-```javascript
-/** Method if */
-```
----
-#### METHOD: PiiRedactor.redactEmails
-- **Scope:** static
-- **LLM Call Syntax:** `const result = PiiRedactor.redactEmails(message, label);`
-- **Pure JSDoc:**
-```javascript
-/**
-   * Mask email addresses using a specific or default placeholder.
-   * @param {string} message - Input text to sanitize.
-   * @param {string} [label] - Override placeholder string.
-   * @returns {string} Sanitized string.
-   */
-```
----
-#### METHOD: PiiRedactor.if
-- **Scope:** instance
-- **LLM Call Syntax:** `piiRedactor.if(typeof message !);`
-- **Pure JSDoc:**
-```javascript
-/** Method if */
-```
----
-#### METHOD: PiiRedactor.redactTokens
-- **Scope:** static
-- **LLM Call Syntax:** `const result = PiiRedactor.redactTokens(message, label);`
-- **Pure JSDoc:**
-```javascript
-/**
-   * Mask OAuth and Bearer tokens while preserving the prefix.
-   * @param {string} message - Input text to sanitize.
-   * @param {string} [label] - Override placeholder string.
-   * @returns {string} Sanitized string.
-   */
-```
----
-#### METHOD: PiiRedactor.if
-- **Scope:** instance
-- **LLM Call Syntax:** `piiRedactor.if(typeof message !);`
-- **Pure JSDoc:**
-```javascript
-/** Method if */
-```
----
-#### METHOD: PiiRedactor.redactApiKeys
-- **Scope:** static
-- **LLM Call Syntax:** `const result = PiiRedactor.redactApiKeys(message, label);`
-- **Pure JSDoc:**
-```javascript
-/**
-   * Mask API keys identified by common key-value delimiters.
-   * @param {string} message - Input text to sanitize.
-   * @param {string} [label] - Override placeholder string.
-   * @returns {string} Sanitized string.
-   */
-```
----
-#### METHOD: PiiRedactor.if
-- **Scope:** instance
-- **LLM Call Syntax:** `piiRedactor.if(typeof message !);`
-- **Pure JSDoc:**
-```javascript
-/** Method if */
-```
----
-#### METHOD: PiiRedactor.redactUrlParams
-- **Scope:** static
-- **LLM Call Syntax:** `const result = PiiRedactor.redactUrlParams(message, label);`
-- **Pure JSDoc:**
-```javascript
-/**
-   * Mask URL query parameters to prevent exposure of sensitive GET data.
-   * @param {string} message - Input text to sanitize.
-   * @param {string} [label] - Override placeholder string.
-   * @returns {string} Sanitized string.
-   */
-```
----
-#### METHOD: PiiRedactor.if
-- **Scope:** instance
-- **LLM Call Syntax:** `piiRedactor.if(typeof message !);`
-- **Pure JSDoc:**
-```javascript
-/** Method if */
-```
----
-#### METHOD: PiiRedactor.redactJwt
-- **Scope:** static
-- **LLM Call Syntax:** `const result = PiiRedactor.redactJwt(message, label);`
-- **Pure JSDoc:**
-```javascript
-/**
-   * Mask JSON Web Tokens (JWT) based on base64 segment patterns.
-   * @param {string} message - Input text to sanitize.
-   * @param {string} [label] - Override placeholder string.
-   * @returns {string} Sanitized string.
-   */
-```
----
-#### METHOD: PiiRedactor.if
-- **Scope:** instance
-- **LLM Call Syntax:** `piiRedactor.if(typeof message !);`
-- **Pure JSDoc:**
-```javascript
-/** Method if */
-```
----
-#### METHOD: PiiRedactor.redactCreditCards
-- **Scope:** static
-- **LLM Call Syntax:** `const result = PiiRedactor.redactCreditCards(message, label);`
-- **Pure JSDoc:**
-```javascript
-/**
-   * Mask credit card numbers matching 16-digit patterns.
-   * @param {string} message - Input text to sanitize.
-   * @param {string} [label] - Override placeholder string.
-   * @returns {string} Sanitized string.
-   */
-```
----
-#### METHOD: PiiRedactor.if
-- **Scope:** instance
-- **LLM Call Syntax:** `piiRedactor.if(typeof message !);`
-- **Pure JSDoc:**
-```javascript
-/** Method if */
-```
----
-#### METHOD: PiiRedactor.redactPhones
-- **Scope:** static
-- **LLM Call Syntax:** `const result = PiiRedactor.redactPhones(message, label);`
-- **Pure JSDoc:**
-```javascript
-/**
-   * Mask phone numbers matching common US and international formats.
-   * @param {string} message - Input text to sanitize.
-   * @param {string} [label] - Override placeholder string.
-   * @returns {string} Sanitized string.
-   */
-```
----
-#### METHOD: PiiRedactor.if
-- **Scope:** instance
-- **LLM Call Syntax:** `piiRedactor.if(typeof message !);`
-- **Pure JSDoc:**
-```javascript
-/** Method if */
-```
----
-#### METHOD: PiiRedactor.redactSessionIds
-- **Scope:** static
-- **LLM Call Syntax:** `const result = PiiRedactor.redactSessionIds(message, label);`
-- **Pure JSDoc:**
-```javascript
-/**
-   * Mask long hexadecimal strings often used as session identifiers.
-   * @param {string} message - Input text to sanitize.
-   * @param {string} [label] - Override placeholder string.
-   * @returns {string} Sanitized string.
-   */
-```
----
-#### METHOD: PiiRedactor.if
-- **Scope:** instance
-- **LLM Call Syntax:** `piiRedactor.if(typeof message !);`
-- **Pure JSDoc:**
-```javascript
-/** Method if */
-```
----
-#### METHOD: PiiRedactor.containsPii
-- **Scope:** static
-- **LLM Call Syntax:** `const result = PiiRedactor.containsPii(message);`
-- **Pure JSDoc:**
-```javascript
-/**
-   * Validate if a string contains any detectable PII patterns.
-   * @param {string} message - Text to inspect.
-   * @returns {boolean} True if any pattern matches.
-   */
-```
----
-#### METHOD: PiiRedactor.if
-- **Scope:** instance
-- **LLM Call Syntax:** `piiRedactor.if(typeof message !);`
-- **Pure JSDoc:**
-```javascript
-/** Method if */
-```
----
-#### METHOD: PiiRedactor.detectPiiTypes
-- **Scope:** static
-- **LLM Call Syntax:** `const result = PiiRedactor.detectPiiTypes(message);`
-- **Pure JSDoc:**
-```javascript
-/**
-   * Isolate which PII categories are present in a message.
-   * @param {string} message - Text to inspect.
-   * @returns {string[]} List of detected category identifiers (e.g., ['EMAIL', 'PHONE']).
    */
 ```
 ---
@@ -4860,329 +4113,6 @@ Cryptographic utility for deterministic SHA-256 hashing of strings and objects.
 #### METHOD: HashUtils.if
 - **Scope:** instance
 - **LLM Call Syntax:** `hashUtils.if(typeof str !);`
-- **Pure JSDoc:**
-```javascript
-/** Method if */
-```
----
-<br>
-
-## CLASS: CacheUtils
-**File Path:** `CoreUtilsLib/src/internal/CacheUtils.js`
-**Constructor Usage:** `const instance = new CacheUtils();`
-**Description:** Utilities for cache key generation and cache-related operations.
-Provides consistent cache key patterns across all libraries.
-
-/
-
-import { HashUtils } from './HashUtils.js';
-
-/**
-Static utility provider for standardized cache key generation and TTL management.
-@class CacheUtils
-
-### Raw JSDoc Context:
-```javascript
-/**
- * @file CoreUtilsLib/src/CacheUtils.js
- * @description Utilities for cache key generation and cache-related operations.
- * Provides consistent cache key patterns across all libraries.
- * @version 1.0.0
- */
-
-import { HashUtils } from './HashUtils.js';
-
-/**
- * Static utility provider for standardized cache key generation and TTL management.
- * @class CacheUtils
- */
-```
-
-<br>
-
-## CLASS: BoundedMap
-**File Path:** `CoreUtilsLib/src/internal/BoundedMap.js`
-**Constructor Usage:** `const instance = new BoundedMap();`
-**Description:** A Map with automatic size limiting and FIFO eviction.
-Useful for in-memory caches that need to prevent unbounded growth.
-
-/
-
-/**
-Map implementation with automatic size limiting and FIFO eviction.
-@class BoundedMap
-@extends Map
-
-### Raw JSDoc Context:
-```javascript
-/**
- * @file CoreUtilsLib/src/BoundedMap.js
- * @description A Map with automatic size limiting and FIFO eviction.
- * Useful for in-memory caches that need to prevent unbounded growth.
- * @version 1.0.0
- */
-
-/**
- * Map implementation with automatic size limiting and FIFO eviction.
- * @class BoundedMap
- * @extends Map
- */
-```
-
-### Methods of BoundedMap
-
-#### METHOD: BoundedMap.if
-- **Scope:** instance
-- **LLM Call Syntax:** `boundedMap.if(onEvict !);`
-- **Pure JSDoc:**
-```javascript
-/** Method if */
-```
----
-#### METHOD: BoundedMap.set
-- **Scope:** instance
-- **LLM Call Syntax:** `const result = boundedMap.set(key, value);`
-- **Pure JSDoc:**
-```javascript
-/**
-     * Maximum number of entries.
-     * @private
-     * @type {number}
-     */
-    this._maxSize = maxSize;
-
-    /**
-     * Callback function called when an entry is evicted.
-     * @private
-     * @type {Function|null}
-     */
-    this._onEvict = onEvict;
-
-    /**
-     * Count of evictions since creation or last reset.
-     * @private
-     * @type {number}
-     */
-    this._evictionCount = 0;
-  }
-
-  /**
-   * Gets the maximum size of the map.
-   *
-   * @returns {number} The maximum number of entries allowed
-   */
-  get maxSize() {
-    return this._maxSize;
-  }
-
-  /**
-   * Gets the number of evictions that have occurred.
-   *
-   * @returns {number} Total eviction count
-   */
-  get evictionCount() {
-    return this._evictionCount;
-  }
-
-  /**
-   * Checks if the map is at capacity.
-   *
-   * @returns {boolean} True if size equals maxSize
-   */
-  get isFull() {
-    return this.size >= this._maxSize;
-  }
-
-  /**
-   * Gets the number of available slots.
-   *
-   * @returns {number} Number of entries that can be added before eviction
-   */
-  get available() {
-    return Math.max(0, this._maxSize - this.size);
-  }
-
-  /**
-   * Add or update a key-value pair, triggering FIFO eviction if at capacity.
-   * @param {*} key - Lookup identifier.
-   * @param {*} value - Associated data payload.
-   * @returns {BoundedMap} Fluent instance for chaining.
-   */
-```
----
-#### METHOD: BoundedMap.if
-- **Scope:** instance
-- **LLM Call Syntax:** `boundedMap.if(this.size >);`
-- **Pure JSDoc:**
-```javascript
-/** Method if */
-```
----
-#### METHOD: BoundedMap.if
-- **Scope:** instance
-- **LLM Call Syntax:** `boundedMap.if(firstKey !);`
-- **Pure JSDoc:**
-```javascript
-/** Method if */
-```
----
-#### METHOD: BoundedMap.if
-- **Scope:** instance
-- **LLM Call Syntax:** `boundedMap.if(this._onEvict);`
-- **Pure JSDoc:**
-```javascript
-/** Method if */
-```
----
-#### METHOD: BoundedMap.setAll
-- **Scope:** instance
-- **LLM Call Syntax:** `const result = boundedMap.setAll(entries);`
-- **Pure JSDoc:**
-```javascript
-/**
-   * Batch insert multiple key-value pairs with automatic bound enforcement.
-   * @param {Iterable<[*, *]>} entries - Collection of [key, value] tuples.
-   * @returns {BoundedMap} Fluent instance for chaining.
-   */
-```
----
-#### METHOD: BoundedMap.for
-- **Scope:** instance
-- **LLM Call Syntax:** `boundedMap.for(const [key, value] of entries);`
-- **Pure JSDoc:**
-```javascript
-/** Method for */
-```
----
-#### METHOD: BoundedMap.getOrCompute
-- **Scope:** instance
-- **LLM Call Syntax:** `const result = boundedMap.getOrCompute(key, factory);`
-- **Pure JSDoc:**
-```javascript
-/**
-   * Retrieve a value or compute and store it using a factory if absent.
-   * @param {*} key - Lookup identifier.
-   * @param {Function} [factory=null] - Value generator: (key) => *.
-   * @returns {*} Retrieved or computed value.
-   */
-```
----
-#### METHOD: BoundedMap.if
-- **Scope:** instance
-- **LLM Call Syntax:** `boundedMap.if(factory);`
-- **Pure JSDoc:**
-```javascript
-/** Method if */
-```
----
-#### METHOD: BoundedMap.clear
-- **Scope:** instance
-- **LLM Call Syntax:** `boundedMap.clear();`
-- **Pure JSDoc:**
-```javascript
-/**
-   * Clear all entries and reset the internal eviction counter.
-   */
-```
----
-#### METHOD: BoundedMap.resetEvictionCount
-- **Scope:** instance
-- **LLM Call Syntax:** `boundedMap.resetEvictionCount();`
-- **Pure JSDoc:**
-```javascript
-/**
-   * Reset the internal eviction counter without clearing data.
-   */
-```
----
-#### METHOD: BoundedMap.getStats
-- **Scope:** instance
-- **LLM Call Syntax:** `const result = boundedMap.getStats();`
-- **Pure JSDoc:**
-```javascript
-/**
-   * Retrieve operational metrics including size, capacity, and eviction counts.
-   * @returns {Object} Metric summary with utilization and performance data.
-   */
-```
----
-#### METHOD: BoundedMap.clone
-- **Scope:** instance
-- **LLM Call Syntax:** `const result = boundedMap.clone();`
-- **Pure JSDoc:**
-```javascript
-/**
-   * Create an empty BoundedMap instance with identical capacity settings.
-   * @returns {BoundedMap} New empty instance.
-   */
-```
----
-#### METHOD: BoundedMap.copy
-- **Scope:** instance
-- **LLM Call Syntax:** `const result = boundedMap.copy();`
-- **Pure JSDoc:**
-```javascript
-/**
-   * Create a new BoundedMap instance with a shallow copy of all current entries.
-   * @returns {BoundedMap} New populated instance.
-   */
-```
----
-#### METHOD: BoundedMap.for
-- **Scope:** instance
-- **LLM Call Syntax:** `boundedMap.for(const [key, value] of this);`
-- **Pure JSDoc:**
-```javascript
-/** Method for */
-```
----
-#### METHOD: BoundedMap.resize
-- **Scope:** instance
-- **LLM Call Syntax:** `const result = boundedMap.resize(newMaxSize);`
-- **Pure JSDoc:**
-```javascript
-/**
-   * Dynamically update capacity limit, potentially triggering immediate FIFO evictions.
-   * @param {number} newMaxSize - Updated capacity limit.
-   * @returns {number} Count of entries evicted during the resize operation.
-   */
-```
----
-#### METHOD: BoundedMap.while
-- **Scope:** instance
-- **LLM Call Syntax:** `boundedMap.while(this.size > newMaxSize);`
-- **Pure JSDoc:**
-```javascript
-/** Method while */
-```
----
-#### METHOD: BoundedMap.toJSON
-- **Scope:** instance
-- **LLM Call Syntax:** `const result = boundedMap.toJSON();`
-- **Pure JSDoc:**
-```javascript
-/**
-   * Serialize map entries and metadata to a plain object.
-   * @returns {Object} JSON-compatible representation with entries and stats.
-   */
-```
----
-#### METHOD: BoundedMap.fromJSON
-- **Scope:** static
-- **LLM Call Syntax:** `const result = BoundedMap.fromJSON(json, onEvict);`
-- **Pure JSDoc:**
-```javascript
-/**
-   * Reconstruct a BoundedMap from a serialized JSON object.
-   * @param {Object} json - Serialized state containing entries and maxSize.
-   * @param {Function} [onEvict=null] - Lifecycle hook for evicted entries.
-   * @returns {BoundedMap} Hydrated BoundedMap instance.
-   */
-```
----
-#### METHOD: BoundedMap.if
-- **Scope:** instance
-- **LLM Call Syntax:** `boundedMap.if(json.entries);`
 - **Pure JSDoc:**
 ```javascript
 /** Method if */
@@ -5558,377 +4488,5 @@ Base standardized error class for all GasLibraryFactory custom exceptions.
  */
 ```
 
-<br>
-
-## CLASS: ConfigurationBuilder
-**File Path:** `CoreUtilsLib/src/builders/ConfigurationBuilder.js`
-**Constructor Usage:** `const instance = new ConfigurationBuilder();`
-**Description:** Utilities for building and validating configuration objects with defaults.
-Centralizes configuration pattern across all GasLibraryFactory libraries.
-
-/
-
-import { cloneDeep, merge } from '../facades/LodashFacade.js';
-import { ConfigMergeStrategy } from './ConfigMergeStrategy.js';
-import { ConfigValidator } from './ConfigValidator.js';
-
-/**
-Singletons for internal strategies
-/
-const mergeStrategy = new ConfigMergeStrategy();
-const validator = new ConfigValidator();
-
-/**
-Static facade and fluent builder for deep configuration merging and schema validation.
-@class ConfigurationBuilder
-
-### Raw JSDoc Context:
-```javascript
-/**
- * @file CoreUtilsLib/src/ConfigurationBuilder.js
- * @description Utilities for building and validating configuration objects with defaults.
- * Centralizes configuration pattern across all GasLibraryFactory libraries.
- * @version 1.1.0 - Refactored to Facade/Delegation pattern
- */
-
-import { cloneDeep, merge } from '../facades/LodashFacade.js';
-import { ConfigMergeStrategy } from './ConfigMergeStrategy.js';
-import { ConfigValidator } from './ConfigValidator.js';
-
-/**
- * Singletons for internal strategies
- */
-const mergeStrategy = new ConfigMergeStrategy();
-const validator = new ConfigValidator();
-
-/**
- * Static facade and fluent builder for deep configuration merging and schema validation.
- * @class ConfigurationBuilder
- */
-```
-
-<br>
-
-## CLASS: ConfigValidator
-**File Path:** `CoreUtilsLib/src/builders/ConfigValidator.js`
-**Constructor Usage:** `const instance = new ConfigValidator();`
-**Description:** Provides validation and type coercion for configurations.
-
-### Raw JSDoc Context:
-```javascript
-/**
- * @file CoreUtilsLib/src/config/ConfigValidator.js
- * @description Provides validation and type coercion for configurations.
- * @version 1.0.0
- */
-```
-
-### Methods of ConfigValidator
-
-#### METHOD: ConfigValidator.validateConfiguration
-- **Scope:** instance
-- **LLM Call Syntax:** `const result = configValidator.validateConfiguration(config, rules, context);`
-- **Pure JSDoc:**
-```javascript
-/**
-   * Validates configuration object against provided rules.
-   * @param {Object} config Configuration to validate.
-   * @param {Object} rules Validation rules.
-   * @param {string} context Context for error messages.
-   * @returns {{valid: boolean, errors: string[]}} Validation result.
-   */
-```
----
-#### METHOD: ConfigValidator.assertValid
-- **Scope:** instance
-- **LLM Call Syntax:** `configValidator.assertValid(config, rules, context);`
-- **Pure JSDoc:**
-```javascript
-/**
-   * Asserts configuration validity against rules, throwing on failure.
-   * @param {Object} config Configuration to validate.
-   * @param {Object} rules Validation rules.
-   * @param {string} context Context for error messages.
-   * @throws {Error} If validation fails.
-   */
-```
----
-#### METHOD: ConfigValidator.if
-- **Scope:** instance
-- **LLM Call Syntax:** `configValidator.if(!result.valid);`
-- **Pure JSDoc:**
-```javascript
-/** Method if */
-```
----
-#### METHOD: ConfigValidator.coerceType
-- **Scope:** instance
-- **LLM Call Syntax:** `const result = configValidator.coerceType(value, type, key, context);`
-- **Pure JSDoc:**
-```javascript
-/**
-   * Coerces value to specified target type for configuration normalization.
-   * @param {*} value Value to coerce.
-   * @param {string} type Target type ('string', 'number', 'boolean', etc.).
-   * @param {string} key Configuration key for context.
-   * @param {string} context Error context.
-   * @returns {*} Coerced value.
-   */
-```
----
-#### METHOD: ConfigValidator.switch
-- **Scope:** instance
-- **LLM Call Syntax:** `configValidator.switch(type);`
-- **Pure JSDoc:**
-```javascript
-/** Method switch */
-```
----
-#### METHOD: ConfigValidator.if
-- **Scope:** instance
-- **LLM Call Syntax:** `configValidator.if(typeof value);`
-- **Pure JSDoc:**
-```javascript
-/** Method if */
-```
----
-#### METHOD: ConfigValidator.if
-- **Scope:** instance
-- **LLM Call Syntax:** `configValidator.if(typeof value);`
-- **Pure JSDoc:**
-```javascript
-/** Method if */
-```
----
-#### METHOD: ConfigValidator.if
-- **Scope:** instance
-- **LLM Call Syntax:** `configValidator.if(lower);`
-- **Pure JSDoc:**
-```javascript
-/** Method if */
-```
----
-#### METHOD: ConfigValidator.if
-- **Scope:** instance
-- **LLM Call Syntax:** `configValidator.if(lower);`
-- **Pure JSDoc:**
-```javascript
-/** Method if */
-```
----
-#### METHOD: ConfigValidator.if
-- **Scope:** instance
-- **LLM Call Syntax:** `configValidator.if(typeof value);`
-- **Pure JSDoc:**
-```javascript
-/** Method if */
-```
----
-#### METHOD: ConfigValidator.if
-- **Scope:** instance
-- **LLM Call Syntax:** `configValidator.if(typeof value);`
-- **Pure JSDoc:**
-```javascript
-/** Method if */
-```
----
-#### METHOD: ConfigValidator.validateField
-- **Scope:** instance
-- **LLM Call Syntax:** `const result = configValidator.validateField(key, value, rule, _context);`
-- **Pure JSDoc:**
-```javascript
-/**
-   * Validates single field against rule, returning list of error messages.
-   * @param {string} key Field key.
-   * @param {*} value Field value.
-   * @param {Object} rule Validation rule.
-   * @param {string} _context Error context.
-   * @returns {string[]} Validation errors.
-   */
-```
----
-#### METHOD: ConfigValidator.if
-- **Scope:** instance
-- **LLM Call Syntax:** `configValidator.if(value);`
-- **Pure JSDoc:**
-```javascript
-/** Method if */
-```
----
-#### METHOD: ConfigValidator.if
-- **Scope:** instance
-- **LLM Call Syntax:** `configValidator.if(rule.type);`
-- **Pure JSDoc:**
-```javascript
-/** Method if */
-```
----
-#### METHOD: ConfigValidator.if
-- **Scope:** instance
-- **LLM Call Syntax:** `configValidator.if(!typeValid);`
-- **Pure JSDoc:**
-```javascript
-/** Method if */
-```
----
-#### METHOD: ConfigValidator.if
-- **Scope:** instance
-- **LLM Call Syntax:** `configValidator.if(rule.type);`
-- **Pure JSDoc:**
-```javascript
-/** Method if */
-```
----
-#### METHOD: ConfigValidator.if
-- **Scope:** instance
-- **LLM Call Syntax:** `configValidator.if(rule.min !);`
-- **Pure JSDoc:**
-```javascript
-/** Method if */
-```
----
-#### METHOD: ConfigValidator.if
-- **Scope:** instance
-- **LLM Call Syntax:** `configValidator.if(rule.max !);`
-- **Pure JSDoc:**
-```javascript
-/** Method if */
-```
----
-#### METHOD: ConfigValidator.if
-- **Scope:** instance
-- **LLM Call Syntax:** `configValidator.if(rule.type);`
-- **Pure JSDoc:**
-```javascript
-/** Method if */
-```
----
-#### METHOD: ConfigValidator.if
-- **Scope:** instance
-- **LLM Call Syntax:** `configValidator.if(rule.minLength !);`
-- **Pure JSDoc:**
-```javascript
-/** Method if */
-```
----
-#### METHOD: ConfigValidator.if
-- **Scope:** instance
-- **LLM Call Syntax:** `configValidator.if(rule.maxLength !);`
-- **Pure JSDoc:**
-```javascript
-/** Method if */
-```
----
-#### METHOD: ConfigValidator.if
-- **Scope:** instance
-- **LLM Call Syntax:** `configValidator.if(rule.pattern && typeof value);`
-- **Pure JSDoc:**
-```javascript
-/** Method if */
-```
----
-#### METHOD: ConfigValidator.if
-- **Scope:** instance
-- **LLM Call Syntax:** `configValidator.if(rule.validator && typeof rule.validator);`
-- **Pure JSDoc:**
-```javascript
-/** Method if */
-```
----
-#### METHOD: ConfigValidator.if
-- **Scope:** instance
-- **LLM Call Syntax:** `configValidator.if(customError);`
-- **Pure JSDoc:**
-```javascript
-/** Method if */
-```
----
-#### METHOD: ConfigValidator.checkType
-- **Scope:** instance
-- **LLM Call Syntax:** `const result = configValidator.checkType(value, type);`
-- **Pure JSDoc:**
-```javascript
-/**
-   * Checks value type against expectation for configuration validation.
-   * @param {*} value Value to check.
-   * @param {string} type Expected type ('string', 'number', 'boolean', etc.).
-   * @returns {boolean} True if type matches.
-   */
-```
----
-#### METHOD: ConfigValidator.switch
-- **Scope:** instance
-- **LLM Call Syntax:** `configValidator.switch(type);`
-- **Pure JSDoc:**
-```javascript
-/** Method switch */
-```
----
-<br>
-
-## CLASS: ConfigMergeStrategy
-**File Path:** `CoreUtilsLib/src/builders/ConfigMergeStrategy.js`
-**Constructor Usage:** `const instance = new ConfigMergeStrategy();`
-**Description:** N/A
-
-### Raw JSDoc Context:
-```javascript
-/** Class definition */
-```
-
-### Methods of ConfigMergeStrategy
-
-#### METHOD: ConfigMergeStrategy.mergeWithDefaults
-- **Scope:** instance
-- **LLM Call Syntax:** `const result = configMergeStrategy.mergeWithDefaults(provided, defaults);`
-- **Pure JSDoc:**
-```javascript
-/**
-   * Performs deep merge of provided config with defaults, cloning both to prevent mutation.
-   * @param {Object} provided Provided configuration (nullable).
-   * @param {Object} defaults Default configuration values.
-   * @returns {Object} Deep-merged configuration.
-   */
-```
----
-#### METHOD: ConfigMergeStrategy.if
-- **Scope:** instance
-- **LLM Call Syntax:** `configMergeStrategy.if(!provided);`
-- **Pure JSDoc:**
-```javascript
-/** Method if */
-```
----
-#### METHOD: ConfigMergeStrategy.normalizeOptions
-- **Scope:** instance
-- **LLM Call Syntax:** `const result = configMergeStrategy.normalizeOptions(options, schema, context, validator);`
-- **Pure JSDoc:**
-```javascript
-/**
-   * Normalizes options by applying defaults and validator-driven type coercion.
-   * @param {Object} options Options to normalize.
-   * @param {Object} schema Schema defining defaults and types.
-   * @param {string} context Context for error messages.
-   * @param {Object} validator ConfigValidator instance for type coercion.
-   * @returns {Object} Normalized options.
-   */
-```
----
-#### METHOD: ConfigMergeStrategy.if
-- **Scope:** instance
-- **LLM Call Syntax:** `configMergeStrategy.if(value !);`
-- **Pure JSDoc:**
-```javascript
-/** Method if */
-```
----
-#### METHOD: ConfigMergeStrategy.if
-- **Scope:** instance
-- **LLM Call Syntax:** `configMergeStrategy.if(spec.transform && typeof spec.transform);`
-- **Pure JSDoc:**
-```javascript
-/** Method if */
-```
----
 <br>
 

@@ -600,155 +600,6 @@ Supports static rules ('always', 'never'), simple path truthiness, and complex e
 ---
 <br>
 
-## CLASS: HtmlRenderer
-**File Path:** `ComposableContentLib/src/internal/BlockRenderer.js`
-**Constructor Usage:** `const instance = new HtmlRenderer();`
-**Description:** HTML-specialized renderer implementation.
-
-### Raw JSDoc Context:
-```javascript
-/**
- * HTML-specialized renderer implementation.
- * @class
- * @extends BlockRenderer
- */
-```
-
-### Methods of HtmlRenderer
-
-#### METHOD: HtmlRenderer.getFormat
-- **Scope:** instance
-- **LLM Call Syntax:** `const result = htmlRenderer.getFormat();`
-- **Pure JSDoc:**
-```javascript
-/**
-   * Returns 'html' format identifier.
-   * @returns {string}
-   */
-```
----
-#### METHOD: HtmlRenderer._wrapInContainer
-- **Scope:** instance
-- **LLM Call Syntax:** `const result = htmlRenderer._wrapInContainer(content, containerType, options);`
-- **Pure JSDoc:**
-```javascript
-/**
-   * Wraps content in HTML structural elements (div, section) based on ContainerType.
-   * @param {string} content Rendered payload.
-   * @param {string} containerType Target container type.
-   * @param {Object} options Rendering options.
-   * @returns {string} HTML wrapped content.
-   * @protected
-   */
-```
----
-#### METHOD: HtmlRenderer.render
-- **Scope:** instance
-- **LLM Call Syntax:** `const result = htmlRenderer.render(templateId, data, options, options.containerType, options.blockType);`
-- **Pure JSDoc:**
-```javascript
-/**
-   * Executes template rendering with provided data and options.
-   * @param {string} templateId Target template identifier.
-   * @param {Object} data Source data for interpolation.
-   * @param {Object} [options={}] Rendering configuration.
-   * @param {string} [options.containerType] Optional container wrapping (ContainerType enum).
-   * @param {string} [options.blockType] Block type ID for class name generation.
-   * @returns {string} Fully rendered content string.
-   * @throws {TemplateNotFoundError} If templateId is not registered.
-   * @throws {RenderingError} If rendering logic or interpolation fails.
-   */
-```
----
-#### METHOD: HtmlRenderer._processTemplate
-- **Scope:** instance
-- **LLM Call Syntax:** `const result = htmlRenderer._processTemplate(template, data);`
-- **Pure JSDoc:**
-```javascript
-/**
-   * Processes template string via regex-based interpolation ({{path.to.value}}).
-   * @param {string} template Source template string.
-   * @param {Object} data Source data object.
-   * @returns {string} Interpolated output.
-   * @protected
-   */
-```
----
-#### METHOD: HtmlRenderer._getValueByPath
-- **Scope:** instance
-- **LLM Call Syntax:** `const result = htmlRenderer._getValueByPath(obj, path);`
-- **Pure JSDoc:**
-```javascript
-/**
-   * Resolves a value from a nested object using dot-notation.
-   * @param {Object} obj Target object.
-   * @param {string} path Dot-separated property path.
-   * @returns {*} Resolved value or undefined if path does not exist.
-   * @protected
-   */
-```
----
-#### METHOD: HtmlRenderer.registerTemplate
-- **Scope:** instance
-- **LLM Call Syntax:** `const result = htmlRenderer.registerTemplate(templateId, template);`
-- **Pure JSDoc:**
-```javascript
-/**
-   * Registers a single template string or function.
-   * @param {string} templateId Target template identifier.
-   * @param {string|Function} template Template payload.
-   * @returns {BlockRenderer} Fluent interface for chaining.
-   */
-```
----
-#### METHOD: HtmlRenderer.registerTemplates
-- **Scope:** instance
-- **LLM Call Syntax:** `const result = htmlRenderer.registerTemplates(templates);`
-- **Pure JSDoc:**
-```javascript
-/**
-   * Registers multiple templates from a KV map.
-   * @param {Object<string, string|Function>} templates Map of template identifiers to payloads.
-   * @returns {BlockRenderer} Fluent interface for chaining.
-   */
-```
----
-#### METHOD: HtmlRenderer.hasTemplate
-- **Scope:** instance
-- **LLM Call Syntax:** `const result = htmlRenderer.hasTemplate(templateId);`
-- **Pure JSDoc:**
-```javascript
-/**
-   * Validates presence of a template in the renderer registry.
-   * @param {string} templateId Target template identifier.
-   * @returns {boolean} True if registered.
-   */
-```
----
-#### METHOD: HtmlRenderer.templateCount
-- **Scope:** instance
-- **LLM Call Syntax:** `const result = htmlRenderer.templateCount();`
-- **Pure JSDoc:**
-```javascript
-/**
-   * Returns total number of registered templates.
-   * @returns {number} Template count.
-   */
-```
----
-#### METHOD: HtmlRenderer.toString
-- **Scope:** instance
-- **LLM Call Syntax:** `const result = htmlRenderer.toString();`
-- **Pure JSDoc:**
-```javascript
-/**
-   * Returns diagnostic summary string including format and template count.
-   * @returns {string} Diagnostic summary.
-   */
-```
----
-<br>
-
 ## CLASS: MarkdownRenderer
 **File Path:** `ComposableContentLib/src/internal/BlockRenderer.js`
 **Constructor Usage:** `const instance = new MarkdownRenderer();`
@@ -1047,6 +898,155 @@ Supports static rules ('always', 'never'), simple path truthiness, and complex e
 ---
 <br>
 
+## CLASS: HtmlRenderer
+**File Path:** `ComposableContentLib/src/internal/BlockRenderer.js`
+**Constructor Usage:** `const instance = new HtmlRenderer();`
+**Description:** HTML-specialized renderer implementation.
+
+### Raw JSDoc Context:
+```javascript
+/**
+ * HTML-specialized renderer implementation.
+ * @class
+ * @extends BlockRenderer
+ */
+```
+
+### Methods of HtmlRenderer
+
+#### METHOD: HtmlRenderer.getFormat
+- **Scope:** instance
+- **LLM Call Syntax:** `const result = htmlRenderer.getFormat();`
+- **Pure JSDoc:**
+```javascript
+/**
+   * Returns 'html' format identifier.
+   * @returns {string}
+   */
+```
+---
+#### METHOD: HtmlRenderer._wrapInContainer
+- **Scope:** instance
+- **LLM Call Syntax:** `const result = htmlRenderer._wrapInContainer(content, containerType, options);`
+- **Pure JSDoc:**
+```javascript
+/**
+   * Wraps content in HTML structural elements (div, section) based on ContainerType.
+   * @param {string} content Rendered payload.
+   * @param {string} containerType Target container type.
+   * @param {Object} options Rendering options.
+   * @returns {string} HTML wrapped content.
+   * @protected
+   */
+```
+---
+#### METHOD: HtmlRenderer.render
+- **Scope:** instance
+- **LLM Call Syntax:** `const result = htmlRenderer.render(templateId, data, options, options.containerType, options.blockType);`
+- **Pure JSDoc:**
+```javascript
+/**
+   * Executes template rendering with provided data and options.
+   * @param {string} templateId Target template identifier.
+   * @param {Object} data Source data for interpolation.
+   * @param {Object} [options={}] Rendering configuration.
+   * @param {string} [options.containerType] Optional container wrapping (ContainerType enum).
+   * @param {string} [options.blockType] Block type ID for class name generation.
+   * @returns {string} Fully rendered content string.
+   * @throws {TemplateNotFoundError} If templateId is not registered.
+   * @throws {RenderingError} If rendering logic or interpolation fails.
+   */
+```
+---
+#### METHOD: HtmlRenderer._processTemplate
+- **Scope:** instance
+- **LLM Call Syntax:** `const result = htmlRenderer._processTemplate(template, data);`
+- **Pure JSDoc:**
+```javascript
+/**
+   * Processes template string via regex-based interpolation ({{path.to.value}}).
+   * @param {string} template Source template string.
+   * @param {Object} data Source data object.
+   * @returns {string} Interpolated output.
+   * @protected
+   */
+```
+---
+#### METHOD: HtmlRenderer._getValueByPath
+- **Scope:** instance
+- **LLM Call Syntax:** `const result = htmlRenderer._getValueByPath(obj, path);`
+- **Pure JSDoc:**
+```javascript
+/**
+   * Resolves a value from a nested object using dot-notation.
+   * @param {Object} obj Target object.
+   * @param {string} path Dot-separated property path.
+   * @returns {*} Resolved value or undefined if path does not exist.
+   * @protected
+   */
+```
+---
+#### METHOD: HtmlRenderer.registerTemplate
+- **Scope:** instance
+- **LLM Call Syntax:** `const result = htmlRenderer.registerTemplate(templateId, template);`
+- **Pure JSDoc:**
+```javascript
+/**
+   * Registers a single template string or function.
+   * @param {string} templateId Target template identifier.
+   * @param {string|Function} template Template payload.
+   * @returns {BlockRenderer} Fluent interface for chaining.
+   */
+```
+---
+#### METHOD: HtmlRenderer.registerTemplates
+- **Scope:** instance
+- **LLM Call Syntax:** `const result = htmlRenderer.registerTemplates(templates);`
+- **Pure JSDoc:**
+```javascript
+/**
+   * Registers multiple templates from a KV map.
+   * @param {Object<string, string|Function>} templates Map of template identifiers to payloads.
+   * @returns {BlockRenderer} Fluent interface for chaining.
+   */
+```
+---
+#### METHOD: HtmlRenderer.hasTemplate
+- **Scope:** instance
+- **LLM Call Syntax:** `const result = htmlRenderer.hasTemplate(templateId);`
+- **Pure JSDoc:**
+```javascript
+/**
+   * Validates presence of a template in the renderer registry.
+   * @param {string} templateId Target template identifier.
+   * @returns {boolean} True if registered.
+   */
+```
+---
+#### METHOD: HtmlRenderer.templateCount
+- **Scope:** instance
+- **LLM Call Syntax:** `const result = htmlRenderer.templateCount();`
+- **Pure JSDoc:**
+```javascript
+/**
+   * Returns total number of registered templates.
+   * @returns {number} Template count.
+   */
+```
+---
+#### METHOD: HtmlRenderer.toString
+- **Scope:** instance
+- **LLM Call Syntax:** `const result = htmlRenderer.toString();`
+- **Pure JSDoc:**
+```javascript
+/**
+   * Returns diagnostic summary string including format and template count.
+   * @returns {string} Diagnostic summary.
+   */
+```
+---
+<br>
+
 ## CLASS: ComposableContentError
 **File Path:** `ComposableContentLib/src/errors/ComposableContentError.js`
 **Constructor Usage:** `const instance = new ComposableContentError(message, details);`
@@ -1090,22 +1090,6 @@ Extends the shared {@link BaseError} to inherit standardized stack-trace capture
 ```javascript
 /**
  * @description Exception thrown when template rendering fails during block execution.
- * @class
- * @extends ComposableContentError
- */
-```
-
-<br>
-
-## CLASS: CompositionError
-**File Path:** `ComposableContentLib/src/errors/ComposableContentError.js`
-**Constructor Usage:** `const instance = new CompositionError(message, recipeId, cause);`
-**Description:** Exception thrown during top-level recipe composition orchestration.
-
-### Raw JSDoc Context:
-```javascript
-/**
- * @description Exception thrown during top-level recipe composition orchestration.
  * @class
  * @extends ComposableContentError
  */
@@ -1222,18 +1206,6 @@ Supports dot-notation resolution, merging global vs. block-local data, and immut
    */
 ```
 ---
-#### METHOD: BlockDataContext.getMultiple
-- **Scope:** instance
-- **LLM Call Syntax:** `const result = blockDataContext.getMultiple(paths);`
-- **Pure JSDoc:**
-```javascript
-/**
-   * @description Batch resolves multiple property paths into a single mapping object.
-   * @param {string[]} paths Array of target paths.
-   * @returns {Object} Key-value map of path to resolved value.
-   */
-```
----
 #### METHOD: BlockDataContext.getAll
 - **Scope:** instance
 - **LLM Call Syntax:** `const result = blockDataContext.getAll();`
@@ -1242,28 +1214,6 @@ Supports dot-notation resolution, merging global vs. block-local data, and immut
 /**
    * @description Returns a deep clone of the fully unified context state (local + global).
    * @returns {Object} Unified data clone.
-   */
-```
----
-#### METHOD: BlockDataContext.getRawData
-- **Scope:** instance
-- **LLM Call Syntax:** `const result = blockDataContext.getRawData();`
-- **Pure JSDoc:**
-```javascript
-/**
-   * @description Returns a deep clone of the block-specific data payload, excluding global state.
-   * @returns {Object} Local data clone.
-   */
-```
----
-#### METHOD: BlockDataContext.getGlobalContext
-- **Scope:** instance
-- **LLM Call Syntax:** `const result = blockDataContext.getGlobalContext();`
-- **Pure JSDoc:**
-```javascript
-/**
-   * @description Returns a deep clone of the shared global state payload.
-   * @returns {Object} Global data clone.
    */
 ```
 ---
@@ -1290,43 +1240,6 @@ Supports dot-notation resolution, merging global vs. block-local data, and immut
    */
 ```
 ---
-#### METHOD: BlockDataContext.withData
-- **Scope:** instance
-- **LLM Call Syntax:** `const result = blockDataContext.withData(additionalData);`
-- **Pure JSDoc:**
-```javascript
-/**
-   * @description Factory method generating a new context instance with augmented local data.
-   * @param {Object} additionalData Payload to overlay on the clone.
-   * @returns {BlockDataContext} New immutable context.
-   */
-```
----
-#### METHOD: BlockDataContext.withGlobalContext
-- **Scope:** instance
-- **LLM Call Syntax:** `const result = blockDataContext.withGlobalContext(additionalGlobal);`
-- **Pure JSDoc:**
-```javascript
-/**
-   * @description Factory method generating a new context instance with augmented global data.
-   * @param {Object} additionalGlobal Payload to overlay on the global clone.
-   * @returns {BlockDataContext} New immutable context.
-   */
-```
----
-#### METHOD: BlockDataContext.scope
-- **Scope:** instance
-- **LLM Call Syntax:** `const result = blockDataContext.scope(path);`
-- **Pure JSDoc:**
-```javascript
-/**
-   * @description Factory method generating a new context scoped to a specific property subtree.
-   * Maintains the original global context unmodified.
-   * @param {string} path Root path for the new scope.
-   * @returns {BlockDataContext} Scoped context instance.
-   */
-```
----
 #### METHOD: BlockDataContext.isEmpty
 - **Scope:** instance
 - **LLM Call Syntax:** `const result = blockDataContext.isEmpty();`
@@ -1346,30 +1259,6 @@ Supports dot-notation resolution, merging global vs. block-local data, and immut
 /**
    * @description Extracts all top-level keys from the unified context state.
    * @returns {string[]} Collection of root keys.
-   */
-```
----
-#### METHOD: BlockDataContext.hasAll
-- **Scope:** instance
-- **LLM Call Syntax:** `const result = blockDataContext.hasAll(requiredKeys);`
-- **Pure JSDoc:**
-```javascript
-/**
-   * @description Validates that the context satisfies an array of required keys.
-   * @param {string[]} requiredKeys Expected top-level keys.
-   * @returns {boolean} True if all exist.
-   */
-```
----
-#### METHOD: BlockDataContext.getMissingKeys
-- **Scope:** instance
-- **LLM Call Syntax:** `const result = blockDataContext.getMissingKeys(requiredKeys);`
-- **Pure JSDoc:**
-```javascript
-/**
-   * @description Returns the subset of required keys that are missing from the context.
-   * @param {string[]} requiredKeys Expected top-level keys.
-   * @returns {string[]} Unfulfilled dependencies.
    */
 ```
 ---
@@ -1716,7 +1605,7 @@ evaluation.
 
 ## CLASS: CompositionResult
 **File Path:** `ComposableContentLib/src/core/CompositionResult.js`
-**Constructor Usage:** `const instance = new CompositionResult(result, result.recipeId, result.outputFormat, result.format, result.content, result.blocks, result.blockResults, result.errors, result.processingTime, result.metadata);`
+**Constructor Usage:** `const instance = new CompositionResult(result, result.recipeId, result.outputFormat, result.content, result.blocks, result.errors, result.processingTime, result.metadata);`
 **Description:** Immutable DTO for final content composition output, aggregating block results, rendered content, and orchestration metrics.
 
 ### Raw JSDoc Context:
@@ -1737,18 +1626,6 @@ evaluation.
 /**
    * Verifies if composition completed without top-level or block-level errors.
    * @returns {boolean} True if errors array is empty and all blocks are success states.
-   */
-```
----
-#### METHOD: CompositionResult.getBlockResult
-- **Scope:** instance
-- **LLM Call Syntax:** `const result = compositionResult.getBlockResult(instanceId);`
-- **Pure JSDoc:**
-```javascript
-/**
-   * Resolves a block result by its instance ID.
-   * @param {string} instanceId Target instance identifier.
-   * @returns {BlockResult|null} Matched block result or null.
    */
 ```
 ---
@@ -1987,21 +1864,20 @@ Encapsulates generated content, visibility state, errors, and profiling metrics.
 
 ## CLASS: BlockDefinition
 **File Path:** `ComposableContentLib/src/core/BlockDefinition.js`
-**Constructor Usage:** `const instance = new BlockDefinition(definition, definition.id, definition.name, definition.description, definition.dataRequirements, definition.defaultVisibility, definition.defaultOrder, definition.supportedFormats, definition.emptyBehavior, definition.containerType, definition.metadata);`
+**Constructor Usage:** `const instance = new BlockDefinition(definition, definition.id, definition.name, definition.description, definition.supportedFormats, definition.emptyBehavior, definition.containerType);`
 **Description:** Immutable blueprint for a reusable content block type.
-Specifies rendering capabilities, context data dependencies, structural containment, and fallback behaviors.
+Specifies rendering capabilities, structural containment, and fallback behaviors.
 
 ### Raw JSDoc Context:
 ```javascript
 /**
  * @description Immutable blueprint for a reusable content block type.
- * Specifies rendering capabilities, context data dependencies, structural containment, and fallback behaviors.
+ * Specifies rendering capabilities, structural containment, and fallback behaviors.
  * @class
  * @example
  * const headerBlock = new BlockDefinition({
  *   id: 'email_header',
  *   name: 'Email Header',
- *   dataRequirements: ['recipient', 'subject'],
  *   supportedFormats: ['html', 'text'],
  *   emptyBehavior: EmptyBehavior.HIDE
  * });
@@ -2022,29 +1898,6 @@ Specifies rendering capabilities, context data dependencies, structural containm
    */
 ```
 ---
-#### METHOD: BlockDefinition.requiresData
-- **Scope:** instance
-- **LLM Call Syntax:** `const result = blockDefinition.requiresData(key);`
-- **Pure JSDoc:**
-```javascript
-/**
-   * @description Checks if a specific data key is mandated by this block type.
-   * @param {string} key Context data property name.
-   * @returns {boolean} True if explicitly required.
-   */
-```
----
-#### METHOD: BlockDefinition.hasDataRequirements
-- **Scope:** instance
-- **LLM Call Syntax:** `const result = blockDefinition.hasDataRequirements();`
-- **Pure JSDoc:**
-```javascript
-/**
-   * @description Determines if the block has any strictly defined context data dependencies.
-   * @returns {boolean} True if requirements array is non-empty.
-   */
-```
----
 #### METHOD: BlockDefinition.hidesWhenEmpty
 - **Scope:** instance
 - **LLM Call Syntax:** `const result = blockDefinition.hidesWhenEmpty();`
@@ -2053,41 +1906,6 @@ Specifies rendering capabilities, context data dependencies, structural containm
 /**
    * @description Evaluates if the block should be omitted from output when its resolved content is empty.
    * @returns {boolean} True if behavior is EmptyBehavior.HIDE.
-   */
-```
----
-#### METHOD: BlockDefinition.isAlwaysVisible
-- **Scope:** instance
-- **LLM Call Syntax:** `const result = blockDefinition.isAlwaysVisible();`
-- **Pure JSDoc:**
-```javascript
-/**
-   * @description Checks if the block bypasses conditional visibility checks by default.
-   * @returns {boolean} True if defaultVisibility is 'always'.
-   */
-```
----
-#### METHOD: BlockDefinition.getMetadata
-- **Scope:** instance
-- **LLM Call Syntax:** `const result = blockDefinition.getMetadata(key, defaultValue);`
-- **Pure JSDoc:**
-```javascript
-/**
-   * @description Resolves a custom configuration value from the definition's metadata block.
-   * @param {string} key Target metadata property.
-   * @param {*} [defaultValue=undefined] Fallback if key is absent.
-   * @returns {*} Stored value or fallback.
-   */
-```
----
-#### METHOD: BlockDefinition.isNeverVisible
-- **Scope:** instance
-- **LLM Call Syntax:** `const result = blockDefinition.isNeverVisible();`
-- **Pure JSDoc:**
-```javascript
-/**
-   * @description Checks if the block is disabled by default.
-   * @returns {boolean} True if defaultVisibility is 'never'.
    */
 ```
 ---

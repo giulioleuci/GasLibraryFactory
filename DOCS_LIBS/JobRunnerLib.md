@@ -57,14 +57,6 @@ Extracted from JobStateManager for improved separation of concerns.
 /** Method STATE_PENDING */
 ```
 ---
-#### METHOD: QueueStateManager.LOCK_RETRY_DELAY_MS
-- **Scope:** instance
-- **LLM Call Syntax:** `queueStateManager.LOCK_RETRY_DELAY_MS();`
-- **Pure JSDoc:**
-```javascript
-/** Method LOCK_RETRY_DELAY_MS */
-```
----
 #### METHOD: QueueStateManager.if
 - **Scope:** instance
 - **LLM Call Syntax:** `queueStateManager.if(!jobName || typeof jobName !);`
@@ -1449,17 +1441,6 @@ and UI replay.
 /** Method logSummary */
 ```
 ---
-#### METHOD: CapturingLogger.getCapturedLogs
-- **Scope:** instance
-- **LLM Call Syntax:** `const result = capturingLogger.getCapturedLogs();`
-- **Pure JSDoc:**
-```javascript
-/**
-   * Retrieves raw capture buffer.
-   * @returns {Array<{level: string, timestamp: Date, message: string, context: Object|null}>} Chronological logs.
-   */
-```
----
 #### METHOD: CapturingLogger.getLogsAsText
 - **Scope:** instance
 - **LLM Call Syntax:** `const result = capturingLogger.getLogsAsText(separator);`
@@ -1502,16 +1483,6 @@ and UI replay.
 - **Pure JSDoc:**
 ```javascript
 /** Method if */
-```
----
-#### METHOD: CapturingLogger.clearCapturedLogs
-- **Scope:** instance
-- **LLM Call Syntax:** `capturingLogger.clearCapturedLogs();`
-- **Pure JSDoc:**
-```javascript
-/**
-   * Clears internal memory buffer. Does not affect realLogger.
-   */
 ```
 ---
 #### METHOD: CapturingLogger.getLogCount
@@ -1678,14 +1649,6 @@ and UI replay.
 - **Pure JSDoc:**
 ```javascript
 /** Method STATE_PENDING */
-```
----
-#### METHOD: JobStateManager.LOCK_RETRY_DELAY_MS
-- **Scope:** instance
-- **LLM Call Syntax:** `jobStateManager.LOCK_RETRY_DELAY_MS();`
-- **Pure JSDoc:**
-```javascript
-/** Method LOCK_RETRY_DELAY_MS */
 ```
 ---
 #### METHOD: JobStateManager.LARGE_STATE_THRESHOLD

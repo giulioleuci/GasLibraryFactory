@@ -15,17 +15,6 @@
 
 ### Methods of TestContext
 
-#### METHOD: TestContext._trackApiCall
-- **Scope:** instance
-- **LLM Call Syntax:** `testContext._trackApiCall();`
-- **Pure JSDoc:**
-```javascript
-/**
-   * Increments the internal counter for outbound Google service requests.
-   * @private
-   */
-```
----
 #### METHOD: TestContext.getRootFolder
 - **Scope:** instance
 - **LLM Call Syntax:** `const result = testContext.getRootFolder();`
@@ -163,7 +152,7 @@
 - **Pure JSDoc:**
 ```javascript
 /**
-   * Orchestrates a full state reset across all persistent test artifacts and resets the API counter.
+   * Orchestrates a full state reset across all persistent test artifacts.
    */
 ```
 ---
@@ -560,12 +549,12 @@ operations, so library consumers building sample test data never call
 ## CLASS: EnhancedTestRunner
 **File Path:** `GasOnlineTestFramework/src/EnhancedTestRunner.js`
 **Constructor Usage:** `const instance = new EnhancedTestRunner();`
-**Description:** Registry-based test orchestrator for Google Apps Script, supporting namespaced test discovery, lifecycle hooks, and structured diagnostic logging.
+**Description:** Registry-based test orchestrator for Google Apps Script, supporting namespaced test discovery and structured diagnostic logging.
 
 ### Raw JSDoc Context:
 ```javascript
 /**
- * Registry-based test orchestrator for Google Apps Script, supporting namespaced test discovery, lifecycle hooks, and structured diagnostic logging.
+ * Registry-based test orchestrator for Google Apps Script, supporting namespaced test discovery and structured diagnostic logging.
  * @class
  */
 ```
@@ -574,29 +563,15 @@ operations, so library consumers building sample test data never call
 
 #### METHOD: EnhancedTestRunner.register
 - **Scope:** instance
-- **LLM Call Syntax:** `const result = enhancedTestRunner.register(path, fn, options, options.skip, options.timeout);`
+- **LLM Call Syntax:** `const result = enhancedTestRunner.register(path, fn, options, options.skip);`
 - **Pure JSDoc:**
 ```javascript
 /**
-   * Appends a test case to the internal registry with execution constraints and timeout metadata.
+   * Appends a test case to the internal registry with execution constraints.
    * @param {string} path Hierarchical identifier (e.g., 'Library/Suite/Test').
    * @param {Function} fn Implementation logic for the test case.
    * @param {Object} [options={}] execution configuration.
    * @param {boolean} [options.skip=false] If true, bypasses test execution.
-   * @param {number} [options.timeout=30000] Maximum allowed execution duration in milliseconds.
-   * @returns {this} Chainable runner instance.
-   */
-```
----
-#### METHOD: EnhancedTestRunner.addHook
-- **Scope:** instance
-- **LLM Call Syntax:** `const result = enhancedTestRunner.addHook(type, fn);`
-- **Pure JSDoc:**
-```javascript
-/**
-   * Registers a global or per-test lifecycle callback.
-   * @param {string} type Hook classification (beforeAll|afterAll|beforeEach|afterEach).
-   * @param {Function} fn Callback logic to execute at the hook point.
    * @returns {this} Chainable runner instance.
    */
 ```
@@ -619,21 +594,9 @@ operations, so library consumers building sample test data never call
 - **Pure JSDoc:**
 ```javascript
 /**
-   * Executes a single test unit within its lifecycle context (beforeEach/afterEach).
+   * Executes a single test unit and records the outcome.
    * @private
    * @param {Object} test Internal registry record.
-   */
-```
----
-#### METHOD: EnhancedTestRunner._runHooks
-- **Scope:** instance
-- **LLM Call Syntax:** `enhancedTestRunner._runHooks(type);`
-- **Pure JSDoc:**
-```javascript
-/**
-   * Sequentially executes all registered callbacks for a specific lifecycle phase.
-   * @private
-   * @param {string} type Hook classification.
    */
 ```
 ---

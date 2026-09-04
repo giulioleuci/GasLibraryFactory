@@ -557,7 +557,6 @@ import { ResolutionResult } from '../../core/ResolutionResult.js';
 import { ResolutionStrategy } from '../../core/ResolutionStrategy.js';
 import { ScopeType } from '../../core/ScopeType.js';
 import { DelegationChain } from '../delegation/DelegationChain.js';
-import { DelegationValidator } from '../delegation/DelegationValidator.js';
 import { RoutingResolver } from '../routing/RoutingResolver.js';
 import { RoutingPolicy } from '../routing/RoutingPolicy.js';
 import {
@@ -584,7 +583,6 @@ import { ResolutionResult } from '../../core/ResolutionResult.js';
 import { ResolutionStrategy } from '../../core/ResolutionStrategy.js';
 import { ScopeType } from '../../core/ScopeType.js';
 import { DelegationChain } from '../delegation/DelegationChain.js';
-import { DelegationValidator } from '../delegation/DelegationValidator.js';
 import { RoutingResolver } from '../routing/RoutingResolver.js';
 import { RoutingPolicy } from '../routing/RoutingPolicy.js';
 import {
@@ -914,9 +912,9 @@ Thrown when resolution logic yields an empty set for a role/scope.
 
 <br>
 
-## CLASS: ActorNotFoundError
+## CLASS: CircularDelegationError
 **File Path:** `RoleResolutionLib/src/internal/errors/RoleResolutionError.js`
-**Constructor Usage:** `const instance = new ActorNotFoundError();`
+**Constructor Usage:** `const instance = new CircularDelegationError();`
 **Description:** @constructor
 @param {string} roleId - Queried role.
 @param {Object} [scope=null] - Searched scope instance.
@@ -932,9 +930,9 @@ Thrown when resolution logic yields an empty set for a role/scope.
 }
 
 /**
-@class ActorNotFoundError
+@class CircularDelegationError
 @extends RoleResolutionError
-Thrown when a specific actor ID cannot be resolved.
+Thrown when a loop is detected in the delegation graph.
 
 ### Raw JSDoc Context:
 ```javascript
@@ -950,48 +948,6 @@ Thrown when a specific actor ID cannot be resolved.
     this.name = 'NoActorFoundError';
     this.roleId = roleId;
     this.scope = scope;
-  }
-}
-
-/**
- * @class ActorNotFoundError
- * @extends RoleResolutionError
- * @description Thrown when a specific actor ID cannot be resolved.
- */
-```
-
-<br>
-
-## CLASS: CircularDelegationError
-**File Path:** `RoleResolutionLib/src/internal/errors/RoleResolutionError.js`
-**Constructor Usage:** `const instance = new CircularDelegationError();`
-**Description:** @constructor
-@param {string} actorId - The missing actor identifier.
-@param {Object} [context={}] - Additional metadata.
-/
-  constructor(actorId, context = {}) {
-    super(`Actor not found: ${actorId}`, { ...context, actorId });
-    this.name = 'ActorNotFoundError';
-    this.actorId = actorId;
-  }
-}
-
-/**
-@class CircularDelegationError
-@extends RoleResolutionError
-Thrown when a loop is detected in the delegation graph.
-
-### Raw JSDoc Context:
-```javascript
-/**
-   * @constructor
-   * @param {string} actorId - The missing actor identifier.
-   * @param {Object} [context={}] - Additional metadata.
-   */
-  constructor(actorId, context = {}) {
-    super(`Actor not found: ${actorId}`, { ...context, actorId });
-    this.name = 'ActorNotFoundError';
-    this.actorId = actorId;
   }
 }
 

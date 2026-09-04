@@ -28,42 +28,79 @@
    */
 ```
 ---
-#### METHOD: ExpressionParserService._configureJSEP
+#### METHOD: ExpressionParserService._preprocess
 - **Scope:** instance
-- **LLM Call Syntax:** `expressionParserService._configureJSEP();`
+- **LLM Call Syntax:** `const result = expressionParserService._preprocess(expressionString);`
 - **Pure JSDoc:**
 ```javascript
 /**
+   * Orchestrates the normalization of expression syntax, converting {{placeholders}}, numeric paths, and special operators into JSEP-compatible tokens.
+   * @param {string} expressionString raw logic template.
+   * @returns {string} preprocessed expression string.
    * @private
    */
 ```
 ---
 #### METHOD: ExpressionParserService._convertNumericPathSegments
 - **Scope:** instance
-- **LLM Call Syntax:** `expressionParserService._convertNumericPathSegments();`
+- **LLM Call Syntax:** `const result = expressionParserService._convertNumericPathSegments(expression);`
 - **Pure JSDoc:**
 ```javascript
 /**
+   * Transforms dot-notation numeric segments into bracketed array accessors (e.g., 'items.0' -> 'items[0]').
    * @private
+   * @param {string} expression Logic template fragment.
+   * @returns {string} Normalized fragment.
    */
 ```
 ---
 #### METHOD: ExpressionParserService._convertPlaceholders
 - **Scope:** instance
-- **LLM Call Syntax:** `expressionParserService._convertPlaceholders();`
+- **LLM Call Syntax:** `const result = expressionParserService._convertPlaceholders(expression);`
 - **Pure JSDoc:**
 ```javascript
 /**
+   * Strips Mustache-style {{ }} delimiters from identifiers, iteratively resolving nested occurrences.
    * @private
+   * @param {string} expression Logic template fragment.
+   * @returns {string} Delimiter-free identifiers.
    */
 ```
 ---
 #### METHOD: ExpressionParserService._convertBetweenOperator
 - **Scope:** instance
-- **LLM Call Syntax:** `expressionParserService._convertBetweenOperator();`
+- **LLM Call Syntax:** `const result = expressionParserService._convertBetweenOperator(expression);`
 - **Pure JSDoc:**
 ```javascript
 /**
+   * Rewrites 'between' keyword syntax into functional call notation (e.g., 'x between y, z' -> 'between(x, y, z)').
+   * @private
+   * @param {string} expression Logic template fragment.
+   * @returns {string} Normalized functional logic.
+   */
+```
+---
+#### METHOD: ExpressionParserService._configureJSEP
+- **Scope:** instance
+- **LLM Call Syntax:** `expressionParserService._configureJSEP();`
+- **Pure JSDoc:**
+```javascript
+/**
+   * Extends JSEP grammar with domain-specific binary operators (in, match).
+   * @private
+   */
+```
+---
+#### METHOD: ExpressionParserService._buildAst
+- **Scope:** instance
+- **LLM Call Syntax:** `const result = expressionParserService._buildAst(preprocessedExpression);`
+- **Pure JSDoc:**
+```javascript
+/**
+   * Generates a structured Abstract Syntax Tree from a normalized expression string using JSEP.
+   * @param {string} preprocessedExpression Normalized logic template.
+   * @returns {Object} Structured JSEP AST.
+   * @throws {Error} If the expression violates JSEP grammar rules.
    * @private
    */
 ```
@@ -85,6 +122,22 @@
 
 ### Methods of ExpressionEvaluatorService
 
+#### METHOD: ExpressionEvaluatorService.evaluate
+- **Scope:** instance
+- **LLM Call Syntax:** `expressionEvaluatorService.evaluate();`
+- **Pure JSDoc:**
+```javascript
+/** @description Evaluates an expression string against a context. */
+```
+---
+#### METHOD: ExpressionEvaluatorService.evaluateAst
+- **Scope:** instance
+- **LLM Call Syntax:** `expressionEvaluatorService.evaluateAst();`
+- **Pure JSDoc:**
+```javascript
+/** @description Evaluates a pre-parsed AST against a context. */
+```
+---
 #### METHOD: ExpressionEvaluatorService._evaluateNode
 - **Scope:** instance
 - **LLM Call Syntax:** `expressionEvaluatorService._evaluateNode();`
@@ -143,10 +196,16 @@
 ---
 #### METHOD: ExpressionEvaluatorService._areBothNullOrUndefined
 - **Scope:** instance
-- **LLM Call Syntax:** `expressionEvaluatorService._areBothNullOrUndefined();`
+- **LLM Call Syntax:** `const result = expressionEvaluatorService._areBothNullOrUndefined(a, b);`
 - **Pure JSDoc:**
 ```javascript
-/** @private */
+/**
+   * Checks if both values are null or undefined.
+   * @param {*} a - First value
+   * @param {*} b - Second value
+   * @returns {boolean} True if both values are null or undefined
+   * @private
+   */
 ```
 ---
 #### METHOD: ExpressionEvaluatorService._hasCircularReference
@@ -157,33 +216,9 @@
 /** @private */
 ```
 ---
-#### METHOD: ExpressionEvaluatorService.evaluate
-- **Scope:** instance
-- **LLM Call Syntax:** `expressionEvaluatorService.evaluate();`
-- **Pure JSDoc:**
-```javascript
-/** @description Evaluates an expression string against a context. */
-```
----
-#### METHOD: ExpressionEvaluatorService.evaluateAst
-- **Scope:** instance
-- **LLM Call Syntax:** `expressionEvaluatorService.evaluateAst();`
-- **Pure JSDoc:**
-```javascript
-/** @description Evaluates a pre-parsed AST against a context. */
-```
----
 #### METHOD: ExpressionEvaluatorService._parseValue
 - **Scope:** instance
 - **LLM Call Syntax:** `expressionEvaluatorService._parseValue();`
-- **Pure JSDoc:**
-```javascript
-/** @private */
-```
----
-#### METHOD: ExpressionEvaluatorService._evaluateLogicalExpression
-- **Scope:** instance
-- **LLM Call Syntax:** `expressionEvaluatorService._evaluateLogicalExpression();`
 - **Pure JSDoc:**
 ```javascript
 /** @private */
@@ -207,10 +242,32 @@
 ---
 #### METHOD: ExpressionEvaluatorService._compare
 - **Scope:** instance
-- **LLM Call Syntax:** `expressionEvaluatorService._compare();`
+- **LLM Call Syntax:** `const result = expressionEvaluatorService._compare(a, b);`
 - **Pure JSDoc:**
 ```javascript
-/** @private */
+/**
+   * Compares two values with STRICT type checking.
+   *
+   * Returns: -1 if a < b, 0 if a == b, 1 if a > b
+   *
+   * STRICT MODE BEHAVIOR (enforced for reliability):
+   * - Requires both operands to be of the same type
+   * - Throws an error if types don't match (except null/undefined)
+   * - No implicit type coercion or string conversion
+   *
+   * The comparison logic handles:
+   * - null/undefined values
+   * - Numeric comparisons (numbers only)
+   * - String comparisons (strings only, case-sensitive)
+   * - Boolean comparisons (booleans only)
+   * - Date comparisons (dates only)
+   *
+   * @param {*} a - First value
+   * @param {*} b - Second value
+   * @returns {number} Comparison result
+   * @throws {Error} If operand types don't match
+   * @private
+   */
 ```
 ---
 #### METHOD: ExpressionEvaluatorService._equals
@@ -276,32 +333,6 @@
    */
 ```
 ---
-#### METHOD: ExpressionEngineService.getInfo
-- **Scope:** instance
-- **LLM Call Syntax:** `const result = expressionEngineService.getInfo();`
-- **Pure JSDoc:**
-```javascript
-/**
-   * Retrieves library classification and version metadata.
-   * @returns {Object} Library identity.
-   */
-```
----
-#### METHOD: ExpressionEngineService.getCacheStats
-- **Scope:** instance
-- **LLM Call Syntax:** `const result = expressionEngineService.getCacheStats();`
-- **Pure JSDoc:**
-```javascript
-/**
-   * Gets AST cache statistics for monitoring and debugging.
-   *
-   * @returns {Object} Cache statistics containing:
-   *   - size {number} - Current number of cached ASTs
-   *   - enabled {boolean} - Whether caching is enabled
-   *   - maxSize {number} - Maximum cache size (1000 entries)
-   */
-```
----
 #### METHOD: ExpressionEngineService.clearCache
 - **Scope:** instance
 - **LLM Call Syntax:** `expressionEngineService.clearCache();`
@@ -309,149 +340,6 @@
 ```javascript
 /**
    * Clears the AST cache.
-   */
-```
----
-#### METHOD: ExpressionEngineService.setCacheEnabled
-- **Scope:** instance
-- **LLM Call Syntax:** `expressionEngineService.setCacheEnabled(enabled);`
-- **Pure JSDoc:**
-```javascript
-/**
-   * Enables or disables AST caching.
-   *
-   * @param {boolean} enabled - Whether to enable caching
-   * @throws {Error} If enabled is not a boolean
-   */
-```
----
-<br>
-
-## CLASS: AstBuilder
-**File Path:** `GasExpressionEngineLib/src/internal/parser/AstBuilder.js`
-**Constructor Usage:** `const instance = new AstBuilder(logger);`
-**Description:** Initializes the builder and applies JSEP custom operator configurations.
-
-### Raw JSDoc Context:
-```javascript
-/**
-   * Initializes the builder and applies JSEP custom operator configurations.
-   * @param {Object} logger Diagnostic output interface.
-   */
-```
-
-### Methods of AstBuilder
-
-#### METHOD: AstBuilder._configureJSEP
-- **Scope:** instance
-- **LLM Call Syntax:** `astBuilder._configureJSEP();`
-- **Pure JSDoc:**
-```javascript
-/**
-   * Extends JSEP grammar with domain-specific binary operators (in, match).
-   * @private
-   */
-```
----
-#### METHOD: AstBuilder.buildAst
-- **Scope:** instance
-- **LLM Call Syntax:** `const result = astBuilder.buildAst(preprocessedExpression);`
-- **Pure JSDoc:**
-```javascript
-/**
-   * Generates a structured Abstract Syntax Tree from a normalized expression string using JSEP.
-   * @param {string} preprocessedExpression Normalized logic template.
-   * @returns {Object} Structured JSEP AST.
-   * @throws {Error} If the expression violates JSEP grammar rules.
-   */
-```
----
-<br>
-
-## CLASS: ErrorHelper
-**File Path:** `GasExpressionEngineLib/src/handlers/ErrorHelper.js`
-**Constructor Usage:** `const instance = new ErrorHelper();`
-**Description:** Static factory for standardized error object generation, enforcing consistent diagnostic message patterns across the expression engine.
-
-### Raw JSDoc Context:
-```javascript
-/**
- * Static factory for standardized error object generation, enforcing consistent diagnostic message patterns across the expression engine.
- * @class
- */
-```
-
-### Methods of ErrorHelper
-
-#### METHOD: ErrorHelper.create
-- **Scope:** static
-- **LLM Call Syntax:** `const result = ErrorHelper.create(component, errorType, details);`
-- **Pure JSDoc:**
-```javascript
-/**
-   * Generates a basic structured error with component and type classification.
-   * @param {string} component Name of the failing module.
-   * @param {string} errorType Classification of the failure.
-   * @param {string} [details] Optional explanatory metadata.
-   * @returns {Error} Formatted Error instance.
-   */
-```
----
-#### METHOD: ErrorHelper.createWithPosition
-- **Scope:** static
-- **LLM Call Syntax:** `const result = ErrorHelper.createWithPosition(component, errorType, value, position);`
-- **Pure JSDoc:**
-```javascript
-/**
-   * Generates a parsing error including the problematic value and its source offset.
-   * @param {string} component Name of the failing module.
-   * @param {string} errorType Classification of the failure.
-   * @param {string|number} value The literal token that triggered the error.
-   * @param {number} position Zero-based source character offset.
-   * @returns {Error} Formatted Error instance.
-   */
-```
----
-#### METHOD: ErrorHelper.createValidation
-- **Scope:** static
-- **LLM Call Syntax:** `const result = ErrorHelper.createValidation(component, paramName, expectedType);`
-- **Pure JSDoc:**
-```javascript
-/**
-   * Generates a parameter validation error specifying the expected contract.
-   * @param {string} component Name of the failing module.
-   * @param {string} paramName Identifier of the malformed argument.
-   * @param {string} expectedType Description of the required type or interface.
-   * @returns {Error} Formatted Error instance.
-   */
-```
----
-#### METHOD: ErrorHelper.createUnsupported
-- **Scope:** static
-- **LLM Call Syntax:** `const result = ErrorHelper.createUnsupported(component, operation, value);`
-- **Pure JSDoc:**
-```javascript
-/**
-   * Generates an error for operations or tokens that lack a corresponding engine implementation.
-   * @param {string} component Name of the failing module.
-   * @param {string} operation Identifier of the requested logic.
-   * @param {string} value The specific value that is unsupported.
-   * @returns {Error} Formatted Error instance.
-   */
-```
----
-#### METHOD: ErrorHelper.createLimitExceeded
-- **Scope:** static
-- **LLM Call Syntax:** `const result = ErrorHelper.createLimitExceeded(component, limitType, actual, max);`
-- **Pure JSDoc:**
-```javascript
-/**
-   * Generates an error when a numeric threshold (e.g., recursion depth, string length) is violated.
-   * @param {string} component Name of the failing module.
-   * @param {string} limitType Description of the threshold category.
-   * @param {number} actual The observed runtime value.
-   * @param {number} max The strictly enforced maximum limit.
-   * @returns {Error} Formatted Error instance.
    */
 ```
 ---
