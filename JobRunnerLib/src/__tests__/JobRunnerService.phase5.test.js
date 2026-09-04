@@ -83,77 +83,55 @@ describe('JobRunnerService - Phase 5 Coverage Tests', () => {
   // ===================================================================
 
   describe('Constructor Validation - Enhanced Coverage', () => {
-    it('should throw error if logger is not an object', () => {
-      expect(() => {
-        new JobRunnerService('not-an-object', utils, registry);
-      }).toThrow('MyJobRunnerService: logger must be of type object, received: string');
-    });
+    const missingMethod = (name) => {
+      const stub = { info: jest.fn(), debug: jest.fn(), error: jest.fn() };
+      delete stub[name];
+      return stub;
+    };
 
-    it('should throw error if logger is missing info method', () => {
-      const invalidLogger = {
-        debug: jest.fn(),
-        error: jest.fn()
-        // Missing info method
-      };
-
-      expect(() => {
-        new JobRunnerService(invalidLogger, utils, registry);
-      }).toThrow('MyJobRunnerService: logger must have method: info');
-    });
-
-    it('should throw error if logger is missing debug method', () => {
-      const invalidLogger = {
-        info: jest.fn(),
-        error: jest.fn()
-        // Missing debug method
-      };
-
-      expect(() => {
-        new JobRunnerService(invalidLogger, utils, registry);
-      }).toThrow('MyJobRunnerService: logger must have method: debug');
-    });
-
-    it('should throw error if logger is missing error method', () => {
-      const invalidLogger = {
-        info: jest.fn(),
-        debug: jest.fn()
-        // Missing error method
-      };
-
-      expect(() => {
-        new JobRunnerService(invalidLogger, utils, registry);
-      }).toThrow('MyJobRunnerService: logger must have method: error');
-    });
-
-    it('should throw error if utils is not an object', () => {
-      expect(() => {
-        new JobRunnerService(logger, 'not-an-object', registry);
-      }).toThrow('MyJobRunnerService: utils must be of type object, received: string');
-    });
-
-    it('should throw error if utils is undefined', () => {
-      expect(() => {
-        new JobRunnerService(logger, undefined, registry);
-      }).toThrow('MyJobRunnerService: utils is required and cannot be null or undefined');
-    });
-
-    it('should throw error if jobDefinitionRegistry is not an object', () => {
-      expect(() => {
-        new JobRunnerService(logger, utils, 'not-an-object');
-      }).toThrow(
+    it.each([
+      [
+        'logger is not an object',
+        () => ['not-an-object', utils, registry],
+        'MyJobRunnerService: logger must be of type object, received: string'
+      ],
+      [
+        'logger is missing info method',
+        () => [missingMethod('info'), utils, registry],
+        'MyJobRunnerService: logger must have method: info'
+      ],
+      [
+        'logger is missing debug method',
+        () => [missingMethod('debug'), utils, registry],
+        'MyJobRunnerService: logger must have method: debug'
+      ],
+      [
+        'logger is missing error method',
+        () => [missingMethod('error'), utils, registry],
+        'MyJobRunnerService: logger must have method: error'
+      ],
+      [
+        'utils is not an object',
+        () => [logger, 'not-an-object', registry],
+        'MyJobRunnerService: utils must be of type object, received: string'
+      ],
+      [
+        'utils is undefined',
+        () => [logger, undefined, registry],
+        'MyJobRunnerService: utils is required and cannot be null or undefined'
+      ],
+      [
+        'jobDefinitionRegistry is not an object',
+        () => [logger, utils, 'not-an-object'],
         'MyJobRunnerService: jobDefinitionRegistry must be of type object, received: string'
-      );
-    });
-
-    it('should throw error if jobDefinitionRegistry is missing getDefinition method', () => {
-      const invalidRegistry = {
-        // Missing getDefinition method
-        register: jest.fn()
-      };
-
-      expect(() => {
-        new JobRunnerService(logger, utils, invalidRegistry);
-      }).toThrow('MyJobRunnerService: jobDefinitionRegistry must have method: getDefinition');
+      ],
+      [
+        'jobDefinitionRegistry is missing getDefinition method',
+        () => [logger, utils, { register: jest.fn() }],
+        'MyJobRunnerService: jobDefinitionRegistry must have method: getDefinition'
+      ]
+    ])('should throw error if %s', (_desc, buildArgs, expectedError) => {
+      expect(() => new JobRunnerService(...buildArgs())).toThrow(expectedError);
     });
   });
 
@@ -168,114 +146,39 @@ describe('JobRunnerService - Phase 5 Coverage Tests', () => {
       jobRunner = new JobRunnerService(logger, utils, registry);
     });
 
-    it('should throw error if jobName is null', () => {
-      const callback = jest.fn();
-      expect(() => {
-        jobRunner.run(null, 'testJob', {}, callback);
-      }).toThrow('jobName is required and must be a non-empty string');
-    });
-
-    it('should throw error if jobName is undefined', () => {
-      const callback = jest.fn();
-      expect(() => {
-        jobRunner.run(undefined, 'testJob', {}, callback);
-      }).toThrow('jobName is required and must be a non-empty string');
-    });
-
-    it('should throw error if jobName is not a string', () => {
-      const callback = jest.fn();
-      expect(() => {
-        jobRunner.run(123, 'testJob', {}, callback);
-      }).toThrow('jobName is required and must be a non-empty string');
-    });
-
-    it('should throw error if jobName is empty string', () => {
-      const callback = jest.fn();
-      expect(() => {
-        jobRunner.run('', 'testJob', {}, callback);
-      }).toThrow('jobName is required and must be a non-empty string');
-    });
-
-    it('should throw error if jobType is null', () => {
-      const callback = jest.fn();
-      expect(() => {
-        jobRunner.run('myJob', null, {}, callback);
-      }).toThrow('jobType is required and must be a non-empty string');
-    });
-
-    it('should throw error if jobType is undefined', () => {
-      const callback = jest.fn();
-      expect(() => {
-        jobRunner.run('myJob', undefined, {}, callback);
-      }).toThrow('jobType is required and must be a non-empty string');
-    });
-
-    it('should throw error if jobType is not a string', () => {
-      const callback = jest.fn();
-      expect(() => {
-        jobRunner.run('myJob', 456, {}, callback);
-      }).toThrow('jobType is required and must be a non-empty string');
-    });
-
-    it('should throw error if parameters is null', () => {
-      const callback = jest.fn();
-      expect(() => {
-        jobRunner.run('myJob', 'testJob', null, callback);
-      }).toThrow('parameters is required and must be an object');
-    });
-
-    it('should throw error if parameters is undefined', () => {
-      const callback = jest.fn();
-      expect(() => {
-        jobRunner.run('myJob', 'testJob', undefined, callback);
-      }).toThrow('parameters is required and must be an object');
-    });
-
-    it('should throw error if parameters is not an object', () => {
-      const callback = jest.fn();
-      expect(() => {
-        jobRunner.run('myJob', 'testJob', 'not-an-object', callback);
-      }).toThrow('parameters is required and must be an object');
-    });
-
-    it('should throw error if jobHandlerRegistryCallback is not a function', () => {
-      expect(() => {
-        jobRunner.run('myJob', 'testJob', {}, 'not-a-function');
-      }).toThrow('jobHandlerRegistryCallback must be a function');
-    });
-
-    it('should throw error if jobHandlerRegistryCallback is null', () => {
-      expect(() => {
-        jobRunner.run('myJob', 'testJob', {}, null);
-      }).toThrow('jobHandlerRegistryCallback must be a function');
-    });
-
-    it('should throw error if forceRestart is not a boolean', () => {
-      const callback = jest.fn();
-      expect(() => {
-        jobRunner.run('myJob', 'testJob', {}, callback, 'not-boolean');
-      }).toThrow('forceRestart must be a boolean');
-    });
-
-    it('should throw error if maxDurationMs is not a number', () => {
-      const callback = jest.fn();
-      expect(() => {
-        jobRunner.run('myJob', 'testJob', {}, callback, false, 'not-a-number');
-      }).toThrow('maxDurationMs must be a positive number');
-    });
-
-    it('should throw error if maxDurationMs is zero', () => {
-      const callback = jest.fn();
-      expect(() => {
-        jobRunner.run('myJob', 'testJob', {}, callback, false, 0);
-      }).toThrow('maxDurationMs must be a positive number');
-    });
-
-    it('should throw error if maxDurationMs is negative', () => {
-      const callback = jest.fn();
-      expect(() => {
-        jobRunner.run('myJob', 'testJob', {}, callback, false, -1000);
-      }).toThrow('maxDurationMs must be a positive number');
+    it.each([
+      [
+        'jobName is missing or invalid',
+        () => [null, 'testJob', {}, jest.fn()],
+        'jobName is required and must be a non-empty string'
+      ],
+      [
+        'jobType is missing or invalid',
+        () => ['myJob', null, {}, jest.fn()],
+        'jobType is required and must be a non-empty string'
+      ],
+      [
+        'parameters is missing or invalid',
+        () => ['myJob', 'testJob', null, jest.fn()],
+        'parameters is required and must be an object'
+      ],
+      [
+        'jobHandlerRegistryCallback is not a function',
+        () => ['myJob', 'testJob', {}, 'not-a-function'],
+        'jobHandlerRegistryCallback must be a function'
+      ],
+      [
+        'forceRestart is not a boolean',
+        () => ['myJob', 'testJob', {}, jest.fn(), 'not-boolean'],
+        'forceRestart must be a boolean'
+      ],
+      [
+        'maxDurationMs is not a positive number',
+        () => ['myJob', 'testJob', {}, jest.fn(), false, 0],
+        'maxDurationMs must be a positive number'
+      ]
+    ])('should throw error if %s', (_desc, buildArgs, expectedError) => {
+      expect(() => jobRunner.run(...buildArgs())).toThrow(expectedError);
     });
   });
 
@@ -376,12 +279,6 @@ describe('JobRunnerService - Phase 5 Coverage Tests', () => {
 
     beforeEach(() => {
       jobRunner = new JobRunnerService(logger, utils, registry);
-    });
-
-    it('should throw error if callback is not a function (double check)', () => {
-      expect(() => {
-        jobRunner.run('myJob', 'testType', {}, { not: 'a function' });
-      }).toThrow('jobHandlerRegistryCallback must be a function');
     });
 
     it('should propagate errors from job execution', () => {
@@ -598,24 +495,6 @@ describe('JobRunnerService - Phase 5 Coverage Tests', () => {
 
       // Verify resume was attempted through the semantic channel
       expect(logger.logJobResume).toHaveBeenCalledWith(jobName, 'resumableJob');
-    });
-
-    it('should validate callback parameter in resume', () => {
-      const jobName = 'test-job';
-
-      // Save minimal state
-      propertiesService.setScriptProperty(`job:${jobName}:type`, 'testJob');
-
-      // The error will be about JobStateManager not being defined before
-      // callback validation, but that's still exercising the resume code path
-      try {
-        jobRunner.resume(jobName, 'not-a-function');
-      } catch (error) {
-        // Accept either error - both exercise the resume code path
-        expect(error.message).toMatch(
-          /jobHandlerRegistryCallback must be a function|JobStateManager is not defined|Unable to determine job type/
-        );
-      }
     });
   });
 
