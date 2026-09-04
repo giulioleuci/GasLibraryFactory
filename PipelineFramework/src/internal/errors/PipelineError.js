@@ -30,17 +30,4 @@ export class PipelineError extends BaseError {
     // Explicit name preserves identity through minified/bundled output.
     this.name = 'PipelineError';
   }
-
-  /**
-   * @returns {string} Formatted error and serialized context metadata.
-   */
-  toString() {
-    let message = `${this.name}: ${this.message}`;
-
-    if (this.context && Object.keys(this.context).length > 0) {
-      message += '\nContext: ' + JSON.stringify(this.context, null, 2);
-    }
-
-    return message;
-  }
 }

@@ -50,7 +50,6 @@ describe('PipelineContext - Comprehensive Test Suite', () => {
       expect(metadata.stopRequested).toBe(false);
       expect(metadata.stopReason).toBe(null);
       expect(metadata.executionHistory).toEqual([]);
-      expect(metadata.flags).toEqual({});
     });
   });
 
@@ -223,63 +222,6 @@ describe('PipelineContext - Comprehensive Test Suite', () => {
   });
 
   // ===================================================================
-  // FLAGS
-  // ===================================================================
-
-  describe('Flags', () => {
-    let context;
-
-    beforeEach(() => {
-      context = new PipelineContext();
-    });
-
-    it('should set and get flag', () => {
-      context.setFlag('testFlag', true);
-
-      expect(context.getFlag('testFlag')).toBe(true);
-    });
-
-    it('should support method chaining for setFlag', () => {
-      const result = context.setFlag('flag1', true);
-
-      expect(result).toBe(context);
-    });
-
-    it('should return default value for missing flag', () => {
-      expect(context.getFlag('missingFlag', 'default')).toBe('default');
-    });
-
-    it('should return null if no default provided', () => {
-      expect(context.getFlag('missingFlag')).toBe(null);
-    });
-
-    it('should throw error if flag name is not a string in setFlag', () => {
-      expect(() => context.setFlag(123, 'value')).toThrow(
-        'PipelineContext.setFlag: name must be a string'
-      );
-    });
-
-    it('should throw error if flag name is not a string in getFlag', () => {
-      expect(() => context.getFlag(123)).toThrow('PipelineContext.getFlag: name must be a string');
-    });
-
-    it('should handle multiple flags', () => {
-      context.setFlag('flag1', 'value1').setFlag('flag2', 'value2').setFlag('flag3', 'value3');
-
-      expect(context.getFlag('flag1')).toBe('value1');
-      expect(context.getFlag('flag2')).toBe('value2');
-      expect(context.getFlag('flag3')).toBe('value3');
-    });
-
-    it('should allow overwriting flags', () => {
-      context.setFlag('flag', 'initial');
-      context.setFlag('flag', 'updated');
-
-      expect(context.getFlag('flag')).toBe('updated');
-    });
-  });
-
-  // ===================================================================
   // METADATA
   // ===================================================================
 
@@ -301,8 +243,7 @@ describe('PipelineContext - Comprehensive Test Suite', () => {
         endTime: null,
         stopRequested: false,
         stopReason: null,
-        executionHistory: [],
-        flags: {}
+        executionHistory: []
       });
     });
 
@@ -457,7 +398,7 @@ describe('PipelineContext - Comprehensive Test Suite', () => {
       context.set('step2Result', 'result2');
       context.recordStepExecution('Step2', 'completed', 150);
 
-      context.setFlag('dataProcessed', true);
+      context.set('dataProcessed', true);
       context.recordStepExecution('Step3', 'skipped', 0);
 
       context.markCompleted();
@@ -466,7 +407,7 @@ describe('PipelineContext - Comprehensive Test Suite', () => {
       expect(context.get('initialData')).toBe('test');
       expect(context.get('step1Result')).toBe('result1');
       expect(context.get('step2Result')).toBe('result2');
-      expect(context.getFlag('dataProcessed')).toBe(true);
+      expect(context.get('dataProcessed')).toBe(true);
 
       const summary = context.getSummary();
       expect(summary.totalSteps).toBe(3);

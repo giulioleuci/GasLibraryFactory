@@ -9,7 +9,7 @@
  *
  * @description
  * Wraps a mutable data payload and maintains execution metadata, including step history,
- * timing, flags, and graceful termination signals.
+ * timing, and graceful termination signals.
  *
  * @class
  */
@@ -29,8 +29,7 @@ export class PipelineContext {
       endTime: null,
       stopRequested: false,
       stopReason: null,
-      executionHistory: [],
-      flags: {}
+      executionHistory: []
     };
   }
 
@@ -125,37 +124,6 @@ export class PipelineContext {
   /** @returns {Array<Object>} Chronological step execution logs. */
   getExecutionHistory() {
     return this._metadata.executionHistory;
-  }
-
-  /**
-   * Persists a metadata flag.
-   * @param {string} name Flag identifier.
-   * @param {*} value
-   * @returns {PipelineContext} Current instance.
-   * @throws {Error} If name is not a string.
-   */
-  setFlag(name, value) {
-    if (typeof name !== 'string') {
-      throw new Error('PipelineContext.setFlag: name must be a string');
-    }
-    this._metadata.flags[name] = value;
-    return this;
-  }
-
-  /**
-   * Retrieves a metadata flag.
-   * @param {string} name Flag identifier.
-   * @param {*} [defaultValue=null]
-   * @returns {*}
-   * @throws {Error} If name is not a string.
-   */
-  getFlag(name, defaultValue = null) {
-    if (typeof name !== 'string') {
-      throw new Error('PipelineContext.getFlag: name must be a string');
-    }
-    return Object.prototype.hasOwnProperty.call(this._metadata.flags, name)
-      ? this._metadata.flags[name]
-      : defaultValue;
   }
 
   /** @returns {Object} Raw metadata snapshot (startTime, stopRequested, etc.). */

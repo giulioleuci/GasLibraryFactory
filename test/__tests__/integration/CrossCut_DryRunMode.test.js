@@ -1,7 +1,7 @@
 /**
  * Integration Test: Cross-Cutting Concern - Dry Run Mode
  *
- * Layers Tested: All layers supporting dry-run (DomainRepositoryLib → SheetDBLib → GoogleApiWrapper → PipelineFramework → GasDataImporter)
+ * Layers Tested: All layers supporting dry-run (DomainRepositoryLib → SheetDBLib → GoogleApiWrapper → GasDataImporter)
  *
  * Purpose: Verify that dry-run mode is properly implemented across all layers,
  * preventing actual writes while still executing logic and returning valid results.
@@ -11,7 +11,6 @@
 
 import { Entity, Repository } from '@DomainRepositoryLib';
 import { DatabaseService } from '@SheetDBLib';
-import { Pipeline, Step } from '@PipelineFramework';
 import { ImportEngine } from '@GasDataImporter';
 import { ExceptionService } from '@GasResilienceLib';
 import { ExpressionEngineService } from '@GasExpressionEngineLib';
@@ -143,60 +142,6 @@ describe('Cross-Cutting Concern: Dry Run Mode', () => {
       // Assert: Entity persisted
       expect(mockDatabase.tables.DryRunEntities.insertRow).toHaveBeenCalled();
       expect(mockLogger.hasLog('INFO', /Would insert/i)).toBe(false);
-    });
-  });
-
-  describe('Pipeline Dry Run', () => {
-    test('Pipeline dry run returns step list without execution', () => {
-      // Arrange
-      class TrackingStep extends Step {
-        constructor(name, logger) {
-          super(name, logger);
-        }
-
-        _executeLogic(context) {
-          writeOperations.inserts.push({ step: this.getName() });
-          return { executed: true };
-        }
-      }
-
-      const pipeline = new Pipeline(mockLogger, exceptionService, { name: 'TestPipeline' })
-        .addStep(new TrackingStep('step1', mockLogger))
-        .addStep(new TrackingStep('step2', mockLogger))
-        .addStep(new TrackingStep('step3', mockLogger));
-
-      // Act
-      const context = pipeline.execute({}, { dryRun: true });
-
-      // Assert: Steps not actually executed (result is PipelineContext)
-      expect(context.get('dryRun')).toBe(true);
-      expect(context.get('simulatedSteps')).toBeDefined();
-      expect(writeOperations.inserts).toHaveLength(0);
-
-      // Standardized Logger Assertion
-      expect(mockLogger.hasLog('INFO', /\[TestPipeline\] \[DRY-RUN\] Would execute 3 steps/i)).toBe(
-        true
-      );
-    });
-
-    test('Pipeline normal execution runs all steps', () => {
-      // Arrange
-      class TrackingStep extends Step {
-        _executeLogic(context) {
-          writeOperations.inserts.push({ step: this.getName() });
-          return { executed: true };
-        }
-      }
-
-      const pipeline = new Pipeline(mockLogger, exceptionService)
-        .addStep(new TrackingStep('step1', mockLogger))
-        .addStep(new TrackingStep('step2', mockLogger));
-
-      // Act
-      pipeline.execute({});
-
-      // Assert: Steps executed
-      expect(writeOperations.inserts).toHaveLength(2);
     });
   });
 
@@ -500,45 +445,6 @@ describe('Cross-Cutting Concern: Dry Run Mode', () => {
       const result = mockRepo.save(validEntity, { dryRun: true });
       expect(result.dryRun).toBe(true);
       expect(writeOperations.inserts).toHaveLength(0);
-    });
-  });
-
-  describe('Dry Run Across Multiple Layers', () => {
-    test('Dry run propagates through pipeline to nested operations', () => {
-      // Arrange
-      class DatabaseStep extends Step {
-        constructor(name, logger, database) {
-          super(name, logger);
-          this._database = database;
-        }
-
-        _executeLogic(context) {
-          const isDryRun = context.get('_dryRun') === true;
-          if (!isDryRun) {
-            writeOperations.inserts.push({ from: 'DatabaseStep' });
-          }
-          this.setResult(context, this.getName(), { dryRun: isDryRun });
-        }
-      }
-
-      const mockDatabase = { tables: {} };
-      const pipeline = new Pipeline(mockLogger, exceptionService).addStep(
-        new DatabaseStep('dbStep', mockLogger, mockDatabase)
-      );
-
-      // Act: Dry run
-      const dryResult = pipeline.execute({ _dryRun: true }, { dryRun: true });
-
-      // Assert: No writes (Pipeline returns PipelineContext, not {dryRun: true})
-      expect(dryResult.get('dryRun')).toBe(true);
-      expect(writeOperations.inserts).toHaveLength(0);
-
-      // Act: Real run
-      const realResult = pipeline.execute({});
-
-      // Assert: Writes occurred
-      expect(realResult.get('dbStep').dryRun).toBe(false);
-      expect(writeOperations.inserts).toHaveLength(1);
     });
   });
 

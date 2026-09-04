@@ -188,21 +188,6 @@ describe('Full Stack Integration: Pipeline Execution', () => {
     });
   });
 
-  describe('Process Monitor Integration', () => {
-    test('Pipeline reports progress to monitor', () => {
-      const monitor = mocks.monitor;
-      const pipeline = new Pipeline(mockLogger, null, { monitor, jobId: 'job-123' })
-        .addStep(new LoadDataStep('load', mockLogger, mockDataSource))
-        .addStep(new SaveDataStep('save', mockLogger, mockDataTarget));
-
-      pipeline.execute({});
-
-      expect(monitor.logStepStart).toHaveBeenCalledWith('job-123', 'load');
-      expect(monitor.logStepComplete).toHaveBeenCalledWith('job-123', 'load', true);
-      expect(monitor.logStepStart).toHaveBeenCalledWith('job-123', 'save');
-    });
-  });
-
   describe('Resilience Integration', () => {
     test('Pipeline retries failed steps using ExceptionService', () => {
       let attempts = 0;

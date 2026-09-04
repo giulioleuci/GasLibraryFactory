@@ -60,11 +60,6 @@ describe('Pipeline - Comprehensive Test Suite', () => {
       });
 
       expect(pipeline.getName()).toBe('TestPipeline');
-
-      const summary = pipeline.getConfigSummary();
-      expect(summary.stopOnError).toBe(false);
-      expect(summary.maxRetries).toBe(5);
-      expect(summary.hasExceptionService).toBe(true);
     });
 
     it('should throw error if logger is invalid', () => {
@@ -179,15 +174,6 @@ describe('Pipeline - Comprehensive Test Suite', () => {
       pipeline = new Pipeline(mocks.logger);
     });
 
-    it('should set beforeStep hook', () => {
-      const callback = jest.fn();
-
-      pipeline.beforeStep(callback);
-
-      const summary = pipeline.getConfigSummary();
-      expect(summary.hooks.beforeStep).toBe(true);
-    });
-
     it('should support method chaining for beforeStep', () => {
       const result = pipeline.beforeStep(jest.fn());
 
@@ -198,15 +184,6 @@ describe('Pipeline - Comprehensive Test Suite', () => {
       expect(() => pipeline.beforeStep('not a function')).toThrow(
         'Pipeline.beforeStep: callback must be a function'
       );
-    });
-
-    it('should set afterStep hook', () => {
-      const callback = jest.fn();
-
-      pipeline.afterStep(callback);
-
-      const summary = pipeline.getConfigSummary();
-      expect(summary.hooks.afterStep).toBe(true);
     });
 
     it('should support method chaining for afterStep', () => {
@@ -221,15 +198,6 @@ describe('Pipeline - Comprehensive Test Suite', () => {
       );
     });
 
-    it('should set onError hook', () => {
-      const callback = jest.fn();
-
-      pipeline.onError(callback);
-
-      const summary = pipeline.getConfigSummary();
-      expect(summary.hooks.onError).toBe(true);
-    });
-
     it('should support method chaining for onError', () => {
       const result = pipeline.onError(jest.fn());
 
@@ -240,15 +208,6 @@ describe('Pipeline - Comprehensive Test Suite', () => {
       expect(() => pipeline.onError('not a function')).toThrow(
         'Pipeline.onError: callback must be a function'
       );
-    });
-
-    it('should set onComplete hook', () => {
-      const callback = jest.fn();
-
-      pipeline.onComplete(callback);
-
-      const summary = pipeline.getConfigSummary();
-      expect(summary.hooks.onComplete).toBe(true);
     });
 
     it('should support method chaining for onComplete', () => {
@@ -340,11 +299,11 @@ describe('Pipeline - Comprehensive Test Suite', () => {
         { content: undefined, durationMs: 5 },
         { depth: 2, isLast: true, ancestorHasNext: [true] }
       );
-      expectSummary(
-        logger,
-        '2 executed, 1 skipped, 0 failed',
-        { depth: 1, isLast: true, ancestorHasNext: [] }
-      );
+      expectSummary(logger, '2 executed, 1 skipped, 0 failed', {
+        depth: 1,
+        isLast: true,
+        ancestorHasNext: []
+      });
     });
 
     it('emits one ERROR step and failed summary when a step throws', () => {
@@ -370,28 +329,14 @@ describe('Pipeline - Comprehensive Test Suite', () => {
           ancestorHasNext: [true]
         }
       );
-      expectSummary(
-        logger,
-        '0 executed, 0 skipped, 1 failed',
-        { depth: 0, isLast: true, ancestorHasNext: [] }
-      );
-    });
-
-    it('emits start and summary for dry run and zero-step pipelines', () => {
-      const dryLogger = semanticLogger();
-      const dryPipeline = new Pipeline(dryLogger, null, { name: 'Dry', dryRun: true });
-      dryPipeline.addStep(mockStep).execute();
-      expect(dryLogger.logPipelineStart).toHaveBeenCalledWith('Dry', 1, {
+      expectSummary(logger, '0 executed, 0 skipped, 1 failed', {
         depth: 0,
-        isLast: false,
+        isLast: true,
         ancestorHasNext: []
       });
-      expectSummary(
-        dryLogger,
-        'dry run; 0 executed, 0 skipped, 0 failed',
-        { depth: 0, isLast: true, ancestorHasNext: [] }
-      );
+    });
 
+    it('emits start and summary for zero-step pipelines', () => {
       const emptyLogger = semanticLogger();
       new Pipeline(emptyLogger, null, { name: 'Empty' }).execute();
       expect(emptyLogger.logPipelineStart).toHaveBeenCalledWith('Empty', 0, {
@@ -399,11 +344,11 @@ describe('Pipeline - Comprehensive Test Suite', () => {
         isLast: false,
         ancestorHasNext: []
       });
-      expectSummary(
-        emptyLogger,
-        '0 executed, 0 skipped, 0 failed',
-        { depth: 0, isLast: true, ancestorHasNext: [] }
-      );
+      expectSummary(emptyLogger, '0 executed, 0 skipped, 0 failed', {
+        depth: 0,
+        isLast: true,
+        ancestorHasNext: []
+      });
     });
 
     it('renders content-first executed, skipped, and thrown failure fallbacks', () => {
@@ -505,8 +450,8 @@ describe('Pipeline - Comprehensive Test Suite', () => {
       expect(position).toEqual({ depth: 1, isLast: true, ancestorHasNext: [true] });
       const nestedLine = emitted.find((line) => line.includes('nested service detail'));
       const stepLine = emitted.find((line) => line.includes('[GenerateName]'));
-      expect(nestedLine).toMatch(/^  │    ├─ \[INFO\] nested service detail$/);
-      expect(stepLine).toMatch(/^  └─ ✅ \[GenerateName\]/);
+      expect(nestedLine).toMatch(/^ {2}│ {4}├─ \[INFO\] nested service detail$/);
+      expect(stepLine).toMatch(/^ {2}└─ ✅ \[GenerateName\]/);
       expect(nestedLine.indexOf('[INFO]')).toBeGreaterThan(stepLine.indexOf('✅'));
       expect(emitted.filter((line) => line.includes('nested service detail'))).not.toContain(
         '[INFO] nested service detail'
@@ -702,45 +647,6 @@ describe('Pipeline - Comprehensive Test Suite', () => {
 
       expect(result).toBeInstanceOf(PipelineContext);
       expect(mocks.logger.warn).toHaveBeenCalled();
-    });
-  });
-
-  // ===================================================================
-  // CONFIGURATION SUMMARY
-  // ===================================================================
-
-  describe('Configuration Summary', () => {
-    it('should return correct config summary', () => {
-      const pipeline = new Pipeline(mocks.logger, mocks.exceptionService, {
-        name: 'TestPipeline',
-        stopOnError: false,
-        maxRetries: 5
-      });
-
-      const mockStep = {
-        execute: jest.fn(),
-        getName: jest.fn(() => 'TestStep')
-      };
-
-      pipeline
-        .addStep(mockStep)
-        .beforeStep(jest.fn())
-        .afterStep(jest.fn())
-        .onError(jest.fn())
-        .onComplete(jest.fn());
-
-      const summary = pipeline.getConfigSummary();
-
-      expect(summary.name).toBe('TestPipeline');
-      expect(summary.stepCount).toBe(1);
-      expect(summary.steps).toEqual(['TestStep']);
-      expect(summary.stopOnError).toBe(false);
-      expect(summary.maxRetries).toBe(5);
-      expect(summary.hasExceptionService).toBe(true);
-      expect(summary.hooks.beforeStep).toBe(true);
-      expect(summary.hooks.afterStep).toBe(true);
-      expect(summary.hooks.onError).toBe(true);
-      expect(summary.hooks.onComplete).toBe(true);
     });
   });
 
