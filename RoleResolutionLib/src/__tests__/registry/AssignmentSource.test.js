@@ -141,46 +141,6 @@ describe('InMemoryAssignmentSource', () => {
         const results = source.getAssignmentsForActor('actor-1', new Date('2025-01-01'));
         expect(results).toHaveLength(0);
       });
-
-      it('should handle manual assignment objects lacking isValidAt method', () => {
-        source.addAssignment({
-          roleId: 'role-3',
-          actorId: 'actor-3',
-          isActive: true,
-          validFrom: pastDate,
-          validTo: futureDate
-        });
-
-        // Match active
-        expect(source.getAssignmentsForActor('actor-3', now)).toHaveLength(1);
-
-        // Exclude by validTo past
-        source.addAssignment({
-          roleId: 'role-4',
-          actorId: 'actor-3',
-          isActive: true,
-          validFrom: pastDate,
-          validTo: new Date('2022-12-31T12:00:00Z')
-        });
-        expect(source.getAssignmentsForActor('actor-3', now)).toHaveLength(1); // Still 1
-
-        // Exclude by validFrom future
-        source.addAssignment({
-          roleId: 'role-5',
-          actorId: 'actor-3',
-          isActive: true,
-          validFrom: futureDate
-        });
-        expect(source.getAssignmentsForActor('actor-3', now)).toHaveLength(1); // Still 1
-
-        // Exclude by isActive false
-        source.addAssignment({
-          roleId: 'role-6',
-          actorId: 'actor-3',
-          isActive: false
-        });
-        expect(source.getAssignmentsForActor('actor-3', now)).toHaveLength(1); // Still 1
-      });
     });
 
     describe('getAssignmentsForRole', () => {
@@ -207,64 +167,6 @@ describe('InMemoryAssignmentSource', () => {
       it('should return empty array if role has no active assignments', () => {
         const results = source.getAssignmentsForRole('role-2', Scope.project('proj-1'), now);
         expect(results).toHaveLength(0); // assignment2 is expired
-      });
-
-      it('should exclude manual assignment objects lacking isValidAt method based on validity', () => {
-        source.addAssignment({
-          roleId: 'role-manual',
-          actorId: 'actor-manual',
-          scope: Scope.global(),
-          isActive: false
-        });
-        expect(source.getAssignmentsForRole('role-manual', Scope.global(), now)).toHaveLength(0);
-
-        source.addAssignment({
-          roleId: 'role-manual-2',
-          actorId: 'actor-manual',
-          scope: Scope.global(),
-          isActive: true,
-          validFrom: futureDate
-        });
-        expect(source.getAssignmentsForRole('role-manual-2', Scope.global(), now)).toHaveLength(0);
-
-        source.addAssignment({
-          roleId: 'role-manual-3',
-          actorId: 'actor-manual',
-          scope: Scope.global(),
-          isActive: true,
-          validFrom: pastDate,
-          validTo: pastDate
-        });
-        expect(source.getAssignmentsForRole('role-manual-3', Scope.global(), now)).toHaveLength(0);
-      });
-
-      it('should handle manual assignment objects lacking scope matching methods', () => {
-        source.addAssignment({
-          roleId: 'role-manual',
-          actorId: 'actor-manual',
-          scope: { type: 'GLOBAL' },
-          isActive: true
-        });
-        // GLOBAL scope matches everything
-        expect(
-          source.getAssignmentsForRole('role-manual', Scope.project('proj-1'), now)
-        ).toHaveLength(1);
-
-        source.addAssignment({
-          roleId: 'role-manual-2',
-          actorId: 'actor-manual',
-          scope: { type: 'PROJECT', value: 'proj-1' },
-          isActive: true
-        });
-        // Same type and value match
-        expect(
-          source.getAssignmentsForRole('role-manual-2', Scope.project('proj-1'), now)
-        ).toHaveLength(1);
-
-        // Different value
-        expect(
-          source.getAssignmentsForRole('role-manual-2', Scope.project('proj-2'), now)
-        ).toHaveLength(0);
       });
     });
   });

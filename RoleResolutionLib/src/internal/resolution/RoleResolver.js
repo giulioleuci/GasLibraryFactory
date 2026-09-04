@@ -8,7 +8,6 @@ import { ResolutionResult } from '../../core/ResolutionResult.js';
 import { ResolutionStrategy } from '../../core/ResolutionStrategy.js';
 import { ScopeType } from '../../core/ScopeType.js';
 import { DelegationChain } from '../delegation/DelegationChain.js';
-import { DelegationValidator } from '../delegation/DelegationValidator.js';
 import { RoutingResolver } from '../routing/RoutingResolver.js';
 import { RoutingPolicy } from '../routing/RoutingPolicy.js';
 import {
@@ -67,12 +66,6 @@ export class RoleResolver {
 
     /** @type {boolean} @private */
     this._throwOnNotFound = options.throwOnNotFound === true;
-
-    /** @type {DelegationValidator} @private */
-    this._delegationValidator = new DelegationValidator({
-      maxDelegationDepth: this._maxDelegationDepth,
-      logger: this._logger
-    });
 
     /** @type {RoutingResolver} @private */
     this._routingResolver = new RoutingResolver({

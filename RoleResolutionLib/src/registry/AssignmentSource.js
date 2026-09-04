@@ -100,53 +100,7 @@ export class InMemoryAssignmentSource extends AssignmentSource {
    * @returns {Assignment[]}
    */
   getAssignmentsForRole(roleId, scope, asOfDate = new Date()) {
-    return this._assignments.filter((assignment) => {
-      // Check role match
-      if (assignment.roleId !== roleId) {
-        return false;
-      }
-
-      // Check validity if assignment has isValidAt method
-      if (typeof assignment.isValidAt === 'function') {
-        if (!assignment.isValidAt(asOfDate)) {
-          return false;
-        }
-      } else {
-        // Manual validity check
-        if (assignment.isActive === false) {
-          return false;
-        }
-        if (assignment.validFrom && asOfDate < new Date(assignment.validFrom)) {
-          return false;
-        }
-        if (assignment.validTo && asOfDate > new Date(assignment.validTo)) {
-          return false;
-        }
-      }
-
-      // Check scope match if assignment has scope matching method
-      if (typeof assignment.scope?.contains === 'function') {
-        return assignment.scope.contains(scope) || assignment.scope.matches(scope);
-      }
-
-      // Simple scope match - check type and value
-      if (assignment.scope) {
-        const assignmentScope = assignment.scope;
-        const queryScope = scope;
-
-        // Global scope matches everything
-        if (assignmentScope.type === 'GLOBAL') {
-          return true;
-        }
-
-        // Same type and value match
-        if (assignmentScope.type === queryScope.type) {
-          return assignmentScope.value === queryScope.value;
-        }
-      }
-
-      return true;
-    });
+    return this._assignments.filter((assignment) => assignment.matches(roleId, scope, asOfDate));
   }
 
   /**
@@ -157,29 +111,9 @@ export class InMemoryAssignmentSource extends AssignmentSource {
    * @returns {Assignment[]}
    */
   getAssignmentsForActor(actorId, asOfDate = new Date()) {
-    return this._assignments.filter((assignment) => {
-      if (assignment.actorId !== actorId) {
-        return false;
-      }
-
-      // Check validity
-      if (typeof assignment.isValidAt === 'function') {
-        return assignment.isValidAt(asOfDate);
-      }
-
-      // Manual validity check
-      if (assignment.isActive === false) {
-        return false;
-      }
-      if (assignment.validFrom && asOfDate < new Date(assignment.validFrom)) {
-        return false;
-      }
-      if (assignment.validTo && asOfDate > new Date(assignment.validTo)) {
-        return false;
-      }
-
-      return true;
-    });
+    return this._assignments.filter(
+      (assignment) => assignment.actorId === actorId && assignment.isValidAt(asOfDate)
+    );
   }
 
   /**

@@ -229,15 +229,6 @@ export class RoutingResolver {
 
     // Add all actors in the chain
     if (delegationChain && !delegationChain.isEmpty()) {
-      // Add the original principal
-      delegationChain.forEach((delegation) => {
-        // Principal of first delegation is the original principal
-        // This is handled by the chain itself
-      });
-
-      // Get all actors in the chain
-      const actorIds = delegationChain.getAllActorIds();
-
       // We need to add actors - but we only have IDs from the chain
       // The actual actor objects need to come from the resolution context
       // For now, we'll add the principal

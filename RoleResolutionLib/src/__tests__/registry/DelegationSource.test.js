@@ -74,76 +74,6 @@ describe('InMemoryDelegationSource', () => {
     });
   });
 
-  describe('_isValidDelegation', () => {
-    it('should use delegation.isValidAt if it exists and returns true', () => {
-      const del = new Delegation({
-        id: 'del-1',
-        principalId: 'p1',
-        delegateId: 'd1',
-        validFrom: pastDate,
-        validTo: futureDate
-      });
-      // The Delegation value object has an isValidAt method
-      expect(source._isValidDelegation(del, now)).toBe(true);
-    });
-
-    it('should use delegation.isValidAt if it exists and returns false', () => {
-      const del = new Delegation({
-        id: 'del-1',
-        principalId: 'p1',
-        delegateId: 'd1',
-        validFrom: pastDate,
-        validTo: new Date('2022-12-31T12:00:00Z')
-      });
-      expect(source._isValidDelegation(del, now)).toBe(false);
-    });
-
-    it('should fallback to manual checking - inactive', () => {
-      const del = {
-        id: 'del-1',
-        principalId: 'p1',
-        delegateId: 'd1',
-        isActive: false
-      };
-      expect(source._isValidDelegation(del, now)).toBe(false);
-    });
-
-    it('should fallback to manual checking - validFrom in future', () => {
-      const del = {
-        id: 'del-1',
-        principalId: 'p1',
-        delegateId: 'd1',
-        isActive: true,
-        validFrom: futureDate
-      };
-      expect(source._isValidDelegation(del, now)).toBe(false);
-    });
-
-    it('should fallback to manual checking - validTo in past', () => {
-      const del = {
-        id: 'del-1',
-        principalId: 'p1',
-        delegateId: 'd1',
-        isActive: true,
-        validFrom: new Date('2020-01-01'),
-        validTo: pastDate
-      };
-      expect(source._isValidDelegation(del, now)).toBe(false);
-    });
-
-    it('should fallback to manual checking - valid', () => {
-      const del = {
-        id: 'del-1',
-        principalId: 'p1',
-        delegateId: 'd1',
-        isActive: true,
-        validFrom: pastDate,
-        validTo: futureDate
-      };
-      expect(source._isValidDelegation(del, now)).toBe(true);
-    });
-  });
-
   describe('Retrieval Methods', () => {
     let del1, del2, del3;
 
@@ -261,17 +191,6 @@ describe('InMemoryDelegationSource', () => {
           validTo: futureDate
         })
       );
-
-      // Delegation using manual object (no appliesToRole method)
-      source.addDelegation({
-        id: 'manual-1',
-        principalId: 'p7',
-        delegateId: 'p8',
-        roleIds: ['role-d'],
-        isActive: true,
-        validFrom: pastDate,
-        validTo: futureDate
-      });
     });
 
     it('should return linear delegation chain', () => {
@@ -291,17 +210,6 @@ describe('InMemoryDelegationSource', () => {
       expect(chain).toHaveLength(2); // p5->p6, p6->p5 and then stops
       expect(chain[0].id).toBe('circ-1');
       expect(chain[1].id).toBe('circ-2');
-    });
-
-    it('should work with manual objects lacking appliesToRole/appliesToScope', () => {
-      const chain = source.getDelegationChain('p7', 'role-d', scope, now);
-      expect(chain).toHaveLength(1);
-      expect(chain[0].id).toBe('manual-1');
-    });
-
-    it('should not include manual objects if role mismatch', () => {
-      const chain = source.getDelegationChain('p7', 'role-a', scope, now);
-      expect(chain).toHaveLength(0);
     });
   });
 });

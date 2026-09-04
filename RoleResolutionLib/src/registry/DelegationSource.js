@@ -75,45 +75,15 @@ export class InMemoryDelegationSource extends DelegationSource {
   }
 
   /**
-   * @function _isValidDelegation
-   * @description Internal validity checker (isActive, validFrom, validTo).
-   * @param {Delegation} delegation - Target for check.
-   * @param {Date} asOfDate - Reference time.
-   * @returns {boolean}
-   * @private
-   */
-  _isValidDelegation(delegation, asOfDate) {
-    if (typeof delegation.isValidAt === 'function') {
-      return delegation.isValidAt(asOfDate);
-    }
-
-    // Manual validity check
-    if (delegation.isActive === false) {
-      return false;
-    }
-    if (delegation.validFrom && asOfDate < new Date(delegation.validFrom)) {
-      return false;
-    }
-    if (delegation.validTo && asOfDate > new Date(delegation.validTo)) {
-      return false;
-    }
-
-    return true;
-  }
-
-  /**
    * @function getActiveDelegationsForPrincipal
    * @param {string} principalId - Issuer ID.
    * @param {Date} [asOfDate=new Date()] - Reference time.
    * @returns {Delegation[]}
    */
   getActiveDelegationsForPrincipal(principalId, asOfDate = new Date()) {
-    return this._delegations.filter((delegation) => {
-      if (delegation.principalId !== principalId) {
-        return false;
-      }
-      return this._isValidDelegation(delegation, asOfDate);
-    });
+    return this._delegations.filter(
+      (delegation) => delegation.principalId === principalId && delegation.isValidAt(asOfDate)
+    );
   }
 
   /**
@@ -123,12 +93,9 @@ export class InMemoryDelegationSource extends DelegationSource {
    * @returns {Delegation[]}
    */
   getActiveDelegationsForDelegate(delegateId, asOfDate = new Date()) {
-    return this._delegations.filter((delegation) => {
-      if (delegation.delegateId !== delegateId) {
-        return false;
-      }
-      return this._isValidDelegation(delegation, asOfDate);
-    });
+    return this._delegations.filter(
+      (delegation) => delegation.delegateId === delegateId && delegation.isValidAt(asOfDate)
+    );
   }
 
   /**
@@ -152,26 +119,9 @@ export class InMemoryDelegationSource extends DelegationSource {
       const delegations = this.getActiveDelegationsForPrincipal(currentActorId, asOfDate);
 
       // Find a delegation that applies to the role and scope
-      const applicableDelegation = delegations.find((delegation) => {
-        // Check if delegation applies to this role
-        if (typeof delegation.appliesToRole === 'function') {
-          if (!delegation.appliesToRole(roleId)) {
-            return false;
-          }
-        } else {
-          // Manual check
-          if (delegation.roleIds !== '*' && !delegation.roleIds?.includes(roleId)) {
-            return false;
-          }
-        }
-
-        // Check if delegation applies to this scope
-        if (typeof delegation.appliesToScope === 'function') {
-          return delegation.appliesToScope(scope);
-        }
-
-        return true;
-      });
+      const applicableDelegation = delegations.find(
+        (delegation) => delegation.appliesToRole(roleId) && delegation.appliesToScope(scope)
+      );
 
       if (applicableDelegation) {
         chain.push(applicableDelegation);
