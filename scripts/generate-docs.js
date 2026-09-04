@@ -149,14 +149,16 @@ function generateMarkdown(libName, data) {
 // --- FALLBACK PARSER FOR TS / MODERN JSDOC SYNTAX ---
 
 function extractDescriptionFromJsDoc(jsDoc) {
-  if (!jsDoc) return '';
+  if (!jsDoc) {
+    return '';
+  }
   let content = jsDoc.replace(/^\/\*\*\s*/, '').replace(/\s*\*\/$/, '');
   content = content
     .split('\n')
     .map((line) => line.replace(/^\s*\*\s?/, ''))
     .join('\n');
   const atTagIndex = content.search(/@\w+/);
-  let description = atTagIndex > 0 ? content.substring(0, atTagIndex) : content;
+  const description = atTagIndex > 0 ? content.substring(0, atTagIndex) : content;
   return description
     .replace(/@file\s+[^\n]+/g, '')
     .replace(/@description\s*/g, '')
@@ -180,14 +182,18 @@ function extractParamsFromJsDoc(jsDoc, rawParamsStr) {
   if (params.length === 0 && rawParamsStr && rawParamsStr.trim()) {
     rawParamsStr.split(',').forEach((p) => {
       const clean = p.trim().split('=')[0].trim();
-      if (clean) params.push({ name: clean });
+      if (clean) {
+        params.push({ name: clean });
+      }
     });
   }
   return params;
 }
 
 function extractReturnsFromJsDoc(jsDoc) {
-  if (!jsDoc) return [];
+  if (!jsDoc) {
+    return [];
+  }
   const returnsMatch = jsDoc.match(/@returns?\s+(?:\{([^}]+)\})?/);
   if (returnsMatch) {
     return [{ type: returnsMatch[1] ? { names: [returnsMatch[1].trim()] } : undefined }];
@@ -218,7 +224,16 @@ function fallbackParseFile(filePath) {
       meta: { path: dir, filename: filename }
     });
 
-    const classStart = content.indexOf('{', match.index);
+    // Search from the end of the matched "class Foo" declaration itself
+    // (classRegex.lastIndex), not from match.index. match.index can point at
+    // the START of a preceding JSDoc block — and because the leading
+    // "(/**...*/)?" group is lazy, it can backtrack past an earlier
+    // file-level comment and swallow unrelated code (e.g. an import list) in
+    // between, so indexOf('{', match.index) can land on the wrong brace
+    // entirely (see SheetDBLib/src/TableService.js). lastIndex is always the
+    // position immediately after the class name, so the next '{' from there
+    // is always the real class body.
+    const classStart = content.indexOf('{', classRegex.lastIndex);
     if (classStart !== -1) {
       let braceCount = 0;
       let classEnd = classStart;
@@ -238,7 +253,8 @@ function fallbackParseFile(filePath) {
       }
 
       const classBody = content.substring(classStart, classEnd + 1);
-      const methodRegex = /(\/\*\*[\s\S]*?\*\/)?\s*(static\s+)?(?:async\s+)?(\w+)\s*\(([^)]*)\)\s*\{/g;
+      const methodRegex =
+        /(\/\*\*[\s\S]*?\*\/)?\s*(static\s+)?(?:async\s+)?(\w+)\s*\(([^)]*)\)\s*\{/g;
       let mMatch;
 
       while ((mMatch = methodRegex.exec(classBody)) !== null) {
@@ -341,4 +357,3 @@ async function run() {
 }
 
 run();
-

@@ -1146,6 +1146,138 @@ export function _registerCompositeSpecification(cls) {
  */
 ```
 
+### Methods of Specification
+
+#### METHOD: Specification.if
+- **Scope:** instance
+- **LLM Call Syntax:** `specification.if(new.target);`
+- **Pure JSDoc:**
+```javascript
+/** Method if */
+```
+---
+#### METHOD: Specification.isSatisfiedBy
+- **Scope:** instance
+- **LLM Call Syntax:** `const result = specification.isSatisfiedBy(entity);`
+- **Pure JSDoc:**
+```javascript
+/**
+   * Evaluates the specification logic against a domain entity instance.
+   * @abstract
+   * @param {Object} entity Domain entity to test.
+   * @returns {boolean} True if the entity satisfies the business rule.
+   * @throws {Error} If the subclass fails to implement this method.
+   */
+```
+---
+#### METHOD: Specification.and
+- **Scope:** instance
+- **LLM Call Syntax:** `const result = specification.and(other);`
+- **Pure JSDoc:**
+```javascript
+/**
+   * Chains the current specification with another using logical AND.
+   * @param {Specification} other Follow-on specification.
+   * @returns {Specification} Combined composite specification.
+   */
+```
+---
+#### METHOD: Specification.or
+- **Scope:** instance
+- **LLM Call Syntax:** `const result = specification.or(other);`
+- **Pure JSDoc:**
+```javascript
+/**
+   * Chains the current specification with another using logical OR.
+   * @param {Specification} other Alternative specification.
+   * @returns {Specification} Combined composite specification.
+   */
+```
+---
+#### METHOD: Specification.not
+- **Scope:** instance
+- **LLM Call Syntax:** `const result = specification.not();`
+- **Pure JSDoc:**
+```javascript
+/**
+   * Negates the current specification using logical NOT.
+   * @returns {Specification} Negated composite specification.
+   */
+```
+---
+#### METHOD: Specification.toQuery
+- **Scope:** instance
+- **LLM Call Syntax:** `const result = specification.toQuery(queryBuilder);`
+- **Pure JSDoc:**
+```javascript
+/**
+   * Translates the domain rule into SheetDBLib query builder instructions.
+   * @param {Object} queryBuilder Database query constructor.
+   * @returns {Object} The configured query builder.
+   * @throws {Error} If the specification does not support database translation.
+   */
+```
+---
+#### METHOD: Specification.toQueryObject
+- **Scope:** instance
+- **LLM Call Syntax:** `const result = specification.toQueryObject();`
+- **Pure JSDoc:**
+```javascript
+/**
+   * Percorso rapido di pushdown per specification domain-pure.
+   *
+   * Restituisce un oggetto di uguaglianze `{colonna: valore}` quando la regola è
+   * interamente esprimibile come uguaglianze, `null` quando serve la valutazione
+   * in memoria. Alternativa a `toQuery(queryBuilder)`: permette al layer di
+   * dominio di restare libero da qualsiasi import di query builder.
+   *
+   * INVARIANTE — quando restituisce un oggetto non-null, il filtro deve essere
+   * ESATTAMENTE equivalente a isSatisfiedBy(). Repository.find() applica UNO SOLO
+   * dei due: se divergono, il risultato è silenziosamente sbagliato, senza errori.
+   * Nel dubbio, restituire null.
+   *
+   * @returns {Record<string, unknown>|null}
+   */
+```
+---
+#### METHOD: Specification.toString
+- **Scope:** instance
+- **LLM Call Syntax:** `const result = specification.toString();`
+- **Pure JSDoc:**
+```javascript
+/**
+   * Uses the static query-object path first, then probes genuine toQuery overrides.
+   * @returns {boolean} True if the specification can be expressed as a database query.
+   */
+  canBeTranslatedToQuery(queryObjectCriteria = this.toQueryObject()) {
+    if (queryObjectCriteria !== null && queryObjectCriteria !== undefined) {
+      return true;
+    }
+    if (this.toQuery === Specification.prototype.toQuery) {
+      return false;
+    }
+
+    try {
+      const mockBuilder = {
+        where: () => mockBuilder,
+        andWhere: () => mockBuilder,
+        orWhere: () => mockBuilder,
+        whereLike: () => mockBuilder,
+        whereIn: () => mockBuilder
+      };
+      this.toQuery(mockBuilder);
+      return true;
+    } catch (_error) {
+      return false;
+    }
+  }
+
+  /**
+   * Returns a concise string representation of the specification type.
+   * @returns {string} Formatted class name.
+   */
+```
+---
 <br>
 
 ## CLASS: directly
@@ -2913,5 +3045,29 @@ Extends the shared {
  */
 ```
 
+### Methods of DomainException
+
+#### METHOD: DomainException.getDetails
+- **Scope:** instance
+- **LLM Call Syntax:** `const result = domainException.getDetails();`
+- **Pure JSDoc:**
+```javascript
+/**
+   * Retrieves the auxiliary diagnostic metadata associated with the exception.
+   * @returns {Object} Metadata record.
+   */
+```
+---
+#### METHOD: DomainException.toObject
+- **Scope:** instance
+- **LLM Call Syntax:** `const result = domainException.toObject();`
+- **Pure JSDoc:**
+```javascript
+/**
+   * Serializes the exception into a plain object suitable for logging or external transmission.
+   * @returns {{name:string, message:string, context:string, details:Object, stack:string}} Serialized error state.
+   */
+```
+---
 <br>
 

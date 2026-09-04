@@ -195,6 +195,47 @@ class UppercaseFilter extends FilterStrategy {
  */
 ```
 
+### Methods of FilterStrategy
+
+#### METHOD: FilterStrategy.getName
+- **Scope:** instance
+- **LLM Call Syntax:** `const result = filterStrategy.getName();`
+- **Pure JSDoc:**
+```javascript
+/**
+   * @description Returns the unique identifier for the filter used in template expressions.
+   * @returns {string} Unique filter name (e.g., 'uppercase').
+   * @abstract
+   */
+```
+---
+#### METHOD: FilterStrategy.execute
+- **Scope:** instance
+- **LLM Call Syntax:** `const result = filterStrategy.execute(value, args);`
+- **Pure JSDoc:**
+```javascript
+/**
+   * @description Performs the core value transformation.
+   * @param {*} value Input value to be transformed.
+   * @param {...*} args Optional arguments passed from the template expression.
+   * @returns {*} The transformed value.
+   * @abstract
+   */
+```
+---
+#### METHOD: FilterStrategy.validate
+- **Scope:** instance
+- **LLM Call Syntax:** `filterStrategy.validate(value, args);`
+- **Pure JSDoc:**
+```javascript
+/**
+   * @description Validates filter arguments before execution.
+   * @param {*} value The input value.
+   * @param {Array<*>} args Array of arguments passed to the filter.
+   * @throws {Error} If argument validation fails.
+   */
+```
+---
 <br>
 
 ## CLASS: FilterRegistry
@@ -275,6 +316,32 @@ Centralized registry for managing and resolving FilterStrategy instances.
  */
 ```
 
+### Methods of FilterRegistry
+
+#### METHOD: FilterRegistry.register
+- **Scope:** instance
+- **LLM Call Syntax:** `filterRegistry.register(filterStrategy);`
+- **Pure JSDoc:**
+```javascript
+/**
+   * @description Registers a new filter strategy.
+   * @param {FilterStrategy} filterStrategy Instance of a FilterStrategy subclass.
+   * @throws {Error} If filterStrategy is invalid or name collisions occur.
+   */
+```
+---
+#### METHOD: FilterRegistry.registerAll
+- **Scope:** instance
+- **LLM Call Syntax:** `filterRegistry.registerAll(filterStrategies);`
+- **Pure JSDoc:**
+```javascript
+/**
+   * @description Batch registers multiple filter strategies.
+   * @param {FilterStrategy[]} filterStrategies Array of filter instances.
+   * @throws {Error} If input is not an array.
+   */
+```
+---
 <br>
 
 ## CLASS: MustacheMock
@@ -596,6 +663,32 @@ import { SortFilter } from './AdvancedFilters.js';
  */
 ```
 
+### Methods of UppercaseFilter
+
+#### METHOD: UppercaseFilter.getName
+- **Scope:** instance
+- **LLM Call Syntax:** `uppercaseFilter.getName();`
+- **Pure JSDoc:**
+```javascript
+/** Method getName */
+```
+---
+#### METHOD: UppercaseFilter.getDescription
+- **Scope:** instance
+- **LLM Call Syntax:** `uppercaseFilter.getDescription();`
+- **Pure JSDoc:**
+```javascript
+/** Method getDescription */
+```
+---
+#### METHOD: UppercaseFilter.execute
+- **Scope:** instance
+- **LLM Call Syntax:** `uppercaseFilter.execute(value);`
+- **Pure JSDoc:**
+```javascript
+/** Method execute */
+```
+---
 <br>
 
 ## CLASS: LowercaseFilter
@@ -844,6 +937,48 @@ Number formatter. Applies locale-specific formatting with optional fixed decimal
  */
 ```
 
+### Methods of NumberFilter
+
+#### METHOD: NumberFilter.getName
+- **Scope:** instance
+- **LLM Call Syntax:** `numberFilter.getName();`
+- **Pure JSDoc:**
+```javascript
+/** Method getName */
+```
+---
+#### METHOD: NumberFilter.getDescription
+- **Scope:** instance
+- **LLM Call Syntax:** `numberFilter.getDescription();`
+- **Pure JSDoc:**
+```javascript
+/** Method getDescription */
+```
+---
+#### METHOD: NumberFilter.execute
+- **Scope:** instance
+- **LLM Call Syntax:** `numberFilter.execute(value, decimals);`
+- **Pure JSDoc:**
+```javascript
+/** Method execute */
+```
+---
+#### METHOD: NumberFilter.if
+- **Scope:** instance
+- **LLM Call Syntax:** `numberFilter.if(typeof value !);`
+- **Pure JSDoc:**
+```javascript
+/** Method if */
+```
+---
+#### METHOD: NumberFilter.if
+- **Scope:** instance
+- **LLM Call Syntax:** `numberFilter.if(decimals !);`
+- **Pure JSDoc:**
+```javascript
+/** Method if */
+```
+---
 <br>
 
 ## CLASS: JoinFilter
@@ -960,6 +1095,32 @@ Conditional string selector. Returns singular or plural form based on a numeric 
  */
 ```
 
+### Methods of PluralizeFilter
+
+#### METHOD: PluralizeFilter.getName
+- **Scope:** instance
+- **LLM Call Syntax:** `pluralizeFilter.getName();`
+- **Pure JSDoc:**
+```javascript
+/** Method getName */
+```
+---
+#### METHOD: PluralizeFilter.getDescription
+- **Scope:** instance
+- **LLM Call Syntax:** `pluralizeFilter.getDescription();`
+- **Pure JSDoc:**
+```javascript
+/** Method getDescription */
+```
+---
+#### METHOD: PluralizeFilter.execute
+- **Scope:** instance
+- **LLM Call Syntax:** `pluralizeFilter.execute(number, singular, plural);`
+- **Pure JSDoc:**
+```javascript
+/** Method execute */
+```
+---
 <br>
 
 ## CLASS: WhereFilter
@@ -1081,6 +1242,40 @@ import { FilterStrategy } from '../../FilterStrategy.js';
  */
 ```
 
+### Methods of DefaultFilter
+
+#### METHOD: DefaultFilter.getName
+- **Scope:** instance
+- **LLM Call Syntax:** `defaultFilter.getName();`
+- **Pure JSDoc:**
+```javascript
+/** Method getName */
+```
+---
+#### METHOD: DefaultFilter.getDescription
+- **Scope:** instance
+- **LLM Call Syntax:** `defaultFilter.getDescription();`
+- **Pure JSDoc:**
+```javascript
+/** Method getDescription */
+```
+---
+#### METHOD: DefaultFilter.execute
+- **Scope:** instance
+- **LLM Call Syntax:** `defaultFilter.execute(value, defaultValue);`
+- **Pure JSDoc:**
+```javascript
+/** Method execute */
+```
+---
+#### METHOD: DefaultFilter.if
+- **Scope:** instance
+- **LLM Call Syntax:** `defaultFilter.if(value);`
+- **Pure JSDoc:**
+```javascript
+/** Method if */
+```
+---
 <br>
 
 ## CLASS: YesNoFilter
@@ -1153,6 +1348,32 @@ Boolean-to-string transformer. Format: "YesString,NoString".
  */
 ```
 
+### Methods of YesNoFilter
+
+#### METHOD: YesNoFilter.getName
+- **Scope:** instance
+- **LLM Call Syntax:** `yesNoFilter.getName();`
+- **Pure JSDoc:**
+```javascript
+/** Method getName */
+```
+---
+#### METHOD: YesNoFilter.getDescription
+- **Scope:** instance
+- **LLM Call Syntax:** `yesNoFilter.getDescription();`
+- **Pure JSDoc:**
+```javascript
+/** Method getDescription */
+```
+---
+#### METHOD: YesNoFilter.execute
+- **Scope:** instance
+- **LLM Call Syntax:** `yesNoFilter.execute(value, yesNoString, No');`
+- **Pure JSDoc:**
+```javascript
+/** Method execute */
+```
+---
 <br>
 
 ## CLASS: TruncateFilter
@@ -1797,6 +2018,32 @@ Array order reverser. Creates a shallow copy before reversing.
  */
 ```
 
+### Methods of ReverseFilter
+
+#### METHOD: ReverseFilter.getName
+- **Scope:** instance
+- **LLM Call Syntax:** `reverseFilter.getName();`
+- **Pure JSDoc:**
+```javascript
+/** Method getName */
+```
+---
+#### METHOD: ReverseFilter.getDescription
+- **Scope:** instance
+- **LLM Call Syntax:** `reverseFilter.getDescription();`
+- **Pure JSDoc:**
+```javascript
+/** Method getDescription */
+```
+---
+#### METHOD: ReverseFilter.execute
+- **Scope:** instance
+- **LLM Call Syntax:** `reverseFilter.execute(array);`
+- **Pure JSDoc:**
+```javascript
+/** Method execute */
+```
+---
 <br>
 
 ## CLASS: PlusFilter
@@ -2144,6 +2391,97 @@ Supports parent context navigation ('../') and dot-notation property access.
  */
 ```
 
+### Methods of _MustacheContext
+
+#### METHOD: _MustacheContext.push
+- **Scope:** instance
+- **LLM Call Syntax:** `const result = _MustacheContext.push(view);`
+- **Pure JSDoc:**
+```javascript
+/**
+   * @description Creates a child context by pushing a new data view onto the stack.
+   * @param {*} view The data object or primitive for the new context level.
+   * @returns {_MustacheContext} A new context instance linked to the current one as parent.
+   */
+```
+---
+#### METHOD: _MustacheContext.lookup
+- **Scope:** instance
+- **LLM Call Syntax:** `const result = _MustacheContext.lookup(name);`
+- **Pure JSDoc:**
+```javascript
+/**
+   * @description Resolves a value by key name across the current and parent contexts.
+   * Supports Handlebars-style '../' navigation and deep property paths.
+   * @param {string} name Identifier or path (e.g., 'user.name', '../title').
+   * @returns {*} Resolved value or undefined.
+   */
+```
+---
+#### METHOD: _MustacheContext.for
+- **Scope:** instance
+- **LLM Call Syntax:** `_MustacheContext.for(let i);`
+- **Pure JSDoc:**
+```javascript
+/** Method for */
+```
+---
+#### METHOD: _MustacheContext.if
+- **Scope:** instance
+- **LLM Call Syntax:** `_MustacheContext.if(parentLevels > 0 && !targetContext);`
+- **Pure JSDoc:**
+```javascript
+/** Method if */
+```
+---
+#### METHOD: _MustacheContext.while
+- **Scope:** instance
+- **LLM Call Syntax:** `_MustacheContext.while(context);`
+- **Pure JSDoc:**
+```javascript
+/** Method while */
+```
+---
+#### METHOD: _MustacheContext.while
+- **Scope:** instance
+- **LLM Call Syntax:** `_MustacheContext.while(intermediateValue !);`
+- **Pure JSDoc:**
+```javascript
+/** Method while */
+```
+---
+#### METHOD: _MustacheContext.if
+- **Scope:** instance
+- **LLM Call Syntax:** `_MustacheContext.if(index);`
+- **Pure JSDoc:**
+```javascript
+/** Method if */
+```
+---
+#### METHOD: _MustacheContext.if
+- **Scope:** instance
+- **LLM Call Syntax:** `_MustacheContext.if(lookupHit);`
+- **Pure JSDoc:**
+```javascript
+/** Method if */
+```
+---
+#### METHOD: _MustacheContext.if
+- **Scope:** instance
+- **LLM Call Syntax:** `_MustacheContext.if(parentLevels > 0);`
+- **Pure JSDoc:**
+```javascript
+/** Method if */
+```
+---
+#### METHOD: _MustacheContext.if
+- **Scope:** instance
+- **LLM Call Syntax:** `_MustacheContext.if(typeof value);`
+- **Pure JSDoc:**
+```javascript
+/** Method if */
+```
+---
 <br>
 
 ## CLASS: _FunctionFilterStrategy
@@ -2384,6 +2722,32 @@ Enables backward compatibility with functional filter registrations.
  */
 ```
 
+### Methods of _FunctionFilterStrategy
+
+#### METHOD: _FunctionFilterStrategy.getName
+- **Scope:** instance
+- **LLM Call Syntax:** `_FunctionFilterStrategy.getName();`
+- **Pure JSDoc:**
+```javascript
+/** Method getName */
+```
+---
+#### METHOD: _FunctionFilterStrategy.getDescription
+- **Scope:** instance
+- **LLM Call Syntax:** `_FunctionFilterStrategy.getDescription();`
+- **Pure JSDoc:**
+```javascript
+/** Method getDescription */
+```
+---
+#### METHOD: _FunctionFilterStrategy.execute
+- **Scope:** instance
+- **LLM Call Syntax:** `_FunctionFilterStrategy.execute(value, ...args);`
+- **Pure JSDoc:**
+```javascript
+/** Method execute */
+```
+---
 <br>
 
 ## CLASS: MyMustache

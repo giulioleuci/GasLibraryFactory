@@ -3610,6 +3610,16 @@ High-fidelity mock for LoggerService with jest.fn() instrumentation and method c
  */
 ```
 
+### Methods of UtilsServiceMock
+
+#### METHOD: UtilsServiceMock.for
+- **Scope:** instance
+- **LLM Call Syntax:** `utilsServiceMock.for(let i);`
+- **Pure JSDoc:**
+```javascript
+/** Method for */
+```
+---
 <br>
 
 ## CLASS: CacheInterfaceMock
@@ -3702,6 +3712,299 @@ const STEP_ICONS = {
 /** Pure formatter for deterministic hierarchical console lines. */
 ```
 
+### Methods of StructuredLogFormatter
+
+#### METHOD: StructuredLogFormatter.treePrefix
+- **Scope:** instance
+- **LLM Call Syntax:** `const result = structuredLogFormatter.treePrefix(position);`
+- **Pure JSDoc:**
+```javascript
+/**
+   * @param {TreePosition} [position]
+   * @returns {string}
+   */
+```
+---
+#### METHOD: StructuredLogFormatter.if
+- **Scope:** instance
+- **LLM Call Syntax:** `structuredLogFormatter.if(depth);`
+- **Pure JSDoc:**
+```javascript
+/** Method if */
+```
+---
+#### METHOD: StructuredLogFormatter.for
+- **Scope:** instance
+- **LLM Call Syntax:** `structuredLogFormatter.for(let index);`
+- **Pure JSDoc:**
+```javascript
+/** Method for */
+```
+---
+#### METHOD: StructuredLogFormatter.jobStart
+- **Scope:** instance
+- **LLM Call Syntax:** `const result = structuredLogFormatter.jobStart(jobName, jobType);`
+- **Pure JSDoc:**
+```javascript
+/** @returns {string[]} */
+```
+---
+#### METHOD: StructuredLogFormatter.jobResume
+- **Scope:** instance
+- **LLM Call Syntax:** `const result = structuredLogFormatter.jobResume(jobName, jobType, details);`
+- **Pure JSDoc:**
+```javascript
+/** @returns {string[]} */
+```
+---
+#### METHOD: StructuredLogFormatter.if
+- **Scope:** instance
+- **LLM Call Syntax:** `structuredLogFormatter.if(detailText);`
+- **Pure JSDoc:**
+```javascript
+/** Method if */
+```
+---
+#### METHOD: StructuredLogFormatter.jobEnd
+- **Scope:** instance
+- **LLM Call Syntax:** `const result = structuredLogFormatter.jobEnd(jobName, isSuccess, details);`
+- **Pure JSDoc:**
+```javascript
+/** @returns {string[]} */
+```
+---
+#### METHOD: StructuredLogFormatter.if
+- **Scope:** instance
+- **LLM Call Syntax:** `structuredLogFormatter.if(content);`
+- **Pure JSDoc:**
+```javascript
+/** Method if */
+```
+---
+#### METHOD: StructuredLogFormatter.if
+- **Scope:** instance
+- **LLM Call Syntax:** `structuredLogFormatter.if(duration !);`
+- **Pure JSDoc:**
+```javascript
+/** Method if */
+```
+---
+#### METHOD: StructuredLogFormatter.if
+- **Scope:** instance
+- **LLM Call Syntax:** `structuredLogFormatter.if(content);`
+- **Pure JSDoc:**
+```javascript
+/** Method if */
+```
+---
+#### METHOD: StructuredLogFormatter.if
+- **Scope:** instance
+- **LLM Call Syntax:** `structuredLogFormatter.if(detailText);`
+- **Pure JSDoc:**
+```javascript
+/** Method if */
+```
+---
+#### METHOD: StructuredLogFormatter.jobSuspended
+- **Scope:** instance
+- **LLM Call Syntax:** `const result = structuredLogFormatter.jobSuspended(jobName, details);`
+- **Pure JSDoc:**
+```javascript
+/** @returns {string[]} */
+```
+---
+#### METHOD: StructuredLogFormatter.if
+- **Scope:** instance
+- **LLM Call Syntax:** `structuredLogFormatter.if(content);`
+- **Pure JSDoc:**
+```javascript
+/** Method if */
+```
+---
+#### METHOD: StructuredLogFormatter.if
+- **Scope:** instance
+- **LLM Call Syntax:** `structuredLogFormatter.if(duration !);`
+- **Pure JSDoc:**
+```javascript
+/** Method if */
+```
+---
+#### METHOD: StructuredLogFormatter.if
+- **Scope:** instance
+- **LLM Call Syntax:** `structuredLogFormatter.if(content);`
+- **Pure JSDoc:**
+```javascript
+/** Method if */
+```
+---
+#### METHOD: StructuredLogFormatter.if
+- **Scope:** instance
+- **LLM Call Syntax:** `structuredLogFormatter.if(detailText);`
+- **Pure JSDoc:**
+```javascript
+/** Method if */
+```
+---
+#### METHOD: StructuredLogFormatter.batchStart
+- **Scope:** instance
+- **LLM Call Syntax:** `const result = structuredLogFormatter.batchStart(totalItems, label);`
+- **Pure JSDoc:**
+```javascript
+/** @returns {string[]} */
+```
+---
+#### METHOD: StructuredLogFormatter.itemStart
+- **Scope:** instance
+- **LLM Call Syntax:** `const result = structuredLogFormatter.itemStart(itemIndex, totalItems, itemLabel, identifier, kind);`
+- **Pure JSDoc:**
+```javascript
+/** @returns {string[]} */
+```
+---
+#### METHOD: StructuredLogFormatter.step
+- **Scope:** instance
+- **LLM Call Syntax:** `const result = structuredLogFormatter.step(message, position);`
+- **Pure JSDoc:**
+```javascript
+/** @returns {string[]} */
+```
+---
+#### METHOD: StructuredLogFormatter.pipelineStart
+- **Scope:** instance
+- **LLM Call Syntax:** `const result = structuredLogFormatter.pipelineStart(pipelineName, totalSteps, position);`
+- **Pure JSDoc:**
+```javascript
+/** @returns {string[]} */
+```
+---
+#### METHOD: StructuredLogFormatter.pipelineStep
+- **Scope:** instance
+- **LLM Call Syntax:** `const result = structuredLogFormatter.pipelineStep(stepName, status, details, position);`
+- **Pure JSDoc:**
+```javascript
+/** @returns {string[]} */
+```
+---
+#### METHOD: StructuredLogFormatter.if
+- **Scope:** instance
+- **LLM Call Syntax:** `structuredLogFormatter.if(detailText);`
+- **Pure JSDoc:**
+```javascript
+/** Method if */
+```
+---
+#### METHOD: StructuredLogFormatter.summary
+- **Scope:** instance
+- **LLM Call Syntax:** `const result = structuredLogFormatter.summary(label, durationMs, itemDetails, position);`
+- **Pure JSDoc:**
+```javascript
+/** @returns {string[]} */
+```
+---
+#### METHOD: StructuredLogFormatter.if
+- **Scope:** instance
+- **LLM Call Syntax:** `structuredLogFormatter.if(details);`
+- **Pure JSDoc:**
+```javascript
+/** Method if */
+```
+---
+#### METHOD: StructuredLogFormatter.if
+- **Scope:** instance
+- **LLM Call Syntax:** `structuredLogFormatter.if(details.checkpoint !);`
+- **Pure JSDoc:**
+```javascript
+/** Method if */
+```
+---
+#### METHOD: StructuredLogFormatter.if
+- **Scope:** instance
+- **LLM Call Syntax:** `structuredLogFormatter.if(details.percentage !);`
+- **Pure JSDoc:**
+```javascript
+/** Method if */
+```
+---
+#### METHOD: StructuredLogFormatter.catch
+- **Scope:** instance
+- **LLM Call Syntax:** `structuredLogFormatter.catch(_error);`
+- **Pure JSDoc:**
+```javascript
+/** Method catch */
+```
+---
+#### METHOD: StructuredLogFormatter.if
+- **Scope:** instance
+- **LLM Call Syntax:** `structuredLogFormatter.if(details);`
+- **Pure JSDoc:**
+```javascript
+/** Method if */
+```
+---
+#### METHOD: StructuredLogFormatter.if
+- **Scope:** instance
+- **LLM Call Syntax:** `structuredLogFormatter.if(details.length);`
+- **Pure JSDoc:**
+```javascript
+/** Method if */
+```
+---
+#### METHOD: StructuredLogFormatter.if
+- **Scope:** instance
+- **LLM Call Syntax:** `structuredLogFormatter.if(typeof details);`
+- **Pure JSDoc:**
+```javascript
+/** Method if */
+```
+---
+#### METHOD: StructuredLogFormatter.catch
+- **Scope:** instance
+- **LLM Call Syntax:** `structuredLogFormatter.catch(_error);`
+- **Pure JSDoc:**
+```javascript
+/** Method catch */
+```
+---
+#### METHOD: StructuredLogFormatter.if
+- **Scope:** instance
+- **LLM Call Syntax:** `structuredLogFormatter.if(value);`
+- **Pure JSDoc:**
+```javascript
+/** Method if */
+```
+---
+#### METHOD: StructuredLogFormatter.if
+- **Scope:** instance
+- **LLM Call Syntax:** `structuredLogFormatter.if(value);`
+- **Pure JSDoc:**
+```javascript
+/** Method if */
+```
+---
+#### METHOD: StructuredLogFormatter.if
+- **Scope:** instance
+- **LLM Call Syntax:** `structuredLogFormatter.if(typeof value);`
+- **Pure JSDoc:**
+```javascript
+/** Method if */
+```
+---
+#### METHOD: StructuredLogFormatter.catch
+- **Scope:** instance
+- **LLM Call Syntax:** `structuredLogFormatter.catch(_error);`
+- **Pure JSDoc:**
+```javascript
+/** Method catch */
+```
+---
+#### METHOD: StructuredLogFormatter.if
+- **Scope:** instance
+- **LLM Call Syntax:** `structuredLogFormatter.if(!firstPrefix);`
+- **Pure JSDoc:**
+```javascript
+/** Method if */
+```
+---
 <br>
 
 ## CLASS: Registry
@@ -4042,6 +4345,61 @@ import { Registry } from './Registry.js';
  */
 ```
 
+### Methods of LazyServiceContainer
+
+#### METHOD: LazyServiceContainer.register
+- **Scope:** instance
+- **LLM Call Syntax:** `lazyServiceContainer.register(name, factory);`
+- **Pure JSDoc:**
+```javascript
+/**
+   * Registers a factory under `name`. Overwriting a name clears any cached
+   * singleton for it, so the next `get()` re-resolves from the new factory.
+   * @param {string} name Service identifier.
+   * @param {Function} factory `(container) => T` — invoked at most once, lazily, on first `get(name)`.
+   */
+```
+---
+#### METHOD: LazyServiceContainer.has
+- **Scope:** instance
+- **LLM Call Syntax:** `const result = lazyServiceContainer.has(name);`
+- **Pure JSDoc:**
+```javascript
+/**
+   * @param {string} name Service identifier.
+   * @returns {boolean} True if a factory is registered under `name`.
+   */
+```
+---
+#### METHOD: LazyServiceContainer.if
+- **Scope:** instance
+- **LLM Call Syntax:** `lazyServiceContainer.if(!factory);`
+- **Pure JSDoc:**
+```javascript
+/** Method if */
+```
+---
+#### METHOD: LazyServiceContainer.reset
+- **Scope:** instance
+- **LLM Call Syntax:** `lazyServiceContainer.reset();`
+- **Pure JSDoc:**
+```javascript
+/**
+   * Clears cached singletons, without unregistering factories — the next
+   * `get()` per name lazily re-resolves. Primarily for test state isolation.
+   */
+```
+---
+#### METHOD: LazyServiceContainer.clear
+- **Scope:** instance
+- **LLM Call Syntax:** `lazyServiceContainer.clear();`
+- **Pure JSDoc:**
+```javascript
+/**
+   * Removes every registered factory and cached singleton.
+   */
+```
+---
 <br>
 
 ## CLASS: HashUtils

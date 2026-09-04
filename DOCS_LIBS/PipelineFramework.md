@@ -101,6 +101,225 @@ import { StepExecutionError } from './internal/errors/StepExecutionError';
  */
 ```
 
+### Methods of Step
+
+#### METHOD: Step.if
+- **Scope:** instance
+- **LLM Call Syntax:** `step.if(!name || typeof name !);`
+- **Pure JSDoc:**
+```javascript
+/** Method if */
+```
+---
+#### METHOD: Step.if
+- **Scope:** instance
+- **LLM Call Syntax:** `step.if(!logger || typeof logger !);`
+- **Pure JSDoc:**
+```javascript
+/** Method if */
+```
+---
+#### METHOD: Step.if
+- **Scope:** instance
+- **LLM Call Syntax:** `step.if(typeof logger.debug !);`
+- **Pure JSDoc:**
+```javascript
+/** Method if */
+```
+---
+#### METHOD: Step.if
+- **Scope:** instance
+- **LLM Call Syntax:** `step.if(options !);`
+- **Pure JSDoc:**
+```javascript
+/** Method if */
+```
+---
+#### METHOD: Step.getName
+- **Scope:** instance
+- **LLM Call Syntax:** `const result = step.getName();`
+- **Pure JSDoc:**
+```javascript
+/**
+     * Step name.
+     * @protected
+     * @type {string}
+     */
+    this._name = name;
+
+    /**
+     * Logger service.
+     * @protected
+     * @type {LoggerService}
+     */
+    this._logger = logger;
+
+    /**
+     * Required context keys for validation.
+     * @protected
+     * @type {string[]}
+     */
+    this._requiredKeys = options.requiredKeys || [];
+
+    /**
+     * Whether to continue pipeline on error.
+     * @protected
+     * @type {boolean}
+     */
+    this._continueOnError = options.continueOnError || false;
+
+    /**
+     * Custom condition function for conditional execution.
+     * @protected
+     * @type {Function|null}
+     */
+    this._shouldExecuteCondition = options.shouldExecuteCondition || null;
+  }
+
+  /**
+   * @returns {string} Unique step identifier.
+   */
+```
+---
+#### METHOD: Step.shouldExecute
+- **Scope:** instance
+- **LLM Call Syntax:** `const result = step.shouldExecute(context);`
+- **Pure JSDoc:**
+```javascript
+/**
+   * @returns {LoggerService} Active logging instance.
+   */
+  get logger() {
+    return this._logger;
+  }
+
+  /**
+   * Evaluates if the step should execute based on current context.
+   * Prioritizes 'shouldExecuteCondition' from options if present.
+   *
+   * @param {PipelineContext} context - Active pipeline execution context.
+   * @returns {boolean} True if step execution should proceed.
+   */
+```
+---
+#### METHOD: Step.if
+- **Scope:** instance
+- **LLM Call Syntax:** `step.if(this._shouldExecuteCondition && typeof this._shouldExecuteCondition);`
+- **Pure JSDoc:**
+```javascript
+/** Method if */
+```
+---
+#### METHOD: Step.verifyContext
+- **Scope:** instance
+- **LLM Call Syntax:** `step.verifyContext(context, requiredKeys);`
+- **Pure JSDoc:**
+```javascript
+/**
+   * Asserts presence of required keys in the context.
+   *
+   * @param {PipelineContext} context - Active pipeline execution context.
+   * @param {string[]} [requiredKeys] - Keys to validate (overrides instance defaults).
+   * @throws {ContextValidationError} If any required keys are missing from context.
+   * @protected
+   */
+```
+---
+#### METHOD: Step.if
+- **Scope:** instance
+- **LLM Call Syntax:** `step.if(!keys || keys.length);`
+- **Pure JSDoc:**
+```javascript
+/** Method if */
+```
+---
+#### METHOD: Step.if
+- **Scope:** instance
+- **LLM Call Syntax:** `step.if(missingKeys.length > 0);`
+- **Pure JSDoc:**
+```javascript
+/** Method if */
+```
+---
+#### METHOD: Step.setResult
+- **Scope:** instance
+- **LLM Call Syntax:** `const result = step.setResult(context, key, value);`
+- **Pure JSDoc:**
+```javascript
+/**
+   * Writes a value to the pipeline context.
+   *
+   * @param {PipelineContext} context - Active pipeline execution context.
+   * @param {string} key - Target context key.
+   * @param {*} value - Data to persist.
+   * @returns {Step} Current instance for chaining.
+   * @throws {Error} If key is not a string.
+   * @protected
+   */
+```
+---
+#### METHOD: Step.if
+- **Scope:** instance
+- **LLM Call Syntax:** `step.if(typeof key !);`
+- **Pure JSDoc:**
+```javascript
+/** Method if */
+```
+---
+#### METHOD: Step.getContextValue
+- **Scope:** instance
+- **LLM Call Syntax:** `const result = step.getContextValue(context, key, defaultValue);`
+- **Pure JSDoc:**
+```javascript
+/**
+   * Retrieves a value from the context with an optional fallback.
+   *
+   * @param {PipelineContext} context - Active pipeline execution context.
+   * @param {string} key - Context key to read.
+   * @param {*} [defaultValue=null] - Fallback if key is absent.
+   * @returns {*} Context value or defaultValue.
+   * @protected
+   */
+```
+---
+#### METHOD: Step.execute
+- **Scope:** instance
+- **LLM Call Syntax:** `const result = step.execute(context);`
+- **Pure JSDoc:**
+```javascript
+/**
+   * Orchestrates the step lifecycle: condition check, validation, logic execution, and error handling.
+   *
+   * @param {PipelineContext} context - Active pipeline execution context.
+   * @returns {StepExecutionResult} Performance data and execution status.
+   * @throws {StepExecutionError} If logic fails and continueOnError is false.
+   */
+```
+---
+#### METHOD: Step.catch
+- **Scope:** instance
+- **LLM Call Syntax:** `step.catch(detailError);`
+- **Pure JSDoc:**
+```javascript
+/** Method catch */
+```
+---
+#### METHOD: Step.catch
+- **Scope:** instance
+- **LLM Call Syntax:** `step.catch(error);`
+- **Pure JSDoc:**
+```javascript
+/** Method catch */
+```
+---
+#### METHOD: Step.if
+- **Scope:** instance
+- **LLM Call Syntax:** `step.if(this._continueOnError);`
+- **Pure JSDoc:**
+```javascript
+/** Method if */
+```
+---
 <br>
 
 ## CLASS: PipelineContext
@@ -330,6 +549,343 @@ import { PipelineContext } from './PipelineContext';
  */
 ```
 
+### Methods of Pipeline
+
+#### METHOD: Pipeline.if
+- **Scope:** instance
+- **LLM Call Syntax:** `pipeline.if(!logger || typeof logger !);`
+- **Pure JSDoc:**
+```javascript
+/** Method if */
+```
+---
+#### METHOD: Pipeline.for
+- **Scope:** instance
+- **LLM Call Syntax:** `pipeline.for(const method of ['debug', 'info', 'warn', 'error']);`
+- **Pure JSDoc:**
+```javascript
+/** Method for */
+```
+---
+#### METHOD: Pipeline.if
+- **Scope:** instance
+- **LLM Call Syntax:** `pipeline.if(typeof logger[method] !);`
+- **Pure JSDoc:**
+```javascript
+/** Method if */
+```
+---
+#### METHOD: Pipeline.if
+- **Scope:** instance
+- **LLM Call Syntax:** `pipeline.if(typeof this._logger.logPipelineStart);`
+- **Pure JSDoc:**
+```javascript
+/** Method if */
+```
+---
+#### METHOD: Pipeline.if
+- **Scope:** instance
+- **LLM Call Syntax:** `pipeline.if(typeof this._logger.logPipelineStep);`
+- **Pure JSDoc:**
+```javascript
+/** Method if */
+```
+---
+#### METHOD: Pipeline.if
+- **Scope:** instance
+- **LLM Call Syntax:** `pipeline.if(status);`
+- **Pure JSDoc:**
+```javascript
+/** Method if */
+```
+---
+#### METHOD: Pipeline.if
+- **Scope:** instance
+- **LLM Call Syntax:** `pipeline.if(status);`
+- **Pure JSDoc:**
+```javascript
+/** Method if */
+```
+---
+#### METHOD: Pipeline.if
+- **Scope:** instance
+- **LLM Call Syntax:** `pipeline.if(details);`
+- **Pure JSDoc:**
+```javascript
+/** Method if */
+```
+---
+#### METHOD: Pipeline.if
+- **Scope:** instance
+- **LLM Call Syntax:** `pipeline.if(typeof details);`
+- **Pure JSDoc:**
+```javascript
+/** Method if */
+```
+---
+#### METHOD: Pipeline.catch
+- **Scope:** instance
+- **LLM Call Syntax:** `pipeline.catch(_error);`
+- **Pure JSDoc:**
+```javascript
+/** Method catch */
+```
+---
+#### METHOD: Pipeline.if
+- **Scope:** instance
+- **LLM Call Syntax:** `pipeline.if(prefix);`
+- **Pure JSDoc:**
+```javascript
+/** Method if */
+```
+---
+#### METHOD: Pipeline.if
+- **Scope:** instance
+- **LLM Call Syntax:** `pipeline.if(summary.stopRequested);`
+- **Pure JSDoc:**
+```javascript
+/** Method if */
+```
+---
+#### METHOD: Pipeline.if
+- **Scope:** instance
+- **LLM Call Syntax:** `pipeline.if(typeof this._logger.logSummary);`
+- **Pure JSDoc:**
+```javascript
+/** Method if */
+```
+---
+#### METHOD: Pipeline.getName
+- **Scope:** instance
+- **LLM Call Syntax:** `const result = pipeline.getName();`
+- **Pure JSDoc:**
+```javascript
+/** @returns {string} */
+```
+---
+#### METHOD: Pipeline.getSteps
+- **Scope:** instance
+- **LLM Call Syntax:** `const result = pipeline.getSteps();`
+- **Pure JSDoc:**
+```javascript
+/** @returns {Object} Logger instance. */
+  get logger() {
+    return this._logger;
+  }
+
+  /** @returns {Step[]} Active sequence. */
+```
+---
+#### METHOD: Pipeline.addStep
+- **Scope:** instance
+- **LLM Call Syntax:** `const result = pipeline.addStep(step);`
+- **Pure JSDoc:**
+```javascript
+/**
+   * appends a step to the active sequence.
+   * @param {Step} step Valid Step instance.
+   * @returns {Pipeline} Current instance for chaining.
+   */
+```
+---
+#### METHOD: Pipeline.if
+- **Scope:** instance
+- **LLM Call Syntax:** `pipeline.if(!step || typeof step !);`
+- **Pure JSDoc:**
+```javascript
+/** Method if */
+```
+---
+#### METHOD: Pipeline.if
+- **Scope:** instance
+- **LLM Call Syntax:** `pipeline.if(typeof step.execute !);`
+- **Pure JSDoc:**
+```javascript
+/** Method if */
+```
+---
+#### METHOD: Pipeline.if
+- **Scope:** instance
+- **LLM Call Syntax:** `pipeline.if(typeof step.getName !);`
+- **Pure JSDoc:**
+```javascript
+/** Method if */
+```
+---
+#### METHOD: Pipeline.beforeStep
+- **Scope:** instance
+- **LLM Call Syntax:** `const result = pipeline.beforeStep(callback);`
+- **Pure JSDoc:**
+```javascript
+/**
+   * Registers a pre-step callback.
+   * @param {Function} callback
+   * @returns {Pipeline}
+   */
+```
+---
+#### METHOD: Pipeline.if
+- **Scope:** instance
+- **LLM Call Syntax:** `pipeline.if(typeof callback !);`
+- **Pure JSDoc:**
+```javascript
+/** Method if */
+```
+---
+#### METHOD: Pipeline.afterStep
+- **Scope:** instance
+- **LLM Call Syntax:** `const result = pipeline.afterStep(callback);`
+- **Pure JSDoc:**
+```javascript
+/**
+   * Registers a post-step callback.
+   * @param {Function} callback
+   * @returns {Pipeline}
+   */
+```
+---
+#### METHOD: Pipeline.if
+- **Scope:** instance
+- **LLM Call Syntax:** `pipeline.if(typeof callback !);`
+- **Pure JSDoc:**
+```javascript
+/** Method if */
+```
+---
+#### METHOD: Pipeline.onError
+- **Scope:** instance
+- **LLM Call Syntax:** `const result = pipeline.onError(callback);`
+- **Pure JSDoc:**
+```javascript
+/**
+   * Registers a step-level failure listener.
+   * @param {Function} callback
+   * @returns {Pipeline}
+   */
+```
+---
+#### METHOD: Pipeline.if
+- **Scope:** instance
+- **LLM Call Syntax:** `pipeline.if(typeof callback !);`
+- **Pure JSDoc:**
+```javascript
+/** Method if */
+```
+---
+#### METHOD: Pipeline.onComplete
+- **Scope:** instance
+- **LLM Call Syntax:** `const result = pipeline.onComplete(callback);`
+- **Pure JSDoc:**
+```javascript
+/**
+   * Registers a pipeline completion listener.
+   * @param {Function} callback
+   * @returns {Pipeline}
+   */
+```
+---
+#### METHOD: Pipeline.if
+- **Scope:** instance
+- **LLM Call Syntax:** `pipeline.if(typeof callback !);`
+- **Pure JSDoc:**
+```javascript
+/** Method if */
+```
+---
+#### METHOD: Pipeline.for
+- **Scope:** instance
+- **LLM Call Syntax:** `pipeline.for(const cb of hookList);`
+- **Pure JSDoc:**
+```javascript
+/** Method for */
+```
+---
+#### METHOD: Pipeline.catch
+- **Scope:** instance
+- **LLM Call Syntax:** `pipeline.catch(e);`
+- **Pure JSDoc:**
+```javascript
+/** Method catch */
+```
+---
+#### METHOD: Pipeline.if
+- **Scope:** instance
+- **LLM Call Syntax:** `pipeline.if(this._exceptionService && typeof this._exceptionService.executeWithRetry);`
+- **Pure JSDoc:**
+```javascript
+/** Method if */
+```
+---
+#### METHOD: Pipeline.execute
+- **Scope:** instance
+- **LLM Call Syntax:** `const result = pipeline.execute(initialData);`
+- **Pure JSDoc:**
+```javascript
+/**
+   * Sequentially executes all steps.
+   * @param {Object} [initialData={}]
+   * @returns {PipelineContext}
+   */
+```
+---
+#### METHOD: Pipeline.for
+- **Scope:** instance
+- **LLM Call Syntax:** `pipeline.for(let stepIndex);`
+- **Pure JSDoc:**
+```javascript
+/** Method for */
+```
+---
+#### METHOD: Pipeline.if
+- **Scope:** instance
+- **LLM Call Syntax:** `pipeline.if(typeof this._logger.logStep);`
+- **Pure JSDoc:**
+```javascript
+/** Method if */
+```
+---
+#### METHOD: Pipeline.catch
+- **Scope:** instance
+- **LLM Call Syntax:** `pipeline.catch(error);`
+- **Pure JSDoc:**
+```javascript
+/** Method catch */
+```
+---
+#### METHOD: Pipeline.if
+- **Scope:** instance
+- **LLM Call Syntax:** `pipeline.if(this._stopOnError);`
+- **Pure JSDoc:**
+```javascript
+/** Method if */
+```
+---
+#### METHOD: Pipeline.if
+- **Scope:** instance
+- **LLM Call Syntax:** `pipeline.if(status);`
+- **Pure JSDoc:**
+```javascript
+/** Method if */
+```
+---
+#### METHOD: Pipeline.if
+- **Scope:** instance
+- **LLM Call Syntax:** `pipeline.if(this._stopOnError);`
+- **Pure JSDoc:**
+```javascript
+/** Method if */
+```
+---
+#### METHOD: Pipeline.clearSteps
+- **Scope:** instance
+- **LLM Call Syntax:** `const result = pipeline.clearSteps();`
+- **Pure JSDoc:**
+```javascript
+/**
+   * @returns {Pipeline}
+   */
+```
+---
 <br>
 
 ## CLASS: StepMock

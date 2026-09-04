@@ -446,6 +446,105 @@ function* withTimeout(generator, maxDuration, startTime) {
  */
 ```
 
+### Methods of JobExecutor
+
+#### METHOD: JobExecutor.execute
+- **Scope:** instance
+- **LLM Call Syntax:** `const result = jobExecutor.execute(handler, parameters, startTime, maxDuration);`
+- **Pure JSDoc:**
+```javascript
+/**
+   * Executes job logic with interruption and persistence support.
+   * @param {Function} handler Generator-based job function.
+   * @param {Object} parameters Job context and resume state.
+   * @param {number} startTime Execution start timestamp.
+   * @param {number} maxDuration Timeout threshold.
+   * @returns {{done: boolean, value?: *, cancelled?: boolean}} Execution outcome.
+   * @throws {Error} If handler is not a generator.
+   * @throws {TimeoutException} Captured internally to trigger state save and resume.
+   */
+```
+---
+#### METHOD: JobExecutor.if
+- **Scope:** instance
+- **LLM Call Syntax:** `jobExecutor.if(parameters.jobDefinition && parameters.jobDefinition.iterationLevels);`
+- **Pure JSDoc:**
+```javascript
+/** Method if */
+```
+---
+#### METHOD: JobExecutor.if
+- **Scope:** instance
+- **LLM Call Syntax:** `jobExecutor.if(!parameters.resumeState);`
+- **Pure JSDoc:**
+```javascript
+/** Method if */
+```
+---
+#### METHOD: JobExecutor.if
+- **Scope:** instance
+- **LLM Call Syntax:** `jobExecutor.if(!parameters.resumeState.total || parameters.resumeState.total);`
+- **Pure JSDoc:**
+```javascript
+/** Method if */
+```
+---
+#### METHOD: JobExecutor.if
+- **Scope:** instance
+- **LLM Call Syntax:** `jobExecutor.if(parameters.services);`
+- **Pure JSDoc:**
+```javascript
+/** Method if */
+```
+---
+#### METHOD: JobExecutor.if
+- **Scope:** instance
+- **LLM Call Syntax:** `jobExecutor.if(!generator || typeof generator.next !);`
+- **Pure JSDoc:**
+```javascript
+/** Method if */
+```
+---
+#### METHOD: JobExecutor.while
+- **Scope:** instance
+- **LLM Call Syntax:** `jobExecutor.while(!next.done);`
+- **Pure JSDoc:**
+```javascript
+/** Method while */
+```
+---
+#### METHOD: JobExecutor.if
+- **Scope:** instance
+- **LLM Call Syntax:** `jobExecutor.if(progress);`
+- **Pure JSDoc:**
+```javascript
+/** Method if */
+```
+---
+#### METHOD: JobExecutor.if
+- **Scope:** instance
+- **LLM Call Syntax:** `jobExecutor.if(monitor && typeof monitor.updateProgress);`
+- **Pure JSDoc:**
+```javascript
+/** Method if */
+```
+---
+#### METHOD: JobExecutor.catch
+- **Scope:** instance
+- **LLM Call Syntax:** `jobExecutor.catch(error);`
+- **Pure JSDoc:**
+```javascript
+/** Method catch */
+```
+---
+#### METHOD: JobExecutor.if
+- **Scope:** instance
+- **LLM Call Syntax:** `jobExecutor.if(error instanceof TimeoutException);`
+- **Pure JSDoc:**
+```javascript
+/** Method if */
+```
+---
 <br>
 
 ## CLASS: JobQueue
@@ -794,6 +893,354 @@ High-level API for job registration, execution, and lifecycle management.
  */
 ```
 
+### Methods of JobQueue
+
+#### METHOD: JobQueue.if
+- **Scope:** instance
+- **LLM Call Syntax:** `jobQueue.if(!logger || typeof logger !);`
+- **Pure JSDoc:**
+```javascript
+/** Method if */
+```
+---
+#### METHOD: JobQueue.if
+- **Scope:** instance
+- **LLM Call Syntax:** `jobQueue.if(typeof logger.info !);`
+- **Pure JSDoc:**
+```javascript
+/** Method if */
+```
+---
+#### METHOD: JobQueue.if
+- **Scope:** instance
+- **LLM Call Syntax:** `jobQueue.if(!utils || typeof utils !);`
+- **Pure JSDoc:**
+```javascript
+/** Method if */
+```
+---
+#### METHOD: JobQueue.if
+- **Scope:** instance
+- **LLM Call Syntax:** `jobQueue.if(!propertiesService || typeof propertiesService !);`
+- **Pure JSDoc:**
+```javascript
+/** Method if */
+```
+---
+#### METHOD: JobQueue.if
+- **Scope:** instance
+- **LLM Call Syntax:** `jobQueue.if(!triggerService || typeof triggerService !);`
+- **Pure JSDoc:**
+```javascript
+/** Method if */
+```
+---
+#### METHOD: JobQueue.if
+- **Scope:** instance
+- **LLM Call Syntax:** `jobQueue.if(!lockService || typeof lockService !);`
+- **Pure JSDoc:**
+```javascript
+/** Method if */
+```
+---
+#### METHOD: JobQueue.setMaxDuration
+- **Scope:** instance
+- **LLM Call Syntax:** `const result = jobQueue.setMaxDuration(durationMs);`
+- **Pure JSDoc:**
+```javascript
+/**
+   * Configures global execution timeout.
+   * @param {number} durationMs Max execution time.
+   * @returns {JobQueue} Current instance.
+   * @throws {Error} If durationMs is not positive.
+   */
+```
+---
+#### METHOD: JobQueue.if
+- **Scope:** instance
+- **LLM Call Syntax:** `jobQueue.if(typeof durationMs !);`
+- **Pure JSDoc:**
+```javascript
+/** Method if */
+```
+---
+#### METHOD: JobQueue.setTriggerDelay
+- **Scope:** instance
+- **LLM Call Syntax:** `const result = jobQueue.setTriggerDelay(delayMs);`
+- **Pure JSDoc:**
+```javascript
+/**
+   * Configures base delay for resume triggers.
+   * @param {number} delayMs Delay in milliseconds.
+   * @returns {JobQueue} Current instance.
+   * @throws {Error} If delayMs is not positive.
+   */
+```
+---
+#### METHOD: JobQueue.if
+- **Scope:** instance
+- **LLM Call Syntax:** `jobQueue.if(typeof delayMs !);`
+- **Pure JSDoc:**
+```javascript
+/** Method if */
+```
+---
+#### METHOD: JobQueue.setMaxRetries
+- **Scope:** instance
+- **LLM Call Syntax:** `const result = jobQueue.setMaxRetries(maxRetries);`
+- **Pure JSDoc:**
+```javascript
+/**
+   * Configures retry limit for failed/timed-out jobs.
+   * @param {number|null} maxRetries Integer limit or null for infinite.
+   * @returns {JobQueue} Current instance.
+   * @throws {Error} If maxRetries is invalid.
+   */
+```
+---
+#### METHOD: JobQueue.setOnFailure
+- **Scope:** instance
+- **LLM Call Syntax:** `const result = jobQueue.setOnFailure(callback);`
+- **Pure JSDoc:**
+```javascript
+/**
+   * Registers a terminal failure listener.
+   * @param {Function|null} callback Function(error, jobState).
+   * @returns {JobQueue} Current instance.
+   */
+```
+---
+#### METHOD: JobQueue.if
+- **Scope:** instance
+- **LLM Call Syntax:** `jobQueue.if(callback !);`
+- **Pure JSDoc:**
+```javascript
+/** Method if */
+```
+---
+#### METHOD: JobQueue.applyConfiguration
+- **Scope:** instance
+- **LLM Call Syntax:** `const result = jobQueue.applyConfiguration(savedConfig);`
+- **Pure JSDoc:**
+```javascript
+/**
+   * Restores queue configuration from a persistence object.
+   * @param {Object} savedConfig Configuration snapshot.
+   * @returns {JobQueue} Current instance.
+   */
+```
+---
+#### METHOD: JobQueue.if
+- **Scope:** instance
+- **LLM Call Syntax:** `jobQueue.if(savedConfig);`
+- **Pure JSDoc:**
+```javascript
+/** Method if */
+```
+---
+#### METHOD: JobQueue.if
+- **Scope:** instance
+- **LLM Call Syntax:** `jobQueue.if(savedConfig.maxExecutionDuration);`
+- **Pure JSDoc:**
+```javascript
+/** Method if */
+```
+---
+#### METHOD: JobQueue.if
+- **Scope:** instance
+- **LLM Call Syntax:** `jobQueue.if(savedConfig.triggerDelayMs);`
+- **Pure JSDoc:**
+```javascript
+/** Method if */
+```
+---
+#### METHOD: JobQueue.if
+- **Scope:** instance
+- **LLM Call Syntax:** `jobQueue.if(savedConfig.maxRetries !);`
+- **Pure JSDoc:**
+```javascript
+/** Method if */
+```
+---
+#### METHOD: JobQueue.registerJobHandler
+- **Scope:** instance
+- **LLM Call Syntax:** `const result = jobQueue.registerJobHandler(jobType, handler);`
+- **Pure JSDoc:**
+```javascript
+/**
+   * Maps a job type to a generator function.
+   * @param {string} jobType Unique identifier.
+   * @param {Function} handler Generator function: `function*(params)`.
+   * @returns {JobQueue} Current instance.
+   * @throws {Error} If handler is not a function.
+   */
+```
+---
+#### METHOD: JobQueue.if
+- **Scope:** instance
+- **LLM Call Syntax:** `jobQueue.if(typeof handler !);`
+- **Pure JSDoc:**
+```javascript
+/** Method if */
+```
+---
+#### METHOD: JobQueue.execute
+- **Scope:** instance
+- **LLM Call Syntax:** `const result = jobQueue.execute(jobName, jobType, parameters, forceRestart);`
+- **Pure JSDoc:**
+```javascript
+/**
+   * Orchestrates job execution, state loading, and retry/timeout logic.
+   *
+   * @param {string} jobName Unique instance identifier (used for state key).
+   * @param {string} jobType Registered handler type.
+   * @param {Object} [parameters={}] Input data and context.
+   * @param {boolean} [forceRestart=false] If true, purges existing state/locks before start.
+   * @returns {*} Generator return value if complete; null if suspended or failed.
+   * @throws {Error} If handler missing, fatal error occurs, or parameters are invalid.
+   *
+   * @example
+   * queue.registerJobHandler('sync', function*(params) {
+   *   yield { percentage: 50 };
+   *   return { status: 'ok' };
+   * });
+   * const result = queue.execute('sync-1', 'sync', { id: 123 });
+   */
+```
+---
+#### METHOD: JobQueue.if
+- **Scope:** instance
+- **LLM Call Syntax:** `jobQueue.if(forceRestart);`
+- **Pure JSDoc:**
+```javascript
+/** Method if */
+```
+---
+#### METHOD: JobQueue.if
+- **Scope:** instance
+- **LLM Call Syntax:** `jobQueue.if(!jobState || forceRestart);`
+- **Pure JSDoc:**
+```javascript
+/** Method if */
+```
+---
+#### METHOD: JobQueue.if
+- **Scope:** instance
+- **LLM Call Syntax:** `jobQueue.if(savedState && !forceRestart);`
+- **Pure JSDoc:**
+```javascript
+/** Method if */
+```
+---
+#### METHOD: JobQueue.if
+- **Scope:** instance
+- **LLM Call Syntax:** `jobQueue.if(!handler);`
+- **Pure JSDoc:**
+```javascript
+/** Method if */
+```
+---
+#### METHOD: JobQueue.if
+- **Scope:** instance
+- **LLM Call Syntax:** `jobQueue.if(executionResult.done);`
+- **Pure JSDoc:**
+```javascript
+/** Method if */
+```
+---
+#### METHOD: JobQueue.if
+- **Scope:** instance
+- **LLM Call Syntax:** `jobQueue.if(this._maxRetries !);`
+- **Pure JSDoc:**
+```javascript
+/** Method if */
+```
+---
+#### METHOD: JobQueue.if
+- **Scope:** instance
+- **LLM Call Syntax:** `jobQueue.if(this._onFailureCallback);`
+- **Pure JSDoc:**
+```javascript
+/** Method if */
+```
+---
+#### METHOD: JobQueue.catch
+- **Scope:** instance
+- **LLM Call Syntax:** `jobQueue.catch(callbackError);`
+- **Pure JSDoc:**
+```javascript
+/** Method catch */
+```
+---
+#### METHOD: JobQueue.catch
+- **Scope:** instance
+- **LLM Call Syntax:** `jobQueue.catch(error);`
+- **Pure JSDoc:**
+```javascript
+/** Method catch */
+```
+---
+#### METHOD: JobQueue.if
+- **Scope:** instance
+- **LLM Call Syntax:** `jobQueue.if(this._maxRetries !);`
+- **Pure JSDoc:**
+```javascript
+/** Method if */
+```
+---
+#### METHOD: JobQueue.catch
+- **Scope:** instance
+- **LLM Call Syntax:** `jobQueue.catch(callbackError);`
+- **Pure JSDoc:**
+```javascript
+/** Method catch */
+```
+---
+#### METHOD: JobQueue.resetJobState
+- **Scope:** instance
+- **LLM Call Syntax:** `const result = jobQueue.resetJobState(jobName);`
+- **Pure JSDoc:**
+```javascript
+/**
+   * Purges all state and triggers associated with a job instance.
+   * @param {string} jobName Unique instance identifier.
+   * @returns {boolean} True if successful.
+   */
+```
+---
+#### METHOD: JobQueue.cancelJob
+- **Scope:** instance
+- **LLM Call Syntax:** `const result = jobQueue.cancelJob(jobName);`
+- **Pure JSDoc:**
+```javascript
+/**
+   * Signals a job for termination. State is checked at next progress pulse.
+   * @param {string} jobName Unique instance identifier.
+   * @returns {boolean} True if cancellation signal was set.
+   */
+```
+---
+#### METHOD: JobQueue.if
+- **Scope:** instance
+- **LLM Call Syntax:** `jobQueue.if(!currentState ||
+      currentState);`
+- **Pure JSDoc:**
+```javascript
+/** Method if */
+```
+---
+#### METHOD: JobQueue.getStatus
+- **Scope:** instance
+- **LLM Call Syntax:** `const result = jobQueue.getStatus(jobName);`
+- **Pure JSDoc:**
+```javascript
+/**
+   * Retrieves live job telemetry.
+   * @param {string} jobName Unique instance identifier.
+   * @returns {{name: string, type: string, state: string, completed: boolean, percentage: number}}
+   */
+```
+---
 <br>
 
 ## CLASS: JobDefinitionRegistry
@@ -831,6 +1278,144 @@ import { Registry } from '@CoreUtilsLib';
  */
 ```
 
+### Methods of JobDefinitionRegistry
+
+#### METHOD: JobDefinitionRegistry.if
+- **Scope:** instance
+- **LLM Call Syntax:** `jobDefinitionRegistry.if(logger);`
+- **Pure JSDoc:**
+```javascript
+/** Method if */
+```
+---
+#### METHOD: JobDefinitionRegistry.if
+- **Scope:** instance
+- **LLM Call Syntax:** `jobDefinitionRegistry.if(typeof logger !);`
+- **Pure JSDoc:**
+```javascript
+/** Method if */
+```
+---
+#### METHOD: JobDefinitionRegistry.for
+- **Scope:** instance
+- **LLM Call Syntax:** `jobDefinitionRegistry.for(const method of ['debug', 'warn', 'error']);`
+- **Pure JSDoc:**
+```javascript
+/** Method for */
+```
+---
+#### METHOD: JobDefinitionRegistry.if
+- **Scope:** instance
+- **LLM Call Syntax:** `jobDefinitionRegistry.if(typeof logger[method] !);`
+- **Pure JSDoc:**
+```javascript
+/** Method if */
+```
+---
+#### METHOD: JobDefinitionRegistry.register
+- **Scope:** instance
+- **LLM Call Syntax:** `jobDefinitionRegistry.register(jobNameOrDefinition, jobDefinition);`
+- **Pure JSDoc:**
+```javascript
+/**
+   * Registers a job definition.
+   */
+```
+---
+#### METHOD: JobDefinitionRegistry.if
+- **Scope:** instance
+- **LLM Call Syntax:** `jobDefinitionRegistry.if(typeof jobName !);`
+- **Pure JSDoc:**
+```javascript
+/** Method if */
+```
+---
+#### METHOD: JobDefinitionRegistry.if
+- **Scope:** instance
+- **LLM Call Syntax:** `jobDefinitionRegistry.if(definition.description);`
+- **Pure JSDoc:**
+```javascript
+/** Method if */
+```
+---
+#### METHOD: JobDefinitionRegistry.getDefinition
+- **Scope:** instance
+- **LLM Call Syntax:** `jobDefinitionRegistry.getDefinition(jobName);`
+- **Pure JSDoc:**
+```javascript
+/**
+   * Retrieves a registered definition.
+   */
+```
+---
+#### METHOD: JobDefinitionRegistry.if
+- **Scope:** instance
+- **LLM Call Syntax:** `jobDefinitionRegistry.if(typeof jobName !);`
+- **Pure JSDoc:**
+```javascript
+/** Method if */
+```
+---
+#### METHOD: JobDefinitionRegistry.listRegisteredJobs
+- **Scope:** instance
+- **LLM Call Syntax:** `jobDefinitionRegistry.listRegisteredJobs();`
+- **Pure JSDoc:**
+```javascript
+/**
+   * Lists all registered job identifiers.
+   */
+```
+---
+#### METHOD: JobDefinitionRegistry.jobExists
+- **Scope:** instance
+- **LLM Call Syntax:** `jobDefinitionRegistry.jobExists(jobName);`
+- **Pure JSDoc:**
+```javascript
+/**
+   * Verifies job existence.
+   */
+```
+---
+#### METHOD: JobDefinitionRegistry.if
+- **Scope:** instance
+- **LLM Call Syntax:** `jobDefinitionRegistry.if(typeof jobName !);`
+- **Pure JSDoc:**
+```javascript
+/** Method if */
+```
+---
+#### METHOD: JobDefinitionRegistry.if
+- **Scope:** instance
+- **LLM Call Syntax:** `jobDefinitionRegistry.if(jobDefinition.name);`
+- **Pure JSDoc:**
+```javascript
+/** Method if */
+```
+---
+#### METHOD: JobDefinitionRegistry.if
+- **Scope:** instance
+- **LLM Call Syntax:** `jobDefinitionRegistry.if(jobDefinition.action);`
+- **Pure JSDoc:**
+```javascript
+/** Method if */
+```
+---
+#### METHOD: JobDefinitionRegistry.if
+- **Scope:** instance
+- **LLM Call Syntax:** `jobDefinitionRegistry.if(typeof jobDefinition.action !);`
+- **Pure JSDoc:**
+```javascript
+/** Method if */
+```
+---
+#### METHOD: JobDefinitionRegistry.if
+- **Scope:** instance
+- **LLM Call Syntax:** `jobDefinitionRegistry.if(jobDefinition.finalAction !);`
+- **Pure JSDoc:**
+```javascript
+/** Method if */
+```
+---
 <br>
 
 ## CLASS: QueueProgressTracker

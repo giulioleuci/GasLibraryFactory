@@ -64,6 +64,169 @@ import { isPlainObject, isArray } from '@CoreUtilsLib';
  */
 ```
 
+### Methods of PostProcessor
+
+#### METHOD: PostProcessor.if
+- **Scope:** instance
+- **LLM Call Syntax:** `postProcessor.if(!logger || typeof logger !);`
+- **Pure JSDoc:**
+```javascript
+/** Method if */
+```
+---
+#### METHOD: PostProcessor.if
+- **Scope:** instance
+- **LLM Call Syntax:** `postProcessor.if(typeof logger.debug !);`
+- **Pure JSDoc:**
+```javascript
+/** Method if */
+```
+---
+#### METHOD: PostProcessor.for
+- **Scope:** instance
+- **LLM Call Syntax:** `postProcessor.for(const key in item);`
+- **Pure JSDoc:**
+```javascript
+/** Method for */
+```
+---
+#### METHOD: PostProcessor.for
+- **Scope:** instance
+- **LLM Call Syntax:** `postProcessor.for(const key in obj);`
+- **Pure JSDoc:**
+```javascript
+/** Method for */
+```
+---
+#### METHOD: PostProcessor.for
+- **Scope:** instance
+- **LLM Call Syntax:** `postProcessor.for(const key in config.defaults);`
+- **Pure JSDoc:**
+```javascript
+/** Method for */
+```
+---
+#### METHOD: PostProcessor.register
+- **Scope:** instance
+- **LLM Call Syntax:** `const result = postProcessor.register(type, processorFunc);`
+- **Pure JSDoc:**
+```javascript
+/**
+   * Adds a custom transformation function to the registry.
+   * @param {string} type Transformation identifier (referenced in recipes).
+   * @param {Function} processorFunc Signature: (data, config) => transformedData.
+   * @returns {PostProcessor} Fluent interface for chaining.
+   * @throws {Error} If type is empty or processorFunc is not a function.
+   */
+```
+---
+#### METHOD: PostProcessor.if
+- **Scope:** instance
+- **LLM Call Syntax:** `postProcessor.if(!type || typeof type !);`
+- **Pure JSDoc:**
+```javascript
+/** Method if */
+```
+---
+#### METHOD: PostProcessor.if
+- **Scope:** instance
+- **LLM Call Syntax:** `postProcessor.if(typeof processorFunc !);`
+- **Pure JSDoc:**
+```javascript
+/** Method if */
+```
+---
+#### METHOD: PostProcessor.has
+- **Scope:** instance
+- **LLM Call Syntax:** `const result = postProcessor.has(type);`
+- **Pure JSDoc:**
+```javascript
+/**
+   * Validates presence of a transformation identifier in the registry.
+   * @param {string} type Transformation identifier.
+   * @returns {boolean} True if registered.
+   */
+```
+---
+#### METHOD: PostProcessor.if
+- **Scope:** instance
+- **LLM Call Syntax:** `postProcessor.if(!type || typeof type !);`
+- **Pure JSDoc:**
+```javascript
+/** Method if */
+```
+---
+#### METHOD: PostProcessor.process
+- **Scope:** instance
+- **LLM Call Syntax:** `const result = postProcessor.process(processorConfigs, data, providerName);`
+- **Pure JSDoc:**
+```javascript
+/**
+   * Executes a pipeline of transformations sequentially on a data payload.
+   * @param {Object[]} processorConfigs Collection of transformation configurations ({type, ...}).
+   * @param {*} data Input payload (object, array, or literal).
+   * @param {string} [providerName=''] Contextual provider name for diagnostic logging.
+   * @returns {*} Transformed payload.
+   * @throws {Error} If processor type is unregistered or a transformation logic fails.
+   * @example
+   * const result = processor.process([
+   *   { type: 'filterFields', fields: ['id', 'email'] },
+   *   { type: 'renameFields', mapping: { email: 'user_email' } }
+   * ], rawData);
+   */
+```
+---
+#### METHOD: PostProcessor.if
+- **Scope:** instance
+- **LLM Call Syntax:** `postProcessor.if(processorConfigs.length);`
+- **Pure JSDoc:**
+```javascript
+/** Method if */
+```
+---
+#### METHOD: PostProcessor.for
+- **Scope:** instance
+- **LLM Call Syntax:** `postProcessor.for(let i);`
+- **Pure JSDoc:**
+```javascript
+/** Method for */
+```
+---
+#### METHOD: PostProcessor.if
+- **Scope:** instance
+- **LLM Call Syntax:** `postProcessor.if(!config || typeof config !);`
+- **Pure JSDoc:**
+```javascript
+/** Method if */
+```
+---
+#### METHOD: PostProcessor.if
+- **Scope:** instance
+- **LLM Call Syntax:** `postProcessor.if(!config.type || typeof config.type !);`
+- **Pure JSDoc:**
+```javascript
+/** Method if */
+```
+---
+#### METHOD: PostProcessor.catch
+- **Scope:** instance
+- **LLM Call Syntax:** `postProcessor.catch(error);`
+- **Pure JSDoc:**
+```javascript
+/** Method catch */
+```
+---
+#### METHOD: PostProcessor.getRegisteredTypes
+- **Scope:** instance
+- **LLM Call Syntax:** `const result = postProcessor.getRegisteredTypes();`
+- **Pure JSDoc:**
+```javascript
+/**
+   * Retrieves all registered transformation identifiers.
+   * @returns {string[]} Collection of registered type names.
+   */
+```
+---
 <br>
 
 ## CLASS: DataProvider
@@ -97,6 +260,122 @@ import { ProviderExecutionError } from './internal/errors/ProviderExecutionError
  */
 ```
 
+### Methods of DataProvider
+
+#### METHOD: DataProvider.if
+- **Scope:** instance
+- **LLM Call Syntax:** `dataProvider.if(!logger || typeof logger !);`
+- **Pure JSDoc:**
+```javascript
+/** Method if */
+```
+---
+#### METHOD: DataProvider.if
+- **Scope:** instance
+- **LLM Call Syntax:** `dataProvider.if(typeof logger.debug !);`
+- **Pure JSDoc:**
+```javascript
+/** Method if */
+```
+---
+#### METHOD: DataProvider.if
+- **Scope:** instance
+- **LLM Call Syntax:** `dataProvider.if(options !);`
+- **Pure JSDoc:**
+```javascript
+/** Method if */
+```
+---
+#### METHOD: DataProvider.if
+- **Scope:** instance
+- **LLM Call Syntax:** `dataProvider.if(!this._cacheable);`
+- **Pure JSDoc:**
+```javascript
+/** Method if */
+```
+---
+#### METHOD: DataProvider.if
+- **Scope:** instance
+- **LLM Call Syntax:** `dataProvider.if(!cached);`
+- **Pure JSDoc:**
+```javascript
+/** Method if */
+```
+---
+#### METHOD: DataProvider.if
+- **Scope:** instance
+- **LLM Call Syntax:** `dataProvider.if(now - cached.timestamp > this._cacheDurationMs);`
+- **Pure JSDoc:**
+```javascript
+/** Method if */
+```
+---
+#### METHOD: DataProvider.if
+- **Scope:** instance
+- **LLM Call Syntax:** `dataProvider.if(!this._cacheable);`
+- **Pure JSDoc:**
+```javascript
+/** Method if */
+```
+---
+#### METHOD: DataProvider.clearCache
+- **Scope:** instance
+- **LLM Call Syntax:** `const result = dataProvider.clearCache();`
+- **Pure JSDoc:**
+```javascript
+/**
+   * Purges all entries from the internal in-memory cache.
+   * @returns {DataProvider} Fluent interface for chaining.
+   */
+```
+---
+#### METHOD: DataProvider.provide
+- **Scope:** instance
+- **LLM Call Syntax:** `const result = dataProvider.provide(providerName, parameters);`
+- **Pure JSDoc:**
+```javascript
+/**
+   * Orchestrates the data providing process including validation, caching, performance tracking, and error wrapping.
+   * @param {string} providerName Identifier for the provider (used in logging/errors).
+   * @param {Object} parameters Parameters for the data fetch.
+   * @returns {*} Fetched or cached data payload.
+   * @throws {Error} If providerName or parameters are invalid.
+   * @throws {ProviderExecutionError} If underlying fetch or validation fails.
+   */
+```
+---
+#### METHOD: DataProvider.if
+- **Scope:** instance
+- **LLM Call Syntax:** `dataProvider.if(!providerName || typeof providerName !);`
+- **Pure JSDoc:**
+```javascript
+/** Method if */
+```
+---
+#### METHOD: DataProvider.if
+- **Scope:** instance
+- **LLM Call Syntax:** `dataProvider.if(!parameters || typeof parameters !);`
+- **Pure JSDoc:**
+```javascript
+/** Method if */
+```
+---
+#### METHOD: DataProvider.if
+- **Scope:** instance
+- **LLM Call Syntax:** `dataProvider.if(cachedData !);`
+- **Pure JSDoc:**
+```javascript
+/** Method if */
+```
+---
+#### METHOD: DataProvider.catch
+- **Scope:** instance
+- **LLM Call Syntax:** `dataProvider.catch(error);`
+- **Pure JSDoc:**
+```javascript
+/** Method catch */
+```
+---
 <br>
 
 ## CLASS: or
@@ -210,6 +489,112 @@ import { ContextDependencyAnalyzer } from './internal/ContextDependencyAnalyzer'
  */
 ```
 
+### Methods of ContextAssembler
+
+#### METHOD: ContextAssembler.if
+- **Scope:** instance
+- **LLM Call Syntax:** `contextAssembler.if(logger);`
+- **Pure JSDoc:**
+```javascript
+/** Method if */
+```
+---
+#### METHOD: ContextAssembler.if
+- **Scope:** instance
+- **LLM Call Syntax:** `contextAssembler.if(typeof logger !);`
+- **Pure JSDoc:**
+```javascript
+/** Method if */
+```
+---
+#### METHOD: ContextAssembler.for
+- **Scope:** instance
+- **LLM Call Syntax:** `contextAssembler.for(const method of requiredLoggerMethods);`
+- **Pure JSDoc:**
+```javascript
+/** Method for */
+```
+---
+#### METHOD: ContextAssembler.if
+- **Scope:** instance
+- **LLM Call Syntax:** `contextAssembler.if(typeof logger[method] !);`
+- **Pure JSDoc:**
+```javascript
+/** Method if */
+```
+---
+#### METHOD: ContextAssembler.if
+- **Scope:** instance
+- **LLM Call Syntax:** `contextAssembler.if(providerRegistry);`
+- **Pure JSDoc:**
+```javascript
+/** Method if */
+```
+---
+#### METHOD: ContextAssembler.if
+- **Scope:** instance
+- **LLM Call Syntax:** `contextAssembler.if(typeof providerRegistry !);`
+- **Pure JSDoc:**
+```javascript
+/** Method if */
+```
+---
+#### METHOD: ContextAssembler.if
+- **Scope:** instance
+- **LLM Call Syntax:** `contextAssembler.if(typeof providerRegistry.get !);`
+- **Pure JSDoc:**
+```javascript
+/** Method if */
+```
+---
+#### METHOD: ContextAssembler.if
+- **Scope:** instance
+- **LLM Call Syntax:** `contextAssembler.if(expressionEngine !);`
+- **Pure JSDoc:**
+```javascript
+/** Method if */
+```
+---
+#### METHOD: ContextAssembler.if
+- **Scope:** instance
+- **LLM Call Syntax:** `contextAssembler.if(exceptionService !);`
+- **Pure JSDoc:**
+```javascript
+/** Method if */
+```
+---
+#### METHOD: ContextAssembler.if
+- **Scope:** instance
+- **LLM Call Syntax:** `contextAssembler.if(interceptorRegistry !);`
+- **Pure JSDoc:**
+```javascript
+/** Method if */
+```
+---
+#### METHOD: ContextAssembler.if
+- **Scope:** instance
+- **LLM Call Syntax:** `contextAssembler.if(options !);`
+- **Pure JSDoc:**
+```javascript
+/** Method if */
+```
+---
+#### METHOD: ContextAssembler.logger
+- **Scope:** instance
+- **LLM Call Syntax:** `contextAssembler.logger();`
+- **Pure JSDoc:**
+```javascript
+/** Method logger */
+```
+---
+#### METHOD: ContextAssembler.providerRegistry
+- **Scope:** instance
+- **LLM Call Syntax:** `contextAssembler.providerRegistry();`
+- **Pure JSDoc:**
+```javascript
+/** Method providerRegistry */
+```
+---
 <br>
 
 ## CLASS: DataProviderMock
@@ -286,6 +671,21 @@ Simulates provider lifecycle, data retrieval, and parameter validation.
  */
 ```
 
+### Methods of InterceptorMock
+
+#### METHOD: InterceptorMock.setupIntercept
+- **Scope:** instance
+- **LLM Call Syntax:** `const result = interceptorMock.setupIntercept(interceptFn);`
+- **Pure JSDoc:**
+```javascript
+/**
+   * Fluent helper to inject custom interception implementation.
+   *
+   * @param {Function} interceptFn - Logic mapping PipelineContext to transformed PipelineContext.
+   * @returns {InterceptorMock} Current instance for chaining.
+   */
+```
+---
 <br>
 
 ## CLASS: ProviderRegistryMock
@@ -670,6 +1070,186 @@ import { RecipeValidationError } from './errors/RecipeValidationError';
  */
 ```
 
+### Methods of RecipeParser
+
+#### METHOD: RecipeParser.if
+- **Scope:** instance
+- **LLM Call Syntax:** `recipeParser.if(!logger || typeof logger !);`
+- **Pure JSDoc:**
+```javascript
+/** Method if */
+```
+---
+#### METHOD: RecipeParser.if
+- **Scope:** instance
+- **LLM Call Syntax:** `recipeParser.if(typeof logger.debug !);`
+- **Pure JSDoc:**
+```javascript
+/** Method if */
+```
+---
+#### METHOD: RecipeParser.if
+- **Scope:** instance
+- **LLM Call Syntax:** `recipeParser.if(!provider || typeof provider !);`
+- **Pure JSDoc:**
+```javascript
+/** Method if */
+```
+---
+#### METHOD: RecipeParser.if
+- **Scope:** instance
+- **LLM Call Syntax:** `recipeParser.if(!provider.name || typeof provider.name !);`
+- **Pure JSDoc:**
+```javascript
+/** Method if */
+```
+---
+#### METHOD: RecipeParser.if
+- **Scope:** instance
+- **LLM Call Syntax:** `recipeParser.if(!provider.type || typeof provider.type !);`
+- **Pure JSDoc:**
+```javascript
+/** Method if */
+```
+---
+#### METHOD: RecipeParser.if
+- **Scope:** instance
+- **LLM Call Syntax:** `recipeParser.if(provider.parameters !);`
+- **Pure JSDoc:**
+```javascript
+/** Method if */
+```
+---
+#### METHOD: RecipeParser.if
+- **Scope:** instance
+- **LLM Call Syntax:** `recipeParser.if(provider.parameters);`
+- **Pure JSDoc:**
+```javascript
+/** Method if */
+```
+---
+#### METHOD: RecipeParser.if
+- **Scope:** instance
+- **LLM Call Syntax:** `recipeParser.if(provider.condition !);`
+- **Pure JSDoc:**
+```javascript
+/** Method if */
+```
+---
+#### METHOD: RecipeParser.if
+- **Scope:** instance
+- **LLM Call Syntax:** `recipeParser.if(typeof provider.condition !);`
+- **Pure JSDoc:**
+```javascript
+/** Method if */
+```
+---
+#### METHOD: RecipeParser.if
+- **Scope:** instance
+- **LLM Call Syntax:** `recipeParser.if(provider.postProcess !);`
+- **Pure JSDoc:**
+```javascript
+/** Method if */
+```
+---
+#### METHOD: RecipeParser.if
+- **Scope:** instance
+- **LLM Call Syntax:** `recipeParser.if(!pp || typeof pp !);`
+- **Pure JSDoc:**
+```javascript
+/** Method if */
+```
+---
+#### METHOD: RecipeParser.if
+- **Scope:** instance
+- **LLM Call Syntax:** `recipeParser.if(!pp.type || typeof pp.type !);`
+- **Pure JSDoc:**
+```javascript
+/** Method if */
+```
+---
+#### METHOD: RecipeParser.parse
+- **Scope:** instance
+- **LLM Call Syntax:** `const result = recipeParser.parse(recipe, recipe.providers);`
+- **Pure JSDoc:**
+```javascript
+/**
+   * Executes full recipe validation and normalization. Collects structural, type, and uniqueness errors.
+   * @param {Object} recipe Raw JSON recipe.
+   * @param {Object[]} recipe.providers Collection of provider configurations.
+   * @returns {Object} Normalized recipe with default values for optional fields.
+   * @throws {RecipeValidationError} If any validation constraints are violated.
+   */
+```
+---
+#### METHOD: RecipeParser.if
+- **Scope:** instance
+- **LLM Call Syntax:** `recipeParser.if(!recipe || typeof recipe !);`
+- **Pure JSDoc:**
+```javascript
+/** Method if */
+```
+---
+#### METHOD: RecipeParser.if
+- **Scope:** instance
+- **LLM Call Syntax:** `recipeParser.if(!recipe.providers);`
+- **Pure JSDoc:**
+```javascript
+/** Method if */
+```
+---
+#### METHOD: RecipeParser.if
+- **Scope:** instance
+- **LLM Call Syntax:** `recipeParser.if(recipe.providers.length);`
+- **Pure JSDoc:**
+```javascript
+/** Method if */
+```
+---
+#### METHOD: RecipeParser.if
+- **Scope:** instance
+- **LLM Call Syntax:** `recipeParser.if(duplicates.length > 0);`
+- **Pure JSDoc:**
+```javascript
+/** Method if */
+```
+---
+#### METHOD: RecipeParser.if
+- **Scope:** instance
+- **LLM Call Syntax:** `recipeParser.if(errors.length > 0);`
+- **Pure JSDoc:**
+```javascript
+/** Method if */
+```
+---
+#### METHOD: RecipeParser.validate
+- **Scope:** instance
+- **LLM Call Syntax:** `const result = recipeParser.validate(recipe);`
+- **Pure JSDoc:**
+```javascript
+/**
+   * Non-throwing wrapper for parse(). Returns a validation status object.
+   * @param {Object} recipe Raw JSON recipe.
+   * @returns {{isValid: boolean, errors: string[]}} Validation metadata.
+   */
+```
+---
+#### METHOD: RecipeParser.catch
+- **Scope:** instance
+- **LLM Call Syntax:** `recipeParser.catch(error);`
+- **Pure JSDoc:**
+```javascript
+/** Method catch */
+```
+---
+#### METHOD: RecipeParser.if
+- **Scope:** instance
+- **LLM Call Syntax:** `recipeParser.if(error instanceof RecipeValidationError);`
+- **Pure JSDoc:**
+```javascript
+/** Method if */
+```
+---
 <br>
 
 ## CLASS: DependencyResolver
@@ -703,6 +1283,275 @@ import { DependencyResolutionError } from './errors/DependencyResolutionError';
  */
 ```
 
+### Methods of DependencyResolver
+
+#### METHOD: DependencyResolver.if
+- **Scope:** instance
+- **LLM Call Syntax:** `dependencyResolver.if(!logger || typeof logger !);`
+- **Pure JSDoc:**
+```javascript
+/** Method if */
+```
+---
+#### METHOD: DependencyResolver.if
+- **Scope:** instance
+- **LLM Call Syntax:** `dependencyResolver.if(typeof logger.debug !);`
+- **Pure JSDoc:**
+```javascript
+/** Method if */
+```
+---
+#### METHOD: DependencyResolver.isDependency
+- **Scope:** instance
+- **LLM Call Syntax:** `const result = dependencyResolver.isDependency(or, value);`
+- **Pure JSDoc:**
+```javascript
+/**
+     * Logger service.
+     * @private
+     * @type {Object}
+     */
+    this._logger = logger;
+  }
+
+  /**
+   * Internal logger instance.
+   * @type {Object}
+   * @readonly
+   */
+  get logger() {
+    return this._logger;
+  }
+
+  /**
+   * Validates if a string value matches @param or $provider syntax.
+   * @param {*} value Target value to inspect.
+   * @returns {boolean} True if string matches dependency patterns.
+   */
+```
+---
+#### METHOD: DependencyResolver.if
+- **Scope:** instance
+- **LLM Call Syntax:** `dependencyResolver.if(typeof value !);`
+- **Pure JSDoc:**
+```javascript
+/** Method if */
+```
+---
+#### METHOD: DependencyResolver.if
+- **Scope:** instance
+- **LLM Call Syntax:** `dependencyResolver.if(!path);`
+- **Pure JSDoc:**
+```javascript
+/** Method if */
+```
+---
+#### METHOD: DependencyResolver.for
+- **Scope:** instance
+- **LLM Call Syntax:** `dependencyResolver.for(const part of parts);`
+- **Pure JSDoc:**
+```javascript
+/** Method for */
+```
+---
+#### METHOD: DependencyResolver.if
+- **Scope:** instance
+- **LLM Call Syntax:** `dependencyResolver.if(current);`
+- **Pure JSDoc:**
+```javascript
+/** Method if */
+```
+---
+#### METHOD: DependencyResolver.if
+- **Scope:** instance
+- **LLM Call Syntax:** `dependencyResolver.if(arrayMatch);`
+- **Pure JSDoc:**
+```javascript
+/** Method if */
+```
+---
+#### METHOD: DependencyResolver.resolve
+- **Scope:** instance
+- **LLM Call Syntax:** `const result = dependencyResolver.resolve(dependency, initialParams, identifiers, providerResults, providerName);`
+- **Pure JSDoc:**
+```javascript
+/**
+   * Resolves a single dependency reference against initial parameters and runtime provider results.
+   * @param {string} dependency Dependency reference string.
+   * @param {Object} initialParams Map of @param identifiers to values.
+   * @param {Object} providerResults Map of $provider identifiers to output payloads.
+   * @param {string} [providerName=''] Contextual name of the dependent provider for error reporting.
+   * @returns {*} Resolved payload.
+   * @throws {Error} If inputs are invalid.
+   * @throws {DependencyResolutionError} If reference cannot be satisfied or path is invalid.
+   */
+```
+---
+#### METHOD: DependencyResolver.if
+- **Scope:** instance
+- **LLM Call Syntax:** `dependencyResolver.if(typeof dependency !);`
+- **Pure JSDoc:**
+```javascript
+/** Method if */
+```
+---
+#### METHOD: DependencyResolver.if
+- **Scope:** instance
+- **LLM Call Syntax:** `dependencyResolver.if(!initialParams || typeof initialParams !);`
+- **Pure JSDoc:**
+```javascript
+/** Method if */
+```
+---
+#### METHOD: DependencyResolver.if
+- **Scope:** instance
+- **LLM Call Syntax:** `dependencyResolver.if(!providerResults || typeof providerResults !);`
+- **Pure JSDoc:**
+```javascript
+/** Method if */
+```
+---
+#### METHOD: DependencyResolver.if
+- **Scope:** instance
+- **LLM Call Syntax:** `dependencyResolver.if(paramMatch);`
+- **Pure JSDoc:**
+```javascript
+/** Method if */
+```
+---
+#### METHOD: DependencyResolver.if
+- **Scope:** instance
+- **LLM Call Syntax:** `dependencyResolver.if(providerMatch);`
+- **Pure JSDoc:**
+```javascript
+/** Method if */
+```
+---
+#### METHOD: DependencyResolver.if
+- **Scope:** instance
+- **LLM Call Syntax:** `dependencyResolver.if(!propertyPath);`
+- **Pure JSDoc:**
+```javascript
+/** Method if */
+```
+---
+#### METHOD: DependencyResolver.if
+- **Scope:** instance
+- **LLM Call Syntax:** `dependencyResolver.if(value);`
+- **Pure JSDoc:**
+```javascript
+/** Method if */
+```
+---
+#### METHOD: DependencyResolver.resolveAll
+- **Scope:** instance
+- **LLM Call Syntax:** `const result = dependencyResolver.resolveAll(parameters, initialParams, identifiers., providerResults, providerName);`
+- **Pure JSDoc:**
+```javascript
+/**
+   * Recursively resolves all dependency references within a complex object or array.
+   * @param {Object|Array} parameters Source structure containing potential references.
+   * @param {Object} initialParams Map of @param identifiers.
+   * @param {Object} providerResults Map of $provider identifiers.
+   * @param {string} [providerName=''] Contextual name for error reporting.
+   * @returns {Object|Array} Cloned structure with all satisfied dependencies.
+   * @throws {Error} If inputs are invalid.
+   * @throws {DependencyResolutionError} If any reference resolution fails.
+   */
+```
+---
+#### METHOD: DependencyResolver.if
+- **Scope:** instance
+- **LLM Call Syntax:** `dependencyResolver.if(!parameters || typeof parameters !);`
+- **Pure JSDoc:**
+```javascript
+/** Method if */
+```
+---
+#### METHOD: DependencyResolver.if
+- **Scope:** instance
+- **LLM Call Syntax:** `dependencyResolver.if(!initialParams || typeof initialParams !);`
+- **Pure JSDoc:**
+```javascript
+/** Method if */
+```
+---
+#### METHOD: DependencyResolver.if
+- **Scope:** instance
+- **LLM Call Syntax:** `dependencyResolver.if(!providerResults || typeof providerResults !);`
+- **Pure JSDoc:**
+```javascript
+/** Method if */
+```
+---
+#### METHOD: DependencyResolver.for
+- **Scope:** instance
+- **LLM Call Syntax:** `dependencyResolver.for(const key in parameters);`
+- **Pure JSDoc:**
+```javascript
+/** Method for */
+```
+---
+#### METHOD: DependencyResolver.if
+- **Scope:** instance
+- **LLM Call Syntax:** `dependencyResolver.if(item !);`
+- **Pure JSDoc:**
+```javascript
+/** Method if */
+```
+---
+#### METHOD: DependencyResolver.analyzeDependencies
+- **Scope:** instance
+- **LLM Call Syntax:** `const result = dependencyResolver.analyzeDependencies(parameters);`
+- **Pure JSDoc:**
+```javascript
+/**
+   * Analyzes a parameters structure to extract unique dependency identifiers.
+   * @param {Object|Array} parameters Structure to analyze.
+   * @returns {Object} Metadata including paramDependencies (names), providerDependencies (names), and total count.
+   */
+```
+---
+#### METHOD: DependencyResolver.for
+- **Scope:** instance
+- **LLM Call Syntax:** `dependencyResolver.for(const key in obj);`
+- **Pure JSDoc:**
+```javascript
+/** Method for */
+```
+---
+#### METHOD: DependencyResolver.if
+- **Scope:** instance
+- **LLM Call Syntax:** `dependencyResolver.if(typeof value);`
+- **Pure JSDoc:**
+```javascript
+/** Method if */
+```
+---
+#### METHOD: DependencyResolver.if
+- **Scope:** instance
+- **LLM Call Syntax:** `dependencyResolver.if(paramMatch);`
+- **Pure JSDoc:**
+```javascript
+/** Method if */
+```
+---
+#### METHOD: DependencyResolver.if
+- **Scope:** instance
+- **LLM Call Syntax:** `dependencyResolver.if(providerMatch);`
+- **Pure JSDoc:**
+```javascript
+/** Method if */
+```
+---
+#### METHOD: DependencyResolver.if
+- **Scope:** instance
+- **LLM Call Syntax:** `dependencyResolver.if(value !);`
+- **Pure JSDoc:**
+```javascript
+/** Method if */
+```
+---
 <br>
 
 ## CLASS: ContextStepExecutor
@@ -1502,6 +2351,19 @@ import { BaseError } from '@CoreUtilsLib';
  */
 ```
 
+### Methods of ContextEngineError
+
+#### METHOD: ContextEngineError.toString
+- **Scope:** instance
+- **LLM Call Syntax:** `const result = contextEngineError.toString();`
+- **Pure JSDoc:**
+```javascript
+/**
+   * Serializes the error and its associated context into a human-readable diagnostic string.
+   * @returns {string} Formatted error name, message, and JSON-serialized context.
+   */
+```
+---
 <br>
 
 ## CLASS: CollectionProjectionError
@@ -1586,6 +2448,104 @@ import { CollectionProjectionError } from '../internal/errors/CollectionProjecti
  */
 ```
 
+### Methods of ContextInterceptor
+
+#### METHOD: ContextInterceptor.if
+- **Scope:** instance
+- **LLM Call Syntax:** `contextInterceptor.if(!logger || typeof logger !);`
+- **Pure JSDoc:**
+```javascript
+/** Method if */
+```
+---
+#### METHOD: ContextInterceptor.if
+- **Scope:** instance
+- **LLM Call Syntax:** `contextInterceptor.if(typeof logger.debug !);`
+- **Pure JSDoc:**
+```javascript
+/** Method if */
+```
+---
+#### METHOD: ContextInterceptor.intercept
+- **Scope:** instance
+- **LLM Call Syntax:** `const result = contextInterceptor.intercept(name, data, context, options);`
+- **Pure JSDoc:**
+```javascript
+/**
+   * Primary entry point for provider result interception. Orchestrates conditional checks and error wrapping.
+   * @param {string} name Provider name from recipe.
+   * @param {*} data Provider result payload.
+   * @param {Object} context Current assembled context.
+   * @param {Object} [options={}] Runtime options.
+   * @returns {*} Modified data if intercepted, original data if skipped.
+   * @throws {Error} If inputs are invalid or _performIntercept fails.
+   */
+```
+---
+#### METHOD: ContextInterceptor.if
+- **Scope:** instance
+- **LLM Call Syntax:** `contextInterceptor.if(!name || typeof name !);`
+- **Pure JSDoc:**
+```javascript
+/** Method if */
+```
+---
+#### METHOD: ContextInterceptor.if
+- **Scope:** instance
+- **LLM Call Syntax:** `contextInterceptor.if(context);`
+- **Pure JSDoc:**
+```javascript
+/** Method if */
+```
+---
+#### METHOD: ContextInterceptor.if
+- **Scope:** instance
+- **LLM Call Syntax:** `contextInterceptor.if(options !);`
+- **Pure JSDoc:**
+```javascript
+/** Method if */
+```
+---
+#### METHOD: ContextInterceptor.if
+- **Scope:** instance
+- **LLM Call Syntax:** `contextInterceptor.if(!shouldIntercept);`
+- **Pure JSDoc:**
+```javascript
+/** Method if */
+```
+---
+#### METHOD: ContextInterceptor.catch
+- **Scope:** instance
+- **LLM Call Syntax:** `contextInterceptor.catch(error);`
+- **Pure JSDoc:**
+```javascript
+/** Method catch */
+```
+---
+#### METHOD: ContextInterceptor.if
+- **Scope:** instance
+- **LLM Call Syntax:** `contextInterceptor.if(error instanceof CollectionProjectionError);`
+- **Pure JSDoc:**
+```javascript
+/** Method if */
+```
+---
+#### METHOD: ContextInterceptor.if
+- **Scope:** instance
+- **LLM Call Syntax:** `contextInterceptor.if(outcome);`
+- **Pure JSDoc:**
+```javascript
+/** Method if */
+```
+---
+#### METHOD: ContextInterceptor.switch
+- **Scope:** instance
+- **LLM Call Syntax:** `contextInterceptor.switch(outcome.action);`
+- **Pure JSDoc:**
+```javascript
+/** Method switch */
+```
+---
 <br>
 
 ## CLASS: or

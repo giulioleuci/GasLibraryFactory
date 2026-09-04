@@ -79,6 +79,881 @@ const zodSchemaProtocol = z.object({
  */
 ```
 
+### Methods of TableService
+
+#### METHOD: TableService.ALPHABET_SIZE
+- **Scope:** instance
+- **LLM Call Syntax:** `tableService.ALPHABET_SIZE();`
+- **Pure JSDoc:**
+```javascript
+/** Method ALPHABET_SIZE */
+```
+---
+#### METHOD: TableService.ASCII_CODE_A
+- **Scope:** instance
+- **LLM Call Syntax:** `tableService.ASCII_CODE_A();`
+- **Pure JSDoc:**
+```javascript
+/** Method ASCII_CODE_A */
+```
+---
+#### METHOD: TableService.if
+- **Scope:** instance
+- **LLM Call Syntax:** `tableService.if(preloadedData);`
+- **Pure JSDoc:**
+```javascript
+/** Method if */
+```
+---
+#### METHOD: TableService.if
+- **Scope:** instance
+- **LLM Call Syntax:** `tableService.if(preloadedData && this._rowsCache);`
+- **Pure JSDoc:**
+```javascript
+/** Method if */
+```
+---
+#### METHOD: TableService.for
+- **Scope:** instance
+- **LLM Call Syntax:** `tableService.for(const row of this._rowsCache);`
+- **Pure JSDoc:**
+```javascript
+/** Method for */
+```
+---
+#### METHOD: TableService.insertRow
+- **Scope:** instance
+- **LLM Call Syntax:** `const result = tableService.insertRow(rowObj);`
+- **Pure JSDoc:**
+```javascript
+/**
+   * @function insertRow
+   * @description Single row insertion with schema validation.
+   * @param {Object} rowObj - Data to insert.
+   * @returns {Object|null} The inserted row with generated ID and virtual columns.
+   * @throws {Error} On schema violation.
+   */
+```
+---
+#### METHOD: TableService.insertRows
+- **Scope:** instance
+- **LLM Call Syntax:** `const result = tableService.insertRows(rowsArray);`
+- **Pure JSDoc:**
+```javascript
+/**
+   * @function insertRows
+   * @description Batch insertion with UUID generation and write-through cache update.
+   * @param {Object[]} rowsArray - Multiple data objects.
+   * @returns {Object[]} Processed rows added to the queue.
+   * @throws {Error} If validation fails for any row.
+   */
+```
+---
+#### METHOD: TableService.for
+- **Scope:** instance
+- **LLM Call Syntax:** `tableService.for(const rowObj of rowsArray);`
+- **Pure JSDoc:**
+```javascript
+/** Method for */
+```
+---
+#### METHOD: TableService.if
+- **Scope:** instance
+- **LLM Call Syntax:** `tableService.if(this._keyField && !completeRow[this._keyField]);`
+- **Pure JSDoc:**
+```javascript
+/** Method if */
+```
+---
+#### METHOD: TableService.for
+- **Scope:** instance
+- **LLM Call Syntax:** `tableService.for(const row of completeRows);`
+- **Pure JSDoc:**
+```javascript
+/** Method for */
+```
+---
+#### METHOD: TableService.catch
+- **Scope:** instance
+- **LLM Call Syntax:** `tableService.catch(e);`
+- **Pure JSDoc:**
+```javascript
+/** Method catch */
+```
+---
+#### METHOD: TableService.updateRowById
+- **Scope:** instance
+- **LLM Call Syntax:** `const result = tableService.updateRowById(id, rowObj);`
+- **Pure JSDoc:**
+```javascript
+/**
+   * @function updateRowById
+   * @description Performs full row update with dirty checking. Skips if data is identical.
+   * @param {string|number} id - PK of target row.
+   * @param {Object} rowObj - New data state.
+   * @returns {Object} The updated row.
+   * @throws {OperationError} If ID not found.
+   * @throws {Error} On schema violation.
+   */
+```
+---
+#### METHOD: TableService.if
+- **Scope:** instance
+- **LLM Call Syntax:** `tableService.if(targetRowIndex);`
+- **Pure JSDoc:**
+```javascript
+/** Method if */
+```
+---
+#### METHOD: TableService.for
+- **Scope:** instance
+- **LLM Call Syntax:** `tableService.for(const col of physicalColumns);`
+- **Pure JSDoc:**
+```javascript
+/** Method for */
+```
+---
+#### METHOD: TableService.catch
+- **Scope:** instance
+- **LLM Call Syntax:** `tableService.catch(e);`
+- **Pure JSDoc:**
+```javascript
+/** Method catch */
+```
+---
+#### METHOD: TableService.patchRow
+- **Scope:** instance
+- **LLM Call Syntax:** `const result = tableService.patchRow(id, partialObj);`
+- **Pure JSDoc:**
+```javascript
+/**
+   * @function patchRow
+   * @description Partial update focusing only on changed physical columns.
+   * @param {string|number} id - PK of target row.
+   * @param {Object} partialObj - Subset of row data.
+   * @returns {Object} The merged updated row.
+   * @throws {OperationError} If ID not found.
+   */
+```
+---
+#### METHOD: TableService.if
+- **Scope:** instance
+- **LLM Call Syntax:** `tableService.if(targetRowIndex);`
+- **Pure JSDoc:**
+```javascript
+/** Method if */
+```
+---
+#### METHOD: TableService.if
+- **Scope:** instance
+- **LLM Call Syntax:** `tableService.if(this._virtualColumns[key]);`
+- **Pure JSDoc:**
+```javascript
+/** Method if */
+```
+---
+#### METHOD: TableService.if
+- **Scope:** instance
+- **LLM Call Syntax:** `tableService.if(oldValue !);`
+- **Pure JSDoc:**
+```javascript
+/** Method if */
+```
+---
+#### METHOD: TableService.if
+- **Scope:** instance
+- **LLM Call Syntax:** `tableService.if(changedColumns.length);`
+- **Pure JSDoc:**
+```javascript
+/** Method if */
+```
+---
+#### METHOD: TableService.catch
+- **Scope:** instance
+- **LLM Call Syntax:** `tableService.catch(e);`
+- **Pure JSDoc:**
+```javascript
+/** Method catch */
+```
+---
+#### METHOD: TableService.deleteRowById
+- **Scope:** instance
+- **LLM Call Syntax:** `const result = tableService.deleteRowById(id);`
+- **Pure JSDoc:**
+```javascript
+/**
+   * @function deleteRowById
+   * @description Queues row for deletion and purges it from local caches.
+   * @param {string|number} id - PK of row to remove.
+   * @returns {Object|null} The deleted row object or null if not found.
+   * @throws {Error} If queueing fails.
+   */
+```
+---
+#### METHOD: TableService.if
+- **Scope:** instance
+- **LLM Call Syntax:** `tableService.if(targetRowIndex);`
+- **Pure JSDoc:**
+```javascript
+/** Method if */
+```
+---
+#### METHOD: TableService.if
+- **Scope:** instance
+- **LLM Call Syntax:** `tableService.if(insertIndex !);`
+- **Pure JSDoc:**
+```javascript
+/** Method if */
+```
+---
+#### METHOD: TableService.catch
+- **Scope:** instance
+- **LLM Call Syntax:** `tableService.catch(e);`
+- **Pure JSDoc:**
+```javascript
+/** Method catch */
+```
+---
+#### METHOD: TableService.updateRowsByIds
+- **Scope:** instance
+- **LLM Call Syntax:** `const result = tableService.updateRowsByIds(updatesObj);`
+- **Pure JSDoc:**
+```javascript
+/**
+   * @function updateRowsByIds
+   * @description Batch patch operation.
+   * @param {Object.<string, Object>} updatesObj - ID-to-partial map.
+   * @returns {Object[]} Successful updates.
+   */
+```
+---
+#### METHOD: TableService.catch
+- **Scope:** instance
+- **LLM Call Syntax:** `tableService.catch(e);`
+- **Pure JSDoc:**
+```javascript
+/** Method catch */
+```
+---
+#### METHOD: TableService.deleteRowsByIds
+- **Scope:** instance
+- **LLM Call Syntax:** `const result = tableService.deleteRowsByIds(ids);`
+- **Pure JSDoc:**
+```javascript
+/**
+   * @function deleteRowsByIds
+   * @description Batch deletion.
+   * @param {(string|number)[]} ids - Array of PKs.
+   * @returns {Object[]} Successful deletions.
+   */
+```
+---
+#### METHOD: TableService.if
+- **Scope:** instance
+- **LLM Call Syntax:** `tableService.if(!ids || ids.length);`
+- **Pure JSDoc:**
+```javascript
+/** Method if */
+```
+---
+#### METHOD: TableService.for
+- **Scope:** instance
+- **LLM Call Syntax:** `tableService.for(const id of ids);`
+- **Pure JSDoc:**
+```javascript
+/** Method for */
+```
+---
+#### METHOD: TableService.if
+- **Scope:** instance
+- **LLM Call Syntax:** `tableService.if(result);`
+- **Pure JSDoc:**
+```javascript
+/** Method if */
+```
+---
+#### METHOD: TableService.catch
+- **Scope:** instance
+- **LLM Call Syntax:** `tableService.catch(e);`
+- **Pure JSDoc:**
+```javascript
+/** Method catch */
+```
+---
+#### METHOD: TableService.setSchema
+- **Scope:** instance
+- **LLM Call Syntax:** `tableService.setSchema(zodSchema);`
+- **Pure JSDoc:**
+```javascript
+/** Method setSchema */
+```
+---
+#### METHOD: TableService.disableSchemaValidation
+- **Scope:** instance
+- **LLM Call Syntax:** `tableService.disableSchemaValidation();`
+- **Pure JSDoc:**
+```javascript
+/** Method disableSchemaValidation */
+```
+---
+#### METHOD: TableService.enableSchemaValidation
+- **Scope:** instance
+- **LLM Call Syntax:** `tableService.enableSchemaValidation();`
+- **Pure JSDoc:**
+```javascript
+/** Method enableSchemaValidation */
+```
+---
+#### METHOD: TableService.if
+- **Scope:** instance
+- **LLM Call Syntax:** `tableService.if(!this._schema);`
+- **Pure JSDoc:**
+```javascript
+/** Method if */
+```
+---
+#### METHOD: TableService.if
+- **Scope:** instance
+- **LLM Call Syntax:** `tableService.if(!this._schemaValidationEnabled || !this._schema);`
+- **Pure JSDoc:**
+```javascript
+/** Method if */
+```
+---
+#### METHOD: TableService.if
+- **Scope:** instance
+- **LLM Call Syntax:** `tableService.if(!this._schemaValidator);`
+- **Pure JSDoc:**
+```javascript
+/** Method if */
+```
+---
+#### METHOD: TableService.if
+- **Scope:** instance
+- **LLM Call Syntax:** `tableService.if(!result.success);`
+- **Pure JSDoc:**
+```javascript
+/** Method if */
+```
+---
+#### METHOD: TableService.fuzzySearch
+- **Scope:** instance
+- **LLM Call Syntax:** `const result = tableService.fuzzySearch(query, fields, threshold, options);`
+- **Pure JSDoc:**
+```javascript
+/**
+   * @function fuzzySearch
+   * @description Executes fuzzy match using Fuse.js across specified fields.
+   * @param {string} query - Search term.
+   * @param {string[]} fields - Columns to inspect.
+   * @param {number} [threshold=0.3] - Fuse.js sensitivity (0.0 to 1.0).
+   * @param {Object} [options={}] - Fuse.js configuration overrides.
+   * @returns {Object[]} Fuse.js result objects (item, refIndex, score).
+   * @throws {Error} If query is non-string or fields array is empty.
+   */
+```
+---
+#### METHOD: TableService.if
+- **Scope:** instance
+- **LLM Call Syntax:** `tableService.if(!query || typeof query !);`
+- **Pure JSDoc:**
+```javascript
+/** Method if */
+```
+---
+#### METHOD: TableService.if
+- **Scope:** instance
+- **LLM Call Syntax:** `tableService.if(typeof threshold !);`
+- **Pure JSDoc:**
+```javascript
+/** Method if */
+```
+---
+#### METHOD: TableService.fuzzySearchRows
+- **Scope:** instance
+- **LLM Call Syntax:** `const result = tableService.fuzzySearchRows(rows, query, fields, threshold, options);`
+- **Pure JSDoc:**
+```javascript
+/**
+   * @description Executes fuzzy matching against an already materialized row set.
+   * This keeps all Fuse configuration within the table search boundary for callers
+   * such as AdvancedQueryBuilder that have already narrowed their candidates.
+   * @param {Object[]} rows - Candidate records to search.
+   * @param {string} query - Search term.
+   * @param {string[]} fields - Candidate fields to inspect.
+   * @param {number} [threshold=0.3] - Fuse.js sensitivity (0.0 to 1.0).
+   * @param {Object} [options={}] - Fuse.js configuration overrides.
+   * @returns {Object[]} Fuse.js result objects (item, refIndex, score).
+   */
+```
+---
+#### METHOD: TableService.if
+- **Scope:** instance
+- **LLM Call Syntax:** `tableService.if(!query || typeof query !);`
+- **Pure JSDoc:**
+```javascript
+/** Method if */
+```
+---
+#### METHOD: TableService.if
+- **Scope:** instance
+- **LLM Call Syntax:** `tableService.if(typeof threshold !);`
+- **Pure JSDoc:**
+```javascript
+/** Method if */
+```
+---
+#### METHOD: TableService.createIndex
+- **Scope:** instance
+- **LLM Call Syntax:** `const result = tableService.createIndex(columnName);`
+- **Pure JSDoc:**
+```javascript
+/**
+   * @function createIndex
+   * @description Builds a Map-based memory index for O(1) lookups on a specific column.
+   * @param {string} columnName - Target physical column.
+   * @returns {TableService} The instance for chaining.
+   * @throws {Error} If columnName is missing from table schema.
+   */
+```
+---
+#### METHOD: TableService.if
+- **Scope:** instance
+- **LLM Call Syntax:** `tableService.if(value !);`
+- **Pure JSDoc:**
+```javascript
+/** Method if */
+```
+---
+#### METHOD: TableService.if
+- **Scope:** instance
+- **LLM Call Syntax:** `tableService.if(!this._indices[columnName]);`
+- **Pure JSDoc:**
+```javascript
+/** Method if */
+```
+---
+#### METHOD: TableService.if
+- **Scope:** instance
+- **LLM Call Syntax:** `tableService.if(!rowIndices);`
+- **Pure JSDoc:**
+```javascript
+/** Method if */
+```
+---
+#### METHOD: TableService.invalidateIndex
+- **Scope:** instance
+- **LLM Call Syntax:** `tableService.invalidateIndex(columnName);`
+- **Pure JSDoc:**
+```javascript
+/**
+   * @function invalidateIndex
+   * @description Purges memory indices.
+   * @param {string|null} [columnName=null] - Specific column ID or null for global purge.
+   */
+```
+---
+#### METHOD: TableService.if
+- **Scope:** instance
+- **LLM Call Syntax:** `tableService.if(columnName);`
+- **Pure JSDoc:**
+```javascript
+/** Method if */
+```
+---
+#### METHOD: TableService.getRows
+- **Scope:** instance
+- **LLM Call Syntax:** `const result = tableService.getRows();`
+- **Pure JSDoc:**
+```javascript
+/**
+   * @function getRows
+   * @description Retrieves all records as plain objects. Lazy-loads data on first call. Virtual columns are recomputed only if version mismatches.
+   * @returns {Object[]} Cloned array of row objects.
+   */
+```
+---
+#### METHOD: TableService.if
+- **Scope:** instance
+- **LLM Call Syntax:** `tableService.if(this._processedRowsCache);`
+- **Pure JSDoc:**
+```javascript
+/** Method if */
+```
+---
+#### METHOD: TableService.flush
+- **Scope:** instance
+- **LLM Call Syntax:** `const result = tableService.flush(id, options, options.dryRun);`
+- **Pure JSDoc:**
+```javascript
+/**
+   * Deletes a row from the spreadsheet identified by its primary key.
+   *
+   * @param {string|number} id - The value of the primary key of the row to delete
+   * @returns {boolean} `true` if deletion was successful, `false` otherwise
+   *
+   * @example
+   * const deleted = table.deleteRowById('USER_123');
+   * if (deleted) {
+   *   console.log('User deleted successfully');
+   * }
+   */
+
+  /**
+   * @function flush
+   * @description Synchronizes queued changes (deletes, updates, inserts) to Google Sheets via batch API calls.
+   * @param {Object} [options={}] - Options.
+   * @param {boolean} [options.dryRun=false] - If true, skips API execution.
+   * @returns {number} Count of batch operations performed.
+   */
+```
+---
+#### METHOD: TableService.if
+- **Scope:** instance
+- **LLM Call Syntax:** `tableService.if(this._insertQueue.length > 0);`
+- **Pure JSDoc:**
+```javascript
+/** Method if */
+```
+---
+#### METHOD: TableService.for
+- **Scope:** instance
+- **LLM Call Syntax:** `tableService.for(const row of this._insertQueue);`
+- **Pure JSDoc:**
+```javascript
+/** Method for */
+```
+---
+#### METHOD: TableService.if
+- **Scope:** instance
+- **LLM Call Syntax:** `tableService.if(!this._virtualColumns[key]);`
+- **Pure JSDoc:**
+```javascript
+/** Method if */
+```
+---
+#### METHOD: TableService.if
+- **Scope:** instance
+- **LLM Call Syntax:** `tableService.if(this._deleteQueue.size > 0 && !options.dryRun);`
+- **Pure JSDoc:**
+```javascript
+/** Method if */
+```
+---
+#### METHOD: TableService.for
+- **Scope:** instance
+- **LLM Call Syntax:** `tableService.for(const id of deleteIds);`
+- **Pure JSDoc:**
+```javascript
+/** Method for */
+```
+---
+#### METHOD: TableService.if
+- **Scope:** instance
+- **LLM Call Syntax:** `tableService.if(idx !);`
+- **Pure JSDoc:**
+```javascript
+/** Method if */
+```
+---
+#### METHOD: TableService.if
+- **Scope:** instance
+- **LLM Call Syntax:** `tableService.if(realRowIndicesToDelete.length > 0);`
+- **Pure JSDoc:**
+```javascript
+/** Method if */
+```
+---
+#### METHOD: TableService.if
+- **Scope:** instance
+- **LLM Call Syntax:** `tableService.if(this._updateQueue.size > 0 && !options.dryRun);`
+- **Pure JSDoc:**
+```javascript
+/** Method if */
+```
+---
+#### METHOD: TableService.if
+- **Scope:** instance
+- **LLM Call Syntax:** `tableService.if(idx !);`
+- **Pure JSDoc:**
+```javascript
+/** Method if */
+```
+---
+#### METHOD: TableService.for
+- **Scope:** instance
+- **LLM Call Syntax:** `tableService.for(const col of physicalColumns);`
+- **Pure JSDoc:**
+```javascript
+/** Method for */
+```
+---
+#### METHOD: TableService.if
+- **Scope:** instance
+- **LLM Call Syntax:** `tableService.if(updates.length > 0);`
+- **Pure JSDoc:**
+```javascript
+/** Method if */
+```
+---
+#### METHOD: TableService.if
+- **Scope:** instance
+- **LLM Call Syntax:** `tableService.if(this._insertQueue.length > 0 && !options.dryRun);`
+- **Pure JSDoc:**
+```javascript
+/** Method if */
+```
+---
+#### METHOD: TableService.if
+- **Scope:** instance
+- **LLM Call Syntax:** `tableService.if(writeHeader);`
+- **Pure JSDoc:**
+```javascript
+/** Method if */
+```
+---
+#### METHOD: TableService.for
+- **Scope:** instance
+- **LLM Call Syntax:** `tableService.for(const row of this._insertQueue);`
+- **Pure JSDoc:**
+```javascript
+/** Method for */
+```
+---
+#### METHOD: TableService.setPrimaryKey
+- **Scope:** instance
+- **LLM Call Syntax:** `const result = tableService.setPrimaryKey(columnName);`
+- **Pure JSDoc:**
+```javascript
+/**
+   * @function setPrimaryKey
+   * @description Overrides auto-detection of PK column. Re-triggers PK mapping.
+   * @param {string} columnName - Target physical column name.
+   * @returns {TableService} For chaining.
+   */
+```
+---
+#### METHOD: TableService.getRowById
+- **Scope:** instance
+- **LLM Call Syntax:** `const result = tableService.getRowById(id);`
+- **Pure JSDoc:**
+```javascript
+/**
+   * @function getRowById
+   * @description O(1) lookup (if indexed) or O(N) scan for a specific record.
+   * @param {string|number} id - PK value.
+   * @returns {Object|null} Hydrated row object or null.
+   */
+```
+---
+#### METHOD: TableService.if
+- **Scope:** instance
+- **LLM Call Syntax:** `tableService.if(targetRowIndex);`
+- **Pure JSDoc:**
+```javascript
+/** Method if */
+```
+---
+#### METHOD: TableService.defineVirtualColumn
+- **Scope:** instance
+- **LLM Call Syntax:** `const result = tableService.defineVirtualColumn(columnName, computeFunction);`
+- **Pure JSDoc:**
+```javascript
+/**
+   * @function defineVirtualColumn
+   * @description Registers a computed property. Invalidates internal processed cache.
+   * @param {string} columnName - Virtual property key.
+   * @param {Function} computeFunction - Logic: (row) => any.
+   * @returns {TableService} For chaining.
+   * @throws {Error} If computeFunction is not a function.
+   */
+```
+---
+#### METHOD: TableService.if
+- **Scope:** instance
+- **LLM Call Syntax:** `tableService.if(typeof computeFunction !);`
+- **Pure JSDoc:**
+```javascript
+/** Method if */
+```
+---
+#### METHOD: TableService.getByPK
+- **Scope:** instance
+- **LLM Call Syntax:** `const result = tableService.getByPK(pkValue);`
+- **Pure JSDoc:**
+```javascript
+/**
+   * @function getByPK
+   * @alias getRowById
+   * @param {*} pkValue - PK value.
+   * @returns {Object|null}
+   */
+```
+---
+#### METHOD: TableService.if
+- **Scope:** instance
+- **LLM Call Syntax:** `tableService.if(targetRowIndex);`
+- **Pure JSDoc:**
+```javascript
+/** Method if */
+```
+---
+#### METHOD: TableService.getAllRows
+- **Scope:** instance
+- **LLM Call Syntax:** `const result = tableService.getAllRows();`
+- **Pure JSDoc:**
+```javascript
+/**
+   * @function getAllRows
+   * @alias getRows
+   * @returns {Object[]}
+   */
+```
+---
+#### METHOD: TableService.if
+- **Scope:** instance
+- **LLM Call Syntax:** `tableService.if(options.data);`
+- **Pure JSDoc:**
+```javascript
+/** Method if */
+```
+---
+#### METHOD: TableService.if
+- **Scope:** instance
+- **LLM Call Syntax:** `tableService.if(options.indices);`
+- **Pure JSDoc:**
+```javascript
+/** Method if */
+```
+---
+#### METHOD: TableService.if
+- **Scope:** instance
+- **LLM Call Syntax:** `tableService.if(this._dataLoaded);`
+- **Pure JSDoc:**
+```javascript
+/** Method if */
+```
+---
+#### METHOD: TableService.for
+- **Scope:** instance
+- **LLM Call Syntax:** `tableService.for(const row of this._rowsCache);`
+- **Pure JSDoc:**
+```javascript
+/** Method for */
+```
+---
+#### METHOD: TableService.if
+- **Scope:** instance
+- **LLM Call Syntax:** `tableService.if(!data || data.length);`
+- **Pure JSDoc:**
+```javascript
+/** Method if */
+```
+---
+#### METHOD: TableService.for
+- **Scope:** instance
+- **LLM Call Syntax:** `tableService.for(let i);`
+- **Pure JSDoc:**
+```javascript
+/** Method for */
+```
+---
+#### METHOD: TableService.for
+- **Scope:** instance
+- **LLM Call Syntax:** `tableService.for(let j);`
+- **Pure JSDoc:**
+```javascript
+/** Method for */
+```
+---
+#### METHOD: TableService.if
+- **Scope:** instance
+- **LLM Call Syntax:** `tableService.if(header[j]);`
+- **Pure JSDoc:**
+```javascript
+/** Method if */
+```
+---
+#### METHOD: TableService.if
+- **Scope:** instance
+- **LLM Call Syntax:** `tableService.if(!this._keyField || !row[this._keyField]);`
+- **Pure JSDoc:**
+```javascript
+/** Method if */
+```
+---
+#### METHOD: TableService.if
+- **Scope:** instance
+- **LLM Call Syntax:** `tableService.if(!this._virtualColumns[key]);`
+- **Pure JSDoc:**
+```javascript
+/** Method if */
+```
+---
+#### METHOD: TableService.if
+- **Scope:** instance
+- **LLM Call Syntax:** `tableService.if(this._indices[this._keyField] && this._indices[this._keyField][id] !);`
+- **Pure JSDoc:**
+```javascript
+/** Method if */
+```
+---
+#### METHOD: TableService.if
+- **Scope:** instance
+- **LLM Call Syntax:** `tableService.if(!headerData || headerData.length);`
+- **Pure JSDoc:**
+```javascript
+/** Method if */
+```
+---
+#### METHOD: TableService.if
+- **Scope:** instance
+- **LLM Call Syntax:** `tableService.if(this._manualPrimaryKey);`
+- **Pure JSDoc:**
+```javascript
+/** Method if */
+```
+---
+#### METHOD: TableService.if
+- **Scope:** instance
+- **LLM Call Syntax:** `tableService.if(idField);`
+- **Pure JSDoc:**
+```javascript
+/** Method if */
+```
+---
+#### METHOD: TableService.for
+- **Scope:** instance
+- **LLM Call Syntax:** `tableService.for(const columnName in this._virtualColumns);`
+- **Pure JSDoc:**
+```javascript
+/** Method for */
+```
+---
+#### METHOD: TableService.catch
+- **Scope:** instance
+- **LLM Call Syntax:** `tableService.catch(e);`
+- **Pure JSDoc:**
+```javascript
+/** Method catch */
+```
+---
+#### METHOD: TableService.while
+- **Scope:** instance
+- **LLM Call Syntax:** `tableService.while(tempIndex > 0);`
+- **Pure JSDoc:**
+```javascript
+/** Method while */
+```
+---
+#### METHOD: TableService.if
+- **Scope:** instance
+- **LLM Call Syntax:** `tableService.if(pkIndex);`
+- **Pure JSDoc:**
+```javascript
+/** Method if */
+```
+---
 <br>
 
 ## CLASS: DatabaseService
@@ -368,6 +1243,44 @@ import { AdvancedQueryBuilder } from '../query/AdvancedQueryBuilder.js';
  */
 ```
 
+### Methods of TableServiceMock
+
+#### METHOD: TableServiceMock.if
+- **Scope:** instance
+- **LLM Call Syntax:** `tableServiceMock.if(index !);`
+- **Pure JSDoc:**
+```javascript
+/** Method if */
+```
+---
+#### METHOD: TableServiceMock.if
+- **Scope:** instance
+- **LLM Call Syntax:** `tableServiceMock.if(index !);`
+- **Pure JSDoc:**
+```javascript
+/** Method if */
+```
+---
+#### METHOD: TableServiceMock.if
+- **Scope:** instance
+- **LLM Call Syntax:** `tableServiceMock.if(start);`
+- **Pure JSDoc:**
+```javascript
+/** Method if */
+```
+---
+#### METHOD: TableServiceMock.setData
+- **Scope:** instance
+- **LLM Call Syntax:** `const result = tableServiceMock.setData(data);`
+- **Pure JSDoc:**
+```javascript
+/**
+   * @description Pre-populates the mock table with a collection of records.
+   * @param {Object[]} data - Records to load into memory.
+   * @returns {TableServiceMock} Current instance for chaining.
+   */
+```
+---
 <br>
 
 ## CLASS: DatabaseServiceMock
@@ -560,6 +1473,28 @@ Orchestrates TableServiceMock instances and provides a unified interface for moc
  */
 ```
 
+### Methods of DatabaseServiceMock
+
+#### METHOD: DatabaseServiceMock.registerTable
+- **Scope:** instance
+- **LLM Call Syntax:** `const result = databaseServiceMock.registerTable(name, mock);`
+- **Pure JSDoc:**
+```javascript
+/**
+     * Map of table name to TableServiceMock instances.
+     * @type {Object<string, TableServiceMock>}
+     */
+    this.tables = {};
+  }
+
+  /**
+   * @description Manually registers a TableServiceMock for specific lookup tests.
+   * @param {string} name - Logical table identifier.
+   * @param {TableServiceMock} [mock] - Custom mock instance or auto-generated if omitted.
+   * @returns {TableServiceMock} The registered table mock.
+   */
+```
+---
 <br>
 
 ## CLASS: QueryCache
@@ -649,6 +1584,72 @@ function _createFuzzyCondition(field, query, options = {}, type) {
  */
 ```
 
+### Methods of QueryCache
+
+#### METHOD: QueryCache.if
+- **Scope:** instance
+- **LLM Call Syntax:** `queryCache.if(!this.service);`
+- **Pure JSDoc:**
+```javascript
+/** Method if */
+```
+---
+#### METHOD: QueryCache.if
+- **Scope:** instance
+- **LLM Call Syntax:** `queryCache.if(cached);`
+- **Pure JSDoc:**
+```javascript
+/** Method if */
+```
+---
+#### METHOD: QueryCache.catch
+- **Scope:** instance
+- **LLM Call Syntax:** `queryCache.catch(e);`
+- **Pure JSDoc:**
+```javascript
+/** Method catch */
+```
+---
+#### METHOD: QueryCache.store
+- **Scope:** instance
+- **LLM Call Syntax:** `const result = queryCache.store(query, result);`
+- **Pure JSDoc:**
+```javascript
+/**
+   * @description Persists query results to the cache with configured TTL.
+   * @param {Object} query - AdvancedQueryBuilder instance.
+   * @param {Object[]} result - Collection of records to cache.
+   * @returns {boolean} True if successfully stored.
+   */
+```
+---
+#### METHOD: QueryCache.if
+- **Scope:** instance
+- **LLM Call Syntax:** `queryCache.if(!this.service);`
+- **Pure JSDoc:**
+```javascript
+/** Method if */
+```
+---
+#### METHOD: QueryCache.invalidateTable
+- **Scope:** instance
+- **LLM Call Syntax:** `const result = queryCache.invalidateTable();`
+- **Pure JSDoc:**
+```javascript
+/**
+   * @description Invalidates all cached entries (full flush).
+   * @returns {boolean} True if flush was successful.
+   */
+```
+---
+#### METHOD: QueryCache.if
+- **Scope:** instance
+- **LLM Call Syntax:** `queryCache.if(!this.service);`
+- **Pure JSDoc:**
+```javascript
+/** Method if */
+```
+---
 <br>
 
 ## CLASS: AdvancedQueryBuilder
@@ -1807,5 +2808,51 @@ function _compareValues(leftValue, operator, rightValue) {
  */
 ```
 
+### Methods of QueryAggregation
+
+#### METHOD: QueryAggregation.for
+- **Scope:** instance
+- **LLM Call Syntax:** `queryAggregation.for(const key in row);`
+- **Pure JSDoc:**
+```javascript
+/** Method for */
+```
+---
+#### METHOD: QueryAggregation.calculate
+- **Scope:** instance
+- **LLM Call Syntax:** `const result = queryAggregation.calculate(rows);`
+- **Pure JSDoc:**
+```javascript
+/**
+   * @description Computes the configured aggregation over a collection of records.
+   * @param {Object[]} rows - Data set to process.
+   * @returns {number|null} Scalar result or null if input is empty/invalid.
+   */
+```
+---
+#### METHOD: QueryAggregation.if
+- **Scope:** instance
+- **LLM Call Syntax:** `queryAggregation.if(!rows || rows.length);`
+- **Pure JSDoc:**
+```javascript
+/** Method if */
+```
+---
+#### METHOD: QueryAggregation.if
+- **Scope:** instance
+- **LLM Call Syntax:** `queryAggregation.if(values.length);`
+- **Pure JSDoc:**
+```javascript
+/** Method if */
+```
+---
+#### METHOD: QueryAggregation.switch
+- **Scope:** instance
+- **LLM Call Syntax:** `queryAggregation.switch(this.function);`
+- **Pure JSDoc:**
+```javascript
+/** Method switch */
+```
+---
 <br>
 

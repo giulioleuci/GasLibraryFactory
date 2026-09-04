@@ -228,16 +228,6 @@
  * }
  * ```
  *
- * **DomainRepositoryLib Integration:**
- * Used in ExpressionSpecification for complex business rules.
- * ```javascript
- * // In DomainRepositoryLib specification
- * const spec = new ExpressionSpecification(
- *   "{{age}} >= 18 && {{status}} == 'active'",
- *   expressionEngine
- * );
- * ```
- *
  * **PipelineFramework Integration:**
  * Used for conditional step execution in pipeline configurations.
  * ```javascript
