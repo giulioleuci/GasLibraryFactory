@@ -157,3 +157,17 @@ test('missing table yields no violations and does not throw', () => {
 test('an unknown rule type throws (caller typo, not data error)', () => {
   expect(() => run([{ id: 'Z', type: 'nope', table: 'ALUNNI' }])).toThrow(/nope/);
 });
+
+test('validate ignores completely empty and whitespace-only rows before applying rules', () => {
+  const localDatasets = {
+    ALUNNI: [
+      { EMAIL: 'a@x.it', CLASSE: '1A' },
+      { EMAIL: '', CLASSE: '' },
+      { EMAIL: ' ', CLASSE: '\t' }
+    ]
+  };
+  const violations = new DatasetValidator().validate(localDatasets, [
+    { id: 'R1', type: 'required', table: 'ALUNNI', columns: ['EMAIL'] }
+  ]).violations;
+  expect(violations).toEqual([]);
+});

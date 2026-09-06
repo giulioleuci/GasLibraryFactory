@@ -27,6 +27,12 @@ function splitCsv(value) {
     .filter((part) => part.length > 0);
 }
 
+function rowIsEmpty(row) {
+  const values = Object.values(row);
+  if (values.length === 0) return true;
+  return values.every((v) => cellToString(v) === '');
+}
+
 export class DatasetValidator {
   /**
    * @param {{logger?: object}} [deps]
@@ -56,7 +62,8 @@ export class DatasetValidator {
         }
         return;
       }
-      violations.push(...this._applyRule(rule, rows, datasets, context));
+      const nonEmptyRows = rows.filter((r) => !rowIsEmpty(r));
+      violations.push(...this._applyRule(rule, nonEmptyRows, datasets, context));
     });
     return { violations };
   }
