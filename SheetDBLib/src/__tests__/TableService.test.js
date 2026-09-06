@@ -1233,6 +1233,29 @@ describe('TableService - Comprehensive Test Suite', () => {
       expect(rows[1].name).toBe('Bob');
     });
 
+    it('should skip whitespace-only rows in data', () => {
+      const dataWithWhitespaceRows = [
+        ['ID', 'name'],
+        ['1', 'Alice'],
+        [' ', '\t'], // whitespace-only row
+        ['2', 'Bob']
+      ];
+      table = new TableService(
+        'Users',
+        'SPREADSHEET_ID_123',
+        mocks.spreadsheetService,
+        mocks.logger,
+        mocks.utils,
+        dataWithWhitespaceRows
+      );
+
+      const rows = table.getRows();
+
+      expect(rows).toHaveLength(2);
+      expect(rows[0].name).toBe('Alice');
+      expect(rows[1].name).toBe('Bob');
+    });
+
     it('should filter out empty column headers', () => {
       const dataWithEmptyHeaders = [
         ['ID', '', 'name', null, 'email', '   '],

@@ -960,8 +960,11 @@ export class TableService {
     const rows = [];
 
     for (let i = 1; i < data.length; i++) {
-      // Skip completely empty rows
-      if (!data[i] || data[i].every((cell) => cell === '' || cell === null || cell === undefined)) {
+      // Skip completely empty rows (including whitespace-only cells)
+      if (
+        !data[i] ||
+        data[i].every((cell) => cell === null || cell === undefined || String(cell).trim() === '')
+      ) {
         continue;
       }
 
