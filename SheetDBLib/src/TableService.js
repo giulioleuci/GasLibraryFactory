@@ -635,9 +635,17 @@ export class TableService {
   /**
    * @function getRows
    * @description Retrieves all records as plain objects. Lazy-loads data on first call. Virtual columns are recomputed only if version mismatches.
+   * @param {Object} [options={}] Read options.
+   * @param {boolean} [options.preserveEmptyRows=false] Read a fresh persisted-sheet snapshot,
+   * retaining blank rows as empty objects so array index + 2 is the physical sheet row.
+   * This mode excludes virtual columns and pending writes, and does not alter CRUD caches/queues.
    * @returns {Object[]} Cloned array of row objects.
    */
-  getRows() {
+  getRows(options = {}) {
+    if (options.preserveEmptyRows === true) {
+      const data = this.spreadsheetService.getRanges(this.spreadsheetId, `'${this.sheetName}'!A:ZZ`);
+      return this._processRawData(data, options).rows;
+    }
     this._ensureDataLoaded();
 
     // PERFORMANCE: Build cache if not available
@@ -892,10 +900,11 @@ export class TableService {
   /**
    * @function getAllRows
    * @alias getRows
+   * @param {Object} [options={}] Same read options as getRows, including preserveEmptyRows.
    * @returns {Object[]}
    */
-  getAllRows() {
-    return this.getRows();
+  getAllRows(options = {}) {
+    return this.getRows(options);
   }
 
   // --- PRIVATE METHODS ---
@@ -947,10 +956,11 @@ export class TableService {
    * @function _processRawData
    * @description Transformer: 2D API array -> physical columns + row objects with type coercion.
    * @param {any[][]} data - Matrix from Sheets API.
+   * @param {Object} [options={}] Read options; preserveEmptyRows retains blank-row positions.
    * @returns {Object} {columns: string[], rows: Object[]}
    * @private
    */
-  _processRawData(data) {
+  _processRawData(data, options = {}) {
     if (!data || data.length === 0) {
       this._logger.warn(`No data (not even header) provided or found for sheet ${this.sheetName}`);
       return { columns: [], rows: [] };
@@ -965,6 +975,7 @@ export class TableService {
         !data[i] ||
         data[i].every((cell) => cell === null || cell === undefined || String(cell).trim() === '')
       ) {
+        if (options.preserveEmptyRows === true) rows.push({});
         continue;
       }
 

@@ -563,12 +563,16 @@ const zodSchemaProtocol = z.object({
 ---
 #### METHOD: TableService.getRows
 - **Scope:** instance
-- **LLM Call Syntax:** `const result = tableService.getRows();`
+- **LLM Call Syntax:** `const result = tableService.getRows(options);`
 - **Pure JSDoc:**
 ```javascript
 /**
    * @function getRows
    * @description Retrieves all records as plain objects. Lazy-loads data on first call. Virtual columns are recomputed only if version mismatches.
+   * @param {Object} [options={}] Read options.
+   * @param {boolean} [options.preserveEmptyRows=false] Read a fresh persisted-sheet snapshot,
+   * retaining blank rows as empty objects so array index + 2 is the physical sheet row.
+   * This mode excludes virtual columns and pending writes, and does not alter CRUD caches/queues.
    * @returns {Object[]} Cloned array of row objects.
    */
 ```
@@ -800,12 +804,13 @@ const zodSchemaProtocol = z.object({
 ---
 #### METHOD: TableService.getAllRows
 - **Scope:** instance
-- **LLM Call Syntax:** `const result = tableService.getAllRows();`
+- **LLM Call Syntax:** `const result = tableService.getAllRows(options);`
 - **Pure JSDoc:**
 ```javascript
 /**
    * @function getAllRows
    * @alias getRows
+   * @param {Object} [options={}] Same read options as getRows, including preserveEmptyRows.
    * @returns {Object[]}
    */
 ```
@@ -2855,4 +2860,3 @@ function _compareValues(leftValue, operator, rightValue) {
 ```
 ---
 <br>
-
