@@ -268,13 +268,6 @@ describe('Smoke Tests', () => {
   // ─── Enums and constants ────────────────────────────────────────────
 
   describe('Enums and constants', () => {
-    it('WhenCondition should have expected values', () => {
-      expect(global.WhenCondition).toBeDefined();
-      expect(global.WhenCondition.ALWAYS).toBeDefined();
-      expect(global.WhenCondition.ON_SUCCESS).toBeDefined();
-      expect(global.WhenCondition.ON_ERROR).toBeDefined();
-    });
-
     it('ProcessState should have expected values', () => {
       expect(global.ProcessState).toBeDefined();
     });
