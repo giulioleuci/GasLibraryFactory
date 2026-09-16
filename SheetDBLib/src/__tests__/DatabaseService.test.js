@@ -183,6 +183,37 @@ describe('DatabaseService - Comprehensive Test Suite', () => {
 
       expect(query).toMatchObject({ dbService: db, selectedColumns: ['*'], tableName: null });
     });
+
+    it('filters a composed query and returns the last partial page from in-memory rows', () => {
+      spreadsheetService.getRanges.mockReturnValue({
+        "'Users'!A:ZZ": [
+          ['ID', 'name', 'email'],
+          ['1', 'Ada', 'ada@example.com'],
+          ['2', 'Bob', 'bob@example.com'],
+          ['3', 'Cara', 'cara@example.com'],
+          ['4', 'Dan', 'dan@other.test'],
+          ['5', 'Eve', 'eve@example.com']
+        ],
+        "'Orders'!A:ZZ": [['ID']]
+      });
+      db = new DatabaseService('TEST_SHEET_ID', mocks.logger, mocks.utils, mocks.cache);
+
+      const rows = db
+        .select(['ID', 'name'])
+        .from('Users')
+        .where('email', 'LIKE', '%@example.com')
+        .where('name', '!=', 'Bob')
+        .orderBy('name')
+        .paginate(2, 2)
+        .execute();
+
+      expect(rows).toEqual([{ ID: 5, name: 'Eve' }]);
+    });
+
+    it('rejects a missing table and a query without a source table', () => {
+      expect(() => db.select().from('Missing')).toThrow('Table Missing not found in database.');
+      expect(() => db.select().execute()).toThrow('A table must be specified with from().');
+    });
   });
 
   // ===================================================================

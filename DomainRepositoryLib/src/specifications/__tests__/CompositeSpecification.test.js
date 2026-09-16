@@ -64,6 +64,26 @@ describe('CompositeSpecification - Comprehensive Test Suite', () => {
   });
 
   describe('AND Operator', () => {
+    it.each([
+      ['both', { age: 25, status: 'active' }, true, true],
+      ['only age', { age: 25, status: 'inactive' }, false, true],
+      ['only status', { age: 15, status: 'active' }, false, true],
+      ['neither', { age: 15, status: 'inactive' }, false, false]
+    ])(
+      'uses the AND/OR truth table when %s condition matches',
+      (_name, candidate, expectedAnd, expectedOr) => {
+        const age = new FieldSpecification('age', 'greaterThan', 18);
+        const active = new FieldSpecification('status', 'equals', 'active');
+
+        expect(new CompositeSpecification('AND', [age, active]).isSatisfiedBy(candidate)).toBe(
+          expectedAnd
+        );
+        expect(new CompositeSpecification('OR', [age, active]).isSatisfiedBy(candidate)).toBe(
+          expectedOr
+        );
+      }
+    );
+
     it('should satisfy when all specifications are satisfied', () => {
       const composite = new CompositeSpecification('AND', [spec1, spec2]);
 

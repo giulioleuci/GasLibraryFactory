@@ -6,6 +6,7 @@ import { QueryTranslator } from '../QueryTranslator';
 import { FieldSpecification } from '../../../specifications/FieldSpecification';
 import { FunctionSpecification } from '../../../specifications/FunctionSpecification';
 import { CompositeSpecification } from '../../../specifications/CompositeSpecification';
+import { AdvancedQueryBuilder } from '../../../../../SheetDBLib/src/query/AdvancedQueryBuilder';
 
 describe('QueryTranslator - Comprehensive Test Suite', () => {
   let translator;
@@ -116,6 +117,65 @@ describe('QueryTranslator - Comprehensive Test Suite', () => {
       translator.translate(composite, mockQueryBuilder);
 
       expect(mockQueryBuilder.where).toHaveBeenCalled();
+    });
+
+    it.each([
+      [
+        'AND',
+        new CompositeSpecification('AND', [
+          new FieldSpecification('age', 'greaterThan', 18),
+          new FieldSpecification('status', 'equals', 'active')
+        ]),
+        [{ id: 'A', age: 20, status: 'active' }]
+      ],
+      [
+        'OR',
+        new CompositeSpecification('OR', [
+          new FieldSpecification('age', 'greaterThan', 18),
+          new FieldSpecification('status', 'equals', 'active')
+        ]),
+        [
+          { id: 'A', age: 20, status: 'active' },
+          { id: 'B', age: 20, status: 'inactive' },
+          { id: 'C', age: 10, status: 'active' }
+        ]
+      ]
+    ])(
+      'translates %s into a query with literal matching rows',
+      (_operator, specification, expected) => {
+        const query = new AdvancedQueryBuilder(
+          {
+            tables: {
+              Students: {
+                getRows: () => [
+                  { id: 'A', age: 20, status: 'active' },
+                  { id: 'B', age: 20, status: 'inactive' },
+                  { id: 'C', age: 10, status: 'active' },
+                  { id: 'D', age: 10, status: 'inactive' }
+                ]
+              }
+            }
+          },
+          ['*']
+        ).from('Students');
+
+        expect(translator.translate(specification, query).execute()).toEqual(expected);
+      }
+    );
+
+    it('reports a literal translation failure for negated specifications', () => {
+      const result = translator.tryTranslate(
+        new CompositeSpecification('NOT', [new FieldSpecification('status', 'equals', 'active')]),
+        new AdvancedQueryBuilder({ tables: { Students: { getRows: () => [] } } }, ['*']).from(
+          'Students'
+        )
+      );
+
+      expect(result).toEqual({
+        success: false,
+        queryBuilder: null,
+        error: 'Specification CompositeSpecification cannot be translated to a database query'
+      });
     });
   });
 

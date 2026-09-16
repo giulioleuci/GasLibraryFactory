@@ -103,6 +103,58 @@ describe('RoleResolver', () => {
   });
 
   describe('resolve()', () => {
+    it('prefers the substitute source over chair change and nominal class assignments', () => {
+      const teacherRole = new Role({
+        id: 'TEACHER',
+        name: 'Teacher',
+        scopeType: ScopeType.ORG_UNIT,
+        resolutionStrategy: ResolutionStrategy.PRIORITY
+      });
+      registry.register(teacherRole);
+      assignmentSource.addAssignment(
+        new Assignment({
+          id: 'classi',
+          roleId: 'TEACHER',
+          actorId: john.id,
+          scope: salesScope,
+          priority: 1,
+          metadata: { source: 'CLASSI' }
+        })
+      );
+      assignmentSource.addAssignment(
+        new Assignment({
+          id: 'variazioni',
+          roleId: 'TEACHER',
+          actorId: jane.id,
+          scope: salesScope,
+          priority: 2,
+          metadata: { source: 'VARIAZIONI_CATTEDRA' }
+        })
+      );
+      assignmentSource.addAssignment(
+        new Assignment({
+          id: 'supplenze',
+          roleId: 'TEACHER',
+          actorId: bob.id,
+          scope: salesScope,
+          priority: 3,
+          metadata: { source: 'SUPPLENZE' }
+        })
+      );
+
+      const result = resolver.resolve('TEACHER', salesScope);
+
+      expect(result.principalActor.id).toBe(bob.id);
+      expect(result.effectiveActor.id).toBe(bob.id);
+      expect(result.allActors.map(({ id }) => id)).toEqual([bob.id, jane.id, john.id]);
+      expect(result.metadata).toEqual(
+        expect.objectContaining({
+          assignmentsFound: 3,
+          resolutionStrategy: ResolutionStrategy.PRIORITY
+        })
+      );
+    });
+
     it('should resolve direct assignments', () => {
       assignmentSource.addAssignment(
         new Assignment({

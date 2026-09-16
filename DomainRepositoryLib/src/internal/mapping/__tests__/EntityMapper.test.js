@@ -56,6 +56,40 @@ describe('EntityMapper - Comprehensive Test Suite', () => {
       const result = mapper.fromData(null, TestEntity);
       expect(result).toBeNull();
     });
+
+    it('hydrates a complete nested DTO through the entity factory', () => {
+      class Student extends Entity {
+        constructor(data) {
+          super(data);
+          this.name = data.name;
+          this.guardian = data.guardian;
+        }
+
+        static fromData(data) {
+          if (!data.id) throw new Error('Student id is required');
+          return new Student(data);
+        }
+      }
+
+      const student = mapper.fromData(
+        { id: 'S1', name: 'Ada', guardian: { email: 'parent@example.com', phone: '123' } },
+        Student
+      );
+
+      expect(student).toBeInstanceOf(Student);
+      expect(student.guardian).toEqual({ email: 'parent@example.com', phone: '123' });
+    });
+
+    it('preserves the entity factory error for a required hydration field', () => {
+      class Student {
+        static fromData(data) {
+          if (!data.id) throw new Error('Student id is required');
+          return data;
+        }
+      }
+
+      expect(() => mapper.fromData({ name: 'Ada' }, Student)).toThrow('Student id is required');
+    });
   });
 
   describe('toDataArray', () => {

@@ -105,4 +105,24 @@ describe('RoutingResolver', () => {
       expect(result.primary).toEqual([]);
     });
   });
+
+  it.each([
+    [RoutingPolicy.DELEGATE_PRIMARY_PRINCIPAL_CC, ['supplente'], ['titolare']],
+    [RoutingPolicy.PRINCIPAL_PRIMARY_DELEGATE_CC, ['titolare'], ['supplente']],
+    [RoutingPolicy.BOTH_EQUAL, ['supplente', 'titolare'], []]
+  ])('routes an active delegation by %s', (routingPolicy, primaryIds, ccIds) => {
+    const principal = actor('titolare');
+    const delegate = actor('supplente');
+
+    const result = resolver.resolve({
+      principalActor: principal,
+      effectiveActor: delegate,
+      delegationChain: { isEmpty: () => false },
+      routingPolicy
+    });
+
+    expect(result.primary.map(({ id }) => id)).toEqual(primaryIds);
+    expect(result.cc.map(({ id }) => id)).toEqual(ccIds);
+    expect(result.metadata.policy).toBe(routingPolicy);
+  });
 });

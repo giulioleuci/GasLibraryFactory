@@ -480,6 +480,45 @@ describe('EffectiveAssignmentResolver', () => {
     ).toThrow(RoleValidationError);
   });
 
+  test.each([
+    ['starts', '2026-01-10', '2026-01-10', '2026-01-20', true],
+    ['ends', '2026-01-20', '2026-01-10', '2026-01-20', true],
+    ['expires', '2026-01-21', '2026-01-10', '2026-01-20', false]
+  ])(
+    'uses inclusive candidate validity at its %s boundary',
+    (_name, asOf, validFrom, validTo, resolves) => {
+      const resolver = createResolver({
+        candidates: [
+          new AssignmentCandidate({
+            id: 'dated',
+            actorId: 'old',
+            slot: slot(),
+            validFrom,
+            validTo
+          })
+        ],
+        overrides: []
+      });
+
+      const results = resolver.resolve({ context: {}, asOfDate: new Date(asOf) });
+
+      expect(results).toHaveLength(resolves ? 1 : 0);
+      if (resolves) {
+        expect(results[0].trace.entries).toEqual(
+          expect.arrayContaining([
+            expect.objectContaining({
+              stage: 'BASE',
+              decision: 'SELECTED',
+              candidateId: 'dated',
+              actorId: 'old'
+            }),
+            expect.objectContaining({ stage: 'ROUTING', decision: 'SELECTED' })
+          ])
+        );
+      }
+    }
+  );
+
   test.each(Object.values(RoutingPolicy))(
     'delegates all routing policy decisions to RoutingResolver: %s',
     (routingPolicy) => {

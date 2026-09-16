@@ -35,25 +35,45 @@ describe('TableService - Comprehensive Test Suite', () => {
     mocks.spreadsheetService.getLastError = jest.fn(() => null);
   });
 
-  it.each(['getRows', 'getAllRows'])('%s preserves physical empty-row positions on opt-in reads without changing cached CRUD rows', (method) => {
-    table = new TableService('Users', 'ss1', mocks.spreadsheetService, mocks.logger, mocks.utils, [
-      ['ID', 'value'], ['cached', 1]
-    ]);
-    table.defineVirtualColumn('computed', () => 'virtual');
-    table.insertRow({ ID: 'queued', value: 2 });
-    mocks.spreadsheetService.getRanges.mockReturnValue([
-      ['ID', 'value'], [' ', '\t'], ['persisted', '0'], [], [null, undefined], ['flag', false]
-    ]);
+  it.each(['getRows', 'getAllRows'])(
+    '%s preserves physical empty-row positions on opt-in reads without changing cached CRUD rows',
+    (method) => {
+      table = new TableService(
+        'Users',
+        'ss1',
+        mocks.spreadsheetService,
+        mocks.logger,
+        mocks.utils,
+        [
+          ['ID', 'value'],
+          ['cached', 1]
+        ]
+      );
+      table.defineVirtualColumn('computed', () => 'virtual');
+      table.insertRow({ ID: 'queued', value: 2 });
+      mocks.spreadsheetService.getRanges.mockReturnValue([
+        ['ID', 'value'],
+        [' ', '\t'],
+        ['persisted', '0'],
+        [],
+        [null, undefined],
+        ['flag', false]
+      ]);
 
-    expect(table[method]({ preserveEmptyRows: true })).toEqual([
-      {}, { ID: 'persisted', value: 0 }, {}, {}, { ID: 'flag', value: false }
-    ]);
-    expect(mocks.spreadsheetService.getRanges).toHaveBeenCalledWith('ss1', "'Users'!A:ZZ");
-    expect(table.getRows()).toEqual([
-      { ID: 'cached', value: 1, computed: 'virtual' },
-      { ID: 'queued', value: 2, computed: 'virtual' }
-    ]);
-  });
+      expect(table[method]({ preserveEmptyRows: true })).toEqual([
+        {},
+        { ID: 'persisted', value: 0 },
+        {},
+        {},
+        { ID: 'flag', value: false }
+      ]);
+      expect(mocks.spreadsheetService.getRanges).toHaveBeenCalledWith('ss1', "'Users'!A:ZZ");
+      expect(table.getRows()).toEqual([
+        { ID: 'cached', value: 1, computed: 'virtual' },
+        { ID: 'queued', value: 2, computed: 'virtual' }
+      ]);
+    }
+  );
 
   describe('Constructor and Initialization', () => {
     it('should initialize with lazy loading by default', () => {
@@ -243,6 +263,26 @@ describe('TableService - Comprehensive Test Suite', () => {
       const rows = table.getRows();
 
       expect(rows[0].displayName).toBe('Alice Johnson (alice@example.com)');
+    });
+
+    it('maps incomplete rows to explicit null cells without shifting later headers', () => {
+      table = new TableService(
+        'Users',
+        'SPREADSHEET_ID_123',
+        mocks.spreadsheetService,
+        mocks.logger,
+        mocks.utils,
+        [
+          ['ID', 'name', 'email'],
+          ['1', 'Ada'],
+          ['2', '', 'bob@example.com']
+        ]
+      );
+
+      expect(table.getRows()).toEqual([
+        { ID: 1, name: 'Ada', email: null },
+        { ID: 2, name: '', email: 'bob@example.com' }
+      ]);
     });
   });
 
