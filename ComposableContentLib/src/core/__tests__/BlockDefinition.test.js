@@ -24,5 +24,11 @@ describe('BlockDefinition', () => {
     expect(
       () => new BlockDefinition({ id: 'bad', name: 'Bad', supportedFormats: ['pdf'] })
     ).toThrow('Invalid output format: pdf');
+    expect(() => new BlockDefinition({ name: 'Missing ID' })).toThrow(
+      'BlockDefinition id is required and must be a string'
+    );
+    expect(() => new BlockDefinition({ id: 1, name: 'Invalid ID' })).toThrow(
+      'BlockDefinition id is required and must be a string'
+    );
   });
 });
