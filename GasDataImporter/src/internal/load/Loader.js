@@ -79,32 +79,15 @@ class Loader {
 
       const table = this._db.tables[targetTable];
 
-      // Execute strategy
-      let result;
-      switch (conflictResolution) {
-        case 'INSERT_ONLY':
-          result = this._insertOnly(table, data, conflictKey);
-          break;
-
-        case 'UPDATE_ONLY':
-          result = this._updateOnly(table, data, conflictKey, updateIfNewer);
-          break;
-
-        case 'UPSERT':
-          result = this._upsert(table, data, conflictKey, updateIfNewer);
-          break;
-
-        case 'OVERWRITE':
-          result = this._overwrite(table, data, conflictKey);
-          break;
-
-        default:
-          throw new LoadError(
-            `Unknown conflict resolution strategy: ${conflictResolution}`,
-            'UNKNOWN_STRATEGY',
-            { conflictResolution }
-          );
-      }
+      // Execute strategy (OVERWRITE always purges in a single-shot load)
+      const result = this._executeStrategy(
+        table,
+        data,
+        conflictResolution,
+        conflictKey,
+        updateIfNewer,
+        this._overwrite
+      );
 
       // Save changes to spreadsheet
       this.logger.debug('[Loader] Saving changes to database...');
@@ -174,45 +157,16 @@ class Loader {
 
       const table = this._db.tables[targetTable];
 
-      let result;
-      if (data.length === 0) {
-        result = { success: true, inserted: 0, updated: 0, skipped: 0, deleted: 0, total: 0 };
-      } else {
-        switch (conflictResolution) {
-          case 'INSERT_ONLY':
-            result = this._insertOnly(table, data, conflictKey);
-            break;
-
-          case 'UPDATE_ONLY':
-            result = this._updateOnly(table, data, conflictKey, updateIfNewer);
-            break;
-
-          case 'UPSERT':
-            result = this._upsert(table, data, conflictKey, updateIfNewer);
-            break;
-
-          case 'OVERWRITE':
-            // Purge only happens once per run, on the first chunk; later
-            // chunks in the same run append instead of wiping prior chunks.
-            // Non-first chunks append UNCONDITIONALLY (not via _insertOnly's
-            // conflict-key dedupe) to match _overwrite's own semantics — a
-            // single-shot OVERWRITE via load() inserts every row with no
-            // dedupe, so a chunked OVERWRITE must too, or rows sharing (or
-            // missing) a conflict-key value across chunks would be silently
-            // dropped as "skipped" instead of inserted.
-            result = isFirstChunk
-              ? this._overwrite(table, data, conflictKey)
-              : this._appendAll(table, data);
-            break;
-
-          default:
-            throw new LoadError(
-              `Unknown conflict resolution strategy: ${conflictResolution}`,
-              'UNKNOWN_STRATEGY',
-              { conflictResolution }
-            );
-        }
-      }
+      // OVERWRITE purges only on the first chunk; later chunks append
+      // unconditionally (see _appendAll JSDoc).
+      const result = this._executeStrategy(
+        table,
+        data,
+        conflictResolution,
+        conflictKey,
+        updateIfNewer,
+        isFirstChunk ? this._overwrite : this._appendAll
+      );
 
       // Commit boundary: flush after every chunk so a resumed run picks up
       // from durable state.
@@ -232,6 +186,48 @@ class Loader {
         conflictResolution,
         originalError: error.message
       });
+    }
+  }
+
+  /**
+   * Dispatches the conflict-resolution strategy, returning zeroed statistics
+   * for empty data. Shared by {@link Loader#load} and {@link Loader#loadChunk}.
+   * @private
+   * @param {Object} table Target persistence table.
+   * @param {Array<Object>} data Records to process (may be empty).
+   * @param {string} strategy Resolution strategy (INSERT_ONLY|UPDATE_ONLY|UPSERT|OVERWRITE).
+   * @param {string} conflictKey Attribute used for collision detection.
+   * @param {Object} updateIfNewer Optional timestamp comparison rules.
+   * @param {Function} overwriteHandler OVERWRITE implementation: `_overwrite`
+   *   for a single-shot load or the first chunk of a chunked run, `_appendAll`
+   *   for later chunks (see {@link Loader#_appendAll}).
+   * @returns {Object} Operational statistics.
+   * @throws {LoadError} If the strategy is unknown.
+   */
+  _executeStrategy(table, data, strategy, conflictKey, updateIfNewer, overwriteHandler) {
+    if (data.length === 0) {
+      return { success: true, inserted: 0, updated: 0, skipped: 0, deleted: 0, total: 0 };
+    }
+
+    switch (strategy) {
+      case 'INSERT_ONLY':
+        return this._insertOnly(table, data, conflictKey);
+
+      case 'UPDATE_ONLY':
+        return this._updateOnly(table, data, conflictKey, updateIfNewer);
+
+      case 'UPSERT':
+        return this._upsert(table, data, conflictKey, updateIfNewer);
+
+      case 'OVERWRITE':
+        return overwriteHandler.call(this, table, data, conflictKey);
+
+      default:
+        throw new LoadError(
+          `Unknown conflict resolution strategy: ${strategy}`,
+          'UNKNOWN_STRATEGY',
+          { conflictResolution: strategy }
+        );
     }
   }
 

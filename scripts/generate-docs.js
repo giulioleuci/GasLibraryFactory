@@ -115,11 +115,6 @@ function generateMarkdown(libName, data) {
     if (methods.length > 0) {
       doc += `### Methods of ${cls.name}\n\n`;
       methods.forEach((m) => {
-        // Skip constructors inside methods list if JSDoc duplicated them
-        if (m.kind === 'class') {
-          return;
-        }
-
         doc += `#### METHOD: ${cls.name}.${m.name}\n`;
         doc += `- **Scope:** ${m.scope || 'instance'}\n`;
         doc += `- **LLM Call Syntax:** \`${buildUsage(m)}\`\n`;

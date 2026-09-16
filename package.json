@@ -43,8 +43,6 @@
   "license": "MIT",
   "devDependencies": {
     "@babel/core": "^7.28.5",
-    "@babel/plugin-proposal-class-properties": "^7.18.6",
-    "@babel/plugin-proposal-object-rest-spread": "^7.20.7",
     "@babel/preset-env": "^7.29.2",
     "@eslint/js": "^9.39.2",
     "@faker-js/faker": "^10.5.0",
@@ -60,7 +58,6 @@
     "jest": "^30.4.2",
     "jsdoc": "^4.0.2",
     "jsdoc-api": "^9.3.6",
-    "jsdoc-to-markdown": "^8.0.0",
     "prettier": "^3.9.5",
     "webpack": "^5.108.4",
     "webpack-cli": "^5.1.4"

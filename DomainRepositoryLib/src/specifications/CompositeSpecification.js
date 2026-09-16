@@ -145,29 +145,10 @@ export class CompositeSpecification extends Specification {
 
       spec.toQuery(tempBuilder);
 
-      // Apply the clauses to the real builder
+      // Apply the clauses to the real builder (andWhere for AND, orWhere for OR)
+      const method = this.operator === 'AND' ? 'andWhere' : 'orWhere';
       for (const clause of tempBuilder._whereClauses) {
-        if (clause.operator === 'IN') {
-          if (this.operator === 'AND') {
-            // SheetDBLib doesn't have andWhereIn, use custom logic
-            builder = builder.andWhere(clause.field, 'IN', clause.value);
-          } else {
-            builder = builder.orWhere(clause.field, 'IN', clause.value);
-          }
-        } else if (clause.operator === 'LIKE') {
-          // Apply with AND/OR based on composite operator
-          if (this.operator === 'AND') {
-            builder = builder.andWhere(clause.field, 'LIKE', clause.value);
-          } else {
-            builder = builder.orWhere(clause.field, 'LIKE', clause.value);
-          }
-        } else {
-          if (this.operator === 'AND') {
-            builder = builder.andWhere(clause.field, clause.operator, clause.value);
-          } else {
-            builder = builder.orWhere(clause.field, clause.operator, clause.value);
-          }
-        }
+        builder = builder[method](clause.field, clause.operator, clause.value);
       }
     }
 
