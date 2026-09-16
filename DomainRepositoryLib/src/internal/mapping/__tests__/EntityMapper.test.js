@@ -66,7 +66,9 @@ describe('EntityMapper - Comprehensive Test Suite', () => {
         }
 
         static fromData(data) {
-          if (!data.id) throw new Error('Student id is required');
+          if (!data.id) {
+            throw new Error('Student id is required');
+          }
           return new Student(data);
         }
       }
@@ -83,7 +85,9 @@ describe('EntityMapper - Comprehensive Test Suite', () => {
     it('preserves the entity factory error for a required hydration field', () => {
       class Student {
         static fromData(data) {
-          if (!data.id) throw new Error('Student id is required');
+          if (!data.id) {
+            throw new Error('Student id is required');
+          }
           return data;
         }
       }
