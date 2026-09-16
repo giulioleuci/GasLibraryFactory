@@ -463,9 +463,11 @@ describe('EffectiveAssignmentResolver', () => {
       asOfDate: new Date('2026-01-12')
     });
     expect(result.permanentActor.id).toBe('new');
-    expect(result.trace.entries.filter(
-      (entry) => entry.stage === 'OVERRIDE' && entry.decision === 'APPLIED'
-    )).toHaveLength(2);
+    expect(
+      result.trace.entries.filter(
+        (entry) => entry.stage === 'OVERRIDE' && entry.decision === 'APPLIED'
+      )
+    ).toHaveLength(2);
   });
 
   test('throws RoleValidationError when asOfDate is invalid', () => {

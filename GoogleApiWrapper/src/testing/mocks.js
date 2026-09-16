@@ -54,7 +54,9 @@ export class PropertiesServiceMock {
     });
     this.getProperties = jest.fn(() => Object.fromEntries(this._store));
     this.setProperties = jest.fn((props, deleteAll = false) => {
-      if (deleteAll) this._store.clear();
+      if (deleteAll) {
+        this._store.clear();
+      }
       Object.entries(props).forEach(([k, v]) => this._store.set(k, String(v)));
       return this;
     });

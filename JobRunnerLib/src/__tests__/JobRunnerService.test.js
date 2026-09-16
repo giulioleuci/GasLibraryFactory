@@ -311,6 +311,41 @@ describe('JobRunnerService (Stateful Library Pattern)', () => {
       expect(result2).toEqual({ executions: 2 });
     });
 
+    it('refuses a fresh run() while a prior run is suspended awaiting its resume trigger, but resume() still proceeds', () => {
+      const jobName = 'suspended-guard-job';
+      const stateManager = new JobStateManager(
+        jobName,
+        jobRunner._executionController._propertiesService,
+        utils,
+        new GoogleApiTesting.LockServiceMock()
+      );
+      stateManager.saveType('guarded');
+      stateManager.saveConfiguration({});
+      stateManager.batchSave({
+        state: 'to_resume',
+        resumeState: { position: 1 },
+        progress: { completed: false, percentage: 50 }
+      });
+
+      function registerHandlers(queue) {
+        queue.registerJobHandler('guarded', function* () {
+          yield { percentage: 100 };
+          return { done: true };
+        });
+      }
+
+      // A fresh launch (e.g. a re-click of the same menu action) must not
+      // race the pending automatic resume — it should be refused, not silently
+      // pick up the stale checkpoint as if it were a normal run.
+      const freshResult = jobRunner.run(jobName, 'guarded', {}, registerHandlers);
+      expect(freshResult).toBeNull();
+      expect(stateManager.getState()).toBe('to_resume');
+
+      // The actual resume path (what the automatic trigger calls) is unaffected.
+      const resumedResult = jobRunner.resume(jobName, registerHandlers);
+      expect(resumedResult).toEqual({ done: true });
+    });
+
     it('logs resume checkpoint and progress before completing resumed work', () => {
       const jobName = 'resume-log-job';
       const stateManager = new JobStateManager(

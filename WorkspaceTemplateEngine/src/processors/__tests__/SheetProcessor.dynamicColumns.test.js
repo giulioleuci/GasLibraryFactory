@@ -233,7 +233,9 @@ describe('SheetProcessor - Dynamic Columns Tests', () => {
         partnerLabel: 'Gruppo B'
       };
       mockMustache.getValue.mockImplementation((path, ctx) => {
-        if (path === 'header') return ctx.sigla;
+        if (path === 'header') {
+          return ctx.sigla;
+        }
         return ctx ? ctx[path] : undefined;
       });
 

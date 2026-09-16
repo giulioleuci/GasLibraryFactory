@@ -68,13 +68,15 @@ export class CircuitBreaker {
    */
   _loadState(operationName) {
     if (!this._cache) {
-      return this._memoryStates.get(operationName) || {
-        state: CircuitBreaker.STATE.CLOSED,
-        failures: [],
-        consecutiveSuccesses: 0,
-        lastFailureTime: null,
-        nextAttemptTime: null
-      };
+      return (
+        this._memoryStates.get(operationName) || {
+          state: CircuitBreaker.STATE.CLOSED,
+          failures: [],
+          consecutiveSuccesses: 0,
+          lastFailureTime: null,
+          nextAttemptTime: null
+        }
+      );
     }
 
     try {

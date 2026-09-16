@@ -72,7 +72,9 @@ describe('DatabaseService - Comprehensive Test Suite', () => {
       const db = new DatabaseService('TEST_SHEET_ID', mocks.logger, mocks.utils, mocks.cache);
 
       expect(
-        Object.fromEntries(Object.entries(db.tables).map(([name, table]) => [name, table.sheetName]))
+        Object.fromEntries(
+          Object.entries(db.tables).map(([name, table]) => [name, table.sheetName])
+        )
       ).toEqual({ Users: 'Users', Orders: 'Orders' });
     });
 
@@ -224,7 +226,9 @@ describe('DatabaseService - Comprehensive Test Suite', () => {
       const db = new DatabaseService('TEST_SHEET_ID', mocks.logger, mocks.utils, mocks.cache);
 
       expect(
-        Object.fromEntries(Object.entries(db.tables).map(([name, table]) => [name, table.sheetName]))
+        Object.fromEntries(
+          Object.entries(db.tables).map(([name, table]) => [name, table.sheetName])
+        )
       ).toEqual({ 'Users-2024': 'Users-2024', 'Orders (Archive)': 'Orders (Archive)' });
     });
 
@@ -534,7 +538,7 @@ describe('DatabaseService - Comprehensive Test Suite', () => {
         db.beginTransaction();
         db.rollback();
 
-        expect(mocks.logger.info).toHaveBeenCalledWith(
+        expect(mocks.logger.debug).toHaveBeenCalledWith(
           expect.stringContaining('Transaction rolled back')
         );
       });
@@ -736,10 +740,12 @@ describe('DatabaseService - Comprehensive Test Suite', () => {
     it('does not retry when verifyTables is not provided', () => {
       const db = new DatabaseService('TEST_SHEET_ID', mocks.logger, mocks.utils, mocks.cache);
 
-      expect(db.tables).toEqual(expect.objectContaining({
-        Users: expect.objectContaining({ sheetName: 'Users' }),
-        Orders: expect.objectContaining({ sheetName: 'Orders' })
-      }));
+      expect(db.tables).toEqual(
+        expect.objectContaining({
+          Users: expect.objectContaining({ sheetName: 'Users' }),
+          Orders: expect.objectContaining({ sheetName: 'Orders' })
+        })
+      );
       expect(mocks.spreadsheetService.getSheetInfo).toHaveBeenCalledTimes(1);
       expect(mocks.utils.sleep).not.toHaveBeenCalled();
     });
@@ -800,7 +806,9 @@ describe('DatabaseService - Comprehensive Test Suite', () => {
       const db = new DatabaseService('TEST_SHEET_ID', mocks.logger, mocks.utils, mocks.cache);
 
       expect(
-        Object.fromEntries(Object.entries(db.tables).map(([name, table]) => [name, table.sheetName]))
+        Object.fromEntries(
+          Object.entries(db.tables).map(([name, table]) => [name, table.sheetName])
+        )
       ).toEqual({ "John's Data": "John's Data", "User's Profile": "User's Profile" });
     });
 
@@ -813,7 +821,9 @@ describe('DatabaseService - Comprehensive Test Suite', () => {
       const db = new DatabaseService('TEST_SHEET_ID', mocks.logger, mocks.utils, mocks.cache);
 
       expect(
-        Object.fromEntries(Object.entries(db.tables).map(([name, table]) => [name, table.sheetName]))
+        Object.fromEntries(
+          Object.entries(db.tables).map(([name, table]) => [name, table.sheetName])
+        )
       ).toEqual({ Users: 'Users', Orders: 'Orders' });
     });
 
@@ -831,7 +841,9 @@ describe('DatabaseService - Comprehensive Test Suite', () => {
       const db = new DatabaseService('TEST_SHEET_ID', mocks.logger, mocks.utils, mocks.cache);
 
       expect(
-        Object.fromEntries(Object.entries(db.tables).map(([name, table]) => [name, table.sheetName]))
+        Object.fromEntries(
+          Object.entries(db.tables).map(([name, table]) => [name, table.sheetName])
+        )
       ).toEqual({ Users: 'Users', Orders: 'Orders' });
     });
 

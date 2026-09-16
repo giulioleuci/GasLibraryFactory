@@ -80,7 +80,9 @@ export class SampleSpreadsheetBuilder {
    * @throws {Error} If the named sheet does not exist.
    */
   appendRows(sheetName, rows) {
-    if (rows.length === 0) return;
+    if (rows.length === 0) {
+      return;
+    }
     const sheet = this.spreadsheet.getSheetByName(sheetName);
     if (sheet === null) {
       throw new Error(
@@ -89,13 +91,9 @@ export class SampleSpreadsheetBuilder {
     }
     const headerRow = this._headersBySheet.get(sheetName) || [];
     const values = rows.map((row) =>
-      headerRow.map((header) =>
-        row[String(header)] !== undefined ? row[String(header)] : ''
-      )
+      headerRow.map((header) => (row[String(header)] !== undefined ? row[String(header)] : ''))
     );
-    sheet
-      .getRange(sheet.getLastRow() + 1, 1, values.length, headerRow.length)
-      .setValues(values);
+    sheet.getRange(sheet.getLastRow() + 1, 1, values.length, headerRow.length).setValues(values);
     SpreadsheetApp.flush();
   }
 

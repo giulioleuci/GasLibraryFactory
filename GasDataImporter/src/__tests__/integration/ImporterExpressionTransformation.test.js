@@ -69,7 +69,9 @@ describe('Integration Test 4: Importer-Expression Transformation', () => {
 
       // MockFactory evaluate handles ">"
       expressionEngine.evaluate.mockImplementation((expr, context) => {
-        if (expr === '{{age}} >= 18') return context.age >= 18;
+        if (expr === '{{age}} >= 18') {
+          return context.age >= 18;
+        }
         return null;
       });
 
@@ -86,7 +88,9 @@ describe('Integration Test 4: Importer-Expression Transformation', () => {
       const row = { price: 10, quantity: 5 };
 
       expressionEngine.evaluate.mockImplementation((expr, context) => {
-        if (expr === '{{price}} * {{quantity}}') return context.price * context.quantity;
+        if (expr === '{{price}} * {{quantity}}') {
+          return context.price * context.quantity;
+        }
         return null;
       });
 
@@ -154,9 +158,15 @@ describe('Integration Test 4: Importer-Expression Transformation', () => {
       const row = { price: 100, qty: 2 };
 
       expressionEngine.evaluate.mockImplementation((expr, context) => {
-        if (expr === '{{price}} * {{qty}}') return context.price * context.qty;
-        if (expr === '{{subtotal}} * 0.1') return context.subtotal * 0.1;
-        if (expr === '{{subtotal}} + {{tax}}') return context.subtotal + context.tax;
+        if (expr === '{{price}} * {{qty}}') {
+          return context.price * context.qty;
+        }
+        if (expr === '{{subtotal}} * 0.1') {
+          return context.subtotal * 0.1;
+        }
+        if (expr === '{{subtotal}} + {{tax}}') {
+          return context.subtotal + context.tax;
+        }
         return null;
       });
 
@@ -182,7 +192,9 @@ describe('Integration Test 4: Importer-Expression Transformation', () => {
       // Note: simpleTemplateSubstitution only handles flat keys: context[trimmedKey]
       // For nested, it would need the actual expression engine
       expressionEngine.evaluate.mockImplementation((expr, context) => {
-        if (expr === '{{user.address.city}}') return context.user.address.city;
+        if (expr === '{{user.address.city}}') {
+          return context.user.address.city;
+        }
         return null;
       });
 

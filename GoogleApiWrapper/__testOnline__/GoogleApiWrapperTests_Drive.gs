@@ -2,6 +2,35 @@
  * 🧪 DriveService Comprehensive Tests
  */
 function initGoogleApiWrapperTests_Drive(NS) {
+  runner.register(`${NS}/DriveService/StandardApp`, () => {
+    const driveService = ServiceFactory.getDriveService();
+    SmartAssert.isTrue(
+      typeof driveService.getStandardApp === 'function',
+      'DriveService should expose getStandardApp()'
+    );
+
+    const app = driveService.getStandardApp();
+    SmartAssert.notNull(app, 'getStandardApp() should return the native DriveApp');
+    SmartAssert.isTrue(
+      typeof app.createFile === 'function' && typeof app.getFileById === 'function',
+      'Standard app should expose native createFile/getFileById'
+    );
+
+    const folder = app.getFolderById(testContext.getRootFolder().getId());
+    const content = 'DriveService.getStandardApp() round-trip';
+    const file = folder.createFile(
+      'DriveServiceStandardApp_' + new Date().getTime() + '.txt',
+      content,
+      'text/plain'
+    );
+    SmartAssert.equals(
+      app.getFileById(file.getId()).getBlob().getDataAsString(),
+      content,
+      'Routed file content should round-trip'
+    );
+    app.getFileById(file.getId()).setTrashed(true);
+  });
+
   runner.register(`${NS}/DriveService/FileLifecycle`, () => {
     const deps = createGoogleApiWrapperDeps();
     const driveService = new DriveService(

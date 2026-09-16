@@ -161,7 +161,7 @@ describe('UiService - Comprehensive Test Suite', () => {
     it('should show alert with title and message', () => {
       const result = service.alert('Title', 'Message');
 
-      expect(mockUi.alert).toHaveBeenCalledWith('Title', 'Message', undefined);
+      expect(mockUi.alert).toHaveBeenCalledWith('Title', 'Message');
       expect(result).toBe('OK');
     });
 
@@ -192,7 +192,7 @@ describe('UiService - Comprehensive Test Suite', () => {
     it('should show prompt with title and message', () => {
       const result = service.prompt('Title', 'Message');
 
-      expect(mockUi.prompt).toHaveBeenCalledWith('Title', 'Message', undefined);
+      expect(mockUi.prompt).toHaveBeenCalledWith('Title', 'Message');
       expect(result.getSelectedButton()).toBe('OK');
       expect(result.getResponseText()).toBe('test response');
     });

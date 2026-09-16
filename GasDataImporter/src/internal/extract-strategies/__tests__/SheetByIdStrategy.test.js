@@ -506,9 +506,15 @@ describe('SheetByIdStrategy - Comprehensive Test Suite', () => {
       const chunkedSpreadsheetService = {
         getSheetInfo: () => [{ name: 'Sheet1', gridProperties: { rowCount: 3, columnCount: 2 } }],
         getRanges: (sheetId, range) => {
-          if (range === 'Sheet1!A1:B1') return [['A', 'B']];
-          if (range === 'Sheet1!A2:B2') return [['1', '2']];
-          if (range === 'Sheet1!A3:B3') return [['3', '4']];
+          if (range === 'Sheet1!A1:B1') {
+            return [['A', 'B']];
+          }
+          if (range === 'Sheet1!A2:B2') {
+            return [['1', '2']];
+          }
+          if (range === 'Sheet1!A3:B3') {
+            return [['3', '4']];
+          }
           throw new Error(`unexpected range ${range}`);
         }
       };

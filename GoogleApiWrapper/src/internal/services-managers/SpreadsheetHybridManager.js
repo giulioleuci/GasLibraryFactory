@@ -18,9 +18,15 @@ export class SpreadsheetHybridManager {
    */
   createSpreadsheet(title, options = {}) {
     const request = { properties: { title: title } };
-    if (options.locale) request.properties.locale = options.locale;
-    if (options.timeZone) request.properties.timeZone = options.timeZone;
-    if (options.autoRecalc) request.properties.autoRecalc = options.autoRecalc;
+    if (options.locale) {
+      request.properties.locale = options.locale;
+    }
+    if (options.timeZone) {
+      request.properties.timeZone = options.timeZone;
+    }
+    if (options.autoRecalc) {
+      request.properties.autoRecalc = options.autoRecalc;
+    }
     if (options.sheets) {
       request.sheets = options.sheets.map((sheet) => ({ properties: sheet }));
     }

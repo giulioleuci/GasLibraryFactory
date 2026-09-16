@@ -68,7 +68,9 @@ export class SpreadsheetMetadataCache {
     const range = parts[1] || 'A1';
 
     const sheet = sheets.find((s) => s.properties.title === sheetName);
-    if (!sheet) throw new Error(`Sheet ${sheetName} not found`);
+    if (!sheet) {
+      throw new Error(`Sheet ${sheetName} not found`);
+    }
 
     const gridRange = { sheetId: sheet.properties.sheetId };
     const rangeParts = range.split(':');
@@ -96,7 +98,9 @@ export class SpreadsheetMetadataCache {
 
   _parseCell(cellRef) {
     const match = cellRef.match(/^([A-Z]+)(\d+)$/);
-    if (!match) throw new Error(`Invalid cell reference: ${cellRef}`);
+    if (!match) {
+      throw new Error(`Invalid cell reference: ${cellRef}`);
+    }
     const col = this._columnToIndex(match[1]);
     const row = parseInt(match[2], 10) - 1;
     return { row, col };

@@ -391,6 +391,10 @@ export class JobQueue {
    * @param {string} jobType Registered handler type.
    * @param {Object} [parameters={}] Input data and context.
    * @param {boolean} [forceRestart=false] If true, purges existing state/locks before start.
+   * @param {boolean} [blockIfSuspended=false] Refuse to start if the job is currently
+   *   `'to_resume'` (interrupted by a timeout, awaiting its automatic resume trigger).
+   *   Pass `true` for fresh/manual launches; leave `false` for the resume path itself,
+   *   which must always be allowed to proceed regardless of this state.
    * @returns {*} Generator return value if complete; null if suspended or failed.
    * @throws {Error} If handler missing, fatal error occurs, or parameters are invalid.
    *
@@ -401,7 +405,7 @@ export class JobQueue {
    * });
    * const result = queue.execute('sync-1', 'sync', { id: 123 });
    */
-  execute(jobName, jobType, parameters = {}, forceRestart = false) {
+  execute(jobName, jobType, parameters = {}, forceRestart = false, blockIfSuspended = false) {
     const stateManager = new JobStateManager(
       jobName,
       this._propertiesService,
@@ -431,8 +435,10 @@ export class JobQueue {
       const jobState = stateManager.getState();
 
       // JRL-C001: Use atomic lock acquisition to prevent race conditions
-      if (!stateManager.tryAcquireRunning()) {
-        this._logger.warn(`Job ${jobName} already running or lock acquisition failed.`);
+      if (!stateManager.tryAcquireRunning(blockIfSuspended)) {
+        this._logger.warn(
+          `Job ${jobName} already running, suspended awaiting automatic resume, or lock acquisition failed.`
+        );
         return null;
       }
 

@@ -179,8 +179,12 @@ describe('Integration Test 5: Importer-Validation Flow', () => {
       jest.spyOn(engine._sourceFactory, 'createStrategy').mockReturnValue(mockStrategy);
 
       expressionEngine.evaluate.mockImplementation((expr, row) => {
-        if (expr === '{{age}} >= 18') return row.age >= 18;
-        if (expr === '{{status}} == "active"') return row.status === 'active';
+        if (expr === '{{age}} >= 18') {
+          return row.age >= 18;
+        }
+        if (expr === '{{status}} == "active"') {
+          return row.status === 'active';
+        }
         return true;
       });
 

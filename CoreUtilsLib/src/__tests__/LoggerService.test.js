@@ -114,12 +114,12 @@ describe('LoggerService', () => {
 
       it('should log WARN messages', () => {
         logger.warn('warn message');
-        expect(Logger.log).toHaveBeenCalledWith('[WARN] warn message');
+        expect(Logger.log).toHaveBeenCalledWith('🔸 [WARN] warn message');
       });
 
       it('should log ERROR messages', () => {
         logger.error('error message');
-        expect(Logger.log).toHaveBeenCalledWith('[ERROR] error message');
+        expect(Logger.log).toHaveBeenCalledWith('🔺 [ERROR] error message');
       });
     });
 
@@ -140,12 +140,12 @@ describe('LoggerService', () => {
 
       it('should log WARN messages', () => {
         logger.warn('warn message');
-        expect(Logger.log).toHaveBeenCalledWith('[WARN] warn message');
+        expect(Logger.log).toHaveBeenCalledWith('🔸 [WARN] warn message');
       });
 
       it('should log ERROR messages', () => {
         logger.error('error message');
-        expect(Logger.log).toHaveBeenCalledWith('[ERROR] error message');
+        expect(Logger.log).toHaveBeenCalledWith('🔺 [ERROR] error message');
       });
     });
 
@@ -166,12 +166,12 @@ describe('LoggerService', () => {
 
       it('should log WARN messages', () => {
         logger.warn('warn message');
-        expect(Logger.log).toHaveBeenCalledWith('[WARN] warn message');
+        expect(Logger.log).toHaveBeenCalledWith('🔸 [WARN] warn message');
       });
 
       it('should log ERROR messages', () => {
         logger.error('error message');
-        expect(Logger.log).toHaveBeenCalledWith('[ERROR] error message');
+        expect(Logger.log).toHaveBeenCalledWith('🔺 [ERROR] error message');
       });
     });
 
@@ -197,7 +197,7 @@ describe('LoggerService', () => {
 
       it('should log ERROR messages', () => {
         logger.error('error message');
-        expect(Logger.log).toHaveBeenCalledWith('[ERROR] error message');
+        expect(Logger.log).toHaveBeenCalledWith('🔺 [ERROR] error message');
       });
     });
 
@@ -306,7 +306,7 @@ describe('LoggerService', () => {
   describe('warn', () => {
     it('should log string message', () => {
       logger.warn('warning message');
-      expect(Logger.log).toHaveBeenCalledWith('[WARN] warning message');
+      expect(Logger.log).toHaveBeenCalledWith('🔸 [WARN] warning message');
     });
 
     it('should log object message', () => {
@@ -334,7 +334,7 @@ describe('LoggerService', () => {
   describe('error', () => {
     it('should log string message', () => {
       logger.error('error message');
-      expect(Logger.log).toHaveBeenCalledWith('[ERROR] error message');
+      expect(Logger.log).toHaveBeenCalledWith('🔺 [ERROR] error message');
     });
 
     it('should log object message', () => {
@@ -566,7 +566,7 @@ describe('LoggerService', () => {
     describe('warn', () => {
       it('should log warn with prefix', () => {
         childLogger.warn('warn message');
-        expect(Logger.log).toHaveBeenCalledWith('[WARN] [MODULE] warn message');
+        expect(Logger.log).toHaveBeenCalledWith('🔸 [WARN] [MODULE] warn message');
       });
 
       it('should support lazy evaluation', () => {
@@ -579,7 +579,7 @@ describe('LoggerService', () => {
     describe('error', () => {
       it('should log error with prefix', () => {
         childLogger.error('error message');
-        expect(Logger.log).toHaveBeenCalledWith('[ERROR] [MODULE] error message');
+        expect(Logger.log).toHaveBeenCalledWith('🔺 [ERROR] [MODULE] error message');
       });
 
       it('should support lazy evaluation', () => {
@@ -592,7 +592,7 @@ describe('LoggerService', () => {
     describe('log', () => {
       it('should log at specified level with prefix', () => {
         childLogger.log('WARN', 'dynamic message');
-        expect(Logger.log).toHaveBeenCalledWith('[WARN] [MODULE] dynamic message');
+        expect(Logger.log).toHaveBeenCalledWith('🔸 [WARN] [MODULE] dynamic message');
       });
 
       it('should support lazy evaluation', () => {
@@ -610,7 +610,7 @@ describe('LoggerService', () => {
       childLogger.debug('filtered');
       childLogger.error('logged');
       expect(Logger.log).toHaveBeenCalledTimes(1);
-      expect(Logger.log).toHaveBeenCalledWith('[ERROR] [MODULE] logged');
+      expect(Logger.log).toHaveBeenCalledWith('🔺 [ERROR] [MODULE] logged');
     });
 
     it('should allow multiple child loggers', () => {
@@ -673,6 +673,40 @@ describe('LoggerService', () => {
         })
       ).toBe(logger);
       expect(logger.logSummary('Done', 1, 'ok')).toBe(logger);
+      expect(logger.logJobReport({ jobType: 'GENERAZIONE DOCUMENTI', totale: 1, falliti: 0 })).toBe(
+        logger
+      );
+    });
+
+    it('renders a multi-line end-of-job report and picks the level from failure count', () => {
+      logger.logJobReport({
+        jobType: 'INVIO EMAIL',
+        runCount: 2,
+        totalDurationMs: 1500,
+        totale: 5,
+        falliti: 2,
+        dettagliFalliti: ['a@x.it: timeout', 'b@x.it: bounced']
+      });
+
+      expect(Logger.log.mock.calls.map(([line]) => line)).toEqual([
+        '======================================================================',
+        '📊❌ [RIEPILOGO JOB] INVIO EMAIL',
+        '  Esecuzioni (run): 2',
+        '  Tempo totale esecuzione: 1500ms',
+        '  Task totali: 5',
+        '  Eseguiti con successo: 3',
+        '  Falliti: 2',
+        '  Dettaglio fallimenti:',
+        '    - a@x.it: timeout',
+        '    - b@x.it: bounced',
+        '======================================================================'
+      ]);
+    });
+
+    it('filters logJobReport at ERROR level when the job has no failures', () => {
+      logger.setLevel('ERROR');
+      logger.logJobReport({ jobType: 'IMPORTAZIONE DATI', totale: 3, falliti: 0 });
+      expect(Logger.log).not.toHaveBeenCalled();
     });
 
     it('filters structured events at their semantic levels', () => {
@@ -683,7 +717,7 @@ describe('LoggerService', () => {
       logger.logPipelineStep('Failed', 'ERROR', 'boom', {});
 
       expect(Logger.log).toHaveBeenCalledTimes(1);
-      expect(Logger.log).toHaveBeenCalledWith('❌ [Failed] boom (FAILED)');
+      expect(Logger.log).toHaveBeenCalledWith('🔺 [Failed] boom (FAILED)');
     });
 
     it('does not let malformed optional details break emission', () => {
@@ -712,7 +746,7 @@ describe('LoggerService', () => {
         })
       ).toBe(logger);
       expect(Logger.log).toHaveBeenCalledWith(
-        '  └─ ⚠️ [[MAIL] Compose] condition not met (SKIPPED)'
+        '  └─ ▫️ [[MAIL] Compose] condition not met (SKIPPED)'
       );
       expect(child.logBatchStart(1)).toBe(logger);
       expect(Logger.log).toHaveBeenCalledWith('📑 [PROCESSING BATCH] (1 Item in queue)');
@@ -744,7 +778,7 @@ describe('LoggerService', () => {
 
       expect(Logger.log.mock.calls.map(([line]) => line)).toEqual([
         '  ├─ [INFO] outer-before',
-        '  │    ├─ [WARN] inner',
+        '  │    ├─ 🔸 [WARN] inner',
         '  ├─ [INFO] outer-after'
       ]);
     });
@@ -757,7 +791,7 @@ describe('LoggerService', () => {
       ).toThrow('boom');
 
       logger.error('root');
-      expect(Logger.log).toHaveBeenLastCalledWith('[ERROR] root');
+      expect(Logger.log).toHaveBeenLastCalledWith('🔺 [ERROR] root');
     });
 
     it('prefixes every line emitted by every ordinary logging method', () => {
@@ -774,8 +808,8 @@ describe('LoggerService', () => {
         '  │    ├─ [DEBUG] debug',
         '  │       continued',
         '  │    ├─ [INFO] info',
-        '  │    ├─ [WARN] warn',
-        '  │    ├─ [ERROR] error',
+        '  │    ├─ 🔸 [WARN] warn',
+        '  │    ├─ 🔺 [ERROR] error',
         '  │    ├─ [INFO] dynamic'
       ]);
     });

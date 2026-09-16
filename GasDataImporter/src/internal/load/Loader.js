@@ -110,7 +110,7 @@ class Loader {
       this.logger.debug('[Loader] Saving changes to database...');
       this._db.save();
 
-      this.logger.info(`[Loader] Load complete: ${JSON.stringify(result)}`);
+      this.logger.debug(`[Loader] Load complete: ${JSON.stringify(result)}`);
       return result;
     } catch (error) {
       if (error instanceof LoadError) {

@@ -198,8 +198,22 @@ describe('RoleRegistry', () => {
     it('serializes to a JSON object', () => {
       registry.register({ id: 'r1', name: 'Role 1' });
       const json = registry.toJSON();
-      expect(json.roles).toEqual(expect.objectContaining({
-        r1: expect.objectContaining({
+      expect(json.roles).toEqual(
+        expect.objectContaining({
+          r1: expect.objectContaining({
+            id: 'r1',
+            name: 'Role 1',
+            description: '',
+            scopeType: ScopeType.GLOBAL,
+            resolutionStrategy: ResolutionStrategy.FIRST,
+            allowsDelegation: true,
+            fallbackRoles: [],
+            metadata: {}
+          })
+        })
+      );
+      expect(json.roles.r1).toEqual(
+        expect.objectContaining({
           id: 'r1',
           name: 'Role 1',
           description: '',
@@ -209,17 +223,7 @@ describe('RoleRegistry', () => {
           fallbackRoles: [],
           metadata: {}
         })
-      }));
-      expect(json.roles.r1).toEqual(expect.objectContaining({
-        id: 'r1',
-        name: 'Role 1',
-        description: '',
-        scopeType: ScopeType.GLOBAL,
-        resolutionStrategy: ResolutionStrategy.FIRST,
-        allowsDelegation: true,
-        fallbackRoles: [],
-        metadata: {}
-      }));
+      );
       expect(json.roles.r1.name).toBe('Role 1');
     });
   });

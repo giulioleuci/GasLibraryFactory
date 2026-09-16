@@ -123,8 +123,9 @@ export class SpreadsheetGridManager {
   deleteRow(spreadsheetId, sheetName, rowIndex) {
     const sheets = this.facade._getCachedSheetMetadata(spreadsheetId);
     const sheetMeta = sheets.find((s) => s.properties.title === sheetName);
-    if (!sheetMeta)
+    if (!sheetMeta) {
       throw new Error(`Sheet '${sheetName}' not found in spreadsheet ${spreadsheetId}`);
+    }
     const requests = [
       {
         deleteDimension: {
@@ -184,11 +185,14 @@ export class SpreadsheetGridManager {
   }
 
   deleteRows(spreadsheetId, sheetName, rowIndices) {
-    if (!rowIndices || rowIndices.length === 0) return null;
+    if (!rowIndices || rowIndices.length === 0) {
+      return null;
+    }
     const sheets = this.facade._getCachedSheetMetadata(spreadsheetId);
     const sheetMeta = sheets.find((s) => s.properties.title === sheetName);
-    if (!sheetMeta)
+    if (!sheetMeta) {
       throw new Error(`Sheet '${sheetName}' not found in spreadsheet ${spreadsheetId}`);
+    }
     const sortedIndices = [...rowIndices].sort((a, b) => b - a);
     const requests = sortedIndices.map((rowIndex) => ({
       deleteDimension: {
@@ -242,7 +246,9 @@ export class SpreadsheetGridManager {
     );
     const protectedRanges = [];
     (metadata.sheets || []).forEach((sheet) => {
-      if (sheetName && sheet.properties.title !== sheetName) return;
+      if (sheetName && sheet.properties.title !== sheetName) {
+        return;
+      }
       (sheet.protectedRanges || []).forEach((pr) => {
         protectedRanges.push({
           id: pr.protectedRangeId,
@@ -298,9 +304,15 @@ export class SpreadsheetGridManager {
             : globalEditors.domainUsersCanEdit
       };
 
-      if (editors.users.length === 0) delete editors.users;
-      if (editors.groups.length === 0) delete editors.groups;
-      if (editors.domainUsersCanEdit === undefined) delete editors.domainUsersCanEdit;
+      if (editors.users.length === 0) {
+        delete editors.users;
+      }
+      if (editors.groups.length === 0) {
+        delete editors.groups;
+      }
+      if (editors.domainUsersCanEdit === undefined) {
+        delete editors.domainUsersCanEdit;
+      }
 
       const protection = {
         range: gridRange,

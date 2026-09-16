@@ -162,7 +162,8 @@ export class LoggerService {
    * @returns {string} Standardized log line.
    */
   _formatMessage(level, message, context = null) {
-    let formattedMessage = `[${level}]`;
+    const emoji = level === 'ERROR' ? '🔺 ' : level === 'WARN' ? '🔸 ' : '';
+    let formattedMessage = `${emoji}[${level}]`;
 
     if (typeof message === 'object') {
       formattedMessage += ' ' + this._safeStringify(message);
@@ -364,6 +365,17 @@ export class LoggerService {
   }
 
   /**
+   * Emit a multi-line end-of-job report (job type, run count, cumulative real
+   * duration across every timeout-resume, task totals, failure detail).
+   * @param {{jobType: string, runCount?: number, totalDurationMs?: number, totale?: number, falliti?: number, dettagliFalliti?: string[]}} details
+   * @returns {LoggerService} Fluent instance for chaining.
+   */
+  logJobReport(details) {
+    const failed = Number.isFinite(details?.falliti) ? details.falliti : 0;
+    return this._writeStructured(failed > 0 ? 'ERROR' : 'INFO', this._structured.jobReport(details));
+  }
+
+  /**
    * Spawn a namespaced logger with a message prefix.
    * @param {string} prefix - Namespace identifier.
    * @returns {Object} Proxy object with level-specific logging methods.
@@ -420,6 +432,7 @@ export class LoggerService {
         parentLogger.logPipelineStep(prefixed(stepName), status, details, position),
       logSummary: (label, durationMs, itemDetails, position) =>
         parentLogger.logSummary(prefixed(label), durationMs, itemDetails, position),
+      logJobReport: (details) => parentLogger.logJobReport(details),
       withPosition: (position, callback) => parentLogger.withPosition(position, callback)
     };
   }

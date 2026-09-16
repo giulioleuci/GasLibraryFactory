@@ -18,7 +18,9 @@ describe('SheetProcessor - Dynamic Rows Tests', () => {
         return template.replace(/{{(\w+)}}/g, (match, key) => context[key] || match);
       }),
       getValue: jest.fn((path, context) => {
-        if (!context) return undefined;
+        if (!context) {
+          return undefined;
+        }
         return context[path];
       })
     };
@@ -117,13 +119,9 @@ describe('SheetProcessor - Dynamic Rows Tests', () => {
       });
       const placeholder = '{{dynamic_rows[source=studenti, value=nome]}}';
 
-      const { valueRequests } = processor._prepareDynamicRowRequests(
-        'Sheet1',
-        1,
-        1,
-        placeholder,
-        { studenti: [] }
-      );
+      const { valueRequests } = processor._prepareDynamicRowRequests('Sheet1', 1, 1, placeholder, {
+        studenti: []
+      });
 
       expect(valueRequests).toEqual([{ range: "'Sheet1'!A1", values: [['ERROR: boom']] }]);
     });
@@ -132,9 +130,7 @@ describe('SheetProcessor - Dynamic Rows Tests', () => {
   describe('process() Integration', () => {
     it('dispatches a {{dynamic_rows[...]}} cell to _prepareDynamicRowRequests and applies it in the batch update', () => {
       mockSpreadsheetService.getSheetInfo.mockReturnValue([{ name: 'Sheet1', id: 1 }]);
-      mockSpreadsheetService.getRanges.mockReturnValue([
-        ['{{dynamic_rows[source=s, value=v]}}']
-      ]);
+      mockSpreadsheetService.getRanges.mockReturnValue([['{{dynamic_rows[source=s, value=v]}}']]);
 
       const context = { s: [{ v: 'Row1' }, { v: 'Row2' }] };
       mockMustache.getValue.mockImplementation((path, ctx) => (ctx ? ctx[path] : undefined));

@@ -27,7 +27,9 @@ export class SpreadsheetRangeManager {
         totalRows += rows;
         totalColumns = Math.max(totalColumns, cols);
         const sheetMatch = update.range.match(/^([^!]+)!/);
-        if (sheetMatch) sheetsAffected.add(sheetMatch[1]);
+        if (sheetMatch) {
+          sheetsAffected.add(sheetMatch[1]);
+        }
       });
       this._logger.info(
         `[DRY-RUN] Would update ${updatesArray.length} range(s) in spreadsheet ${spreadsheetId}`
@@ -72,7 +74,9 @@ export class SpreadsheetRangeManager {
       { spreadsheetId, rangeCount: rangesArray.length },
       3
     );
-    if (isSingleRange) return result.valueRanges[0].values || [];
+    if (isSingleRange) {
+      return result.valueRanges[0].values || [];
+    }
     const dataMap = {};
     result.valueRanges.forEach((vr, index) => {
       dataMap[rangesArray[index]] = vr.values || [];
@@ -82,8 +86,9 @@ export class SpreadsheetRangeManager {
 
   appendRows(spreadsheetId, appends, options = {}) {
     const appendsArray = Array.isArray(appends) ? appends : [appends];
-    if (appendsArray.length === 0)
+    if (appendsArray.length === 0) {
       return { totalUpdatedCells: 0, totalUpdatedRows: 0, successful: [], failed: [] };
+    }
     const valueInputOption = options.valueInputOption || 'USER_ENTERED';
     const sheets = this.facade._getCachedSheetMetadata(spreadsheetId);
     const sheetMap = {};
@@ -122,22 +127,25 @@ export class SpreadsheetRangeManager {
         ? append.range.split('!')[0].replace(/'/g, '')
         : append.range;
       const sheetId = sheetMap[sheetName];
-      if (sheetId === undefined)
+      if (sheetId === undefined) {
         throw new Error(`Sheet '${sheetName}' not found in spreadsheet ${spreadsheetId}`);
+      }
       const rows = (append.values || []).map((row) => ({
         values: row.map((cellValue) => {
           const cellData = {};
-          if (cellValue == null || cellValue === '')
+          if (cellValue == null || cellValue === '') {
             cellData.userEnteredValue = { stringValue: '' };
-          else if (typeof cellValue === 'number')
+          } else if (typeof cellValue === 'number') {
             cellData.userEnteredValue = { numberValue: cellValue };
-          else if (typeof cellValue === 'boolean')
+          } else if (typeof cellValue === 'boolean') {
             cellData.userEnteredValue = { boolValue: cellValue };
-          else {
+          } else {
             const stringVal = String(cellValue);
-            if (stringVal.startsWith('=') && valueInputOption === 'USER_ENTERED')
+            if (stringVal.startsWith('=') && valueInputOption === 'USER_ENTERED') {
               cellData.userEnteredValue = { formulaValue: stringVal };
-            else cellData.userEnteredValue = { stringValue: stringVal };
+            } else {
+              cellData.userEnteredValue = { stringValue: stringVal };
+            }
           }
           return cellData;
         })

@@ -23,9 +23,9 @@ describe('ExpressionPolicy', () => {
 
     const literals = parser.parse('[1, "two", true]');
     assertAllowedExpressionAst(literals, defaultPolicy);
-    expect(() => assertAllowedExpressionAst({ ...literals, type: 'AssignmentExpression' }, defaultPolicy)).toThrow(
-      'not allowed'
-    );
+    expect(() =>
+      assertAllowedExpressionAst({ ...literals, type: 'AssignmentExpression' }, defaultPolicy)
+    ).toThrow('not allowed');
   });
 
   test('rejects assignments', () => {
@@ -44,15 +44,15 @@ describe('ExpressionPolicy', () => {
   });
 
   test('rejects unsafe non-computed member access', () => {
-    expect(() => assertAllowedExpressionAst(parser.parse('user.constructor'), defaultPolicy)).toThrow(
-      'not allowed'
-    );
+    expect(() =>
+      assertAllowedExpressionAst(parser.parse('user.constructor'), defaultPolicy)
+    ).toThrow('not allowed');
   });
 
   test('rejects dynamic computed member access', () => {
-    expect(() => assertAllowedExpressionAst(parser.parse('user[memberName]'), defaultPolicy)).toThrow(
-      'not allowed'
-    );
+    expect(() =>
+      assertAllowedExpressionAst(parser.parse('user[memberName]'), defaultPolicy)
+    ).toThrow('not allowed');
   });
 
   test('rejects member expressions whose object cannot be evaluated as a path', () => {
@@ -117,8 +117,8 @@ describe('ExpressionPolicy', () => {
   });
 
   test('rejects calls that are not explicitly approved', () => {
-    expect(() => assertAllowedExpressionAst(parser.parse('unknownFunction(user.name)'), defaultPolicy)).toThrow(
-      'Unknown function: unknownFunction'
-    );
+    expect(() =>
+      assertAllowedExpressionAst(parser.parse('unknownFunction(user.name)'), defaultPolicy)
+    ).toThrow('Unknown function: unknownFunction');
   });
 });

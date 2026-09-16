@@ -182,9 +182,9 @@ describe('Step - Comprehensive Test Suite', () => {
       const context = new PipelineContext({ userId: 123, startDate: '2024-01-01' });
 
       step.verifyContext(context);
-      expect(() =>
-        step.verifyContext(new PipelineContext({ userId: 123 }))
-      ).toThrow(ContextValidationError);
+      expect(() => step.verifyContext(new PipelineContext({ userId: 123 }))).toThrow(
+        ContextValidationError
+      );
     });
 
     it('should throw error if required keys are missing', () => {

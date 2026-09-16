@@ -28,7 +28,9 @@ export class MustacheMock {
     });
 
     this.render = jest.fn((template, data = {}, partials = {}) => {
-      if (typeof template !== 'string') return '';
+      if (typeof template !== 'string') {
+        return '';
+      }
 
       let result = template;
 
@@ -68,14 +70,20 @@ export class MustacheMock {
    * @private
    */
   _getValue(obj, path) {
-    if (path === '.') return obj;
-    if (!obj || typeof obj !== 'object') return undefined;
+    if (path === '.') {
+      return obj;
+    }
+    if (!obj || typeof obj !== 'object') {
+      return undefined;
+    }
 
     const keys = path.split('.');
     let value = obj;
 
     for (const key of keys) {
-      if (value === null || value === undefined) return undefined;
+      if (value === null || value === undefined) {
+        return undefined;
+      }
       value = value[key];
     }
 

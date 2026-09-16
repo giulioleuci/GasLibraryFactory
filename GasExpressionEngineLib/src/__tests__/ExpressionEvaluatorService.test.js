@@ -233,7 +233,11 @@ describe('ExpressionEvaluatorService (Logic Library Pattern)', () => {
       expect(
         logger
           .getLogsByLevel('DEBUG')
-          .filter((log) => /^(Evaluating expression|Parsing expression|Preprocessed expression|AST generated successfully|Evaluation result)/.test(log.message))
+          .filter((log) =>
+            /^(Evaluating expression|Parsing expression|Preprocessed expression|AST generated successfully|Evaluation result)/.test(
+              log.message
+            )
+          )
       ).toEqual([
         { level: 'DEBUG', message: 'Evaluating expression: "{{age}} > 18"', context: null },
         { level: 'DEBUG', message: 'Parsing expression: "{{age}} > 18"', context: null },

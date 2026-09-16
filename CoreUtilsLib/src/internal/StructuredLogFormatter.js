@@ -21,9 +21,9 @@ const ITEM_ICONS = {
 };
 
 const STEP_ICONS = {
-  EXECUTED: '✅',
-  SKIPPED: '⚠️',
-  ERROR: '❌'
+  EXECUTED: '▪️',
+  SKIPPED: '▫️',
+  ERROR: '🔺'
 };
 
 /** Pure formatter for deterministic hierarchical console lines. */
@@ -196,6 +196,32 @@ export class StructuredLogFormatter {
       message += ` COMPLETED in ${this._count(durationMs)}ms`;
     }
     return this._treeLines(message, position);
+  }
+
+  /** @returns {string[]} Multi-line end-of-job report (job type, run count, cumulative real duration, task totals, failure detail). */
+  jobReport(details) {
+    const d = details || {};
+    const totale = this._count(d.totale);
+    const falliti = this._count(d.falliti);
+    const riusciti = Math.max(0, totale - falliti);
+    const icon = falliti > 0 ? '📊❌' : '📊✅';
+    const lines = [
+      MAJOR_BORDER,
+      `${icon} [RIEPILOGO JOB] ${this._text(d.jobType)}`,
+      `  Esecuzioni (run): ${d.runCount === undefined ? 1 : this._count(d.runCount)}`,
+      `  Tempo totale esecuzione: ${this._count(d.totalDurationMs)}ms`,
+      `  Task totali: ${totale}`,
+      `  Eseguiti con successo: ${riusciti}`,
+      `  Falliti: ${falliti}`
+    ];
+    if (falliti > 0 && Array.isArray(d.dettagliFalliti) && d.dettagliFalliti.length > 0) {
+      lines.push('  Dettaglio fallimenti:');
+      for (const item of d.dettagliFalliti) {
+        lines.push(`    - ${this._text(item)}`);
+      }
+    }
+    lines.push(MAJOR_BORDER);
+    return lines;
   }
 
   _isDetailEnvelope(details) {

@@ -157,7 +157,10 @@ export class JobRunnerExecutionController {
       error = null,
       jobCompleted = false;
     try {
-      result = queue.execute(jobName, jobType, parameters, forceRestart);
+      // blockIfSuspended=true: this is a fresh/manual launch, not the trigger-driven
+      // resume path (that's .resume() below) — refuse to start if a prior run of this
+      // jobName is suspended awaiting its own automatic resume trigger.
+      result = queue.execute(jobName, jobType, parameters, forceRestart, true);
       const status = this._status(queue, jobName, result);
       this._logTerminal(effectiveLogger, jobName, result, status, Date.now() - startedAt);
       jobCompleted =

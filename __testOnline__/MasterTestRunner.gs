@@ -41,26 +41,9 @@ function runAllOnlineTests() {
  * In the new pattern, each library should expose an init function.
  */
 function initializeAllTests() {
-  // Each library now exposes an init[LibraryName]Tests() function.
-  // We only include libraries that have real Google Apps Script interaction tests.
-  // Pure JavaScript logic is tested via Jest offline.
+  // Online tests verify only the native Google Workspace API boundary.
   const initFunctions = [
-    typeof initGasResilienceLibTests === 'function' ? initGasResilienceLibTests : null,
-    typeof initGoogleApiWrapperTests === 'function' ? initGoogleApiWrapperTests : null,
-    typeof initWorkspaceTemplateEngineTests === 'function'
-      ? initWorkspaceTemplateEngineTests
-      : null,
-    typeof initGasExpressionEngineLibTests === 'function' ? initGasExpressionEngineLibTests : null,
-    typeof initSheetDBLibTests === 'function' ? initSheetDBLibTests : null,
-    typeof initJobRunnerLibTests === 'function' ? initJobRunnerLibTests : null,
-    typeof initPipelineFrameworkTests === 'function' ? initPipelineFrameworkTests : null,
-    typeof initContextEngineTests === 'function' ? initContextEngineTests : null,
-    typeof initGasDataImporterTests === 'function' ? initGasDataImporterTests : null,
-    typeof initDomainRepositoryLibTests === 'function' ? initDomainRepositoryLibTests : null,
-    typeof initGasProcessMonitorLibTests === 'function' ? initGasProcessMonitorLibTests : null,
-    typeof initRoleResolutionLibTests === 'function' ? initRoleResolutionLibTests : null,
-    typeof initIntegrationTests === 'function' ? initIntegrationTests : null,
-    typeof initHumanInspectionTests === 'function' ? initHumanInspectionTests : null
+    typeof initGoogleApiWrapperTests === 'function' ? initGoogleApiWrapperTests : null
   ];
 
   initFunctions.forEach((fn) => {

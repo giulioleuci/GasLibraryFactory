@@ -12,26 +12,30 @@ import { jest } from './JestCompat.js';
 
 // ─── Utilities ─────────────────────────────────────────────────────────────────
 
-var uuidCounter = 0;
+let uuidCounter = 0;
 
 if (typeof global.Utilities === 'undefined') {
   global.Utilities = {
-    sleep: jest.fn(function () {}),
+    sleep: jest.fn(() => {}),
 
-    getUuid: jest.fn(function () {
+    getUuid: jest.fn(() => {
       uuidCounter++;
       return 'test-uuid-' + String(uuidCounter).padStart(4, '0');
     }),
 
-    formatDate: jest.fn(function (date, timezone, format) {
-      if (!(date instanceof Date)) throw new Error('Invalid date');
-      if (!format) format = 'yyyy-MM-dd';
-      var year = date.getFullYear();
-      var month = String(date.getMonth() + 1).padStart(2, '0');
-      var day = String(date.getDate()).padStart(2, '0');
-      var hours = String(date.getHours()).padStart(2, '0');
-      var minutes = String(date.getMinutes()).padStart(2, '0');
-      var seconds = String(date.getSeconds()).padStart(2, '0');
+    formatDate: jest.fn((date, timezone, format) => {
+      if (!(date instanceof Date)) {
+        throw new Error('Invalid date');
+      }
+      if (!format) {
+        format = 'yyyy-MM-dd';
+      }
+      const year = date.getFullYear();
+      const month = String(date.getMonth() + 1).padStart(2, '0');
+      const day = String(date.getDate()).padStart(2, '0');
+      const hours = String(date.getHours()).padStart(2, '0');
+      const minutes = String(date.getMinutes()).padStart(2, '0');
+      const seconds = String(date.getSeconds()).padStart(2, '0');
       return format
         .replace('yyyy', year)
         .replace('MM', month)
@@ -41,35 +45,43 @@ if (typeof global.Utilities === 'undefined') {
         .replace('ss', seconds);
     }),
 
-    base64Encode: jest.fn(function (data) {
+    base64Encode: jest.fn((data) => {
       if (typeof data === 'string') {
-        if (typeof btoa === 'function') return btoa(data);
+        if (typeof btoa === 'function') {
+          return btoa(data);
+        }
         return data;
       }
       return String(data);
     }),
 
-    base64Decode: jest.fn(function (encoded) {
-      if (typeof atob === 'function') return atob(encoded);
+    base64Decode: jest.fn((encoded) => {
+      if (typeof atob === 'function') {
+        return atob(encoded);
+      }
       return encoded;
     }),
 
-    parseCsv: jest.fn(function (csvString) {
-      if (!csvString) return [];
-      return csvString.split('\n').map(function (line) {
+    parseCsv: jest.fn((csvString) => {
+      if (!csvString) {
+        return [];
+      }
+      return csvString.split('\n').map((line) => {
         return line.split(',');
       });
     }),
 
-    computeDigest: jest.fn(function (algorithm, value) {
-      var hash = 0;
-      for (var i = 0; i < value.length; i++) {
+    computeDigest: jest.fn((algorithm, value) => {
+      let hash = 0;
+      for (let i = 0; i < value.length; i++) {
         hash = ((hash << 5) - hash + value.charCodeAt(i)) | 0;
       }
-      var bytes = [hash & 0xff, (hash >> 8) & 0xff, (hash >> 16) & 0xff, (hash >> 24) & 0xff];
+      const bytes = [hash & 0xff, (hash >> 8) & 0xff, (hash >> 16) & 0xff, (hash >> 24) & 0xff];
       // Simulate longer hashes for SHA-256 by padding with zeros if needed
       if (algorithm === 'SHA_256') {
-        while (bytes.length < 32) bytes.push(0);
+        while (bytes.length < 32) {
+          bytes.push(0);
+        }
       }
       return bytes;
     }),
@@ -93,24 +105,24 @@ if (typeof global.Utilities === 'undefined') {
 
 if (typeof global.Session === 'undefined') {
   global.Session = {
-    getActiveUser: jest.fn(function () {
+    getActiveUser: jest.fn(() => {
       return {
         getEmail: function () {
           return 'test@example.com';
         }
       };
     }),
-    getEffectiveUser: jest.fn(function () {
+    getEffectiveUser: jest.fn(() => {
       return {
         getEmail: function () {
           return 'test@example.com';
         }
       };
     }),
-    getScriptTimeZone: jest.fn(function () {
+    getScriptTimeZone: jest.fn(() => {
       return 'Europe/Rome';
     }),
-    getTemporaryActiveUserKey: jest.fn(function () {
+    getTemporaryActiveUserKey: jest.fn(() => {
       return 'temp-user-key-123';
     })
   };
@@ -135,33 +147,38 @@ if (typeof global.CacheService === 'undefined') {
   var cacheStores = {};
 
   function createCacheStore(name) {
-    if (!cacheStores[name]) cacheStores[name] = {};
-    var store = cacheStores[name];
+    if (!cacheStores[name]) {
+      cacheStores[name] = {};
+    }
+    const store = cacheStores[name];
     return {
-      get: jest.fn(function (key) {
+      get: jest.fn((key) => {
         return store[key] || null;
       }),
-      put: jest.fn(function (key, value) {
+      put: jest.fn((key, value) => {
         store[key] = String(value);
       }),
-      remove: jest.fn(function (key) {
+      remove: jest.fn((key) => {
         delete store[key];
       }),
-      removeAll: jest.fn(function (keys) {
-        if (keys)
-          keys.forEach(function (k) {
+      removeAll: jest.fn((keys) => {
+        if (keys) {
+          keys.forEach((k) => {
             delete store[k];
           });
+        }
       }),
-      getAll: jest.fn(function (keys) {
-        var result = {};
-        keys.forEach(function (k) {
-          if (store[k]) result[k] = store[k];
+      getAll: jest.fn((keys) => {
+        const result = {};
+        keys.forEach((k) => {
+          if (store[k]) {
+            result[k] = store[k];
+          }
         });
         return result;
       }),
-      putAll: jest.fn(function (values) {
-        Object.keys(values).forEach(function (k) {
+      putAll: jest.fn((values) => {
+        Object.keys(values).forEach((k) => {
           store[k] = String(values[k]);
         });
       })
@@ -169,13 +186,13 @@ if (typeof global.CacheService === 'undefined') {
   }
 
   global.CacheService = {
-    getScriptCache: jest.fn(function () {
+    getScriptCache: jest.fn(() => {
       return createCacheStore('script');
     }),
-    getUserCache: jest.fn(function () {
+    getUserCache: jest.fn(() => {
       return createCacheStore('user');
     }),
-    getDocumentCache: jest.fn(function () {
+    getDocumentCache: jest.fn(() => {
       return createCacheStore('document');
     })
   };
@@ -187,28 +204,30 @@ if (typeof global.PropertiesService === 'undefined') {
   var propStores = {};
 
   function createPropertyStore(name) {
-    if (!propStores[name]) propStores[name] = {};
-    var store = propStores[name];
+    if (!propStores[name]) {
+      propStores[name] = {};
+    }
+    const store = propStores[name];
     return {
-      getProperty: jest.fn(function (key) {
+      getProperty: jest.fn((key) => {
         return store[key] || null;
       }),
-      setProperty: jest.fn(function (key, value) {
+      setProperty: jest.fn((key, value) => {
         store[key] = String(value);
       }),
-      deleteProperty: jest.fn(function (key) {
+      deleteProperty: jest.fn((key) => {
         delete store[key];
       }),
-      getProperties: jest.fn(function () {
+      getProperties: jest.fn(() => {
         return Object.assign({}, store);
       }),
-      setProperties: jest.fn(function (props) {
-        Object.keys(props).forEach(function (k) {
+      setProperties: jest.fn((props) => {
+        Object.keys(props).forEach((k) => {
           store[k] = String(props[k]);
         });
       }),
-      deleteAllProperties: jest.fn(function () {
-        Object.keys(store).forEach(function (k) {
+      deleteAllProperties: jest.fn(() => {
+        Object.keys(store).forEach((k) => {
           delete store[k];
         });
       })
@@ -216,13 +235,13 @@ if (typeof global.PropertiesService === 'undefined') {
   }
 
   global.PropertiesService = {
-    getScriptProperties: jest.fn(function () {
+    getScriptProperties: jest.fn(() => {
       return createPropertyStore('script');
     }),
-    getUserProperties: jest.fn(function () {
+    getUserProperties: jest.fn(() => {
       return createPropertyStore('user');
     }),
-    getDocumentProperties: jest.fn(function () {
+    getDocumentProperties: jest.fn(() => {
       return createPropertyStore('document');
     })
   };
@@ -232,22 +251,22 @@ if (typeof global.PropertiesService === 'undefined') {
 
 if (typeof global.LockService === 'undefined') {
   function createLock() {
-    var locked = false;
+    let locked = false;
     return {
-      tryLock: jest.fn(function () {
+      tryLock: jest.fn(() => {
         if (!locked) {
           locked = true;
           return true;
         }
         return false;
       }),
-      waitLock: jest.fn(function () {
+      waitLock: jest.fn(() => {
         locked = true;
       }),
-      releaseLock: jest.fn(function () {
+      releaseLock: jest.fn(() => {
         locked = false;
       }),
-      hasLock: jest.fn(function () {
+      hasLock: jest.fn(() => {
         return locked;
       })
     };
@@ -266,7 +285,7 @@ if (typeof global.ScriptApp === 'undefined') {
   var triggers = [];
 
   global.ScriptApp = {
-    newTrigger: jest.fn(function (functionName) {
+    newTrigger: jest.fn((functionName) => {
       var trigger = {
         _functionName: functionName,
         _type: 'timeBased',
@@ -301,7 +320,7 @@ if (typeof global.ScriptApp === 'undefined') {
           return trigger;
         },
         create: function () {
-          var t = {
+          const t = {
             getUniqueId: function () {
               return 'trigger-' + triggers.length;
             },
@@ -321,11 +340,13 @@ if (typeof global.ScriptApp === 'undefined') {
       };
       return trigger;
     }),
-    deleteTrigger: jest.fn(function (trigger) {
-      var idx = triggers.indexOf(trigger);
-      if (idx !== -1) triggers.splice(idx, 1);
+    deleteTrigger: jest.fn((trigger) => {
+      const idx = triggers.indexOf(trigger);
+      if (idx !== -1) {
+        triggers.splice(idx, 1);
+      }
     }),
-    getProjectTriggers: jest.fn(function () {
+    getProjectTriggers: jest.fn(() => {
       return triggers.slice();
     }),
     EventType: {
@@ -344,7 +365,7 @@ if (typeof global.ScriptApp === 'undefined') {
       FRIDAY: 6,
       SATURDAY: 7
     },
-    getScriptId: jest.fn(function () {
+    getScriptId: jest.fn(() => {
       return 'test-script-id';
     })
   };
@@ -354,15 +375,15 @@ if (typeof global.ScriptApp === 'undefined') {
 
 if (typeof global.SpreadsheetApp === 'undefined') {
   global.SpreadsheetApp = {
-    getActiveSpreadsheet: jest.fn(function () {
+    getActiveSpreadsheet: jest.fn(() => {
       return null;
     }),
-    openById: jest.fn(function () {
+    openById: jest.fn(() => {
       return null;
     }),
-    getUi: jest.fn(function () {
+    getUi: jest.fn(() => {
       return {
-        createMenu: jest.fn(function () {
+        createMenu: jest.fn(() => {
           return {
             addItem: jest.fn().mockReturnThis(),
             addSeparator: jest.fn().mockReturnThis(),
@@ -377,7 +398,7 @@ if (typeof global.SpreadsheetApp === 'undefined') {
         prompt: jest.fn()
       };
     }),
-    create: jest.fn(function (name) {
+    create: jest.fn((name) => {
       return {
         getId: function () {
           return 'ss-' + name;
@@ -396,29 +417,29 @@ if (typeof global.Sheets === 'undefined') {
   global.Sheets = {
     Spreadsheets: {
       Values: {
-        batchGet: jest.fn(function () {
+        batchGet: jest.fn(() => {
           return { valueRanges: [] };
         }),
-        batchUpdate: jest.fn(function () {
+        batchUpdate: jest.fn(() => {
           return { responses: [] };
         }),
-        get: jest.fn(function () {
+        get: jest.fn(() => {
           return { values: [] };
         }),
-        update: jest.fn(function () {
+        update: jest.fn(() => {
           return {};
         }),
-        append: jest.fn(function () {
+        append: jest.fn(() => {
           return {};
         }),
-        clear: jest.fn(function () {
+        clear: jest.fn(() => {
           return {};
         })
       },
-      get: jest.fn(function () {
+      get: jest.fn(() => {
         return { sheets: [] };
       }),
-      batchUpdate: jest.fn(function () {
+      batchUpdate: jest.fn(() => {
         return { replies: [] };
       })
     }
@@ -429,16 +450,16 @@ if (typeof global.Sheets === 'undefined') {
 
 if (typeof global.DriveApp === 'undefined') {
   global.DriveApp = {
-    getFileById: jest.fn(function () {
+    getFileById: jest.fn(() => {
       return {
-        getId: jest.fn(function () {
+        getId: jest.fn(() => {
           return 'file-id';
         }),
-        getName: jest.fn(function () {
+        getName: jest.fn(() => {
           return 'test-file';
         }),
         setTrashed: jest.fn(),
-        getBlob: jest.fn(function () {
+        getBlob: jest.fn(() => {
           return {
             getDataAsString: function () {
               return '';
@@ -448,17 +469,17 @@ if (typeof global.DriveApp === 'undefined') {
         makeCopy: jest.fn()
       };
     }),
-    getFolderById: jest.fn(function () {
+    getFolderById: jest.fn(() => {
       return {
-        getId: jest.fn(function () {
+        getId: jest.fn(() => {
           return 'folder-id';
         }),
-        getName: jest.fn(function () {
+        getName: jest.fn(() => {
           return 'test-folder';
         }),
         setTrashed: jest.fn(),
         createFolder: jest.fn(),
-        getFiles: jest.fn(function () {
+        getFiles: jest.fn(() => {
           return {
             hasNext: function () {
               return false;
@@ -467,7 +488,7 @@ if (typeof global.DriveApp === 'undefined') {
         })
       };
     }),
-    createFolder: jest.fn(function (name) {
+    createFolder: jest.fn((name) => {
       return {
         getId: function () {
           return 'folder-' + name;
@@ -499,26 +520,26 @@ if (typeof global.DriveApp === 'undefined') {
 if (typeof global.Drive === 'undefined') {
   global.Drive = {
     Files: {
-      get: jest.fn(function () {
+      get: jest.fn(() => {
         return {};
       }),
-      list: jest.fn(function () {
+      list: jest.fn(() => {
         return { items: [], files: [] };
       }),
-      insert: jest.fn(function () {
+      insert: jest.fn(() => {
         return { id: 'new-file-id' };
       }),
-      update: jest.fn(function () {
+      update: jest.fn(() => {
         return {};
       }),
       remove: jest.fn(),
-      copy: jest.fn(function () {
+      copy: jest.fn(() => {
         return { id: 'copy-id' };
       })
     },
     Permissions: {
       insert: jest.fn(),
-      list: jest.fn(function () {
+      list: jest.fn(() => {
         return { items: [] };
       }),
       remove: jest.fn()
@@ -530,10 +551,10 @@ if (typeof global.Drive === 'undefined') {
 
 if (typeof global.DocumentApp === 'undefined') {
   global.DocumentApp = {
-    openById: jest.fn(function () {
+    openById: jest.fn(() => {
       return null;
     }),
-    create: jest.fn(function (name) {
+    create: jest.fn((name) => {
       return {
         getId: function () {
           return 'doc-' + name;
@@ -580,17 +601,17 @@ if (typeof global.DocumentApp === 'undefined') {
 if (typeof global.GmailApp === 'undefined') {
   global.GmailApp = {
     sendEmail: jest.fn(),
-    createDraft: jest.fn(function () {
+    createDraft: jest.fn(() => {
       return {
         getId: function () {
           return 'draft-id';
         }
       };
     }),
-    search: jest.fn(function () {
+    search: jest.fn(() => {
       return [];
     }),
-    getRemainingDailyQuota: jest.fn(function () {
+    getRemainingDailyQuota: jest.fn(() => {
       return 100;
     })
   };
@@ -602,43 +623,43 @@ if (typeof global.Gmail === 'undefined') {
   global.Gmail = {
     Users: {
       Messages: {
-        send: jest.fn(function () {
+        send: jest.fn(() => {
           return { id: 'msg-id' };
         }),
-        get: jest.fn(function () {
+        get: jest.fn(() => {
           return {};
         }),
-        list: jest.fn(function () {
+        list: jest.fn(() => {
           return { messages: [] };
         })
       },
       Drafts: {
-        create: jest.fn(function () {
+        create: jest.fn(() => {
           return { id: 'draft-id' };
         }),
-        get: jest.fn(function () {
+        get: jest.fn(() => {
           return {};
         }),
-        list: jest.fn(function () {
+        list: jest.fn(() => {
           return { drafts: [] };
         })
       },
       Labels: {
-        list: jest.fn(function () {
+        list: jest.fn(() => {
           return { labels: [] };
         }),
-        get: jest.fn(function () {
+        get: jest.fn(() => {
           return {};
         }),
-        create: jest.fn(function () {
+        create: jest.fn(() => {
           return { id: 'label-id' };
         })
       },
       Threads: {
-        list: jest.fn(function () {
+        list: jest.fn(() => {
           return { threads: [] };
         }),
-        get: jest.fn(function () {
+        get: jest.fn(() => {
           return {};
         })
       }
@@ -650,7 +671,7 @@ if (typeof global.Gmail === 'undefined') {
 
 if (typeof global.UrlFetchApp === 'undefined') {
   global.UrlFetchApp = {
-    fetch: jest.fn(function () {
+    fetch: jest.fn(() => {
       return {
         getContentText: function () {
           return '{}';
@@ -663,8 +684,8 @@ if (typeof global.UrlFetchApp === 'undefined') {
         }
       };
     }),
-    fetchAll: jest.fn(function (requests) {
-      return requests.map(function () {
+    fetchAll: jest.fn((requests) => {
+      return requests.map(() => {
         return {
           getContentText: function () {
             return '{}';
@@ -685,7 +706,7 @@ if (typeof global.UrlFetchApp === 'undefined') {
 
 if (typeof global.HtmlService === 'undefined') {
   global.HtmlService = {
-    createHtmlOutput: jest.fn(function (html) {
+    createHtmlOutput: jest.fn((html) => {
       return {
         setTitle: function () {
           return this;
@@ -701,7 +722,7 @@ if (typeof global.HtmlService === 'undefined') {
         }
       };
     }),
-    createTemplateFromFile: jest.fn(function () {
+    createTemplateFromFile: jest.fn(() => {
       return {
         evaluate: function () {
           return HtmlService.createHtmlOutput('');
@@ -716,7 +737,7 @@ if (typeof global.HtmlService === 'undefined') {
 if (typeof global.ContentService === 'undefined') {
   global.ContentService = {
     MimeType: { JSON: 'application/json', TEXT: 'text/plain' },
-    createTextOutput: jest.fn(function (text) {
+    createTextOutput: jest.fn((text) => {
       return {
         setMimeType: function () {
           return this;

@@ -196,6 +196,25 @@ describe('QueueStateManager', () => {
       manager.releaseLock();
       expect(propertiesService.getProperty('lock_timestamp_job-a')).toBeNull();
     });
+
+    it('blocks a fresh launch when the job is suspended awaiting its resume trigger', () => {
+      propertiesService.setProperty('job_job-a', 'to_resume');
+      const ok = manager.tryAcquireRunning(true);
+      expect(ok).toBe(false);
+    });
+
+    it('still allows the resume path to acquire a suspended job (blockIfSuspended=false)', () => {
+      propertiesService.setProperty('job_job-a', 'to_resume');
+      const ok = manager.tryAcquireRunning(false);
+      expect(ok).toBe(true);
+      expect(manager.getState()).toBe('running');
+    });
+
+    it('does not block a fresh launch of a suspended job when blockIfSuspended is omitted (default false)', () => {
+      propertiesService.setProperty('job_job-a', 'to_resume');
+      const ok = manager.tryAcquireRunning();
+      expect(ok).toBe(true);
+    });
   });
 
   describe('retry counter', () => {

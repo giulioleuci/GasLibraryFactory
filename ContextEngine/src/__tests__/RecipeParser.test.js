@@ -500,9 +500,7 @@ describe('RecipeParser', () => {
       try {
         parser.parse({
           providers: [
-            {
-              /* Missing name and type */
-            },
+            {/* Missing name and type */},
             { name: 123, type: 456 } // Wrong types
           ]
         });
@@ -542,11 +540,7 @@ describe('RecipeParser', () => {
 
     it('should not throw errors for invalid recipe', () => {
       const recipe = {
-        providers: [
-          {
-            /* Missing name and type */
-          }
-        ]
+        providers: [{/* Missing name and type */}]
       };
 
       expect(parser.validate(recipe)).toEqual({
@@ -575,11 +569,7 @@ describe('RecipeParser', () => {
 
     it('should return all validation errors for invalid recipe', () => {
       const recipe = {
-        providers: [
-          {
-            /* Missing name and type */
-          }
-        ]
+        providers: [{/* Missing name and type */}]
       };
 
       const result = parser.validate(recipe);

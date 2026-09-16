@@ -303,10 +303,7 @@ describe('DocumentProcessor - Advanced Coverage Tests (Reverse-Order Strategy)',
         { items: source }
       );
 
-      expect(mockMustache._lookupValue).toHaveBeenCalledWith(
-        ['name', 'items'],
-        expect.anything()
-      );
+      expect(mockMustache._lookupValue).toHaveBeenCalledWith(['name', 'items'], expect.anything());
       expect(processor._applyFilters).toHaveBeenCalled();
       expect(operations[0].dataArray).toEqual(
         listType === 'bullet' ? [source[1], source[0]] : [source[1]]

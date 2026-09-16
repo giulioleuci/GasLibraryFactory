@@ -156,7 +156,7 @@ export class DatabaseService {
     try {
       this._performRollback();
       const duration = Date.now() - this._transaction.startTime;
-      this._logger.info(`Transaction rolled back (${duration}ms)`);
+      this._logger.debug(`Transaction rolled back (${duration}ms)`);
       this._transaction = null;
       this._inTransaction = false;
       return this;

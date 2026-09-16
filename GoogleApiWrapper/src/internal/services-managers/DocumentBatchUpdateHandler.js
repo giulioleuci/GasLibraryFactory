@@ -25,7 +25,9 @@ export class DocumentBatchUpdateHandler {
   getOrCreateHeader(documentId) {
     const doc = this.facade.openStandard(documentId);
     let header = doc.getHeader();
-    if (!header) header = doc.addHeader();
+    if (!header) {
+      header = doc.addHeader();
+    }
     return header;
   }
 
@@ -37,7 +39,9 @@ export class DocumentBatchUpdateHandler {
   getOrCreateFooter(documentId) {
     const doc = this.facade.openStandard(documentId);
     let footer = doc.getFooter();
-    if (!footer) footer = doc.addFooter();
+    if (!footer) {
+      footer = doc.addFooter();
+    }
     return footer;
   }
 
@@ -65,7 +69,7 @@ export class DocumentBatchUpdateHandler {
     try {
       const doc = Docs.Documents.create({ title: name });
       const documentId = doc.documentId;
-      this._logger.info(`Created document: ${documentId} (${name})`);
+      this._logger.debug(`Created document: ${documentId} (${name})`);
 
       if (options.destinationFolder) {
         Drive.Files.update({}, documentId, null, { addParents: options.destinationFolder });
@@ -169,7 +173,7 @@ export class DocumentBatchUpdateHandler {
       }
 
       const file = Drive.Files.create(fileMetadata, blob);
-      this._logger.info(`Exported document ${documentId} to PDF: ${file.id}`);
+      this._logger.debug(`Exported document ${documentId} to PDF: ${file.id}`);
       return file;
     } catch (error) {
       this._logger.error(`PDF export failed: ${error.message}`);
@@ -223,7 +227,9 @@ export class DocumentBatchUpdateHandler {
     const successful = [];
     const failed = [];
 
-    if (ids.length === 0) return { successful, failed };
+    if (ids.length === 0) {
+      return { successful, failed };
+    }
 
     for (const docId of ids) {
       try {
@@ -255,7 +261,9 @@ export class DocumentBatchUpdateHandler {
     try {
       const doc = this.facade.openStandard(documentId);
       let header = doc.getHeader();
-      if (!header) header = doc.addHeader();
+      if (!header) {
+        header = doc.addHeader();
+      }
       if (op.text) {
         header.clear();
         header.appendParagraph(op.text);
@@ -278,7 +286,9 @@ export class DocumentBatchUpdateHandler {
     try {
       const doc = this.facade.openStandard(documentId);
       let footer = doc.getFooter();
-      if (!footer) footer = doc.addFooter();
+      if (!footer) {
+        footer = doc.addFooter();
+      }
       if (op.text) {
         footer.clear();
         footer.appendParagraph(op.text);

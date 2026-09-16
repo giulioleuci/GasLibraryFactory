@@ -13,7 +13,9 @@ export class SmartAssert {
    * @throws {Error} If the assertion fails (passed is false).
    */
   static _safeStringify(value) {
-    if (value === undefined) return 'undefined';
+    if (value === undefined) {
+      return 'undefined';
+    }
     try {
       return JSON.stringify(value);
     } catch (_e) {
@@ -21,7 +23,9 @@ export class SmartAssert {
       try {
         return JSON.stringify(value, (_k, v) => {
           if (v && typeof v === 'object') {
-            if (seen.has(v)) return '[Circular]';
+            if (seen.has(v)) {
+              return '[Circular]';
+            }
             seen.add(v);
           }
           return v;

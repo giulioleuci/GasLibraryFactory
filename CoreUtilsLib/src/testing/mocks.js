@@ -42,7 +42,9 @@ export class LoggerServiceMock {
   hasLog(level, pattern) {
     const methodName = level.toLowerCase();
     const mock = this[methodName];
-    if (!mock || !mock.mock) return false;
+    if (!mock || !mock.mock) {
+      return false;
+    }
 
     return mock.mock.calls.some((call) => {
       const msg = typeof call[0] === 'function' ? call[0]() : call[0];
@@ -168,7 +170,9 @@ export class UtilsServiceMock {
     this.deepMerge = jest.fn((target, source) => Object.assign({}, target, source));
     this.chunk = jest.fn((arr, size) => {
       const result = [];
-      for (let i = 0; i < arr.length; i += size) result.push(arr.slice(i, i + size));
+      for (let i = 0; i < arr.length; i += size) {
+        result.push(arr.slice(i, i + size));
+      }
       return result;
     });
 
@@ -213,7 +217,9 @@ export class CacheInterfaceMock {
     });
     this.removeByPrefix = jest.fn((prefix) => {
       for (const key of this._store.keys()) {
-        if (key.startsWith(prefix)) this._store.delete(key);
+        if (key.startsWith(prefix)) {
+          this._store.delete(key);
+        }
       }
       return this;
     });

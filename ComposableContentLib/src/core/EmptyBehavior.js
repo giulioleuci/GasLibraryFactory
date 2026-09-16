@@ -73,7 +73,9 @@ export function isValidEmptyBehavior(value) {
  * @returns {boolean} True if matched.
  */
 export function isValidContainerType(value) {
-  if (typeof value !== 'string') return false;
+  if (typeof value !== 'string') {
+    return false;
+  }
   return Object.values(ContainerType).includes(value.toUpperCase());
 }
 

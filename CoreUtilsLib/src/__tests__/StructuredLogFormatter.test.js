@@ -138,7 +138,7 @@ describe('StructuredLogFormatter', () => {
         { content: 'PDP_DSA_Rossi_Mario_2026', durationMs: 4 },
         { depth: 2, isLast: false, ancestorHasNext: [true] }
       )
-    ).toEqual(['  │    ├─ ✅ [GenerateName] PDP_DSA_Rossi_Mario_2026 (EXECUTED in 4ms)']);
+    ).toEqual(['  │    ├─ ▪️ [GenerateName] PDP_DSA_Rossi_Mario_2026 (EXECUTED in 4ms)']);
 
     expect(
       formatter.pipelineStep(
@@ -147,7 +147,7 @@ describe('StructuredLogFormatter', () => {
         { durationMs: 0 },
         { depth: 2, isLast: false, ancestorHasNext: [true] }
       )
-    ).toEqual(['  │    ├─ ✅ [AnalyzeContext] EXECUTED in 0ms']);
+    ).toEqual(['  │    ├─ ▪️ [AnalyzeContext] EXECUTED in 0ms']);
 
     expect(
       formatter.pipelineStep(
@@ -160,7 +160,7 @@ describe('StructuredLogFormatter', () => {
         { depth: 2, isLast: false, ancestorHasNext: [true] }
       )
     ).toEqual([
-      '  │    ├─ ✅ [ApplyPermissions] Editors: docente@example.edu; Viewers: [] (EXECUTED in 2ms)'
+      '  │    ├─ ▪️ [ApplyPermissions] Editors: docente@example.edu; Viewers: [] (EXECUTED in 2ms)'
     ]);
   });
 
@@ -176,7 +176,7 @@ describe('StructuredLogFormatter', () => {
           ancestorHasNext: [true]
         }
       )
-    ).toEqual(['  │    └─ ⚠️ [ComposeEmail] condition not met (SKIPPED)']);
+    ).toEqual(['  │    └─ ▫️ [ComposeEmail] condition not met (SKIPPED)']);
 
     expect(
       formatter.pipelineStep(
@@ -185,26 +185,26 @@ describe('StructuredLogFormatter', () => {
         { reason: 'network', durationMs: 9 },
         { depth: 1, isLast: false, ancestorHasNext: [] }
       )
-    ).toEqual(['  ├─ ❌ [SendEmail] network (FAILED in 9ms)']);
+    ).toEqual(['  ├─ 🔺 [SendEmail] network (FAILED in 9ms)']);
   });
 
   it('preserves legacy scalar, array, object, empty, and unknown pipeline details', () => {
     const position = { depth: 1, isLast: false, ancestorHasNext: [] };
     expect(formatter.pipelineStep('Load', 'EXECUTED', 'completed in 12ms', position)).toEqual([
-      '  ├─ ✅ [Load] completed in 12ms (EXECUTED)'
+      '  ├─ ▪️ [Load] completed in 12ms (EXECUTED)'
     ]);
     expect(formatter.pipelineStep('Validate', 'SKIPPED', ['missing', 2], position)).toEqual([
-      '  ├─ ⚠️ [Validate] missing',
+      '  ├─ ▫️ [Validate] missing',
       '     2 (SKIPPED)'
     ]);
     expect(formatter.pipelineStep('Send', 'ERROR', { code: 503 }, position)).toEqual([
-      '  ├─ ❌ [Send] {"code":503} (FAILED)'
+      '  ├─ 🔺 [Send] {"code":503} (FAILED)'
     ]);
     expect(formatter.pipelineStep('Other', 'UNKNOWN', undefined, position)).toEqual([
       '  ├─ 📦 [Other] UNKNOWN'
     ]);
     expect(formatter.pipelineStep('Empty', 'EXECUTED', {}, position)).toEqual([
-      '  ├─ ✅ [Empty] EXECUTED'
+      '  ├─ ▪️ [Empty] EXECUTED'
     ]);
   });
 
@@ -220,7 +220,7 @@ describe('StructuredLogFormatter', () => {
           ancestorHasNext: [true]
         }
       )
-    ).toEqual(['  │    ├─ ❌ [Validate] first', '  │       second (FAILED)']);
+    ).toEqual(['  │    ├─ 🔺 [Validate] first', '  │       second (FAILED)']);
   });
 
   it('safely renders circular object details', () => {
@@ -265,5 +265,42 @@ describe('StructuredLogFormatter', () => {
       })
     ).toEqual(['  └─ Document generated: PDP_DSA_Rossi_Mario_2026 (COMPLETED in 8572ms)']);
     expect(formatter.summary('Done', 0, undefined)).toEqual(['Done: COMPLETED in 0ms']);
+  });
+
+  it('renders a multi-line job report with failure detail', () => {
+    expect(
+      formatter.jobReport({
+        jobType: 'GENERAZIONE DOCUMENTI',
+        runCount: 3,
+        totalDurationMs: 42000,
+        totale: 10,
+        falliti: 1,
+        dettagliFalliti: ['classe_1A: quota exceeded']
+      })
+    ).toEqual([
+      '======================================================================',
+      '📊❌ [RIEPILOGO JOB] GENERAZIONE DOCUMENTI',
+      '  Esecuzioni (run): 3',
+      '  Tempo totale esecuzione: 42000ms',
+      '  Task totali: 10',
+      '  Eseguiti con successo: 9',
+      '  Falliti: 1',
+      '  Dettaglio fallimenti:',
+      '    - classe_1A: quota exceeded',
+      '======================================================================'
+    ]);
+  });
+
+  it('defaults job report run count to 1 and omits failure detail when none failed', () => {
+    expect(formatter.jobReport({ jobType: 'IMPORTAZIONE DATI', totale: 4, falliti: 0 })).toEqual([
+      '======================================================================',
+      '📊✅ [RIEPILOGO JOB] IMPORTAZIONE DATI',
+      '  Esecuzioni (run): 1',
+      '  Tempo totale esecuzione: 0ms',
+      '  Task totali: 4',
+      '  Eseguiti con successo: 4',
+      '  Falliti: 0',
+      '======================================================================'
+    ]);
   });
 });

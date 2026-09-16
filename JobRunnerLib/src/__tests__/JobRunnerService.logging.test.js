@@ -322,13 +322,21 @@ describe('JobRunnerService - Logging Features', () => {
       service._executionController._propertiesService = {
         setProperty: jest.fn(),
         getProperty: jest.fn((key) => {
-          if (key === 'type_job1') return 'testJob';
-          if (key === 'state_job1') return 'saved';
+          if (key === 'type_job1') {
+            return 'testJob';
+          }
+          if (key === 'state_job1') {
+            return 'saved';
+          }
           return null;
         }),
         getObjectProperty: jest.fn((key) => {
-          if (key === 'state_job1') return { nextIndex: 4 };
-          if (key === 'config_job1') return {};
+          if (key === 'state_job1') {
+            return { nextIndex: 4 };
+          }
+          if (key === 'config_job1') {
+            return {};
+          }
           return null;
         })
       };

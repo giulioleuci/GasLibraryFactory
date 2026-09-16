@@ -67,16 +67,16 @@ function createMockFn(implementation) {
 
     // Check thrown error
     if (mockState._thrownError !== null) {
-      var err = mockState._thrownError;
+      const err = mockState._thrownError;
       mockState.results.push({ type: 'throw', value: err });
       throw err;
     }
 
     // Check return values queue
     if (mockState._returnValues.length > 0) {
-      var idx = Math.min(mockState._returnValueIndex, mockState._returnValues.length - 1);
+      const idx = Math.min(mockState._returnValueIndex, mockState._returnValues.length - 1);
       mockState._returnValueIndex++;
-      var val = mockState._returnValues[idx];
+      const val = mockState._returnValues[idx];
       mockState.results.push({ type: 'return', value: val });
       return val;
     }
@@ -84,7 +84,7 @@ function createMockFn(implementation) {
     // Check implementation
     if (mockState._implementation) {
       try {
-        var result = mockState._implementation.apply(this, args);
+        const result = mockState._implementation.apply(this, args);
         mockState.results.push({ type: 'return', value: result });
         return result;
       } catch (e) {
@@ -124,7 +124,7 @@ function createMockFn(implementation) {
   };
 
   mockFn.mockReturnValueOnce = function (val) {
-    mockState._onceImplementations.push(function () {
+    mockState._onceImplementations.push(() => {
       return val;
     });
     return mockFn;
@@ -184,14 +184,20 @@ function createMockFn(implementation) {
 
 // ─── Global Mock Registry ──────────────────────────────────────────────────────
 
-var __allMockFns = [];
+const __allMockFns = [];
 
 // ─── Expect / Matchers ─────────────────────────────────────────────────────────
 
 function safeStringify(value) {
-  if (value === undefined) return 'undefined';
-  if (value === null) return 'null';
-  if (typeof value === 'function') return '[Function]';
+  if (value === undefined) {
+    return 'undefined';
+  }
+  if (value === null) {
+    return 'null';
+  }
+  if (typeof value === 'function') {
+    return '[Function]';
+  }
   try {
     return JSON.stringify(value);
   } catch (e) {
@@ -200,44 +206,70 @@ function safeStringify(value) {
 }
 
 function deepEqual(a, b) {
-  if (a === b) return true;
-  if (a == null || b == null) return a === b;
-  if (typeof a !== typeof b) return false;
-  if (typeof a !== 'object') return false;
+  if (a === b) {
+    return true;
+  }
+  if (a == null || b == null) {
+    return a === b;
+  }
+  if (typeof a !== typeof b) {
+    return false;
+  }
+  if (typeof a !== 'object') {
+    return false;
+  }
 
-  if (Array.isArray(a) !== Array.isArray(b)) return false;
+  if (Array.isArray(a) !== Array.isArray(b)) {
+    return false;
+  }
 
   if (Array.isArray(a)) {
-    if (a.length !== b.length) return false;
-    for (var i = 0; i < a.length; i++) {
-      if (!deepEqual(a[i], b[i])) return false;
+    if (a.length !== b.length) {
+      return false;
+    }
+    for (let i = 0; i < a.length; i++) {
+      if (!deepEqual(a[i], b[i])) {
+        return false;
+      }
     }
     return true;
   }
 
-  var keysA = Object.keys(a).sort();
-  var keysB = Object.keys(b).sort();
-  if (keysA.length !== keysB.length) return false;
-  for (var j = 0; j < keysA.length; j++) {
-    if (keysA[j] !== keysB[j]) return false;
-    if (!deepEqual(a[keysA[j]], b[keysA[j]])) return false;
+  const keysA = Object.keys(a).sort();
+  const keysB = Object.keys(b).sort();
+  if (keysA.length !== keysB.length) {
+    return false;
+  }
+  for (let j = 0; j < keysA.length; j++) {
+    if (keysA[j] !== keysB[j]) {
+      return false;
+    }
+    if (!deepEqual(a[keysA[j]], b[keysA[j]])) {
+      return false;
+    }
   }
   return true;
 }
 
 function objectContaining(expected, actual) {
-  if (typeof actual !== 'object' || actual === null) return false;
-  var keys = Object.keys(expected);
-  for (var i = 0; i < keys.length; i++) {
-    var key = keys[i];
-    if (!(key in actual)) return false;
-    if (!deepEqual(expected[key], actual[key])) return false;
+  if (typeof actual !== 'object' || actual === null) {
+    return false;
+  }
+  const keys = Object.keys(expected);
+  for (let i = 0; i < keys.length; i++) {
+    const key = keys[i];
+    if (!(key in actual)) {
+      return false;
+    }
+    if (!deepEqual(expected[key], actual[key])) {
+      return false;
+    }
   }
   return true;
 }
 
 function createExpect(actual) {
-  var negated = false;
+  let negated = false;
 
   var matchers = {
     get not() {
@@ -246,7 +278,7 @@ function createExpect(actual) {
     },
 
     toBe: function (expected) {
-      var pass = actual === expected;
+      const pass = actual === expected;
       if (negated ? pass : !pass) {
         throw new Error(
           (negated ? 'Expected value NOT to be ' : 'Expected: ') +
@@ -258,7 +290,7 @@ function createExpect(actual) {
     },
 
     toEqual: function (expected) {
-      var pass = deepEqual(actual, expected);
+      const pass = deepEqual(actual, expected);
       if (negated ? pass : !pass) {
         throw new Error(
           (negated ? 'Expected value NOT to equal ' : 'Expected: ') +
@@ -270,7 +302,7 @@ function createExpect(actual) {
     },
 
     toStrictEqual: function (expected) {
-      var pass = deepEqual(actual, expected);
+      const pass = deepEqual(actual, expected);
       if (negated ? pass : !pass) {
         throw new Error(
           (negated ? 'Expected value NOT to strict equal ' : 'Expected: ') +
@@ -282,7 +314,7 @@ function createExpect(actual) {
     },
 
     toBeDefined: function () {
-      var pass = actual !== undefined;
+      const pass = actual !== undefined;
       if (negated ? pass : !pass) {
         throw new Error(
           negated ? 'Expected value to be undefined' : 'Expected value to be defined, got undefined'
@@ -291,7 +323,7 @@ function createExpect(actual) {
     },
 
     toBeUndefined: function () {
-      var pass = actual === undefined;
+      const pass = actual === undefined;
       if (negated ? pass : !pass) {
         throw new Error(
           negated
@@ -302,7 +334,7 @@ function createExpect(actual) {
     },
 
     toBeNull: function () {
-      var pass = actual === null;
+      const pass = actual === null;
       if (negated ? pass : !pass) {
         throw new Error(
           negated ? 'Expected value NOT to be null' : 'Expected null, got: ' + safeStringify(actual)
@@ -311,7 +343,7 @@ function createExpect(actual) {
     },
 
     toBeTruthy: function () {
-      var pass = !!actual;
+      const pass = !!actual;
       if (negated ? pass : !pass) {
         throw new Error(
           negated
@@ -322,7 +354,7 @@ function createExpect(actual) {
     },
 
     toBeFalsy: function () {
-      var pass = !actual;
+      const pass = !actual;
       if (negated ? pass : !pass) {
         throw new Error(
           negated
@@ -333,7 +365,7 @@ function createExpect(actual) {
     },
 
     toBeNaN: function () {
-      var pass = Number.isNaN(actual);
+      const pass = Number.isNaN(actual);
       if (negated ? pass : !pass) {
         throw new Error(
           negated ? 'Expected value NOT to be NaN' : 'Expected NaN, got: ' + safeStringify(actual)
@@ -342,37 +374,39 @@ function createExpect(actual) {
     },
 
     toBeGreaterThan: function (expected) {
-      var pass = actual > expected;
+      const pass = actual > expected;
       if (negated ? pass : !pass) {
         throw new Error('Expected ' + actual + (negated ? ' NOT' : '') + ' to be > ' + expected);
       }
     },
 
     toBeGreaterThanOrEqual: function (expected) {
-      var pass = actual >= expected;
+      const pass = actual >= expected;
       if (negated ? pass : !pass) {
         throw new Error('Expected ' + actual + (negated ? ' NOT' : '') + ' to be >= ' + expected);
       }
     },
 
     toBeLessThan: function (expected) {
-      var pass = actual < expected;
+      const pass = actual < expected;
       if (negated ? pass : !pass) {
         throw new Error('Expected ' + actual + (negated ? ' NOT' : '') + ' to be < ' + expected);
       }
     },
 
     toBeLessThanOrEqual: function (expected) {
-      var pass = actual <= expected;
+      const pass = actual <= expected;
       if (negated ? pass : !pass) {
         throw new Error('Expected ' + actual + (negated ? ' NOT' : '') + ' to be <= ' + expected);
       }
     },
 
     toBeCloseTo: function (expected, precision) {
-      if (precision === undefined) precision = 2;
-      var diff = Math.abs(actual - expected);
-      var pass = diff < Math.pow(10, -precision) / 2;
+      if (precision === undefined) {
+        precision = 2;
+      }
+      const diff = Math.abs(actual - expected);
+      const pass = diff < Math.pow(10, -precision) / 2;
       if (negated ? pass : !pass) {
         throw new Error(
           'Expected ' + actual + (negated ? ' NOT' : '') + ' to be close to ' + expected
@@ -381,7 +415,7 @@ function createExpect(actual) {
     },
 
     toBeInstanceOf: function (expectedClass) {
-      var pass = actual instanceof expectedClass;
+      const pass = actual instanceof expectedClass;
       if (negated ? pass : !pass) {
         throw new Error(
           (negated ? 'Expected NOT to be instance of ' : 'Expected instance of ') +
@@ -393,7 +427,7 @@ function createExpect(actual) {
     },
 
     toContain: function (expected) {
-      var pass;
+      let pass;
       if (typeof actual === 'string') {
         pass = actual.indexOf(expected) !== -1;
       } else if (Array.isArray(actual)) {
@@ -413,9 +447,9 @@ function createExpect(actual) {
     },
 
     toContainEqual: function (expected) {
-      var pass = false;
+      let pass = false;
       if (Array.isArray(actual)) {
-        for (var i = 0; i < actual.length; i++) {
+        for (let i = 0; i < actual.length; i++) {
           if (deepEqual(actual[i], expected)) {
             pass = true;
             break;
@@ -433,18 +467,18 @@ function createExpect(actual) {
     },
 
     toHaveLength: function (expected) {
-      var len = actual && actual.length !== undefined ? actual.length : -1;
-      var pass = len === expected;
+      const len = actual && actual.length !== undefined ? actual.length : -1;
+      const pass = len === expected;
       if (negated ? pass : !pass) {
         throw new Error('Expected length ' + (negated ? 'NOT ' : '') + expected + ', got: ' + len);
       }
     },
 
     toHaveProperty: function (keyPath, value) {
-      var keys = typeof keyPath === 'string' ? keyPath.split('.') : [keyPath];
-      var current = actual;
-      var pass = true;
-      for (var i = 0; i < keys.length; i++) {
+      const keys = typeof keyPath === 'string' ? keyPath.split('.') : [keyPath];
+      let current = actual;
+      let pass = true;
+      for (let i = 0; i < keys.length; i++) {
         if (current == null || !(keys[i] in Object(current))) {
           pass = false;
           break;
@@ -469,7 +503,7 @@ function createExpect(actual) {
     },
 
     toMatch: function (expected) {
-      var pass;
+      let pass;
       if (expected instanceof RegExp) {
         pass = expected.test(actual);
       } else {
@@ -483,7 +517,7 @@ function createExpect(actual) {
     },
 
     toMatchObject: function (expected) {
-      var pass = objectContaining(expected, actual);
+      const pass = objectContaining(expected, actual);
       if (negated ? pass : !pass) {
         throw new Error(
           'Expected object' +
@@ -500,8 +534,8 @@ function createExpect(actual) {
       if (typeof actual !== 'function') {
         throw new Error('expect(value).toThrow() requires a function, got: ' + typeof actual);
       }
-      var thrown = false;
-      var thrownError = null;
+      let thrown = false;
+      let thrownError = null;
       try {
         actual();
       } catch (e) {
@@ -523,7 +557,7 @@ function createExpect(actual) {
       }
 
       if (expected !== undefined) {
-        var msg = thrownError && (thrownError.message || String(thrownError));
+        const msg = thrownError && (thrownError.message || String(thrownError));
         if (expected instanceof RegExp) {
           if (!expected.test(msg)) {
             throw new Error('Expected error matching ' + expected + ', got: "' + msg + '"');
@@ -549,7 +583,7 @@ function createExpect(actual) {
       if (!actual || !actual._isMockFunction) {
         throw new Error('toHaveBeenCalled() requires a mock function');
       }
-      var pass = actual.mock.calls.length > 0;
+      const pass = actual.mock.calls.length > 0;
       if (negated ? pass : !pass) {
         throw new Error(
           negated ? 'Expected mock NOT to have been called' : 'Expected mock to have been called'
@@ -561,8 +595,8 @@ function createExpect(actual) {
       if (!actual || !actual._isMockFunction) {
         throw new Error('toHaveBeenCalledTimes() requires a mock function');
       }
-      var count = actual.mock.calls.length;
-      var pass = count === expected;
+      const count = actual.mock.calls.length;
+      const pass = count === expected;
       if (negated ? pass : !pass) {
         throw new Error(
           'Expected mock' +
@@ -580,9 +614,9 @@ function createExpect(actual) {
       if (!actual || !actual._isMockFunction) {
         throw new Error('toHaveBeenCalledWith() requires a mock function');
       }
-      var expectedArgs = Array.prototype.slice.call(arguments);
-      var pass = false;
-      for (var i = 0; i < actual.mock.calls.length; i++) {
+      const expectedArgs = Array.prototype.slice.call(arguments);
+      let pass = false;
+      for (let i = 0; i < actual.mock.calls.length; i++) {
         if (deepEqual(actual.mock.calls[i], expectedArgs)) {
           pass = true;
           break;
@@ -604,9 +638,9 @@ function createExpect(actual) {
       if (!actual || !actual._isMockFunction) {
         throw new Error('toHaveBeenLastCalledWith() requires a mock function');
       }
-      var expectedArgs = Array.prototype.slice.call(arguments);
-      var lastCall = actual.mock.calls[actual.mock.calls.length - 1];
-      var pass = deepEqual(lastCall, expectedArgs);
+      const expectedArgs = Array.prototype.slice.call(arguments);
+      const lastCall = actual.mock.calls[actual.mock.calls.length - 1];
+      const pass = deepEqual(lastCall, expectedArgs);
       if (negated ? pass : !pass) {
         throw new Error(
           'Expected last call' +
@@ -623,9 +657,9 @@ function createExpect(actual) {
       if (!actual || !actual._isMockFunction) {
         throw new Error('toHaveBeenNthCalledWith() requires a mock function');
       }
-      var rest = Array.prototype.slice.call(arguments, 1);
-      var nthCall = actual.mock.calls[n - 1];
-      var pass = deepEqual(nthCall, rest);
+      const rest = Array.prototype.slice.call(arguments, 1);
+      const nthCall = actual.mock.calls[n - 1];
+      const pass = deepEqual(nthCall, rest);
       if (negated ? pass : !pass) {
         throw new Error(
           'Expected call #' +
@@ -643,8 +677,8 @@ function createExpect(actual) {
       if (!actual || !actual._isMockFunction) {
         throw new Error('toHaveReturnedWith() requires a mock function');
       }
-      var pass = false;
-      for (var i = 0; i < actual.mock.results.length; i++) {
+      let pass = false;
+      for (let i = 0; i < actual.mock.results.length; i++) {
         if (
           actual.mock.results[i].type === 'return' &&
           deepEqual(actual.mock.results[i].value, expected)
@@ -698,7 +732,7 @@ createExpect.arrayContaining = function (arr) {
  * Global test registry
  * Collects all describe/it/beforeEach/afterEach registrations.
  */
-var __testRegistry = {
+const __testRegistry = {
   suites: [],
   currentSuitePath: [],
   currentBeforeEach: [],
@@ -715,10 +749,10 @@ function _describe(name, fn) {
   __testRegistry.currentSuitePath.push(name);
 
   // Save parent hooks
-  var parentBeforeEach = __testRegistry.currentBeforeEach.slice();
-  var parentAfterEach = __testRegistry.currentAfterEach.slice();
-  var parentBeforeAll = __testRegistry.currentBeforeAll.slice();
-  var parentAfterAll = __testRegistry.currentAfterAll.slice();
+  const parentBeforeEach = __testRegistry.currentBeforeEach.slice();
+  const parentAfterEach = __testRegistry.currentAfterEach.slice();
+  const parentBeforeAll = __testRegistry.currentBeforeAll.slice();
+  const parentAfterAll = __testRegistry.currentAfterAll.slice();
 
   // Reset for this scope (inherit parent hooks)
   __testRegistry.currentBeforeEach = parentBeforeEach.slice();
@@ -727,10 +761,10 @@ function _describe(name, fn) {
   __testRegistry.currentAfterAll = parentAfterAll.slice();
 
   // Collect beforeAll/afterAll that belong to this scope
-  var scopeBeforeAll = [];
-  var scopeAfterAll = [];
-  var savedScopeBeforeAll = [];
-  var savedScopeAfterAll = [];
+  let scopeBeforeAll = [];
+  let scopeAfterAll = [];
+  const savedScopeBeforeAll = [];
+  const savedScopeAfterAll = [];
 
   // Execute the describe body to collect tests and hooks
   fn();
@@ -749,9 +783,9 @@ function _describe(name, fn) {
 }
 
 function _it(name, fn, options) {
-  var fullName = getFullPath() + ' > ' + name;
-  var beforeEachHooks = __testRegistry.currentBeforeEach.slice();
-  var afterEachHooks = __testRegistry.currentAfterEach.slice();
+  const fullName = getFullPath() + ' > ' + name;
+  const beforeEachHooks = __testRegistry.currentBeforeEach.slice();
+  const afterEachHooks = __testRegistry.currentAfterEach.slice();
 
   __testRegistry.suites.push({
     name: fullName,
@@ -764,24 +798,24 @@ function _it(name, fn, options) {
 
 function _itEach(cases) {
   return function (nameTemplate, fn) {
-    for (var i = 0; i < cases.length; i++) {
+    for (let i = 0; i < cases.length; i++) {
       var testCase = cases[i];
       var name;
       if (Array.isArray(testCase)) {
-        name = nameTemplate.replace(/%s/g, function () {
+        name = nameTemplate.replace(/%s/g, () => {
           return String(testCase.shift());
         });
         // Re-create testCase since shift consumed it
         testCase = cases[i];
         (function (tc) {
-          _it(name, function () {
+          _it(name, () => {
             fn.apply(null, Array.isArray(tc) ? tc : [tc]);
           });
         })(testCase);
       } else {
         name = nameTemplate.replace(/%s/g, String(testCase));
         (function (tc) {
-          _it(name, function () {
+          _it(name, () => {
             fn(tc);
           });
         })(testCase);
@@ -810,14 +844,14 @@ function _afterAll(fn) {
 
 var jestObject = {
   fn: function (implementation) {
-    var mock = createMockFn(implementation);
+    const mock = createMockFn(implementation);
     __allMockFns.push(mock);
     return mock;
   },
 
   spyOn: function (obj, method) {
-    var original = obj[method];
-    var spy = createMockFn(function () {
+    const original = obj[method];
+    const spy = createMockFn(function () {
       return original.apply(obj, arguments);
     });
     spy._original = original;
@@ -829,20 +863,20 @@ var jestObject = {
   },
 
   clearAllMocks: function () {
-    for (var i = 0; i < __allMockFns.length; i++) {
+    for (let i = 0; i < __allMockFns.length; i++) {
       __allMockFns[i].mockClear();
     }
   },
 
   resetAllMocks: function () {
-    for (var i = 0; i < __allMockFns.length; i++) {
+    for (let i = 0; i < __allMockFns.length; i++) {
       __allMockFns[i].mockReset();
     }
   },
 
   restoreAllMocks: function () {
-    for (var i = 0; i < __allMockFns.length; i++) {
-      var mock = __allMockFns[i];
+    for (let i = 0; i < __allMockFns.length; i++) {
+      const mock = __allMockFns[i];
       if (mock._original && mock._target && mock._method) {
         mock._target[mock._method] = mock._original;
       }
@@ -889,16 +923,16 @@ var jestObject = {
  * @returns {Object} Test results { passed, failed, skipped, errors }
  */
 function runCollectedTests(suiteName, TestFramework, Assert) {
-  var framework = new TestFramework(suiteName);
-  var tests = __testRegistry.suites;
+  const framework = new TestFramework(suiteName);
+  const tests = __testRegistry.suites;
 
-  for (var i = 0; i < tests.length; i++) {
+  for (let i = 0; i < tests.length; i++) {
     (function (testEntry) {
       framework.test(
         testEntry.name,
-        function () {
+        () => {
           // Run beforeEach hooks
-          for (var j = 0; j < testEntry.beforeEachHooks.length; j++) {
+          for (let j = 0; j < testEntry.beforeEachHooks.length; j++) {
             testEntry.beforeEachHooks[j]();
           }
 
@@ -906,7 +940,7 @@ function runCollectedTests(suiteName, TestFramework, Assert) {
             testEntry.fn();
           } finally {
             // Run afterEach hooks (even on failure)
-            for (var k = 0; k < testEntry.afterEachHooks.length; k++) {
+            for (let k = 0; k < testEntry.afterEachHooks.length; k++) {
               try {
                 testEntry.afterEachHooks[k]();
               } catch (e) {
@@ -953,7 +987,7 @@ _describe.only = _describe; // In GAS, .only behaves same as normal
 
 // Attach to it
 _it.skip = function (name) {
-  _it(name, function () {}, { skip: true });
+  _it(name, () => {}, { skip: true });
 };
 
 _it.only = _it; // In GAS, .only behaves same as normal
@@ -961,7 +995,7 @@ _it.only = _it; // In GAS, .only behaves same as normal
 _it.each = _itEach;
 
 // test is an alias for it
-var _test = _it;
+const _test = _it;
 _test.skip = _it.skip;
 _test.only = _it.only;
 _test.each = _it.each;

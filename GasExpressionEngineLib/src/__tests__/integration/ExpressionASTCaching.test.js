@@ -86,7 +86,9 @@ describe('Integration Test 14: Expression AST Caching', () => {
       // Verify cache logging
       const debugLogs = mockLogger.debug.mock.calls;
       const cacheLogs = debugLogs.filter((call) => call[0] && call[0].includes('AST cached'));
-      expect(cacheLogs).toEqual([['AST cached for expression: 5 >= 18 && "active" == "active"...']]);
+      expect(cacheLogs).toEqual([
+        ['AST cached for expression: 5 >= 18 && "active" == "active"...']
+      ]);
     });
 
     test('should generate cache key from expression string', () => {
@@ -140,7 +142,9 @@ describe('Integration Test 14: Expression AST Caching', () => {
       // Verify cache hit logging
       const debugLogs = mockLogger.debug.mock.calls;
       const cacheHitLogs = debugLogs.filter((call) => call[0] && call[0].includes('AST cache hit'));
-      expect(cacheHitLogs).toEqual([['AST cache hit for expression: 25 >= 18 && "active" == "active"...']]);
+      expect(cacheHitLogs).toEqual([
+        ['AST cache hit for expression: 25 >= 18 && "active" == "active"...']
+      ]);
     });
 
     test('should deserialize cached AST correctly', () => {

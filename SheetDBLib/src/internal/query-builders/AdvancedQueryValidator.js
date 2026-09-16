@@ -63,11 +63,7 @@ export class AdvancedQueryValidator {
     if (typeof query !== 'string' || query.trim().length === 0) {
       throw new Error('Fuzzy query must be a non-empty string');
     }
-    if (
-      options === null ||
-      typeof options !== 'object' ||
-      Array.isArray(options)
-    ) {
+    if (options === null || typeof options !== 'object' || Array.isArray(options)) {
       throw new Error('Fuzzy options must be an object');
     }
     for (const optionName of Object.keys(options)) {

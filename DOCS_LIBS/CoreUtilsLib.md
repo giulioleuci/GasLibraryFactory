@@ -3672,9 +3672,9 @@ const ITEM_ICONS = {
 };
 
 const STEP_ICONS = {
-  EXECUTED: '✅',
-  SKIPPED: '⚠️',
-  ERROR: '❌'
+  EXECUTED: '▪️',
+  SKIPPED: '▫️',
+  ERROR: '🔺'
 };
 
 /** Pure formatter for deterministic hierarchical console lines.
@@ -3704,9 +3704,9 @@ const ITEM_ICONS = {
 };
 
 const STEP_ICONS = {
-  EXECUTED: '✅',
-  SKIPPED: '⚠️',
-  ERROR: '❌'
+  EXECUTED: '▪️',
+  SKIPPED: '▫️',
+  ERROR: '🔺'
 };
 
 /** Pure formatter for deterministic hierarchical console lines. */

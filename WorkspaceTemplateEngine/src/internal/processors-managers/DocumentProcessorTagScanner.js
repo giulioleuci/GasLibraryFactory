@@ -324,7 +324,12 @@ export class DocumentProcessorTagScanner {
 
     const operations = [
       { type: 'conditionalDelete', index: node.openIndex, length: node.openLength, kind: 'marker' },
-      { type: 'conditionalDelete', index: node.closeIndex, length: node.closeLength, kind: 'marker' }
+      {
+        type: 'conditionalDelete',
+        index: node.closeIndex,
+        length: node.closeLength,
+        kind: 'marker'
+      }
     ];
     for (const child of node.children) {
       operations.push(...this._resolveConditionalSectionNode(child, context));

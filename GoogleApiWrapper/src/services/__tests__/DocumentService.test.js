@@ -147,7 +147,7 @@ describe('DocumentService - Comprehensive Test Suite', () => {
     it('should log document creation', () => {
       service.createDocument('Test Doc');
 
-      expect(logger.info).toHaveBeenCalledWith(expect.stringContaining('Created document'));
+      expect(logger.debug).toHaveBeenCalledWith(expect.stringContaining('Created document'));
     });
 
     it('should return builder instance', () => {
@@ -1127,7 +1127,7 @@ describe('DocumentService - Comprehensive Test Suite', () => {
         'mockBlob'
       );
       expect(result).toEqual({ id: 'pdf123', name: 'test.pdf' });
-      expect(logger.info).toHaveBeenCalledWith('Exported document doc123 to PDF: pdf123');
+      expect(logger.debug).toHaveBeenCalledWith('Exported document doc123 to PDF: pdf123');
     });
 
     it('should export PDF to specific folder', () => {

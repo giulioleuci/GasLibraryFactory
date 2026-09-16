@@ -103,7 +103,9 @@ export class IdGenerator {
         const byte = bytes[i] & mask;
         if (alphabet[byte]) {
           id += alphabet[byte];
-          if (id.length === length) return id;
+          if (id.length === length) {
+            return id;
+          }
         }
       }
     }

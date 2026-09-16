@@ -89,10 +89,18 @@ export const isString = (val) => typeof val === 'string';
 export const isNumber = (val) => typeof val === 'number'; // lodash-compatible: NaN has typeof 'number'
 export const isNil = (val) => val == null;
 export const isEmpty = (val) => {
-  if (val == null) return true;
-  if (typeof val === 'string' || Array.isArray(val)) return val.length === 0;
-  if (val instanceof Map || val instanceof Set) return val.size === 0;
-  if (typeof val === 'object') return Object.keys(val).length === 0;
+  if (val == null) {
+    return true;
+  }
+  if (typeof val === 'string' || Array.isArray(val)) {
+    return val.length === 0;
+  }
+  if (val instanceof Map || val instanceof Set) {
+    return val.size === 0;
+  }
+  if (typeof val === 'object') {
+    return Object.keys(val).length === 0;
+  }
   return false;
 };
 

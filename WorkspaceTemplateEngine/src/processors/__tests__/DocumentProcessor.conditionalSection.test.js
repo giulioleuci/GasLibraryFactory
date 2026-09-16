@@ -43,7 +43,9 @@ describe('DocumentProcessor - {{#expr}}/{{^expr}} conditional-section directive'
       // Simple {{key}} substitution (no dot-paths) - sufficient for the
       // content-paragraph substitution assertions below.
       render: jest.fn((template, context) =>
-        template.replace(/{{(\w+)}}/g, (match, key) => (context && context[key] != null ? context[key] : match))
+        template.replace(/{{(\w+)}}/g, (match, key) =>
+          context && context[key] != null ? context[key] : match
+        )
       ),
       getValue: jest.fn((path, context) => getValueFromPath(path, context)),
       _lookupValue: jest.fn((token, context) => getValueFromPath(token[1], context.view)),
@@ -81,7 +83,12 @@ describe('DocumentProcessor - {{#expr}}/{{^expr}} conditional-section directive'
       const ops = processor._analyzeConditionalSections(textMatches, context);
 
       expect(ops).toEqual([
-        { type: 'conditionalDelete', index: 18, length: 50 + closeText.length - 18, kind: 'section' }
+        {
+          type: 'conditionalDelete',
+          index: 18,
+          length: 50 + closeText.length - 18,
+          kind: 'section'
+        }
       ]);
     });
 
@@ -129,7 +136,12 @@ describe('DocumentProcessor - {{#expr}}/{{^expr}} conditional-section directive'
       const ops = processor._analyzeConditionalSections(textMatches, context);
 
       expect(ops).toEqual([
-        { type: 'conditionalDelete', index: 12, length: 60 + closeText.length - 12, kind: 'section' }
+        {
+          type: 'conditionalDelete',
+          index: 12,
+          length: 60 + closeText.length - 12,
+          kind: 'section'
+        }
       ]);
     });
 
@@ -176,7 +188,9 @@ describe('DocumentProcessor - {{#expr}}/{{^expr}} conditional-section directive'
     });
 
     it('ignores paragraphs with no marker syntax at all', () => {
-      const textMatches = [{ type: 'TEXT', elementIndex: 0, text: 'Just a normal paragraph {{x}}\n' }];
+      const textMatches = [
+        { type: 'TEXT', elementIndex: 0, text: 'Just a normal paragraph {{x}}\n' }
+      ];
 
       const ops = processor._analyzeConditionalSections(textMatches, { x: 1 });
 
@@ -232,7 +246,12 @@ describe('DocumentProcessor - {{#expr}}/{{^expr}} conditional-section directive'
         expect(ops).toEqual([
           { type: 'conditionalDelete', index: 0, length: outerOpen.length, kind: 'marker' },
           { type: 'conditionalDelete', index: 60, length: outerClose.length, kind: 'marker' },
-          { type: 'conditionalDelete', index: 20, length: 40 + innerClose.length - 20, kind: 'section' }
+          {
+            type: 'conditionalDelete',
+            index: 20,
+            length: 40 + innerClose.length - 20,
+            kind: 'section'
+          }
         ]);
 
         // Regression guard for the overlap bug itself: no two emitted ranges

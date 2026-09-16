@@ -79,7 +79,7 @@ export class MailService {
         sendFn();
       }
 
-      this._logger.info(`Email sent successfully to ${recipient}`);
+      this._logger.debug(`Email sent successfully to ${recipient}`);
       return { success: true };
     } catch (error) {
       this._logger.error(`Error sending email: ${error.message}`);
@@ -101,7 +101,9 @@ export class MailService {
       } else {
         results.failed.push({ email: emails[i], error: result.error });
       }
-      if (i < emails.length - 1) this._utils.sleep(this._rateLimitMs);
+      if (i < emails.length - 1) {
+        this._utils.sleep(this._rateLimitMs);
+      }
     }
     return results;
   }
@@ -144,8 +146,11 @@ export class MailService {
     recipientData.forEach((recipient, i) => {
       const body = bodyGenerator(recipient);
       const emailOptions = { to: recipient.email, subject };
-      if (isHtml) emailOptions.htmlBody = body;
-      else emailOptions.body = body;
+      if (isHtml) {
+        emailOptions.htmlBody = body;
+      } else {
+        emailOptions.body = body;
+      }
 
       const result = this.send(emailOptions);
       if (result.success) {
@@ -155,7 +160,9 @@ export class MailService {
         results.failed++;
         results.details.failed.push({ email: recipient.email, error: result.error });
       }
-      if (i < recipientData.length - 1) this._utils.sleep(this._rateLimitMs);
+      if (i < recipientData.length - 1) {
+        this._utils.sleep(this._rateLimitMs);
+      }
     });
     return results;
   }

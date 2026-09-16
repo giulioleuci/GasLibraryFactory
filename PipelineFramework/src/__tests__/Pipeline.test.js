@@ -252,7 +252,8 @@ describe('Pipeline - Comprehensive Test Suite', () => {
     function expectSummary(logger, summary, position) {
       expect(logger.logSummary).toHaveBeenCalledTimes(1);
       const [[title, durationMs, actualSummary, actualPosition]] = logger.logSummary.mock.calls;
-      expect(title).toBe('⏹️ Pipeline completed');
+      const hasFailures = !/\b0 failed\b/.test(summary);
+      expect(title).toBe(hasFailures ? '❌ Pipeline completed' : '✅ Pipeline completed');
       expect(Number.isFinite(durationMs)).toBe(true);
       expect(durationMs).toBeGreaterThanOrEqual(0);
       expect(actualSummary).toBe(summary);
@@ -422,7 +423,7 @@ describe('Pipeline - Comprehensive Test Suite', () => {
 
       pipeline.execute();
 
-      expect(emitted).toContain('  └─ ⚠️ [ComposeEmail] condition not met (SKIPPED)');
+      expect(emitted).toContain('  └─ ▫️ [ComposeEmail] condition not met (SKIPPED)');
       expect(emitted.join('\n')).not.toContain('SKIPPED in');
     });
 
@@ -451,8 +452,8 @@ describe('Pipeline - Comprehensive Test Suite', () => {
       const nestedLine = emitted.find((line) => line.includes('nested service detail'));
       const stepLine = emitted.find((line) => line.includes('[GenerateName]'));
       expect(nestedLine).toMatch(/^ {2}│ {4}├─ \[INFO\] nested service detail$/);
-      expect(stepLine).toMatch(/^ {2}└─ ✅ \[GenerateName\]/);
-      expect(nestedLine.indexOf('[INFO]')).toBeGreaterThan(stepLine.indexOf('✅'));
+      expect(stepLine).toMatch(/^ {2}└─ ▪️ \[GenerateName\]/);
+      expect(nestedLine.indexOf('[INFO]')).toBeGreaterThan(stepLine.indexOf('▪️'));
       expect(emitted.filter((line) => line.includes('nested service detail'))).not.toContain(
         '[INFO] nested service detail'
       );

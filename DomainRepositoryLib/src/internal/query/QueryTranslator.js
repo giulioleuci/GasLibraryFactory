@@ -82,9 +82,7 @@ export class QueryTranslator {
    */
   _queryObjectCriteria(specification) {
     const criteria =
-      typeof specification.toQueryObject === 'function'
-        ? specification.toQueryObject()
-        : null;
+      typeof specification.toQueryObject === 'function' ? specification.toQueryObject() : null;
     return criteria === null || criteria === undefined ? null : criteria;
   }
 

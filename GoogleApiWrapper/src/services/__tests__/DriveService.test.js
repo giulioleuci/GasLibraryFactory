@@ -142,7 +142,9 @@ describe('DriveService - Comprehensive Test Suite', () => {
         Files: {
           update: jest.fn().mockImplementation((resource, id) => {
             callCount++;
-            if (callCount === 2) throw { message: 'Not found', code: 404 };
+            if (callCount === 2) {
+              throw { message: 'Not found', code: 404 };
+            }
           })
         }
       };
@@ -201,7 +203,9 @@ describe('DriveService - Comprehensive Test Suite', () => {
       let callCount = 0;
       global.Drive.Files.copy.mockImplementation(() => {
         callCount++;
-        if (callCount === 2) throw { message: 'Forbidden', code: 403 };
+        if (callCount === 2) {
+          throw { message: 'Forbidden', code: 403 };
+        }
         return { id: 'copy_1' };
       });
 
@@ -394,8 +398,12 @@ describe('DriveService - Comprehensive Test Suite', () => {
       global.Drive = {
         Files: {
           get: jest.fn().mockImplementation((id) => {
-            if (id === 'fileId1') return { id: 'fileId1', name: 'File 1' };
-            if (id === 'fileId2') return { id: 'fileId2', name: 'File 2' };
+            if (id === 'fileId1') {
+              return { id: 'fileId1', name: 'File 1' };
+            }
+            if (id === 'fileId2') {
+              return { id: 'fileId2', name: 'File 2' };
+            }
             return {};
           })
         }
@@ -755,8 +763,12 @@ describe('DriveService - Comprehensive Test Suite', () => {
       global.Drive = {
         Files: {
           copy: jest.fn().mockImplementation((resource, id) => {
-            if (id === 'original1') return { id: 'backup1' };
-            if (id === 'original2') return { id: 'backup2' };
+            if (id === 'original1') {
+              return { id: 'backup1' };
+            }
+            if (id === 'original2') {
+              return { id: 'backup2' };
+            }
             return {};
           })
         }
@@ -775,8 +787,12 @@ describe('DriveService - Comprehensive Test Suite', () => {
       global.Drive = {
         Files: {
           get: jest.fn().mockImplementation((id) => {
-            if (id === 'file1') return { parents: ['oldParent1'] };
-            if (id === 'file2') return { parents: ['oldParent2'] };
+            if (id === 'file1') {
+              return { parents: ['oldParent1'] };
+            }
+            if (id === 'file2') {
+              return { parents: ['oldParent2'] };
+            }
             return {};
           }),
           update: jest.fn().mockImplementation((resource, id, media, options) => {

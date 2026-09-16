@@ -155,7 +155,7 @@ describe('Loader - Comprehensive Test Suite', () => {
         '[Loader] Loading 1 rows into table "Users" using strategy "UPSERT"'
       );
       expect(mockLogger.debug).toHaveBeenCalledWith('[Loader] Saving changes to database...');
-      expect(mockLogger.info).toHaveBeenCalledWith(
+      expect(mockLogger.debug).toHaveBeenCalledWith(
         expect.stringContaining('[Loader] Load complete:')
       );
     });

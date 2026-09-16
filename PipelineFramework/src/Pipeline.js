@@ -161,16 +161,17 @@ export class Pipeline {
     if (summary.stopRequested) {
       details += `; stopped: ${summary.stopReason}`;
     }
+    const icon = summary.failedSteps > 0 ? '❌' : '✅';
     if (typeof this._logger.logSummary === 'function') {
       this._logger.logSummary(
-        '⏹️ Pipeline completed',
+        `${icon} Pipeline completed`,
         context.getTotalDuration(),
         details,
         this._summaryLogPosition()
       );
     } else {
       this._logger.info(
-        `[${this._name}] Pipeline completed in ${context.getTotalDuration()}ms (${details})`
+        `${icon} [${this._name}] Pipeline completed in ${context.getTotalDuration()}ms (${details})`
       );
     }
   }

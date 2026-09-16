@@ -98,7 +98,17 @@ export class QueueStateManager {
     };
   }
 
-  tryAcquireRunning() {
+  /**
+   * @param {boolean} [blockIfSuspended=false] Refuse acquisition when the job is
+   *   currently `'to_resume'` (interrupted by a timeout, awaiting its automatic
+   *   resume trigger). Only a fresh/manual launch should pass `true` — the resume
+   *   path itself (the trigger firing) must always be allowed through regardless
+   *   of this state, since resuming a suspended job is exactly what it's for.
+   *   Without this guard a fresh launch of the same jobName silently resumes the
+   *   stale checkpoint instead of being refused, and can race the real trigger
+   *   into a second concurrent execution.
+   */
+  tryAcquireRunning(blockIfSuspended = false) {
     const stateKey = this._key('job');
 
     const lock = this._lockService.getScriptLock();
@@ -120,6 +130,8 @@ export class QueueStateManager {
             return false;
           }
         }
+      } else if (blockIfSuspended && currentState === 'to_resume') {
+        return false;
       }
 
       this._propertiesService.setProperty(stateKey, QueueStateManager.STATE_RUNNING);
