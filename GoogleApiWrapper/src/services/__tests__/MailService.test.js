@@ -33,6 +33,7 @@ describe('MailService - Simplified Test Suite', () => {
 
     // Mock GmailApp
     global.GmailApp = {
+      search: jest.fn(() => []),
       sendEmail: jest.fn(),
       createDraft: jest.fn(() => ({
         getId: jest.fn(() => 'draft-123')
@@ -168,4 +169,32 @@ describe('MailService - Simplified Test Suite', () => {
   // _escapeHtml was removed in favour of the shared CoreUtilsLib
   // HtmlSanitizer.escapeHtml (see CoreUtilsLib/src/__tests__/HtmlSanitizer.test.js
   // for escaping coverage).
+
+  describe('searchMessages()', () => {
+    it('flattens threads to message summaries and honours maxResults', () => {
+      const msg = (id) => ({
+        getId: () => id,
+        getSubject: () => 'Delivery Status Notification (Failure)',
+        getFrom: () => 'Mail Delivery Subsystem <mailer-daemon@googlemail.com>',
+        getDate: () => new Date('2026-10-05T08:00:00Z'),
+        getPlainBody: () => 'body ' + id
+      });
+      GmailApp.search.mockReturnValue([
+        { getId: () => 't1', getMessages: () => [msg('m1'), msg('m2')] },
+        { getId: () => 't2', getMessages: () => [msg('m3')] }
+      ]);
+      const out = service.searchMessages('from:mailer-daemon', 2);
+      expect(GmailApp.search).toHaveBeenCalledWith('from:mailer-daemon', 0, 2);
+      expect(out.map((m) => m.id)).toEqual(['m1', 'm2']);
+      expect(out[0]).toMatchObject({ threadId: 't1', plainBody: 'body m1' });
+    });
+
+    it('returns [] and logs when GmailApp throws', () => {
+      GmailApp.search.mockImplementation(() => {
+        throw new Error('quota');
+      });
+      expect(service.searchMessages('x')).toEqual([]);
+      expect(logger.error).toHaveBeenCalled();
+    });
+  });
 });

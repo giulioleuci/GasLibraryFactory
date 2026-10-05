@@ -44,6 +44,37 @@ export class MailService {
   }
 
   /**
+   * @description Searches the user's mailbox with Gmail search syntax and flattens the matching threads to message summaries.
+   * @param {string} query Gmail search query (e.g. 'from:mailer-daemon newer_than:2d').
+   * @param {number} [maxResults=50] Maximum messages returned.
+   * @returns {Array<{id: string, threadId: string, subject: string, from: string, date: Date, plainBody: string}>} Never throws; [] on error.
+   */
+  searchMessages(query, maxResults = 50) {
+    try {
+      const out = [];
+      for (const thread of GmailApp.search(query, 0, maxResults)) {
+        for (const m of thread.getMessages()) {
+          if (out.length >= maxResults) {
+            return out;
+          }
+          out.push({
+            id: m.getId(),
+            threadId: thread.getId(),
+            subject: m.getSubject(),
+            from: m.getFrom(),
+            date: m.getDate(),
+            plainBody: m.getPlainBody()
+          });
+        }
+      }
+      return out;
+    } catch (error) {
+      this._logger.error(`Error searching messages: ${error.message}`);
+      return [];
+    }
+  }
+
+  /**
    * @description Sends a single email with resilient retry logic. Normalizes recipient arrays to comma-separated strings.
    * @param {Object} emailOptions Transmission parameters.
    * @param {string|string[]} emailOptions.to Primary recipient(s).

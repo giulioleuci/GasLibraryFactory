@@ -3458,6 +3458,19 @@ needs to touch `Session` directly.
    */
 ```
 ---
+#### METHOD: MailService.searchMessages
+- **Scope:** instance
+- **LLM Call Syntax:** `const result = mailService.searchMessages(query, maxResults);`
+- **Pure JSDoc:**
+```javascript
+/**
+   * @description Searches the user's mailbox with Gmail search syntax and flattens the matching threads to message summaries.
+   * @param {string} query Gmail search query (e.g. 'from:mailer-daemon newer_than:2d').
+   * @param {number} [maxResults=50] Maximum messages returned.
+   * @returns {Array<{id: string, threadId: string, subject: string, from: string, date: Date, plainBody: string}>} Never throws; [] on error.
+   */
+```
+---
 #### METHOD: MailService.send
 - **Scope:** instance
 - **LLM Call Syntax:** `const result = mailService.send(emailOptions, emailOptions.to, emailOptions.subject, emailOptions.body, emailOptions.htmlBody, emailOptions.attachments);`
@@ -3558,6 +3571,19 @@ needs to touch `Session` directly.
 /**
    * @description Returns the remaining daily email quota for the current user.
    * @returns {number} Remaining email count.
+   */
+```
+---
+#### METHOD: MailService.searchMessages
+- **Scope:** instance
+- **LLM Call Syntax:** `const result = mailService.searchMessages(query, maxResults);`
+- **Pure JSDoc:**
+```javascript
+/**
+   * @description Searches the user's mailbox with Gmail search syntax and flattens the matching threads to message summaries.
+   * @param {string} query Gmail search query (e.g. 'from:mailer-daemon newer_than:2d').
+   * @param {number} [maxResults=50] Maximum messages returned.
+   * @returns {Array<{id: string, threadId: string, subject: string, from: string, date: Date, plainBody: string}>} Never throws; [] on error.
    */
 ```
 ---
