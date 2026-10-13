@@ -488,6 +488,38 @@ describe('Repository - Comprehensive Test Suite', () => {
 
       expect(entities).toEqual([]);
     });
+
+    it('skips rows with a blank primary-key cell (e.g. checkbox column pre-filled below the data)', () => {
+      mockTable.getKeyField = jest.fn(() => 'id');
+      mockTable.getAllRows.mockReturnValue([
+        { id: 'ID1', name: 'Test1' },
+        { id: '', name: 'Orphan' },
+        { id: null, name: 'Orphan2' },
+        { id: '  ', name: 'Orphan3' }
+      ]);
+
+      expect(repository.findAll().map((e) => e.id)).toEqual(['ID1']);
+    });
+
+    it('keeps a numeric 0 primary key', () => {
+      mockTable.getKeyField = jest.fn(() => 'id');
+      mockTable.getAllRows.mockReturnValue([{ id: 0, name: 'Zero' }]);
+
+      expect(repository.findAll().length).toBe(1);
+    });
+
+    it('skips blank-key rows on the in-memory find path too', () => {
+      mockTable.getKeyField = jest.fn(() => 'id');
+      mockQueryTranslator.validate.mockReturnValue({ valid: false });
+      mockTable.getAllRows.mockReturnValue([
+        { id: 'ID1', name: 'Test1', value: 100 },
+        { id: '', name: 'Orphan', value: 100 }
+      ]);
+
+      const entities = repository.find(new FunctionSpecification((e) => e.value > 50));
+
+      expect(entities.map((e) => e.id)).toEqual(['ID1']);
+    });
   });
 
   // ===================================================================

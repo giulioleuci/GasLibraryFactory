@@ -563,7 +563,7 @@ const zodSchemaProtocol = z.object({
 ---
 #### METHOD: TableService.getRows
 - **Scope:** instance
-- **LLM Call Syntax:** `const result = tableService.getRows(options);`
+- **LLM Call Syntax:** `const result = tableService.getRows(options, options.preserveEmptyRows);`
 - **Pure JSDoc:**
 ```javascript
 /**
@@ -575,6 +575,14 @@ const zodSchemaProtocol = z.object({
    * This mode excludes virtual columns and pending writes, and does not alter CRUD caches/queues.
    * @returns {Object[]} Cloned array of row objects.
    */
+```
+---
+#### METHOD: TableService.if
+- **Scope:** instance
+- **LLM Call Syntax:** `tableService.if(options.preserveEmptyRows);`
+- **Pure JSDoc:**
+```javascript
+/** Method if */
 ```
 ---
 #### METHOD: TableService.if
@@ -734,6 +742,18 @@ const zodSchemaProtocol = z.object({
    * @description Overrides auto-detection of PK column. Re-triggers PK mapping.
    * @param {string} columnName - Target physical column name.
    * @returns {TableService} For chaining.
+   */
+```
+---
+#### METHOD: TableService.getKeyField
+- **Scope:** instance
+- **LLM Call Syntax:** `const result = tableService.getKeyField();`
+- **Pure JSDoc:**
+```javascript
+/**
+   * @function getKeyField
+   * @description Effective primary-key column name (manual override or auto-detected).
+   * @returns {string}
    */
 ```
 ---
@@ -2860,3 +2880,4 @@ function _compareValues(leftValue, operator, rightValue) {
 ```
 ---
 <br>
+

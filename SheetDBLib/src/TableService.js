@@ -840,6 +840,15 @@ export class TableService {
   }
 
   /**
+   * @function getKeyField
+   * @description Effective primary-key column name (manual override or auto-detected).
+   * @returns {string}
+   */
+  getKeyField() {
+    return this._keyField;
+  }
+
+  /**
    * @function getRowById
    * @description O(1) lookup (if indexed) or O(N) scan for a specific record.
    * @param {string|number} id - PK value.

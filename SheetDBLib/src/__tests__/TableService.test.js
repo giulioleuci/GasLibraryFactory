@@ -741,6 +741,12 @@ describe('TableService - Comprehensive Test Suite', () => {
       expect(table._keyField).toBe('email');
     });
 
+    it('getKeyField exposes the effective primary key', () => {
+      expect(table.getKeyField()).toBe('ID');
+      table.setPrimaryKey('email');
+      expect(table.getKeyField()).toBe('email');
+    });
+
     it('should return this for method chaining', () => {
       const result = table.setPrimaryKey('email');
 

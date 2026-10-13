@@ -118,6 +118,24 @@ export class Repository {
   }
 
   /**
+   * Drops rows whose primary-key cell is blank (e.g. a checkbox column pre-filled below the
+   * data makes SheetDBLib return a row that has no identity). Such rows are never entities.
+   * @private
+   * @param {Array<Object>} rows Raw table rows.
+   * @returns {Array<Object>} Rows with a non-blank primary key.
+   */
+  _withKey(rows) {
+    const key = this._table.getKeyField?.();
+    if (!key) {
+      return rows;
+    }
+    return rows.filter((row) => {
+      const value = row[key];
+      return value !== null && value !== undefined && String(value).trim() !== '';
+    });
+  }
+
+  /**
    * Retrieves all entities satisfying the provided domain specification.
    * @param {Object} specification Criteria for filtering entities.
    * @returns {Array<Object>} Collection of hydrated domain entities.
@@ -138,10 +156,10 @@ export class Repository {
         // Use database filtering
         const query = this.database.select(['*']).from(this.tableName);
         this.queryTranslator.translate(specification, query, validation);
-        rows = query.execute();
+        rows = this._withKey(query.execute());
       } else {
         // Load all and filter in-memory
-        rows = this._table.getAllRows();
+        rows = this._withKey(this._table.getAllRows());
         const entities = this.hydrationService.hydrateMany(rows, this.EntityClass);
         return entities.filter((entity) => specification.isSatisfiedBy(entity));
       }
@@ -216,7 +234,7 @@ export class Repository {
    */
   findAll() {
     return this._executeWithRetry(() => {
-      const rows = this._table.getAllRows();
+      const rows = this._withKey(this._table.getAllRows());
       return this.hydrationService.hydrateMany(rows, this.EntityClass);
     });
   }
