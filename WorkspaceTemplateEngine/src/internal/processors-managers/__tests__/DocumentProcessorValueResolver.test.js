@@ -222,6 +222,53 @@ describe('DocumentProcessorValueResolver - Direct Unit Tests', () => {
   });
 
   // ===================================================================
+  // exclude filter
+  // ===================================================================
+  describe("_applyFilters() - 'exclude' filter", () => {
+    it('excludes matching objects before applying subsequent filters without mutating input', () => {
+      const data = [{ sigla: 'SOS' }, { sigla: 'MAT' }, { sigla: 'ITA' }];
+      expect(
+        resolver._applyFilters(data, [
+          { name: 'exclude', args: ['sigla', 'SOS'] },
+          { name: 'limit', args: [1] }
+        ])
+      ).toEqual([{ sigla: 'MAT' }]);
+      expect(data).toEqual([{ sigla: 'SOS' }, { sigla: 'MAT' }, { sigla: 'ITA' }]);
+    });
+
+    it('preserves built-in own-property and strict comparison semantics', () => {
+      const data = [null, {}, Object.create({ sigla: 'MAT' }), { sigla: 'SOS' }, { sigla: 'sos' }];
+      expect(resolver._applyFilters(data, [{ name: 'exclude', args: ['sigla', 'SOS'] }])).toEqual([
+        { sigla: 'sos' }
+      ]);
+    });
+
+    it.each(['__proto__', 'constructor', 'prototype'])('blocks unsafe key %s', (key) => {
+      expect(
+        resolver._applyFilters([{ [key]: 'MAT' }], [{ name: 'exclude', args: [key, 'SOS'] }])
+      ).toEqual([]);
+    });
+
+    it.each([{ args: [] }, { args: ['sigla'] }])(
+      'warns and ignores insufficient arguments $args',
+      ({ args }) => {
+        const data = [{ sigla: 'MAT' }];
+        expect(resolver._applyFilters(data, [{ name: 'exclude', args }])).toEqual(data);
+        expect(facade.logger.warn).toHaveBeenCalledWith(
+          expect.stringContaining('requires two arguments')
+        );
+      }
+    );
+
+    it('throws for insufficient arguments in strict mode', () => {
+      facade.strictFilters = true;
+      expect(() =>
+        resolver._applyFilters([{ sigla: 'MAT' }], [{ name: 'exclude', args: ['sigla'] }])
+      ).toThrow(/requires two arguments/);
+    });
+  });
+
+  // ===================================================================
   // unknown filter
   // ===================================================================
   describe('_applyFilters() - unknown filter name', () => {

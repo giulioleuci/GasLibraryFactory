@@ -5,6 +5,8 @@
 
 import { MustacheContext as _MustacheContext } from '../../facades/Mustache.js';
 
+const ROW_LOOP_MARKER = /^{{#(tablerow_loop):([^}]+)}}/;
+
 export class DocumentProcessorTagScanner {
   constructor(facade) {
     this.facade = facade;
@@ -84,9 +86,9 @@ export class DocumentProcessorTagScanner {
       if (row.cells.length === 0) {
         continue;
       }
-      const firstCell = row.cells[0];
-      const cellText = firstCell.text;
-      const match = cellText.match(/^{{#(tablerow_loop):([^}]+)}}/);
+      // The marker may open any cell of the row; the whole row is the repeated template.
+      const markerCell = row.cells.findIndex((c) => ROW_LOOP_MARKER.test(c.text || ''));
+      const match = markerCell >= 0 ? row.cells[markerCell].text.match(ROW_LOOP_MARKER) : null;
 
       if (match) {
         const fullExpression = match[2].trim();
@@ -124,6 +126,7 @@ export class DocumentProcessorTagScanner {
           rowIndex: rowIndex,
           dataArray: dataArray,
           controlText: match[0],
+          markerCell: markerCell,
           sourceRuns: row.cells.map((c) => c.runs || [])
         });
       }
@@ -351,13 +354,23 @@ export class DocumentProcessorTagScanner {
       seenIndices.add(textMatch.elementIndex);
 
       const originalText = textMatch.text;
-      if (
-        !originalText.includes('{{#tablerow_loop:') &&
-        !originalText.includes('{{#tablecol_loop:') &&
-        !originalText.includes('{{#bullet_list:') &&
-        !originalText.includes('{{#number_list:') &&
-        !originalText.includes('{{table[')
-      ) {
+      const directive = [
+        '{{#tablerow_loop:',
+        '{{#tablecol_loop:',
+        '{{#bullet_list:',
+        '{{#number_list:',
+        '{{table['
+      ].find((d) => originalText.includes(d));
+      if (directive) {
+        // Structural directive no loop/list/table pass expanded: it is left verbatim in the output.
+        const escaped = originalText.replace(
+          /[^\x20-\x7e]/g,
+          (c) => `\\u${c.charCodeAt(0).toString(16).padStart(4, '0')}`
+        );
+        this.facade.logger.warn(
+          `Unexpanded '${directive}' directive left verbatim (${textMatch.type} @${textMatch.elementIndex}, tableIndex=${textMatch.tableIndex}): "${escaped}"`
+        );
+      } else {
         if (originalText.includes('{{')) {
           const newText = this.facade.mustache.render(originalText, context);
           if (originalText !== newText) {

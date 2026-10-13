@@ -94,24 +94,25 @@ export class DocumentProcessorInjector {
         return;
       }
 
-      let firstCellMarkerLength = 0;
+      const markerCell = op.markerCell || 0;
+      let markerLength = 0;
       const cellTemplates = templateRow.cells.map((cellText, index) => {
-        if (index === 0) {
+        if (index === markerCell) {
           const markerMatch = cellText.match(/^{{#tablerow_loop:[^}]+}}/);
           if (markerMatch) {
-            firstCellMarkerLength = markerMatch[0].length;
+            markerLength = markerMatch[0].length;
             return cellText.substring(markerMatch[0].length);
           }
           return cellText;
         }
         return cellText;
       });
-      // op.sourceRuns[0] (if present) is captured relative to the RAW first
-      // cell text, i.e. including the `{{#tablerow_loop:...}}` marker prefix
-      // just stripped above — rebase it onto cellTemplates[0]'s own offsets
+      // op.sourceRuns[markerCell] (if present) is captured relative to the RAW
+      // marker cell text, i.e. including the `{{#tablerow_loop:...}}` marker prefix
+      // just stripped above — rebase it onto that cell template's own offsets
       // so _buildStyledSegments/_styleAt compare like-for-like.
       const sourceRuns = (op.sourceRuns || []).map((runs, index) =>
-        index === 0 ? this._rebaseSourceRuns(runs, firstCellMarkerLength) : runs
+        index === markerCell ? this._rebaseSourceRuns(runs, markerLength) : runs
       );
 
       for (let i = op.dataArray.length - 1; i >= 0; i--) {

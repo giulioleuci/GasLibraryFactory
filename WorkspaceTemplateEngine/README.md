@@ -51,6 +51,26 @@ It implements a custom **Mustache-compatible engine** enhanced with a **Pipe-Fil
   - **Sheets**: Matrix expansion (`{{matrice_dati}}`) to populate grids from arrays.
 - **Performance**: Uses `GoogleApiWrapper` to execute batch updates (`batchUpdate`) for both Docs and Sheets, minimizing round-trips.
 
+## Row loop marker position
+
+`{{#tablerow_loop:path}}` may open **any cell** of the template row (not only the
+first). The marker is stripped from that cell and the whole row is repeated per item.
+
+## Filters in Google Docs structural loops
+
+`tablerow_loop`, `tablecol_loop`, `bullet_list`, and `number_list` support
+`sortBy`, `reverse`, `limit`, `filter` (property equality), and `exclude`
+(property inequality). Separate filter arguments with commas:
+
+```mustache
+{{#tablerow_loop:items | exclude:'sigla','SOS'}}{{sigla}}
+```
+
+`exclude` reuses the ordinary placeholder filter: it keeps only objects with
+an own property whose value differs by strict comparison, and blocks unsafe
+property names. Missing arguments warn and leave the array unchanged, or throw
+with `strictFilters: true`.
+
 ## 📦 Installation
 
 ```javascript
@@ -158,11 +178,12 @@ Use this syntax in a cell to expand an array into a grid.
 `{{matrice_dati[sorgente=team, colonne=name;role, intestazioni=Name;Role]}}`
 
 _Result:_
-| A | B |
-| :--- | :--- |
-| **Name** | **Role** |
-| Neil | Commander |
-| Buzz | Pilot |
+
+| A        | B         |
+| :------- | :-------- |
+| **Name** | **Role**  |
+| Neil     | Commander |
+| Buzz     | Pilot     |
 
 ## ⚙️ Architecture Details
 

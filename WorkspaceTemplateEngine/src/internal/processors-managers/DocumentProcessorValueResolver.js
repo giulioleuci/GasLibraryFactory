@@ -3,6 +3,8 @@
  * @description Manager for resolving values, applying filters, and sorting data.
  */
 
+import { ExcludeFilter } from '../filters/BuiltInFilters.js';
+
 export class DocumentProcessorValueResolver {
   constructor(facade) {
     this.facade = facade;
@@ -66,6 +68,12 @@ export class DocumentProcessorValueResolver {
               }
               this.facade.logger.warn(`Filter 'filter' requires two arguments, filter ignored.`);
             }
+            break;
+          case 'exclude':
+            if (filter.args.length < 2) {
+              throw new Error("Filter 'exclude' requires two arguments (property and value)");
+            }
+            result = new ExcludeFilter().execute(result, ...filter.args);
             break;
           default:
             if (this.facade.strictFilters) {

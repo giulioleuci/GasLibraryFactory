@@ -186,6 +186,85 @@ describe('DocumentProcessor - Coverage Enhancement Tests (Reverse-Order Strategy
   // Row Loop Processing Edge Cases
   // ===================================================================
   describe('Row Loop Processing', () => {
+    it('warns with escaped text when a structural directive is left unexpanded', () => {
+      const ops = processor._analyzeTextSubstitutions(
+        [{ type: 'TABLE_TEXT', elementIndex: 7, text: '​{{#tablerow_loop:items}}{{sigla}}' }],
+        {}
+      );
+
+      expect(ops).toEqual([]);
+      expect(mockLogger.warn).toHaveBeenCalledWith(
+        expect.stringContaining('\\u200b{{#tablerow_loop:items}}{{sigla}}')
+      );
+    });
+
+    it.each([false, true])(
+      'excludes SOS through the row-loop parser (strictFilters=%s)',
+      (strictFilters) => {
+        processor.strictFilters = strictFilters;
+        const items = [{ sigla: 'SOS' }, { sigla: 'MAT' }, { sigla: 'ITA' }];
+        const table = {
+          index: 10,
+          rows: [
+            {
+              index: 20,
+              cells: [{ text: "{{#tablerow_loop:items | exclude:'sigla','SOS'}}{{sigla}}" }]
+            }
+          ]
+        };
+        mockMustache._lookupValue.mockReturnValue(items);
+
+        const operations = processor._analyzeRowLoops(table, { items });
+
+        expect(operations).toHaveLength(1);
+        expect(operations[0].dataArray).toEqual([{ sigla: 'MAT' }, { sigla: 'ITA' }]);
+        expect(mockLogger.warn).not.toHaveBeenCalled();
+      }
+    );
+
+    it('recognizes the row-loop marker in a non-first cell', () => {
+      const table = {
+        index: 10,
+        rows: [
+          {
+            index: 20,
+            cells: [{ text: 'Fascia\n' }, { text: '{{#tablerow_loop:items}}{{sigla}}\n' }]
+          }
+        ]
+      };
+      mockMustache._lookupValue.mockReturnValue([{ sigla: 'MAT' }]);
+
+      const operations = processor._analyzeRowLoops(table, { items: [{ sigla: 'MAT' }] });
+
+      expect(operations).toHaveLength(1);
+      expect(operations[0]).toMatchObject({ type: 'rowLoop', markerCell: 1 });
+    });
+
+    it('strips the marker from the marker cell only when executing a row loop', () => {
+      processor.documentService.getTableRow = jest
+        .fn()
+        .mockReturnValue({ cells: ['Fascia', '{{#tablerow_loop:items}}{{sigla}}'] });
+      processor.documentService.copyTableRow = jest.fn();
+      processor.documentService.setCellRunStyles = jest.fn();
+      processor.documentService.deleteTableRow = jest.fn();
+      mockMustache.renderSegments = jest.fn((template) => [{ rendered: template, style: {} }]);
+
+      processor._executeRowLoopOperation('doc', {
+        tableIndex: 0,
+        rowIndex: 0,
+        markerCell: 1,
+        dataArray: [{ sigla: 'MAT' }]
+      });
+
+      const rendered = processor.documentService.setCellRunStyles.mock.calls.map(
+        ([, , , cell, segments]) => [cell, segments.map((s) => s.rendered).join('')]
+      );
+      expect(rendered).toEqual([
+        [0, 'Fascia'],
+        [1, '{{sigla}}']
+      ]);
+    });
+
     it('should handle row loop with filters', () => {
       // Create POJO table structure as returned by scanDocumentStructure
       const mockTable = {

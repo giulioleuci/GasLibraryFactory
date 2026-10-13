@@ -418,14 +418,11 @@ Implements cell-level substitutions and structural expansions (matrices, dynamic
 ## CLASS: DocumentProcessorValueResolver
 **File Path:** `WorkspaceTemplateEngine/src/internal/processors-managers/DocumentProcessorValueResolver.js`
 **Constructor Usage:** `const instance = new DocumentProcessorValueResolver();`
-**Description:** Manager for resolving values, applying filters, and sorting data.
+**Description:** N/A
 
 ### Raw JSDoc Context:
 ```javascript
-/**
- * @file WorkspaceTemplateEngine/src/processors/managers/DocumentProcessorValueResolver.js
- * @description Manager for resolving values, applying filters, and sorting data.
- */
+/** Class definition */
 ```
 
 ### Methods of DocumentProcessorValueResolver
@@ -497,6 +494,14 @@ Implements cell-level substitutions and structural expansions (matrices, dynamic
 #### METHOD: DocumentProcessorValueResolver.if
 - **Scope:** instance
 - **LLM Call Syntax:** `documentProcessorValueResolver.if(this.facade.strictFilters);`
+- **Pure JSDoc:**
+```javascript
+/** Method if */
+```
+---
+#### METHOD: DocumentProcessorValueResolver.if
+- **Scope:** instance
+- **LLM Call Syntax:** `documentProcessorValueResolver.if(filter.args.length < 2);`
 - **Pure JSDoc:**
 ```javascript
 /** Method if */
