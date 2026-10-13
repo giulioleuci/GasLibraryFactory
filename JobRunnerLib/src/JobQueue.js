@@ -170,6 +170,8 @@ export class JobExecutor {
       // Capture the final return value from the generator
       // Use next.value if it exists (even if falsy), otherwise fall back to progress
       result = next.value !== undefined ? next.value : progress;
+      this._triggerManager.deleteExistingTriggers();
+      this._stateManager.clearResumeState();
       // JRL-H006, JRL-H007: Batch state updates into single operation
       this._stateManager.releaseLock(); // JRL-C001: Release lock on completion
       this._stateManager.batchSave({
@@ -448,7 +450,8 @@ export class JobQueue {
         stateManager.saveConfiguration(this._config);
       }
 
-      const savedState = stateManager.loadResumeState();
+      const savedState =
+        jobState === JobStateManager.STATE_COMPLETED ? null : stateManager.loadResumeState();
       if (savedState && !forceRestart) {
         parameters.resumeState = savedState;
       }

@@ -171,10 +171,19 @@ Extracted from JobStateManager for improved separation of concerns.
 ---
 #### METHOD: QueueStateManager.tryAcquireRunning
 - **Scope:** instance
-- **LLM Call Syntax:** `queueStateManager.tryAcquireRunning();`
+- **LLM Call Syntax:** `queueStateManager.tryAcquireRunning(blockIfSuspended);`
 - **Pure JSDoc:**
 ```javascript
-/** Method tryAcquireRunning */
+/**
+   * @param {boolean} [blockIfSuspended=false] Refuse acquisition when the job is
+   *   currently `'to_resume'` (interrupted by a timeout, awaiting its automatic
+   *   resume trigger). Only a fresh/manual launch should pass `true` — the resume
+   *   path itself (the trigger firing) must always be allowed through regardless
+   *   of this state, since resuming a suspended job is exactly what it's for.
+   *   Without this guard a fresh launch of the same jobName silently resumes the
+   *   stale checkpoint instead of being refused, and can race the real trigger
+   *   into a second concurrent execution.
+   */
 ```
 ---
 #### METHOD: QueueStateManager.if
@@ -188,6 +197,14 @@ Extracted from JobStateManager for improved separation of concerns.
 #### METHOD: QueueStateManager.if
 - **Scope:** instance
 - **LLM Call Syntax:** `queueStateManager.if(lockTimestamp);`
+- **Pure JSDoc:**
+```javascript
+/** Method if */
+```
+---
+#### METHOD: QueueStateManager.if
+- **Scope:** instance
+- **LLM Call Syntax:** `queueStateManager.if(blockIfSuspended && currentState);`
 - **Pure JSDoc:**
 ```javascript
 /** Method if */
@@ -664,6 +681,8 @@ Executes job logic with interruption and persistence support.
       // Capture the final return value from the generator
       // Use next.value if it exists (even if falsy), otherwise fall back to progress
       result = next.value !== undefined ? next.value : progress;
+      this._triggerManager.deleteExistingTriggers();
+      this._stateManager.clearResumeState();
       // JRL-H006, JRL-H007: Batch state updates into single operation
       this._stateManager.releaseLock(); // JRL-C001: Release lock on completion
       this._stateManager.batchSave({
@@ -836,6 +855,8 @@ High-level API for job registration, execution, and lifecycle management.
       // Capture the final return value from the generator
       // Use next.value if it exists (even if falsy), otherwise fall back to progress
       result = next.value !== undefined ? next.value : progress;
+      this._triggerManager.deleteExistingTriggers();
+      this._stateManager.clearResumeState();
       // JRL-H006, JRL-H007: Batch state updates into single operation
       this._stateManager.releaseLock(); // JRL-C001: Release lock on completion
       this._stateManager.batchSave({
@@ -1086,7 +1107,7 @@ High-level API for job registration, execution, and lifecycle management.
 ---
 #### METHOD: JobQueue.execute
 - **Scope:** instance
-- **LLM Call Syntax:** `const result = jobQueue.execute(jobName, jobType, parameters, forceRestart);`
+- **LLM Call Syntax:** `const result = jobQueue.execute(jobName, jobType, parameters, forceRestart, blockIfSuspended);`
 - **Pure JSDoc:**
 ```javascript
 /**
@@ -1096,6 +1117,10 @@ High-level API for job registration, execution, and lifecycle management.
    * @param {string} jobType Registered handler type.
    * @param {Object} [parameters={}] Input data and context.
    * @param {boolean} [forceRestart=false] If true, purges existing state/locks before start.
+   * @param {boolean} [blockIfSuspended=false] Refuse to start if the job is currently
+   *   `'to_resume'` (interrupted by a timeout, awaiting its automatic resume trigger).
+   *   Pass `true` for fresh/manual launches; leave `false` for the resume path itself,
+   *   which must always be allowed to proceed regardless of this state.
    * @returns {*} Generator return value if complete; null if suspended or failed.
    * @throws {Error} If handler missing, fatal error occurs, or parameters are invalid.
    *
@@ -1737,12 +1762,12 @@ Extracted from JobStateManager and JobExecutor for improved separation of concer
 /** Method loadType */
 ```
 ---
-#### METHOD: QueuePersistenceHandler.reset
+#### METHOD: QueuePersistenceHandler.clearResumeState
 - **Scope:** instance
-- **LLM Call Syntax:** `queuePersistenceHandler.reset();`
+- **LLM Call Syntax:** `queuePersistenceHandler.clearResumeState();`
 - **Pure JSDoc:**
 ```javascript
-/** Method reset */
+/** Method clearResumeState */
 ```
 ---
 #### METHOD: QueuePersistenceHandler.if
@@ -1767,6 +1792,14 @@ Extracted from JobStateManager and JobExecutor for improved separation of concer
 - **Pure JSDoc:**
 ```javascript
 /** Method catch */
+```
+---
+#### METHOD: QueuePersistenceHandler.reset
+- **Scope:** instance
+- **LLM Call Syntax:** `queuePersistenceHandler.reset();`
+- **Pure JSDoc:**
+```javascript
+/** Method reset */
 ```
 ---
 <br>

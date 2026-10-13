@@ -67,6 +67,7 @@ export class JobStateManager {
       'batchSave',
       'saveResumeState',
       'loadResumeState',
+      'clearResumeState',
       '_saveLargeStateToDrive',
       '_loadLargeStateFromDrive',
       '_getOrCreateJobStateFolder',

@@ -244,7 +244,7 @@ export class QueuePersistenceHandler {
     return this._propertiesService.getProperty(this._key('type'));
   }
 
-  reset() {
+  clearResumeState() {
     try {
       const stateFileId = this._propertiesService.getProperty(this._key('state_file_id'));
       const driveApp = stateFileId ? this._driveApp() : null;
@@ -260,15 +260,13 @@ export class QueuePersistenceHandler {
       // ignore
     }
 
-    const keys = [
-      'state',
-      'type',
-      'parameters',
-      'config',
-      'trigger',
-      'state_size',
-      'state_file_id'
-    ];
+    const keys = ['state', 'state_size', 'state_file_id'];
+    keys.forEach((suffix) => this._propertiesService.deleteProperty(this._key(suffix)));
+  }
+
+  reset() {
+    this.clearResumeState();
+    const keys = ['type', 'parameters', 'config', 'trigger'];
     keys.forEach((suffix) => this._propertiesService.deleteProperty(this._key(suffix)));
   }
 }

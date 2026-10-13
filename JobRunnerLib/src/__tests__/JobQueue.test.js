@@ -1268,6 +1268,65 @@ describe('JobQueue', () => {
       expect(result2.executions).toBe(2);
     });
 
+    it.each([false, true])('should clear completed job resume data (Drive: %s)', (onDrive) => {
+      const checkpoint = { position: 42, data: onDrive ? 'x'.repeat(9000) : '' };
+      let trashed = false;
+      const file = {
+        getId: () => 'completed-state-file',
+        getBlob: () => ({ getDataAsString: () => JSON.stringify(checkpoint) }),
+        setTrashed: (value) => {
+          trashed = value;
+        }
+      };
+      const folder = { createFile: () => file };
+      DriveApp.getFoldersByName = jest.fn(() => ({ hasNext: () => true, next: () => folder }));
+      DriveApp.getFileById = jest.fn(() => file);
+
+      const stateManager = new JobStateManager('job1', propertiesService, utils, lockService);
+      stateManager.saveResumeState(checkpoint);
+      stateManager.setState('to_resume');
+      stateManager.saveType('resumable');
+      stateManager.saveConfiguration({ maxRetries: 3 });
+      propertiesService.setProperty('state_other-job', '{"position":7}');
+      const triggerManager = new JobTriggerManager('job1', propertiesService, triggerService);
+      triggerManager.createResumeTrigger();
+      const triggerId = propertiesService.getProperty('trigger_job1');
+      queue.registerJobHandler('resumable', function* (params) {
+        return { position: params.resumeState?.position ?? 0 };
+      });
+
+      expect(queue.execute('job1', 'resumable')).toEqual({ position: 42 });
+      expect(stateManager.loadResumeState()).toBeNull();
+      expect(propertiesService.getProperty('state_job1')).toBeNull();
+      expect(propertiesService.getProperty('state_size_job1')).toBeNull();
+      expect(propertiesService.getProperty('state_file_id_job1')).toBeNull();
+      expect(propertiesService.getProperty('trigger_job1')).toBeNull();
+      expect(propertiesService.getProperty(`job_for_trigger_${triggerId}`)).toBeNull();
+      expect(triggerService.getTriggerCount()).toBe(0);
+      expect(trashed).toBe(onDrive);
+      expect(queue.getStatus('job1')).toMatchObject({
+        state: 'completed',
+        completed: true,
+        percentage: 100
+      });
+      expect(stateManager.loadType()).toBe('resumable');
+      expect(stateManager.loadConfiguration()).toEqual({ maxRetries: 3 });
+      expect(propertiesService.getProperty('state_other-job')).toBe('{"position":7}');
+      expect(queue.execute('job1', 'resumable')).toEqual({ position: 0 });
+    });
+
+    it('should ignore a checkpoint left by an already completed job', () => {
+      const stateManager = new JobStateManager('job1', propertiesService, utils, lockService);
+      stateManager.saveResumeState({ position: 42 });
+      stateManager.setState('completed');
+      queue.registerJobHandler('resumable', function* (params) {
+        return { position: params.resumeState?.position ?? 0 };
+      });
+
+      expect(queue.execute('job1', 'resumable')).toEqual({ position: 0 });
+      expect(stateManager.loadResumeState()).toBeNull();
+    });
+
     it('should reset retry count on successful completion', () => {
       function* job() {
         yield { percentage: 100 };
