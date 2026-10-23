@@ -1128,6 +1128,21 @@ frozen immutability, richer payloads) on top of this contract.
 /** Emit a duration summary. @returns {LoggerService} */
 ```
 ---
+#### METHOD: LoggerService.logJobReport
+- **Scope:** instance
+- **LLM Call Syntax:** `const result = loggerService.logJobReport({{jobType:);`
+- **Pure JSDoc:**
+```javascript
+/**
+   * Emit a multi-line end-of-job report (job type, run count, cumulative real
+   * duration across every timeout-resume, task totals, skip and failure detail).
+   * `saltati` (skipped tasks) is excluded from "Eseguiti con successo"; its line
+   * is printed only when the caller passes it.
+   * @param {{jobType: string, runCount?: number, totalDurationMs?: number, totale?: number, falliti?: number, dettagliFalliti?: string[], saltati?: number, dettagliSaltati?: string[]}} details
+   * @returns {LoggerService} Fluent instance for chaining.
+   */
+```
+---
 #### METHOD: LoggerService.child
 - **Scope:** instance
 - **LLM Call Syntax:** `const result = loggerService.child(prefix);`
@@ -1516,6 +1531,21 @@ frozen immutability, richer payloads) on top of this contract.
 - **Pure JSDoc:**
 ```javascript
 /** Emit a duration summary. @returns {LoggerService} */
+```
+---
+#### METHOD: LoggerService.logJobReport
+- **Scope:** instance
+- **LLM Call Syntax:** `const result = loggerService.logJobReport({{jobType:);`
+- **Pure JSDoc:**
+```javascript
+/**
+   * Emit a multi-line end-of-job report (job type, run count, cumulative real
+   * duration across every timeout-resume, task totals, skip and failure detail).
+   * `saltati` (skipped tasks) is excluded from "Eseguiti con successo"; its line
+   * is printed only when the caller passes it.
+   * @param {{jobType: string, runCount?: number, totalDurationMs?: number, totale?: number, falliti?: number, dettagliFalliti?: string[], saltati?: number, dettagliSaltati?: string[]}} details
+   * @returns {LoggerService} Fluent instance for chaining.
+   */
 ```
 ---
 #### METHOD: LoggerService.child
@@ -3907,6 +3937,38 @@ const STEP_ICONS = {
 - **Pure JSDoc:**
 ```javascript
 /** Method if */
+```
+---
+#### METHOD: StructuredLogFormatter.jobReport
+- **Scope:** instance
+- **LLM Call Syntax:** `const result = structuredLogFormatter.jobReport(details);`
+- **Pure JSDoc:**
+```javascript
+/** @returns {string[]} Multi-line end-of-job report (job type, run count, cumulative real duration, task totals, skip and failure detail). */
+```
+---
+#### METHOD: StructuredLogFormatter.if
+- **Scope:** instance
+- **LLM Call Syntax:** `structuredLogFormatter.if(d.saltati !);`
+- **Pure JSDoc:**
+```javascript
+/** Method if */
+```
+---
+#### METHOD: StructuredLogFormatter.for
+- **Scope:** instance
+- **LLM Call Syntax:** `structuredLogFormatter.for(const item of d.dettagliSaltati);`
+- **Pure JSDoc:**
+```javascript
+/** Method for */
+```
+---
+#### METHOD: StructuredLogFormatter.for
+- **Scope:** instance
+- **LLM Call Syntax:** `structuredLogFormatter.for(const item of d.dettagliFalliti);`
+- **Pure JSDoc:**
+```javascript
+/** Method for */
 ```
 ---
 #### METHOD: StructuredLogFormatter.if

@@ -16,6 +16,7 @@ export class Pipeline {
    * @param {Object} logger Logger instance (info, debug, warn, error).
    * @param {Object} [exceptionService=null] Resilience provider for step-level retries.
    * @param {Object} [options={}] Pipeline configuration.
+   * @param {boolean} [options.collapseSkippedSteps=false] Log consecutive skipped steps with the same reason as one line.
    * @throws {Error} If logger is invalid or dependencies are unmet.
    */
   constructor(logger, exceptionService = null, options = {}) {
@@ -46,6 +47,8 @@ export class Pipeline {
     this._stopOnError = options.stopOnError !== undefined ? options.stopOnError : true;
     this._maxRetries = options.maxRetries !== undefined ? options.maxRetries : 3;
     this._logPosition = this._normalizeLogPosition(options.logPosition);
+    /** When true, consecutive skipped steps sharing a reason are logged as one line. */
+    this._collapseSkippedSteps = options.collapseSkippedSteps === true;
     this._steps = [];
     this._hooks = {
       beforeStep: [],
@@ -307,10 +310,25 @@ export class Pipeline {
     const context = new PipelineContext(initialData);
     let pipelineSuccess = true;
     this._logPipelineStart();
+    const skippedRun = [];
+    const flushSkipped = () => {
+      if (skippedRun.length === 0) {
+        return;
+      }
+      const last = skippedRun[skippedRun.length - 1];
+      this._logPipelineStep(
+        skippedRun.map((s) => s.name).join(', '),
+        'SKIPPED',
+        { reason: last.reason },
+        this._stepLogPosition(last.index)
+      );
+      skippedRun.length = 0;
+    };
 
     for (let stepIndex = 0; stepIndex < this._steps.length; stepIndex++) {
       const step = this._steps[stepIndex];
       if (context.shouldStop()) {
+        flushSkipped();
         if (typeof this._logger.logStep === 'function') {
           this._logger.logStep(
             `⏹️ Stop requested: ${context.getStopReason()}`,
@@ -336,6 +354,7 @@ export class Pipeline {
         pipelineSuccess = false;
         this._invokeHooks(this._hooks.onError, step, context, error);
         context.recordStepExecution(stepName, 'failed', 0, { error: error.message });
+        flushSkipped();
         this._logPipelineStep(
           stepName,
           'ERROR',
@@ -370,7 +389,15 @@ export class Pipeline {
           : status === 'failed'
             ? { reason: result.error?.message || 'step failed', durationMs: result.durationMs || 0 }
             : { content: result.logDetails, durationMs: result.durationMs || 0 };
-      this._logPipelineStep(stepName, semanticStatus, details, this._stepLogPosition(stepIndex));
+      if (status === 'skipped' && this._collapseSkippedSteps) {
+        if (skippedRun.length > 0 && skippedRun[0].reason !== details.reason) {
+          flushSkipped();
+        }
+        skippedRun.push({ name: stepName, reason: details.reason, index: stepIndex });
+      } else {
+        flushSkipped();
+        this._logPipelineStep(stepName, semanticStatus, details, this._stepLogPosition(stepIndex));
+      }
 
       if (status === 'failed') {
         pipelineSuccess = false;
@@ -382,6 +409,7 @@ export class Pipeline {
 
       this._invokeHooks(this._hooks.afterStep, step, context, result);
     }
+    flushSkipped();
 
     context.markCompleted();
     this._invokeHooks(this._hooks.onComplete, context, pipelineSuccess);

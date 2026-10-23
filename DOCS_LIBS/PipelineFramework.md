@@ -575,92 +575,144 @@ import { PipelineContext } from './PipelineContext';
 /** Method if */
 ```
 ---
-#### METHOD: Pipeline.if
-- **Scope:** instance
-- **LLM Call Syntax:** `pipeline.if(typeof this._logger.logPipelineStart);`
-- **Pure JSDoc:**
-```javascript
-/** Method if */
-```
----
-#### METHOD: Pipeline.if
-- **Scope:** instance
-- **LLM Call Syntax:** `pipeline.if(typeof this._logger.logPipelineStep);`
-- **Pure JSDoc:**
-```javascript
-/** Method if */
-```
----
-#### METHOD: Pipeline.if
-- **Scope:** instance
-- **LLM Call Syntax:** `pipeline.if(status);`
-- **Pure JSDoc:**
-```javascript
-/** Method if */
-```
----
-#### METHOD: Pipeline.if
-- **Scope:** instance
-- **LLM Call Syntax:** `pipeline.if(status);`
-- **Pure JSDoc:**
-```javascript
-/** Method if */
-```
----
-#### METHOD: Pipeline.if
-- **Scope:** instance
-- **LLM Call Syntax:** `pipeline.if(details);`
-- **Pure JSDoc:**
-```javascript
-/** Method if */
-```
----
-#### METHOD: Pipeline.if
-- **Scope:** instance
-- **LLM Call Syntax:** `pipeline.if(typeof details);`
-- **Pure JSDoc:**
-```javascript
-/** Method if */
-```
----
-#### METHOD: Pipeline.catch
-- **Scope:** instance
-- **LLM Call Syntax:** `pipeline.catch(_error);`
-- **Pure JSDoc:**
-```javascript
-/** Method catch */
-```
----
-#### METHOD: Pipeline.if
-- **Scope:** instance
-- **LLM Call Syntax:** `pipeline.if(prefix);`
-- **Pure JSDoc:**
-```javascript
-/** Method if */
-```
----
-#### METHOD: Pipeline.if
-- **Scope:** instance
-- **LLM Call Syntax:** `pipeline.if(summary.stopRequested);`
-- **Pure JSDoc:**
-```javascript
-/** Method if */
-```
----
-#### METHOD: Pipeline.if
-- **Scope:** instance
-- **LLM Call Syntax:** `pipeline.if(typeof this._logger.logSummary);`
-- **Pure JSDoc:**
-```javascript
-/** Method if */
-```
----
 #### METHOD: Pipeline.getName
 - **Scope:** instance
 - **LLM Call Syntax:** `const result = pipeline.getName();`
 - **Pure JSDoc:**
 ```javascript
-/** @returns {string} */
+/** When true, consecutive skipped steps sharing a reason are logged as one line. */
+    this._collapseSkippedSteps = options.collapseSkippedSteps === true;
+    this._steps = [];
+    this._hooks = {
+      beforeStep: [],
+      afterStep: [],
+      onError: [],
+      onComplete: []
+    };
+  }
+
+  _normalizeLogPosition(position) {
+    const value = position && typeof position === 'object' ? position : {};
+    return {
+      depth: Math.max(0, Number.isFinite(value.depth) ? value.depth : 0),
+      isLast: Boolean(value.isLast),
+      ancestorHasNext: Array.isArray(value.ancestorHasNext) ? value.ancestorHasNext.slice() : []
+    };
+  }
+
+  _stepLogPosition(index) {
+    return {
+      depth: this._logPosition.depth + 1,
+      isLast: index === this._steps.length - 1,
+      ancestorHasNext: [...this._logPosition.ancestorHasNext, true]
+    };
+  }
+
+  _summaryLogPosition() {
+    return { ...this._logPosition, isLast: true };
+  }
+
+  _executionLogPosition(index) {
+    const stepPosition = this._stepLogPosition(index);
+    return {
+      depth: stepPosition.depth + 1,
+      isLast: false,
+      ancestorHasNext: [...stepPosition.ancestorHasNext, !stepPosition.isLast]
+    };
+  }
+
+  _logPipelineStart() {
+    if (typeof this._logger.logPipelineStart === 'function') {
+      this._logger.logPipelineStart(this._name, this._steps.length, this._logPosition);
+    } else {
+      this._logger.info(`[${this._name}] Starting pipeline (${this._steps.length} steps)`);
+    }
+  }
+
+  _logPipelineStep(stepName, status, details, position) {
+    if (typeof this._logger.logPipelineStep === 'function') {
+      this._logger.logPipelineStep(stepName, status, details, position);
+      return;
+    }
+    const isEnvelope = Boolean(
+      details &&
+      typeof details === 'object' &&
+      !Array.isArray(details) &&
+      (Object.prototype.hasOwnProperty.call(details, 'content') ||
+        Object.prototype.hasOwnProperty.call(details, 'durationMs') ||
+        Object.prototype.hasOwnProperty.call(details, 'reason'))
+    );
+    const envelope = isEnvelope ? details : {};
+    const content = isEnvelope ? envelope.content : details;
+    const reason =
+      envelope.reason !== undefined
+        ? envelope.reason
+        : status === 'SKIPPED'
+          ? 'condition not met'
+          : 'step failed';
+    const duration =
+      Number.isFinite(envelope.durationMs) && envelope.durationMs >= 0 ? envelope.durationMs : null;
+    const fallbackDetails = this._fallbackDetailText(status === 'EXECUTED' ? content : reason);
+    const displayStatus = status === 'ERROR' ? 'FAILED' : status;
+    const timedStatus =
+      status !== 'SKIPPED' && duration !== null
+        ? `${displayStatus} in ${duration}ms`
+        : displayStatus;
+    const body = fallbackDetails ? `${fallbackDetails} (${timedStatus})` : timedStatus;
+    const message = `[${this._name}] [${stepName}] ${body}`;
+    if (status === 'ERROR') {
+      this._logger.error(message);
+    } else if (status === 'SKIPPED') {
+      this._logger.warn(message);
+    } else {
+      this._logger.info(message);
+    }
+  }
+
+  _fallbackDetailText(details) {
+    if (details === undefined || details === null || details === '') {
+      return '';
+    }
+    if (Array.isArray(details)) {
+      return details.join('\n');
+    }
+    if (typeof details === 'object') {
+      try {
+        return JSON.stringify(details);
+      } catch (_error) {
+        return '[Unrenderable details]';
+      }
+    }
+    return String(details);
+  }
+
+  _logPipelineSummary(context, prefix = '') {
+    const summary = context.getSummary();
+    let details =
+      `${summary.completedSteps} executed, ${summary.skippedSteps} skipped, ` +
+      `${summary.failedSteps} failed`;
+    if (prefix) {
+      details = `${prefix}; ${details}`;
+    }
+    if (summary.stopRequested) {
+      details += `; stopped: ${summary.stopReason}`;
+    }
+    const icon = summary.failedSteps > 0 ? '❌' : '✅';
+    if (typeof this._logger.logSummary === 'function') {
+      this._logger.logSummary(
+        `${icon} Pipeline completed`,
+        context.getTotalDuration(),
+        details,
+        this._summaryLogPosition()
+      );
+    } else {
+      this._logger.info(
+        `${icon} [${this._name}] Pipeline completed in ${context.getTotalDuration()}ms (${details})`
+      );
+    }
+  }
+
+  /** @returns {string} */
 ```
 ---
 #### METHOD: Pipeline.getSteps
@@ -828,6 +880,14 @@ import { PipelineContext } from './PipelineContext';
    */
 ```
 ---
+#### METHOD: Pipeline.if
+- **Scope:** instance
+- **LLM Call Syntax:** `pipeline.if(skippedRun.length);`
+- **Pure JSDoc:**
+```javascript
+/** Method if */
+```
+---
 #### METHOD: Pipeline.for
 - **Scope:** instance
 - **LLM Call Syntax:** `pipeline.for(let stepIndex);`
@@ -855,6 +915,22 @@ import { PipelineContext } from './PipelineContext';
 #### METHOD: Pipeline.if
 - **Scope:** instance
 - **LLM Call Syntax:** `pipeline.if(this._stopOnError);`
+- **Pure JSDoc:**
+```javascript
+/** Method if */
+```
+---
+#### METHOD: Pipeline.if
+- **Scope:** instance
+- **LLM Call Syntax:** `pipeline.if(status);`
+- **Pure JSDoc:**
+```javascript
+/** Method if */
+```
+---
+#### METHOD: Pipeline.if
+- **Scope:** instance
+- **LLM Call Syntax:** `pipeline.if(skippedRun.length > 0 && skippedRun[0].reason !);`
 - **Pure JSDoc:**
 ```javascript
 /** Method if */

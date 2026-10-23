@@ -427,6 +427,38 @@ describe('Pipeline - Comprehensive Test Suite', () => {
       expect(emitted.join('\n')).not.toContain('SKIPPED in');
     });
 
+    it('collapses consecutive skipped steps with the same reason into one line', () => {
+      const realLogger = new LoggerService();
+      const emitted = [];
+      global.Logger = {
+        log: jest.fn((line) => emitted.push(line)),
+        getLog: jest.fn(() => emitted.join('\n')),
+        clear: jest.fn()
+      };
+      const skip = (name, reason = 'condition not met') => ({
+        getName: () => name,
+        execute: () => ({ success: true, skipped: true, skipReason: reason, durationMs: 0 })
+      });
+      pipeline = new Pipeline(realLogger, null, { name: 'Collapse', collapseSkippedSteps: true });
+      pipeline
+        .addStep({
+          getName: () => 'Analyze',
+          execute: () => ({ success: true, skipped: false, durationMs: 1 })
+        })
+        .addStep(skip('A'))
+        .addStep(skip('B'))
+        .addStep(skip('C', 'other'));
+
+      const ctx = pipeline.execute();
+
+      const skippedLines = emitted.filter((line) => line.includes('SKIPPED'));
+      expect(skippedLines).toEqual([
+        '  ├─ ▫️ [A, B] condition not met (SKIPPED)',
+        '  └─ ▫️ [C] other (SKIPPED)'
+      ]);
+      expect(ctx.getSummary().skippedSteps).toBe(3);
+    });
+
     it('passes successful details and scopes nested ordinary messages below the step', () => {
       const realLogger = new LoggerService();
       const emitted = [];

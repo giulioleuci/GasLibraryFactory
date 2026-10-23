@@ -366,8 +366,10 @@ export class LoggerService {
 
   /**
    * Emit a multi-line end-of-job report (job type, run count, cumulative real
-   * duration across every timeout-resume, task totals, failure detail).
-   * @param {{jobType: string, runCount?: number, totalDurationMs?: number, totale?: number, falliti?: number, dettagliFalliti?: string[]}} details
+   * duration across every timeout-resume, task totals, skip and failure detail).
+   * `saltati` (skipped tasks) is excluded from "Eseguiti con successo"; its line
+   * is printed only when the caller passes it.
+   * @param {{jobType: string, runCount?: number, totalDurationMs?: number, totale?: number, falliti?: number, dettagliFalliti?: string[], saltati?: number, dettagliSaltati?: string[]}} details
    * @returns {LoggerService} Fluent instance for chaining.
    */
   logJobReport(details) {

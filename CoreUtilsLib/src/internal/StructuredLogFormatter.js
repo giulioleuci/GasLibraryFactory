@@ -198,12 +198,13 @@ export class StructuredLogFormatter {
     return this._treeLines(message, position);
   }
 
-  /** @returns {string[]} Multi-line end-of-job report (job type, run count, cumulative real duration, task totals, failure detail). */
+  /** @returns {string[]} Multi-line end-of-job report (job type, run count, cumulative real duration, task totals, skip and failure detail). */
   jobReport(details) {
     const d = details || {};
     const totale = this._count(d.totale);
     const falliti = this._count(d.falliti);
-    const riusciti = Math.max(0, totale - falliti);
+    const saltati = this._count(d.saltati);
+    const riusciti = Math.max(0, totale - falliti - saltati);
     const icon = falliti > 0 ? '📊❌' : '📊✅';
     const lines = [
       MAJOR_BORDER,
@@ -211,9 +212,19 @@ export class StructuredLogFormatter {
       `  Esecuzioni (run): ${d.runCount === undefined ? 1 : this._count(d.runCount)}`,
       `  Tempo totale esecuzione: ${this._count(d.totalDurationMs)}ms`,
       `  Task totali: ${totale}`,
-      `  Eseguiti con successo: ${riusciti}`,
-      `  Falliti: ${falliti}`
+      `  Eseguiti con successo: ${riusciti}`
     ];
+    // Omitted when the caller does not track skips, so existing reports stay unchanged.
+    if (d.saltati !== undefined) {
+      lines.push(`  Saltati: ${saltati}`);
+    }
+    lines.push(`  Falliti: ${falliti}`);
+    if (saltati > 0 && Array.isArray(d.dettagliSaltati) && d.dettagliSaltati.length > 0) {
+      lines.push('  Dettaglio saltati:');
+      for (const item of d.dettagliSaltati) {
+        lines.push(`    - ${this._text(item)}`);
+      }
+    }
     if (falliti > 0 && Array.isArray(d.dettagliFalliti) && d.dettagliFalliti.length > 0) {
       lines.push('  Dettaglio fallimenti:');
       for (const item of d.dettagliFalliti) {

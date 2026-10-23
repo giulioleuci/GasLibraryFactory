@@ -291,6 +291,33 @@ describe('StructuredLogFormatter', () => {
     ]);
   });
 
+  it('excludes skipped tasks from successes and lists skip detail', () => {
+    expect(
+      formatter.jobReport({
+        jobType: 'INVIO EMAIL',
+        totale: 10,
+        falliti: 1,
+        saltati: 3,
+        dettagliSaltati: ['CONDIZIONE non soddisfatta ×3'],
+        dettagliFalliti: ['a@x.it: bounce']
+      })
+    ).toEqual([
+      '======================================================================',
+      '📊❌ [RIEPILOGO JOB] INVIO EMAIL',
+      '  Esecuzioni (run): 1',
+      '  Tempo totale esecuzione: 0ms',
+      '  Task totali: 10',
+      '  Eseguiti con successo: 6',
+      '  Saltati: 3',
+      '  Falliti: 1',
+      '  Dettaglio saltati:',
+      '    - CONDIZIONE non soddisfatta ×3',
+      '  Dettaglio fallimenti:',
+      '    - a@x.it: bounce',
+      '======================================================================'
+    ]);
+  });
+
   it('defaults job report run count to 1 and omits failure detail when none failed', () => {
     expect(formatter.jobReport({ jobType: 'IMPORTAZIONE DATI', totale: 4, falliti: 0 })).toEqual([
       '======================================================================',
