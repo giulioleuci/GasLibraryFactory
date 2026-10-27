@@ -643,7 +643,10 @@ export class TableService {
    */
   getRows(options = {}) {
     if (options.preserveEmptyRows === true) {
-      const data = this.spreadsheetService.getRanges(this.spreadsheetId, `'${this.sheetName}'!A:ZZ`);
+      const data = this.spreadsheetService.getRanges(
+        this.spreadsheetId,
+        `'${this.sheetName}'!A:ZZ`
+      );
       return this._processRawData(data, options).rows;
     }
     this._ensureDataLoaded();
@@ -984,7 +987,9 @@ export class TableService {
         !data[i] ||
         data[i].every((cell) => cell === null || cell === undefined || String(cell).trim() === '')
       ) {
-        if (options.preserveEmptyRows === true) rows.push({});
+        if (options.preserveEmptyRows === true) {
+          rows.push({});
+        }
         continue;
       }
 

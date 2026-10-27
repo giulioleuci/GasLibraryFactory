@@ -250,6 +250,14 @@
 /** Method if */
 ```
 ---
+#### METHOD: Repository.if
+- **Scope:** instance
+- **LLM Call Syntax:** `repository.if(!key);`
+- **Pure JSDoc:**
+```javascript
+/** Method if */
+```
+---
 #### METHOD: Repository.find
 - **Scope:** instance
 - **LLM Call Syntax:** `const result = repository.find(specification);`
@@ -1750,46 +1758,6 @@ nella query sono lo stesso.
 - **Pure JSDoc:**
 ```javascript
 /** Method for */
-```
----
-#### METHOD: CompositeSpecification.if
-- **Scope:** instance
-- **LLM Call Syntax:** `compositeSpecification.if(clause.operator);`
-- **Pure JSDoc:**
-```javascript
-/** Method if */
-```
----
-#### METHOD: CompositeSpecification.if
-- **Scope:** instance
-- **LLM Call Syntax:** `compositeSpecification.if(this.operator);`
-- **Pure JSDoc:**
-```javascript
-/** Method if */
-```
----
-#### METHOD: CompositeSpecification.if
-- **Scope:** instance
-- **LLM Call Syntax:** `compositeSpecification.if(clause.operator);`
-- **Pure JSDoc:**
-```javascript
-/** Method if */
-```
----
-#### METHOD: CompositeSpecification.if
-- **Scope:** instance
-- **LLM Call Syntax:** `compositeSpecification.if(this.operator);`
-- **Pure JSDoc:**
-```javascript
-/** Method if */
-```
----
-#### METHOD: CompositeSpecification.if
-- **Scope:** instance
-- **LLM Call Syntax:** `compositeSpecification.if(this.operator);`
-- **Pure JSDoc:**
-```javascript
-/** Method if */
 ```
 ---
 #### METHOD: CompositeSpecification.canBeTranslatedToQuery

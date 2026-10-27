@@ -107,8 +107,8 @@ clasp login
 
 ### Testing
 
-- **Local**: `npm test` (Fast, mocked environment).
-- **Online**: `npm run push:testing` (Deploys to a test script for live environment verification).
+- **Local**: `npm test` (Unit and integration tests using mocks and fakes).
+- **Online**: `npm run push:testing`, then `runAllOnlineTests()` in GAS (Real Google API boundary tests only; see the [online test guide](__testOnline__/README.md)).
 
 ### Deployment
 

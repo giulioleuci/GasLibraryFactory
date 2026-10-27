@@ -175,14 +175,12 @@ test('validate ignores completely empty and whitespace-only rows before applying
 test('validate reports the original rowIndex even when an earlier row was filtered as empty', () => {
   const localDatasets = {
     ALUNNI: [
-      { EMAIL: '', CLASSE: '' },       // filtered as empty — index 0
-      { EMAIL: '', CLASSE: '1A' }      // violates required EMAIL — original index 1
+      { EMAIL: '', CLASSE: '' }, // filtered as empty — index 0
+      { EMAIL: '', CLASSE: '1A' } // violates required EMAIL — original index 1
     ]
   };
   const violations = new DatasetValidator().validate(localDatasets, [
     { id: 'R1', type: 'required', table: 'ALUNNI', columns: ['EMAIL'] }
   ]).violations;
-  expect(violations).toEqual([
-    expect.objectContaining({ rowIndex: 1, column: 'EMAIL' })
-  ]);
+  expect(violations).toEqual([expect.objectContaining({ rowIndex: 1, column: 'EMAIL' })]);
 });

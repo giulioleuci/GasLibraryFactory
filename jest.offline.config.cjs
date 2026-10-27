@@ -21,6 +21,8 @@ module.exports = {
   // 2. Load the compiled bundle into global scope
   setupFilesAfterEnv: ['<rootDir>/test/setup.js', '<rootDir>/test/offline-setup.js'],
 
+  moduleNameMapper: require('./jest.config.cjs').moduleNameMapper,
+
   testMatch: ['<rootDir>/test/offline/**/*.test.js'],
 
   testTimeout: 30000,

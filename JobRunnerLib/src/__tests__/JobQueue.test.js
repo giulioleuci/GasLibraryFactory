@@ -1172,6 +1172,35 @@ describe('JobQueue', () => {
       expect(result).toEqual({ success: true, data: 'value' });
     });
 
+    it('keeps the COMPLETED tombstone by default', () => {
+      function* testJob() {
+        yield { percentage: 100 };
+        return { done: true };
+      }
+      queue.registerJobHandler('test', testJob);
+      queue.execute('job1', 'test');
+
+      expect(queue.getStatus('job1').state).toBe('completed');
+    });
+
+    it('setPurgeOnComplete purges every job key on success', () => {
+      function* testJob() {
+        yield { percentage: 100 };
+        return { done: true };
+      }
+      expect(queue.setPurgeOnComplete(true)).toBe(queue);
+      queue.registerJobHandler('test', testJob);
+      queue.execute('job1', 'test');
+
+      expect(queue.getStatus('job1').state).toBe('not_started');
+      expect(propertiesService.getProperty('job_job1')).toBeFalsy();
+      expect(propertiesService.getProperty('version_job1')).toBeFalsy();
+    });
+
+    it('setPurgeOnComplete rejects non-boolean', () => {
+      expect(() => queue.setPurgeOnComplete('yes')).toThrow('purge must be a boolean');
+    });
+
     it('should throw error if no handler registered for job type', () => {
       expect(() => {
         queue.execute('job1', 'nonexistent');

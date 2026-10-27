@@ -17,8 +17,12 @@ const _FORMAT_REGEXES = Object.fromEntries(
 const _parseGoogleSheetsDate = (serialNumber) =>
   new Date(new Date(1899, 11, 30).getTime() + serialNumber * 24 * 60 * 60 * 1000);
 
+/** Italian day-first date: GG/MM/AA (20AA) or GG/MM/AAAA. */
+const _DMY = /^(\d{1,2})\/(\d{1,2})\/(\d{2}|\d{4})$/;
+
 /**
  * Universal date parser shared by CoreUtilsLib consumers.
+ * Strings in Italian day-first form (GG/MM/AA, GG/MM/AAAA) parse as UTC midnight.
  * @param {Date|string|number|null|undefined} input Multi-format date input.
  * @returns {Date|null} Parsed Date object or null for invalid inputs.
  */
@@ -31,6 +35,14 @@ export function parseDate(input) {
     return isNaN(copy.getTime()) ? null : copy;
   }
   if (typeof input === 'string') {
+    const it = _DMY.exec(input.trim());
+    if (it !== null) {
+      const [d, m] = [+it[1], +it[2]];
+      const y = it[3].length === 2 ? 2000 + +it[3] : +it[3];
+      const date = new Date(Date.UTC(y, m - 1, d));
+      // Reject rollover (e.g. 31/02): UTC midnight, same as ISO date-only strings.
+      return date.getUTCMonth() === m - 1 && date.getUTCDate() === d ? date : null;
+    }
     const date = new Date(input);
     return isNaN(date.getTime()) ? null : date;
   }

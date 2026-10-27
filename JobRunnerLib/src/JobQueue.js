@@ -336,6 +336,21 @@ export class JobQueue {
   }
 
   /**
+   * Purges all job ScriptProperties on successful completion (default: keep the COMPLETED
+   * tombstone). Persisted in the job config, so it also applies to trigger-driven resumes.
+   * After a purge `getStatus(jobName)` reports `not_started`.
+   * @param {boolean} purge
+   * @returns {JobQueue} Current instance.
+   */
+  setPurgeOnComplete(purge) {
+    if (typeof purge !== 'boolean') {
+      throw new Error('JobQueue.setPurgeOnComplete: purge must be a boolean');
+    }
+    this._config.purgeOnComplete = purge;
+    return this;
+  }
+
+  /**
    * Registers a terminal failure listener.
    * @param {Function|null} callback Function(error, jobState).
    * @returns {JobQueue} Current instance.
@@ -473,6 +488,12 @@ export class JobQueue {
         // Job completed successfully
         // Reset retry count on successful completion
         stateManager.resetRetryCount();
+
+        // Opt-in: drop every ScriptProperties key of the job (incl. the COMPLETED tombstone).
+        // Not on cancellation, which must stay observable as 'cancelled'.
+        if (this._config.purgeOnComplete && !executionResult.cancelled) {
+          this.resetJobState(jobName);
+        }
 
         // Return the job result
         return executionResult.value;

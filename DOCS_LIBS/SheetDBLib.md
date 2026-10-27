@@ -883,6 +883,14 @@ const zodSchemaProtocol = z.object({
 /** Method for */
 ```
 ---
+#### METHOD: TableService.if
+- **Scope:** instance
+- **LLM Call Syntax:** `tableService.if(options.preserveEmptyRows);`
+- **Pure JSDoc:**
+```javascript
+/** Method if */
+```
+---
 #### METHOD: TableService.for
 - **Scope:** instance
 - **LLM Call Syntax:** `tableService.for(let j);`

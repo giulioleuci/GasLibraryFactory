@@ -63,6 +63,9 @@ The build orchestrator (`build-and-prepare.cjs`) automatically selects the corre
 
 ### GAS-Specific Plugin Configuration
 
+The GAS build defines `typeof crypto` as `"undefined"` so Webpack removes guarded
+browser/Node Web Crypto fallbacks. `IdGenerator` uses native `Utilities` in GAS.
+
 **gas-webpack-plugin** is configured with `autoGlobalExportsFiles: []`. This means:
 
 - Only functions explicitly assigned to `global` in `src/index.js` (via `global.functionName = ...`) get top-level function stubs visible in the GAS editor dropdown
@@ -151,12 +154,15 @@ The bundled `Code.js` may contain code from external npm dependencies (e.g. `es-
 
 The Webpack `CopyOnlineTestsPlugin` copies online test files to `dist/` with these naming conventions:
 
-| Source Location                             | Output Name                       |
-| ------------------------------------------- | --------------------------------- |
-| `LibraryName/__testOnline__/OnlineTests.gs` | `TEST_LibraryName_OnlineTests.gs` |
-| `__testOnline__/shared/TestFramework.gs`    | `TEST_SHARED_TestFramework.gs`    |
-| `__testOnline__/integration/Test16_*.gs`    | `TEST_INTEGRATION_Test16_*.gs`    |
-| `__testOnline__/MasterTestRunner.gs`        | `TEST_MASTER_Runner.gs`           |
+| Source Location                                                      | Output Name                               |
+| -------------------------------------------------------------------- | ----------------------------------------- |
+| `GoogleApiWrapper/__testOnline__/GoogleApiWrapperTests.gs`           | `TEST_GoogleApiWrapperTests.gs`           |
+| `GoogleApiWrapper/__testOnline__/GoogleApiWrapperTests_<Service>.gs` | `TEST_GoogleApiWrapperTests_<Service>.gs` |
+| `__testOnline__/MasterTestRunner.gs`                                 | `TEST_MASTER_Runner.gs`                   |
+
+Only tests of the native Google API boundary remain online. Business logic and
+cross-library scenarios run locally with mocks and fakes; see the
+[online test guide](__testOnline__/README.md) for the selection policy.
 
 ## Available Build Commands
 
@@ -249,16 +255,14 @@ npm run build:testoffline
 
 ### Testing Mode
 
-| File(s)                       | Count | Purpose                |
-| ----------------------------- | ----- | ---------------------- |
-| `Code.js`                     | 1     | Bundled + patched code |
-| `appsscript.json`             | 1     | GAS project manifest   |
-| `TEST_LibName_OnlineTests.gs` | ~18   | Library online tests   |
-| `TEST_SHARED_*.gs`            | 2     | Shared test utilities  |
-| `TEST_INTEGRATION_*.gs`       | ~11   | Integration tests      |
-| `TEST_MASTER_Runner.gs`       | 1     | Master test runner     |
+| File(s)                          | Count | Purpose                   |
+| -------------------------------- | ----- | ------------------------- |
+| `Code.js`                        | 1     | Bundled + patched code    |
+| `appsscript.json`                | 1     | GAS project manifest      |
+| `TEST_GoogleApiWrapperTests*.gs` | 6     | Google API boundary tests |
+| `TEST_MASTER_Runner.gs`          | 1     | Master test runner        |
 
-**Total: ~35 files**
+**Total: 9 deployment files**, plus source maps, mapping indexes, and `.claspignore`.
 
 ## Verification
 
@@ -286,7 +290,7 @@ grep -c '^class ' dist/Code.js
 ```bash
 npm run build:testing
 ls dist/TEST_*.gs | wc -l
-# Expected: ~32
+# Expected: 7
 
 # Verify classes preserved
 grep -c '^\s*class ' dist/Code.js

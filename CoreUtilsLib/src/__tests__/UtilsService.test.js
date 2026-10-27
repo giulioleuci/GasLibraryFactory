@@ -158,6 +158,18 @@ describe('UtilsService', () => {
       expect(result).toBeNull();
     });
 
+    it('should parse Italian day-first strings (GG/MM/AA, GG/MM/AAAA) as UTC midnight', () => {
+      expect(utils.parseDate('10/10/26').toISOString()).toBe('2026-10-10T00:00:00.000Z');
+      expect(utils.parseDate('03/11/2026').toISOString()).toBe('2026-11-03T00:00:00.000Z');
+      expect(utils.parseDate('26/01/27').toISOString()).toBe('2027-01-26T00:00:00.000Z');
+      expect(utils.parseDate('3/4/26').toISOString()).toBe('2026-04-03T00:00:00.000Z');
+    });
+
+    it('should reject impossible Italian dates instead of rolling over', () => {
+      expect(utils.parseDate('31/02/26')).toBeNull();
+      expect(utils.parseDate('15/13/26')).toBeNull();
+    });
+
     it('should treat small numbers as Sheets serial numbers', () => {
       const result = utils.parseDate(44941); // Jan 15, 2023
       expect(result).toBeInstanceOf(Date);

@@ -71,6 +71,8 @@ module.exports = (env, argv) => {
     },
 
     plugins: [
+      // GAS uses Utilities for entropy; remove guarded browser/Node crypto fallbacks.
+      new webpack.DefinePlugin({ 'typeof crypto': JSON.stringify('undefined') }),
       new webpack.NormalModuleReplacementPlugin(
         /src\/testing\/mocks\.js$/,
         path.resolve(__dirname, 'test/fakes/empty-mocks.js')
@@ -181,8 +183,8 @@ module.exports = (env, argv) => {
       minimizer: readable
         ? []
         : [
-            new (require('terser-webpack-plugin'))({
-              terserOptions: {
+            new (require('minimizer-webpack-plugin'))({
+              minimizerOptions: {
                 ecma: 2015,
                 parse: { ecma: 2020 },
                 compress: { defaults: true, drop_console: false },

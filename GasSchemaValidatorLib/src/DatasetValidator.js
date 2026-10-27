@@ -29,7 +29,9 @@ function splitCsv(value) {
 
 function rowIsEmpty(row) {
   const values = Object.values(row);
-  if (values.length === 0) return true;
+  if (values.length === 0) {
+    return true;
+  }
   return values.every((v) => cellToString(v) === '');
 }
 

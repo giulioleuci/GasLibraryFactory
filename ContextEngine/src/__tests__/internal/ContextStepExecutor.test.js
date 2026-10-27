@@ -561,10 +561,7 @@ describe('ContextStepExecutor', () => {
       facade._providerRegistry.get.mockReturnValue(provider);
 
       const sharedTarget = { untouched: true };
-      const clock = jest
-        .spyOn(Date, 'now')
-        .mockReturnValueOnce(1000)
-        .mockReturnValueOnce(1012);
+      const clock = jest.spyOn(Date, 'now').mockReturnValueOnce(1000).mockReturnValueOnce(1012);
       const result = executor.assembleInto(sharedTarget, recipe, {}, {});
       clock.mockRestore();
 

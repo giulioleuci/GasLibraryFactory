@@ -133,7 +133,8 @@ export class UiService extends GoogleService {
   alert(title, message, buttonSet) {
     this._logger.debug(`UiService.alert: Showing alert "${title}"`);
     return this._executeWithRetry(
-      () => (buttonSet ? this._ui.alert(title, message, buttonSet) : this._ui.alert(title, message)),
+      () =>
+        buttonSet ? this._ui.alert(title, message, buttonSet) : this._ui.alert(title, message),
       { title, message },
       1 // Alerts typically don't need retry
     );
@@ -149,7 +150,8 @@ export class UiService extends GoogleService {
   prompt(title, message, buttonSet) {
     this._logger.debug(`UiService.prompt: Showing prompt "${title}"`);
     return this._executeWithRetry(
-      () => (buttonSet ? this._ui.prompt(title, message, buttonSet) : this._ui.prompt(title, message)),
+      () =>
+        buttonSet ? this._ui.prompt(title, message, buttonSet) : this._ui.prompt(title, message),
       { title, message },
       1 // Prompts typically don't need retry
     );

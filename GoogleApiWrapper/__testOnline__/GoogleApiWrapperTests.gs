@@ -1,6 +1,6 @@
 /**
  * 🧪 GoogleApiWrapper Online Tests
- * Entry point for comprehensive Google Workspace service wrapper tests.
+ * Entry point for tests of the native Google Workspace API boundary.
  */
 
 /**
@@ -16,17 +16,6 @@ function initGoogleApiWrapperTests() {
   if (typeof initGoogleApiWrapperTests_Gmail === 'function') initGoogleApiWrapperTests_Gmail(NS);
   if (typeof initGoogleApiWrapperTests_Services === 'function')
     initGoogleApiWrapperTests_Services(NS);
-
-  // Basic Logger test (stays here as it's foundational)
-  runner.register(`${NS}/LoggerService/BasicLogging`, () => {
-    const logger = new LoggerService();
-    logger.info('Test info message');
-    logger.warn('Test warning message');
-    logger.error('Test error message');
-    logger.debug('Test debug message');
-
-    SmartAssert.notNull(logger, 'LoggerService should be created');
-  });
 }
 
 /**

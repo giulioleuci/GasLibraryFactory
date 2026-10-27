@@ -150,30 +150,6 @@ function initGoogleApiWrapperTests_Services(NS) {
     SmartAssert.isTrue(hasLock, 'Should acquire script lock');
   });
 
-  runner.register(`${NS}/PropertiesService/DataTypes`, () => {
-    const deps = createGoogleApiWrapperDeps();
-    const propsService = new PropertiesService(deps.logger);
-
-    const key = 'JSON_KEY_' + deps.utils.generateUuid().substring(0, 8);
-    const complexData = {
-      id: 1,
-      name: 'Test',
-      meta: {
-        active: true,
-        tags: ['a', 'b']
-      }
-    };
-
-    propsService.setProperty(key, JSON.stringify(complexData));
-    const retrieved = JSON.parse(propsService.getProperty(key));
-
-    SmartAssert.equals(retrieved.id, 1, 'JSON data should be persisted');
-    SmartAssert.equals(retrieved.meta.tags.length, 2, 'Nested JSON should be persisted');
-
-    // Cleanup
-    propsService.deleteProperty(key);
-  });
-
   runner.register(`${NS}/CacheService/LimitsAndExpiration`, () => {
     const deps = createGoogleApiWrapperDeps();
     const cacheService = new CacheService(deps.logger, deps.exceptionService);

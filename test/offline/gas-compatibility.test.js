@@ -74,6 +74,10 @@ describe('GAS V8 Compatibility', () => {
   // ─── Scan for potentially incompatible patterns ─────────────────────
 
   describe('Compatibility warnings scan', () => {
+    it('should not contain Web Crypto calls in the GAS bundle', () => {
+      expect(bundleSource.match(/\bcrypto\.getRandomValues\s*\(/g)).toBeNull();
+    });
+
     it('should not contain structuredClone()', () => {
       // ES2022 (Chrome 98+), not available in GAS V8
       const matches = bundleSource.match(/\bstructuredClone\s*\(/g);

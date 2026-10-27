@@ -8,7 +8,12 @@ describe('CompositionResult', () => {
       outputFormat: 'plain_text',
       content: 'Hello',
       blocks: [
-        new BlockResult({ instanceId: 'visible', blockType: 'greeting', content: 'Hello', processingTime: 10 }),
+        new BlockResult({
+          instanceId: 'visible',
+          blockType: 'greeting',
+          content: 'Hello',
+          processingTime: 10
+        }),
         BlockResult.hidden('hidden', 'optional'),
         BlockResult.error('failed', 'notice', new Error('template unavailable'))
       ],

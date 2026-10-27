@@ -1019,6 +1019,28 @@ High-level API for job registration, execution, and lifecycle management.
    */
 ```
 ---
+#### METHOD: JobQueue.setPurgeOnComplete
+- **Scope:** instance
+- **LLM Call Syntax:** `const result = jobQueue.setPurgeOnComplete(purge);`
+- **Pure JSDoc:**
+```javascript
+/**
+   * Purges all job ScriptProperties on successful completion (default: keep the COMPLETED
+   * tombstone). Persisted in the job config, so it also applies to trigger-driven resumes.
+   * After a purge `getStatus(jobName)` reports `not_started`.
+   * @param {boolean} purge
+   * @returns {JobQueue} Current instance.
+   */
+```
+---
+#### METHOD: JobQueue.if
+- **Scope:** instance
+- **LLM Call Syntax:** `jobQueue.if(typeof purge !);`
+- **Pure JSDoc:**
+```javascript
+/** Method if */
+```
+---
 #### METHOD: JobQueue.setOnFailure
 - **Scope:** instance
 - **LLM Call Syntax:** `const result = jobQueue.setOnFailure(callback);`
@@ -1168,6 +1190,14 @@ High-level API for job registration, execution, and lifecycle management.
 #### METHOD: JobQueue.if
 - **Scope:** instance
 - **LLM Call Syntax:** `jobQueue.if(executionResult.done);`
+- **Pure JSDoc:**
+```javascript
+/** Method if */
+```
+---
+#### METHOD: JobQueue.if
+- **Scope:** instance
+- **LLM Call Syntax:** `jobQueue.if(this._config.purgeOnComplete && !executionResult.cancelled);`
 - **Pure JSDoc:**
 ```javascript
 /** Method if */

@@ -374,7 +374,10 @@ export class LoggerService {
    */
   logJobReport(details) {
     const failed = Number.isFinite(details?.falliti) ? details.falliti : 0;
-    return this._writeStructured(failed > 0 ? 'ERROR' : 'INFO', this._structured.jobReport(details));
+    return this._writeStructured(
+      failed > 0 ? 'ERROR' : 'INFO',
+      this._structured.jobReport(details)
+    );
   }
 
   /**

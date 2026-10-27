@@ -511,6 +511,28 @@ windows and resumed with `ImportEngine.runImportChunk`.
    */
 ```
 ---
+#### METHOD: Loader._executeStrategy
+- **Scope:** instance
+- **LLM Call Syntax:** `const result = loader._executeStrategy(table, data, strategy, conflictKey, updateIfNewer, overwriteHandler);`
+- **Pure JSDoc:**
+```javascript
+/**
+   * Dispatches the conflict-resolution strategy, returning zeroed statistics
+   * for empty data. Shared by {@link Loader#load} and {@link Loader#loadChunk}.
+   * @private
+   * @param {Object} table Target persistence table.
+   * @param {Array<Object>} data Records to process (may be empty).
+   * @param {string} strategy Resolution strategy (INSERT_ONLY|UPDATE_ONLY|UPSERT|OVERWRITE).
+   * @param {string} conflictKey Attribute used for collision detection.
+   * @param {Object} updateIfNewer Optional timestamp comparison rules.
+   * @param {Function} overwriteHandler OVERWRITE implementation: `_overwrite`
+   *   for a single-shot load or the first chunk of a chunked run, `_appendAll`
+   *   for later chunks (see {@link Loader#_appendAll}).
+   * @returns {Object} Operational statistics.
+   * @throws {LoadError} If the strategy is unknown.
+   */
+```
+---
 #### METHOD: Loader._insertOnly
 - **Scope:** instance
 - **LLM Call Syntax:** `const result = loader._insertOnly(table, data, conflictKey);`
