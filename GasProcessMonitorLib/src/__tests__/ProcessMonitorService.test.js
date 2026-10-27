@@ -272,11 +272,12 @@ describe('ProcessMonitorService', () => {
       expect(state.endTime).toBeGreaterThanOrEqual(beforeMs);
     });
 
-    it('should persist to properties on complete', () => {
+    it('should delete the persisted property on complete, keeping the final state readable from cache', () => {
+      service.startJob('test-job');
       service.completeJob('test-job');
 
-      const state = JSON.parse(propsStore['PM_test-job']);
-      expect(state.status).toBe(ProcessState.COMPLETED);
+      expect(propsStore['PM_test-job']).toBeUndefined();
+      expect(service.getJobState('test-job').status).toBe(ProcessState.COMPLETED);
     });
   });
 

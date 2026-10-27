@@ -283,6 +283,7 @@ export class ProcessMonitorService {
 
   /**
    * Finalizes a successful process, setting status to COMPLETED and recording the end timestamp.
+   * The final state is kept in cache only; the persisted `PM_<jobId>` property is deleted.
    * @param {string} jobId Unique process identifier.
    * @param {string} [message='Completed successfully'] final outcome summary.
    * @returns {this} Chainable monitor instance.
@@ -299,8 +300,14 @@ export class ProcessMonitorService {
     state.message = message;
     state.endTime = Date.now();
 
-    // Lifecycle event - persist to properties
-    this._writeState(jobId, state, true);
+    // Final state stays in cache only (dashboard reads it until expiry); a finished job
+    // leaves no ScriptProperties entry behind.
+    this._writeState(jobId, state);
+    try {
+      this._propertiesService.deleteProperty(this._getPropsKey(jobId));
+    } catch (error) {
+      this._logger.warn(`[ProcessMonitorService] Failed to clear properties: ${error.message}`);
+    }
     this._logger.info(`[ProcessMonitorService] Job completed: ${jobId}`);
 
     return this;
