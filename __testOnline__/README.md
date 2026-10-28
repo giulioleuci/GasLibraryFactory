@@ -1,433 +1,127 @@
-# GasLibraryFactory - Online Test Suite
+# Online Google API boundary tests
 
-## Overview
+Online tests cover the lowest layer that talks to real Google services. They run
+in Google Apps Script against the compiled bundle. Unit tests and integration
+tests of the libraries run locally with Jest, mocks, and fakes.
 
-This directory contains **online tests** for all GasLibraryFactory libraries. Unlike unit tests that run in isolation, online tests execute in the **real Google Apps Script environment** and test actual interactions with Google Workspace APIs (Drive, Sheets, Docs, etc.).
+## What belongs online
 
-## Purpose
+Keep a test online when its result depends on Google behavior that a fake cannot
+establish: API request/response contracts, real persistence, server-side formula
+evaluation, document structure and formatting, permissions, trigger creation,
+locks, or native Utilities behavior.
 
-Online tests verify that:
+Creating a real spreadsheet or document does not by itself justify an online
+test. If the assertion concerns application logic built on an already tested API
+boundary, exercise that logic offline with a mock or fake.
 
-- The bundled libraries work correctly in the GAS runtime
-- All Google API integrations function as expected
-- Real-world scenarios execute successfully
-- Resource creation and cleanup work properly
-- Performance is acceptable under actual GAS constraints
+The remaining suite contains **28 tests**:
 
-## Test Structure
+| Service                          | Tests | Google behavior checked                                                               |
+| -------------------------------- | ----: | ------------------------------------------------------------------------------------- |
+| DriveService / PermissionService |     7 | Native app access, file and folder lifecycle, searches, metadata, permissions         |
+| DocumentService                  |     2 | Content, tables, headers, footers, lists, images, and clearing content                |
+| SpreadsheetService               |     8 | Sheet lifecycle, formulas, formatting, protections, native range and sheet operations |
+| MailService                      |     3 | Draft creation, sending with attachments, remaining quota                             |
+| PropertiesService                |     2 | Script, user, and container-bound document property storage                           |
+| CacheService                     |     3 | Script and user caches, bulk operations, larger values, expiration                    |
+| UtilitiesService                 |     1 | Native UUID generation, date and string formatting                                    |
+| TriggerService                   |     1 | Creating, listing, and deleting triggers                                              |
+| LockService                      |     1 | Acquiring and releasing a script lock                                                 |
 
-```
-__testOnline__/
-├── README.md                          # This file
-├── shared/                            # Shared test utilities
-│   ├── TestFramework.gs               # Core test framework
-│   └── GasTestUtilities.gs            # GAS-specific test helpers
-├── MasterTestRunner.gs                # Master test runner for all libraries
-│
-GasResilienceLib/__testOnline__/
-├── OnlineTests.gs                     # GasResilienceLib online tests
-│
+Native operations reached through `getStandardApp()` or `openStandard()` remain
+online too: these escape hatches expose Google objects whose behavior matters to
+the libraries using them.
+
+## What belongs offline
+
+The following need no real Google interaction once the underlying API boundary
+has been checked:
+
+- Logging, validation, parsing, serialization, and error classification.
+- Expressions, templates, composition, role resolution, and context assembly.
+- SheetDB queries, repositories, entity mapping, and import transformations.
+- Job and pipeline orchestration, retry decisions, and cross-library scenarios.
+
+These are covered by the libraries' `__tests__/` directories and
+[`test/__tests__/integration/`](../test/__tests__/integration/).
+
+Two redundant online cases were removed:
+
+| Removed online case                            | Existing offline coverage                                                                                                                                                                                      |
+| ---------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `GoogleApiWrapper/LoggerService/BasicLogging`  | [`LoggerService.test.ts`](../CoreUtilsLib/src/__tests__/LoggerService.test.ts) checks all log levels and emitted messages                                                                                      |
+| `GoogleApiWrapper/PropertiesService/DataTypes` | [`PropertiesService.test.ts`](../GoogleApiWrapper/src/services/__tests__/PropertiesService.test.ts) checks string storage, JSON serialization, nested objects, and complex preferences with an in-memory store |
+
+The script-property round trip remains online in `BasicOperations`; repeating
+that round trip with a JSON string adds serialization checks that belong offline.
+
+## Files
+
+```text
 GoogleApiWrapper/__testOnline__/
-├── OnlineTests.gs                     # GoogleApiWrapper online tests
-│
-WorkspaceTemplateEngine/__testOnline__/
-├── OnlineTests.gs                     # WorkspaceTemplateEngine online tests
-│
-GasExpressionEngineLib/__testOnline__/
-├── OnlineTests.gs                     # GasExpressionEngineLib online tests
-│
-SheetDBLib/__testOnline__/
-├── OnlineTests.gs                     # SheetDBLib online tests
-│
-JobRunnerLib/__testOnline__/
-├── OnlineTests.gs                     # JobRunnerLib online tests
-│
-PipelineFramework/__testOnline__/
-├── OnlineTests.gs                     # PipelineFramework online tests
-│
-ContextEngine/__testOnline__/
-├── OnlineTests.gs                     # ContextEngine online tests
-│
-GasDataImporter/__testOnline__/
-└── OnlineTests.gs                     # GasDataImporter online tests
+  GoogleApiWrapperTests.ts             Registration and dependency setup
+  GoogleApiWrapperTests_Drive.ts       Drive and permission API tests
+  GoogleApiWrapperTests_Docs.ts        Docs API tests
+  GoogleApiWrapperTests_Sheets.ts      Sheets API tests
+  GoogleApiWrapperTests_Gmail.ts       Gmail and Mail API tests
+  GoogleApiWrapperTests_Services.ts    Properties, cache, Utilities, triggers, locks
+__testOnline__/
+  MasterTestRunner.ts                  GAS entry points
 ```
 
-## Prerequisites
+`runner`, `SmartAssert`, and `testContext` come from the bundled
+[`GasOnlineTestFramework`](../GasOnlineTestFramework/README.md). The old shared
+helpers and the documentation for the removed online integration suites have
+been removed because the remaining tests do not use them.
 
-Before running online tests, you must:
+## Run locally
 
-1. **Build the project**:
-
-   ```bash
-   npm run build
-   ```
-
-2. **Deploy to Google Apps Script**:
-
-   ```bash
-   npm run push
-   ```
-
-3. **Open the Apps Script editor**:
-
-   ```bash
-   clasp open
-   ```
-
-4. **Copy the test files** to your Apps Script project:
-   - Copy all files from `__testOnline__/shared/` to your project
-   - Copy all files from each library's `__testOnline__/` folder
-   - Copy `__testOnline__/MasterTestRunner.gs`
-
-## Running Tests
-
-### Quick Start
-
-Open the Apps Script editor and run:
-
-```javascript
-runAllQuickTests();
+```bash
+npm test                       # Unit and integration tests with mocks/fakes
+npm run test:integration        # Integration subset
+npm run build:testoffline      # Build, source tests, and compiled-bundle checks
 ```
 
-This runs a fast subset of tests to verify everything is working.
+The bundle checks require a built `dist/Code.js`. `build:testoffline` rebuilds it
+and applies the GAS compatibility patches before running those checks. They
+verify loading, exports, smoke cases, and compatibility patches locally; they do
+not execute the Google APIs.
 
-### Full Test Suite
+## Run in Google Apps Script
 
-To run all tests for all libraries:
+```bash
+npm run typecheck:online        # Strict ES2020/GAS-only script check
+npm run push:testing            # Build, erase each online TS file, deploy the .gs outputs
+clasp open
+```
+
+Run one of these functions in the Apps Script editor:
 
 ```javascript
 runAllOnlineTests();
+runTests('GoogleApiWrapper/DriveService');
+runTests('GoogleApiWrapper/SpreadsheetService');
+runTests('GoogleApiWrapper/CacheService');
+listAvailableTestRunners();
 ```
 
-**Warning**: This may take several minutes and will create temporary Drive resources.
+The build erases each source separately and emits six `TEST_GoogleApiWrapperTests*.gs` files plus `TEST_MASTER_Runner.gs` in `dist/`. The original runner names and all 28 registrations are preserved; no module-loader syntax is emitted. No manual copying is needed. Keep the required advanced Google services
+and OAuth scopes enabled as configured by `appsscript.json`.
 
-### Test a Specific Library
+The tests use a persistent `GAS_TEST_ROOT_PERSISTENT` folder and spreadsheet
+managed by `testContext`, plus temporary files. The mail tests send a message to
+the effective user and create a draft; the permission test temporarily enables
+link sharing on its test file. Document properties are exercised only when the
+script is container-bound.
 
-To run tests for just one library:
+Passing this suite establishes the real API behavior on which offline mocks and
+fakes rely. Library logic must still pass its offline tests. When a wrapper or
+its Google contract changes, update both the boundary test and the corresponding
+offline doubles.
 
-```javascript
-runTestsForLibrary('GoogleApiWrapper');
-```
+## Validation status
 
-Available library names:
+Type checking and local bundle checks do not establish a live Google Apps Script result. Real GAS acceptance remains outstanding until the testing build is deployed to the configured test project and `runAllOnlineTests()` is executed there.
 
-- `GasResilienceLib`
-- `GoogleApiWrapper`
-- `WorkspaceTemplateEngine`
-- `GasExpressionEngineLib`
-- `SheetDBLib`
-- `JobRunnerLib`
-- `PipelineFramework`
-- `ContextEngine`
-- `GasDataImporter`
-
-### Individual Library Tests
-
-Each library has its own test runner:
-
-```javascript
-// Full test suite
-runGasResilienceLibOnlineTests();
-runGoogleApiWrapperOnlineTests();
-runWorkspaceTemplateEngineOnlineTests();
-runGasExpressionEngineLibOnlineTests();
-runSheetDBLibOnlineTests();
-runJobRunnerLibOnlineTests();
-runPipelineFrameworkOnlineTests();
-runContextEngineOnlineTests();
-runGasDataImporterOnlineTests();
-
-// Quick tests (faster subset)
-runQuickGasResilienceLibTests();
-runQuickGoogleApiWrapperTests();
-runQuickWorkspaceTemplateEngineTests();
-runQuickGasExpressionEngineLibTests();
-runQuickSheetDBLibTests();
-runQuickJobRunnerLibTests();
-runQuickPipelineFrameworkTests();
-runQuickContextEngineTests();
-runQuickGasDataImporterTests();
-```
-
-## Test Framework
-
-### Core Components
-
-#### 1. TestFramework
-
-The main test orchestration class:
-
-```javascript
-const framework = new TestFramework('My Test Suite');
-
-framework
-  .setup(() => {
-    // Setup code
-  })
-  .test('Test name', () => {
-    // Test code
-    Assert.equals(actual, expected);
-  })
-  .teardown(() => {
-    // Cleanup code
-  });
-
-framework.run();
-```
-
-#### 2. Assert
-
-Assertion utilities for test validation:
-
-```javascript
-Assert.equals(actual, expected, 'Message');
-Assert.notNull(value, 'Message');
-Assert.isTrue(value, 'Message');
-Assert.isFalse(value, 'Message');
-Assert.greaterThan(actual, expected, 'Message');
-Assert.lessThan(actual, expected, 'Message');
-Assert.contains(array, value, 'Message');
-Assert.arrayLength(array, expectedLength, 'Message');
-Assert.matches(value, regex, 'Message');
-Assert.throws(fn, expectedMessage, 'Message');
-Assert.deepEquals(actual, expected, 'Message');
-```
-
-#### 3. TestResourceManager
-
-Automatic cleanup of test resources:
-
-```javascript
-const resources = new TestResourceManager();
-
-// Track resources for cleanup
-resources.trackFile(fileId);
-resources.trackFolder(folderId);
-resources.trackSpreadsheet(spreadsheetId);
-resources.trackDocument(documentId);
-resources.trackTrigger(triggerId);
-
-// Cleanup all tracked resources
-resources.cleanup();
-```
-
-### GAS Test Utilities
-
-#### DriveTestUtils
-
-```javascript
-DriveTestUtils.createTestFolder('TestFolder');
-DriveTestUtils.createTestFile('TestFile.txt', 'content');
-DriveTestUtils.deleteFolder(folderId);
-DriveTestUtils.deleteFile(fileId);
-```
-
-#### SheetsTestUtils
-
-```javascript
-SheetsTestUtils.createTestSpreadsheet('TestSheet');
-SheetsTestUtils.createSpreadsheetWithData('Sheet', data, headers);
-SheetsTestUtils.getSheetData(spreadsheet);
-SheetsTestUtils.getSheetDataAsObjects(spreadsheet);
-SheetsTestUtils.generateStructuredData(rowCount);
-```
-
-#### DocsTestUtils
-
-```javascript
-DocsTestUtils.createTestDocument('TestDoc');
-DocsTestUtils.createDocumentWithContent('Doc', sections);
-DocsTestUtils.getDocumentText(doc);
-```
-
-#### PropertiesTestUtils
-
-```javascript
-PropertiesTestUtils.setTestProperties(properties, 'script');
-PropertiesTestUtils.getTestProperties(keys, 'script');
-PropertiesTestUtils.clearAllProperties('script');
-```
-
-#### CacheTestUtils
-
-```javascript
-CacheTestUtils.setTestCache(values, 'script');
-CacheTestUtils.getTestCache(keys, 'script');
-CacheTestUtils.clearTestCache(keys, 'script');
-```
-
-## Writing New Tests
-
-### Basic Test Structure
-
-```javascript
-function runMyLibraryOnlineTests() {
-  const framework = new TestFramework('MyLibrary Online Tests');
-  const resources = new TestResourceManager();
-
-  framework
-    .setup(() => {
-      Logger.log('Setting up tests...');
-    })
-    .teardown(() => {
-      resources.cleanup();
-    });
-
-  framework.test('Test description', () => {
-    // Arrange
-    const spreadsheet = SheetsTestUtils.createTestSpreadsheet('Test');
-    resources.trackSpreadsheet(spreadsheet.getId());
-
-    // Act
-    const result = myFunction(spreadsheet);
-
-    // Assert
-    Assert.notNull(result, 'Should return result');
-    Assert.equals(result.status, 'success', 'Should succeed');
-  });
-
-  return framework.run();
-}
-```
-
-### Best Practices
-
-1. **Always cleanup resources**:
-
-   ```javascript
-   resources.trackSpreadsheet(spreadsheet.getId());
-   resources.trackFolder(folder.getId());
-   ```
-
-2. **Use descriptive test names**:
-
-   ```javascript
-   framework.test('DatabaseService - Insert row with auto-generated ID', () => {
-     // ...
-   });
-   ```
-
-3. **Test one thing per test**:
-
-   ```javascript
-   // Good
-   framework.test('Should insert row', () => {
-     /* ... */
-   });
-   framework.test('Should update row', () => {
-     /* ... */
-   });
-
-   // Bad
-   framework.test('Should insert and update and delete', () => {
-     /* ... */
-   });
-   ```
-
-4. **Provide helpful assertion messages**:
-
-   ```javascript
-   Assert.equals(actual, expected, 'Should have correct email after update');
-   ```
-
-5. **Use unique names for test resources**:
-   ```javascript
-   const name = TestDataGenerator.uniqueName('TestFolder');
-   ```
-
-## Resource Cleanup
-
-All tests automatically cleanup resources in the teardown phase. Resources tracked include:
-
-- Files (Google Drive)
-- Folders (Google Drive)
-- Spreadsheets (Google Sheets)
-- Documents (Google Docs)
-- Triggers (Apps Script)
-- Properties (Script/User/Document Properties)
-
-If a test fails, cleanup still occurs in the finally block.
-
-## Performance Considerations
-
-- **Full test suite**: 5-15 minutes (creates many temporary resources)
-- **Quick test suite**: 1-3 minutes (minimal resource creation)
-- **Single library**: 30 seconds - 3 minutes (varies by library)
-
-To minimize execution time:
-
-1. Use `runAllQuickTests()` for routine validation
-2. Run full tests before releases or after major changes
-3. Test individual libraries during development
-
-## Troubleshooting
-
-### Tests Fail with "Service unavailable"
-
-- **Cause**: GAS API rate limits
-- **Solution**: Wait a few minutes and retry
-
-### Tests Fail with "Permission denied"
-
-- **Cause**: Script lacks necessary permissions
-- **Solution**: Review and approve all requested permissions when running tests
-
-### Resources Not Cleaned Up
-
-- **Cause**: Test crashed before cleanup
-- **Solution**: Manually delete test resources from Drive (search for "Test" in file names)
-
-### Tests Timeout
-
-- **Cause**: GAS execution time limit (6 minutes for scripts)
-- **Solution**: Run smaller test suites or individual library tests
-
-## Test Coverage
-
-| Library                 | Online Tests | Quick Tests | Coverage |
-| ----------------------- | ------------ | ----------- | -------- |
-| GasResilienceLib        | ✓            | ✓           | Complete |
-| GoogleApiWrapper        | ✓            | ✓           | Complete |
-| WorkspaceTemplateEngine | ✓            | ✓           | Complete |
-| GasExpressionEngineLib  | ✓            | ✓           | Complete |
-| SheetDBLib              | ✓            | ✓           | Complete |
-| JobRunnerLib            | ✓            | ✓           | Complete |
-| PipelineFramework       | ✓            | ✓           | Complete |
-| ContextEngine           | ✓            | ✓           | Complete |
-| GasDataImporter         | ✓            | ✓           | Complete |
-
-Run `showTestCoverage()` to see this report in the Apps Script console.
-
-## Continuous Integration
-
-These tests are designed for **manual execution** in the Google Apps Script environment. They cannot run in CI/CD pipelines due to GAS environment requirements.
-
-For automated testing, use the unit tests in each library's `Tests.gs` file.
-
-## Support
-
-If you encounter issues with online tests:
-
-1. Verify the library is properly deployed
-2. Check Google Apps Script quotas and limits
-3. Review execution logs for detailed error messages
-4. Ensure all required permissions are granted
-
-## Contributing
-
-When adding new libraries:
-
-1. Create `LibraryName/__testOnline__/OnlineTests.gs`
-2. Implement both full and quick test runners
-3. Add library to `MasterTestRunner.gs`
-4. Update this README
-5. Test locally before committing
-
-## License
-
-MIT License - Same as GasLibraryFactory project
-
----
-
-**Last Updated**: 2025-11-21
-**Version**: 1.0.0
+One pre-existing online test mismatch is preserved: `UtilitiesService/EncodingAndUuid` calls `formatDate`, while the wrapper exposes `formatDateNative`. Its narrow expected-error annotation keeps the original call visible; the migration does not add a runtime alias. The Drive lifecycle test also retains an ignored legacy `{ trash: true }` option; `deleteFiles` already trashes by default.

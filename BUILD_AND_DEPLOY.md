@@ -6,7 +6,7 @@ The build pipeline has three stages:
 2. **GAS V8 post-processing** — The bundled output is patched and validated for GAS compatibility
 3. **CLASP deployment** — The `dist/` directory is pushed to Google Apps Script
 
-The script `scripts/build-and-prepare.cjs` orchestrates the first two stages.
+The script `scripts/build-and-prepare.cts` orchestrates the first two stages.
 
 ## Build Modes
 
@@ -49,29 +49,32 @@ The script `scripts/build-and-prepare.cjs` orchestrates the first two stages.
 
 ## Unified Webpack Configuration
 
-A single `webpack.config.cjs` supports both minified and readable builds:
+The typed `webpack.config.cts` implementation supports both minified and readable builds. The native `webpack.config.cjs` loader reads its compiled `.cache/ts-tools/` output; npm build/watch commands compile tools first:
 
 | Flag             | Effect                          |
 | ---------------- | ------------------------------- |
 | (default)        | Minified via Terser             |
 | `--env readable` | Non-minified, comments stripped |
 
-The build orchestrator (`build-and-prepare.cjs`) automatically selects the correct flags:
+The build orchestrator (`build-and-prepare.cts`, emitted as `.cache/ts-tools/scripts/build-and-prepare.cjs`) automatically selects the correct flags:
 
 - **Production** → `npx webpack --mode production`
 - **Testing / Testoffline** → `npx webpack --mode production --env readable`
 
 ### GAS-Specific Plugin Configuration
 
+The GAS build defines `typeof crypto` as `"undefined"` so Webpack removes guarded
+browser/Node Web Crypto fallbacks. `IdGenerator` uses native `Utilities` in GAS.
+
 **gas-webpack-plugin** is configured with `autoGlobalExportsFiles: []`. This means:
 
-- Only functions explicitly assigned to `global` in `src/index.js` (via `global.functionName = ...`) get top-level function stubs visible in the GAS editor dropdown
+- Only functions explicitly assigned to `global` in `src/index.ts` (via `global.functionName = ...`) get top-level function stubs visible in the GAS editor dropdown
 - Library classes and exports are available globally through `Object.assign(global, LibraryName)` but do NOT produce unnecessary function stubs
 - Result: clean function picker with only callable entry points (`initializeServices`, `exampleUsage`)
 
 ### Babel Configuration
 
-Webpack uses `@babel/preset-env` targeting Chrome 80 (GAS V8 runtime). This target preserves:
+Webpack erases TypeScript and `declare` fields with `@babel/preset-typescript`, then uses `@babel/preset-env` targeting Chrome 80 (GAS V8 runtime). This target preserves:
 
 - ES6 classes (native `class` syntax)
 - Arrow functions, template literals, destructuring
@@ -85,9 +88,10 @@ Deprecated Babel plugins (`@babel/plugin-proposal-class-properties`, `@babel/plu
 
 ```
 ┌──────────────────────────────────────────────────────────────────────────────┐
+│  Step 0 — Compile Node tools and Webpack implementations with TypeScript     │
 │  Step 1 — Clean dist/                                                        │
 │  Step 2 — Webpack build (minified or readable)                               │
-│           └─ CopyOnlineTestsPlugin copies __testOnline__/**/*.gs to dist/    │
+│           └─ Erase online .ts sources into their existing TEST_*.gs files     │
 │           └─ Duplicate TEST___testOnline___*.gs files are removed            │
 │  Step 3 — Copy appsscript.json (validates runtimeVersion: V8)                │
 │  Step 4 — GAS V8 compatibility post-processing                              │
@@ -149,14 +153,17 @@ The bundled `Code.js` may contain code from external npm dependencies (e.g. `es-
 
 ### Test File Naming
 
-The Webpack `CopyOnlineTestsPlugin` copies online test files to `dist/` with these naming conventions:
+The Webpack `CopyOnlineTestsPlugin` erases each online TypeScript source separately into `dist/` with these preserved naming conventions:
 
-| Source Location                             | Output Name                       |
-| ------------------------------------------- | --------------------------------- |
-| `LibraryName/__testOnline__/OnlineTests.gs` | `TEST_LibraryName_OnlineTests.gs` |
-| `__testOnline__/shared/TestFramework.gs`    | `TEST_SHARED_TestFramework.gs`    |
-| `__testOnline__/integration/Test16_*.gs`    | `TEST_INTEGRATION_Test16_*.gs`    |
-| `__testOnline__/MasterTestRunner.gs`        | `TEST_MASTER_Runner.gs`           |
+| Source Location                                                      | Output Name                               |
+| -------------------------------------------------------------------- | ----------------------------------------- |
+| `GoogleApiWrapper/__testOnline__/GoogleApiWrapperTests.ts`           | `TEST_GoogleApiWrapperTests.gs`           |
+| `GoogleApiWrapper/__testOnline__/GoogleApiWrapperTests_<Service>.ts` | `TEST_GoogleApiWrapperTests_<Service>.gs` |
+| `__testOnline__/MasterTestRunner.ts`                                 | `TEST_MASTER_Runner.gs`                   |
+
+Only tests of the native Google API boundary remain online. Business logic and
+cross-library scenarios run locally with mocks and fakes; see the
+[online test guide](__testOnline__/README.md) for the selection policy.
 
 ## Available Build Commands
 
@@ -206,7 +213,7 @@ npm run push:testing
 
 # 4. Open GAS editor and run tests
 clasp open
-# In the Script Editor: run runAllTests() from TEST_MASTER_Runner.gs
+# In the Script Editor: run runAllOnlineTests() from TEST_MASTER_Runner.gs
 ```
 
 ### Production Release
@@ -249,16 +256,14 @@ npm run build:testoffline
 
 ### Testing Mode
 
-| File(s)                       | Count | Purpose                |
-| ----------------------------- | ----- | ---------------------- |
-| `Code.js`                     | 1     | Bundled + patched code |
-| `appsscript.json`             | 1     | GAS project manifest   |
-| `TEST_LibName_OnlineTests.gs` | ~18   | Library online tests   |
-| `TEST_SHARED_*.gs`            | 2     | Shared test utilities  |
-| `TEST_INTEGRATION_*.gs`       | ~11   | Integration tests      |
-| `TEST_MASTER_Runner.gs`       | 1     | Master test runner     |
+| File(s)                          | Count | Purpose                   |
+| -------------------------------- | ----- | ------------------------- |
+| `Code.js`                        | 1     | Bundled + patched code    |
+| `appsscript.json`                | 1     | GAS project manifest      |
+| `TEST_GoogleApiWrapperTests*.gs` | 6     | Google API boundary tests |
+| `TEST_MASTER_Runner.gs`          | 1     | Master test runner        |
 
-**Total: ~35 files**
+**Total: 9 deployment files**, plus source maps, mapping indexes, and `.claspignore`.
 
 ## Verification
 
@@ -286,7 +291,7 @@ grep -c '^class ' dist/Code.js
 ```bash
 npm run build:testing
 ls dist/TEST_*.gs | wc -l
-# Expected: ~32
+# Expected: 7
 
 # Verify classes preserved
 grep -c '^\s*class ' dist/Code.js
@@ -303,7 +308,7 @@ head -5 dist/Code.js
 
 1. Check Node.js version: `node --version` (requires 18+)
 2. Reinstall dependencies: `rm -rf node_modules && npm install`
-3. Check syntax: `node -c scripts/build-and-prepare.cjs`
+3. Check syntax: `npm run typecheck:tools && npm run build:tools`
 
 ### Test files appear in production deployment
 
@@ -327,13 +332,13 @@ head -5 dist/Code.js
 
 ### Adding new GAS entry points
 
-To make a function callable from the GAS editor function picker, add it in `src/index.js`:
+To make a function callable from the GAS editor function picker, add it in `src/index.ts`:
 
 ```javascript
 global.myNewFunction = myNewFunction;
 ```
 
-Only functions assigned to `global` this way get top-level function stubs. Classes and other exports are available globally (via `Object.assign`) but do not appear in the GAS function picker.
+Declare the corresponding global in `types/gas-runtime.d.ts` so the TypeScript source type-checks. Only functions assigned to `global` this way get top-level function stubs. Classes and other exports are available globally (via `Object.assign`) but do not appear in the GAS function picker.
 
 ## GAS V8 Compatibility Reference
 
@@ -367,22 +372,43 @@ Only functions assigned to `global` this way get top-level function stubs. Class
 
 ## Related Files
 
-| File                                      | Purpose                                                           |
-| ----------------------------------------- | ----------------------------------------------------------------- |
-| `webpack.config.cjs`                      | Unified Webpack config (minified + readable via `--env readable`) |
-| `webpack-plugins/StripCommentsPlugin.cjs` | Comment stripping for readable builds                             |
-| `scripts/build-and-prepare.cjs`           | Build orchestration + GAS compatibility                           |
-| `babel.config.cjs`                        | Babel config for Jest (Node.js targeting)                         |
-| `appsscript.json`                         | GAS project manifest (V8 runtime)                                 |
-| `package.json`                            | npm scripts and CLASP rootDir config                              |
+| File                                      | Purpose                                                            |
+| ----------------------------------------- | ------------------------------------------------------------------ |
+| `webpack.config.cjs`                      | Native loader for the compiled `webpack.config.cts` implementation |
+| `webpack-plugins/StripCommentsPlugin.cts` | Comment stripping for readable builds                              |
+| `scripts/build-and-prepare.cts`           | Build orchestration + GAS compatibility                            |
+| `babel.config.cjs`                        | Babel config for Jest (Node.js targeting)                          |
+| `appsscript.json`                         | GAS project manifest (V8 runtime)                                  |
+| `package.json`                            | npm scripts and CLASP rootDir config                               |
 
 ## Quick Reference
 
-| Use Case                  | Command                                     | Output                                              |
-| ------------------------- | ------------------------------------------- | --------------------------------------------------- |
-| Production deployment     | `npm run push:production`                   | Code.js + appsscript.json (2 files, ~815 KB)        |
-| Development with tests    | `npm run push:testing`                      | Code.js + appsscript.json + TEST\_\*.gs (~35 files) |
-| Pre-deployment validation | `npm run build:testoffline`                 | Build + unit/integration/bundle tests               |
-| Build only (production)   | `npm run build:production`                  | dist/ ready for `clasp push`                        |
-| Build only (testing)      | `npm run build:testing`                     | dist/ ready for `clasp push`                        |
-| Clean build               | `npm run clean && npm run build:production` | Fresh dist/                                         |
+| Use Case                  | Command                                     | Output                                                       |
+| ------------------------- | ------------------------------------------- | ------------------------------------------------------------ |
+| Production deployment     | `npm run push:production`                   | Code.js + appsscript.json (2 files, ~815 KB)                 |
+| Development with tests    | `npm run push:testing`                      | Code.js + appsscript.json + TEST\_\*.gs (9 deployment files) |
+| Pre-deployment validation | `npm run build:testoffline`                 | Build + unit/integration/bundle tests                        |
+| Build only (production)   | `npm run build:production`                  | dist/ ready for `clasp push`                                 |
+| Build only (testing)      | `npm run build:testing`                     | dist/ ready for `clasp push`                                 |
+| Clean build               | `npm run clean && npm run build:production` | Fresh dist/                                                  |
+
+## Strict TypeScript delivery
+
+All fifteen library entry points and maintained source/test files use TypeScript. GAS projects use ES2020 and Google Apps Script types without Node or DOM globals; Node tools use a separate compiler project. Relative `.js` specifiers remain in source and emitted declarations.
+
+```bash
+npm run typecheck
+npm run typecheck:tools
+npm run typecheck:online
+npm run build:types
+npx tsc -p tsconfig.consumer.json --noEmit
+npm run verify:typescript
+```
+
+`build:tools` emits `.cts` → `.cjs` and `.ts` → `.js` under `.cache/ts-tools/`. Existing npm build/watch/deploy commands compile those tools before loading them. For direct invocation, use the emitted path, for example `node .cache/ts-tools/scripts/build-and-prepare.cjs --mode=testing`. Source tools are not executable JavaScript.
+
+`build:types` writes all fifteen declaration roots under `.cache/types/<Library>/index.d.ts`. The consumer project resolves those declarations without falling back to source.
+
+`npm run docs` compiles tools, erases TypeScript into comment-preserving `.cache/jsdoc/` JavaScript, and runs installed JSDoc. The generated `DOCS_LIBS/*.md` retain original raw comments and `.ts` paths. Both full and condensed generators require every source class/direct method to appear; changing a glob to include `.ts` is not treated as parser support. See [scripts/README.md](scripts/README.md) for direct condensed-doc commands.
+
+Local checks and generated declarations do not replace real GAS validation. Deploy testing artifacts only to the configured test project, run `runAllOnlineTests()`, and record the project/build and actual results. The current migration has not completed that live acceptance gate; [the online guide](__testOnline__/README.md) documents the preserved `formatDate` test mismatch.

@@ -1,7 +1,7 @@
 # API Reference: GasOnlineTestFramework
 
 ## CLASS: TestContext
-**File Path:** `GasOnlineTestFramework/src/TestContext.js`
+**File Path:** `GasOnlineTestFramework/src/TestContext.ts`
 **Constructor Usage:** `const instance = new TestContext();`
 **Description:** Resource manager for online test execution, maintaining persistent Google Drive artifacts to optimize quota usage and execution speed.
 
@@ -13,7 +13,7 @@
  */
 ```
 
-### Methods of TestContext
+### Methods and properties of TestContext
 
 #### METHOD: TestContext.getRootFolder
 - **Scope:** instance
@@ -171,7 +171,7 @@
 <br>
 
 ## CLASS: SmartAssert
-**File Path:** `GasOnlineTestFramework/src/SmartAssert.js`
+**File Path:** `GasOnlineTestFramework/src/SmartAssert.ts`
 **Constructor Usage:** `const instance = new SmartAssert();`
 **Description:** Verbose assertion engine providing machine-readable diagnostic logs for every verification, optimized for LLM-driven test analysis.
 
@@ -183,7 +183,7 @@
  */
 ```
 
-### Methods of SmartAssert
+### Methods and properties of SmartAssert
 
 #### METHOD: SmartAssert._safeStringify
 - **Scope:** static
@@ -199,6 +199,14 @@
    * @param {string} message Contextual description of the assertion.
    * @throws {Error} If the assertion fails (passed is false).
    */
+```
+---
+#### METHOD: SmartAssert._log
+- **Scope:** static
+- **LLM Call Syntax:** `SmartAssert._log();`
+- **Pure JSDoc:**
+```javascript
+/** No comment available */
 ```
 ---
 #### METHOD: SmartAssert.equals
@@ -390,7 +398,7 @@
 <br>
 
 ## CLASS: SampleSpreadsheetBuilder
-**File Path:** `GasOnlineTestFramework/src/SampleSpreadsheetBuilder.js`
+**File Path:** `GasOnlineTestFramework/src/SampleSpreadsheetBuilder.ts`
 **Constructor Usage:** `const instance = new SampleSpreadsheetBuilder();`
 **Description:** Wraps a live Spreadsheet handle with add-sheet/append-row
 operations, so library consumers building sample test data never call
@@ -406,83 +414,7 @@ operations, so library consumers building sample test data never call
  */
 ```
 
-### Methods of SampleSpreadsheetBuilder
-
-#### METHOD: SampleSpreadsheetBuilder.addSheet
-- **Scope:** instance
-- **LLM Call Syntax:** `sampleSpreadsheetBuilder.addSheet(name, headerRow);`
-- **Pure JSDoc:**
-```javascript
-/**
-   * @description Creates a new sheet with the given header row, dropping the
-   * spreadsheet's auto-created placeholder sheet the first time this is called.
-   * Flushes afterwards so the new tab is immediately visible to callers reading
-   * the spreadsheet back through the Advanced Sheets Service (e.g. SheetDBLib's
-   * schema explorer), which — unlike `SpreadsheetApp` — does not see pending,
-   * unflushed `SpreadsheetApp` writes within the same execution.
-   * @param {string} name Sheet name.
-   * @param {string[]} headerRow Header cell values.
-   */
-```
----
-#### METHOD: SampleSpreadsheetBuilder.appendRow
-- **Scope:** instance
-- **LLM Call Syntax:** `sampleSpreadsheetBuilder.appendRow(sheetName, row);`
-- **Pure JSDoc:**
-```javascript
-/**
-   * @description Appends a row to a named sheet, matching values to that sheet's header order
-   * (as declared via {@link addSheet} — tracked locally rather than re-read from the live sheet,
-   * to avoid an extra round-trip per row). Flushes afterwards for the same reason as
-   * {@link addSheet} — row data written via `SpreadsheetApp` must be committed before any
-   * Advanced-Sheets-Service-backed read (e.g. SheetDBLib) can see it.
-   * @param {string} sheetName Target sheet name.
-   * @param {Object<string, *>} row Values keyed by header name.
-   * @throws {Error} If the named sheet does not exist.
-   */
-```
----
-#### METHOD: SampleSpreadsheetBuilder.appendRows
-- **Scope:** instance
-- **LLM Call Syntax:** `sampleSpreadsheetBuilder.appendRows(sheetName, rows);`
-- **Pure JSDoc:**
-```javascript
-/**
-   * @description Appends many rows in one setValues call, with a single flush at
-   * the end. Mirrors {@link appendRow}'s header-order matching, without paying a
-   * getSheetByName + appendRow + flush round-trip per row.
-   * @param {string} sheetName
-   * @param {Array<Object<string,*>>} rows Values keyed by header name.
-   * @throws {Error} If the named sheet does not exist.
-   */
-```
----
-#### METHOD: SampleSpreadsheetBuilder.getUrl
-- **Scope:** instance
-- **LLM Call Syntax:** `const result = sampleSpreadsheetBuilder.getUrl();`
-- **Pure JSDoc:**
-```javascript
-/**
-   * @description Public URL of the underlying spreadsheet.
-   * @returns {string}
-   */
-```
----
-<br>
-
-## CLASS: SampleSpreadsheetBuilder
-**File Path:** `GasOnlineTestFramework/src/SampleSpreadsheetBuilder.js`
-**Constructor Usage:** `const instance = new SampleSpreadsheetBuilder(spreadsheet);`
-**Description:** N/A
-
-### Raw JSDoc Context:
-```javascript
-/**
-   * @param {GoogleAppsScript.Spreadsheet.Spreadsheet} spreadsheet Live spreadsheet handle.
-   */
-```
-
-### Methods of SampleSpreadsheetBuilder
+### Methods and properties of SampleSpreadsheetBuilder
 
 #### METHOD: SampleSpreadsheetBuilder.addSheet
 - **Scope:** instance
@@ -547,7 +479,7 @@ operations, so library consumers building sample test data never call
 <br>
 
 ## CLASS: EnhancedTestRunner
-**File Path:** `GasOnlineTestFramework/src/EnhancedTestRunner.js`
+**File Path:** `GasOnlineTestFramework/src/EnhancedTestRunner.ts`
 **Constructor Usage:** `const instance = new EnhancedTestRunner();`
 **Description:** Registry-based test orchestrator for Google Apps Script, supporting namespaced test discovery and structured diagnostic logging.
 
@@ -559,7 +491,7 @@ operations, so library consumers building sample test data never call
  */
 ```
 
-### Methods of EnhancedTestRunner
+### Methods and properties of EnhancedTestRunner
 
 #### METHOD: EnhancedTestRunner.register
 - **Scope:** instance

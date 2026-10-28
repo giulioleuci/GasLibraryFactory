@@ -1,8 +1,8 @@
 # API Reference: ComposableContentLib
 
 ## CLASS: ContentBlockMock
-**File Path:** `ComposableContentLib/src/testing/mocks.js`
-**Constructor Usage:** `const instance = new ContentBlockMock(typeId);`
+**File Path:** `ComposableContentLib/src/testing/mocks.ts`
+**Constructor Usage:** `const instance = new ContentBlockMock();`
 **Description:** High-fidelity Jest mock for ContentBlock implementations.
 
 ### Raw JSDoc Context:
@@ -16,7 +16,7 @@
 <br>
 
 ## CLASS: BlockRegistryMock
-**File Path:** `ComposableContentLib/src/testing/mocks.js`
+**File Path:** `ComposableContentLib/src/testing/mocks.ts`
 **Constructor Usage:** `const instance = new BlockRegistryMock();`
 **Description:** High-fidelity Jest mock for BlockRegistry.
 
@@ -31,8 +31,8 @@
 <br>
 
 ## CLASS: RendererRegistry
-**File Path:** `ComposableContentLib/src/registry/RendererRegistry.js`
-**Constructor Usage:** `const instance = new RendererRegistry(options, options.registerDefaults, options.logger);`
+**File Path:** `ComposableContentLib/src/registry/RendererRegistry.ts`
+**Constructor Usage:** `const instance = new RendererRegistry();`
 **Description:** Centralized registry for BlockRenderer instances mapped by output format (e.g., 'html', 'markdown').
 
 ### Raw JSDoc Context:
@@ -43,7 +43,7 @@
  */
 ```
 
-### Methods of RendererRegistry
+### Methods and properties of RendererRegistry
 
 #### METHOD: RendererRegistry._registerDefaults
 - **Scope:** instance
@@ -175,8 +175,8 @@
 <br>
 
 ## CLASS: BlockRegistry
-**File Path:** `ComposableContentLib/src/registry/BlockRegistry.js`
-**Constructor Usage:** `const instance = new BlockRegistry(options, options.logger);`
+**File Path:** `ComposableContentLib/src/registry/BlockRegistry.ts`
+**Constructor Usage:** `const instance = new BlockRegistry();`
 **Description:** Centralized registry for block type definitions and factory mappings for ContentBlock instantiation.
 
 ### Raw JSDoc Context:
@@ -187,7 +187,7 @@
  */
 ```
 
-### Methods of BlockRegistry
+### Methods and properties of BlockRegistry
 
 #### METHOD: BlockRegistry.register
 - **Scope:** instance
@@ -336,8 +336,8 @@
 <br>
 
 ## CLASS: VisibilityEvaluator
-**File Path:** `ComposableContentLib/src/internal/VisibilityEvaluator.js`
-**Constructor Usage:** `const instance = new VisibilityEvaluator(expressionEngine);`
+**File Path:** `ComposableContentLib/src/internal/VisibilityEvaluator.ts`
+**Constructor Usage:** `const instance = new VisibilityEvaluator();`
 **Description:** Engine for resolving block visibility conditions against a data context.
 Supports static rules ('always', 'never'), simple path truthiness, and complex expression evaluation.
 
@@ -353,7 +353,7 @@ Supports static rules ('always', 'never'), simple path truthiness, and complex e
  */
 ```
 
-### Methods of VisibilityEvaluator
+### Methods and properties of VisibilityEvaluator
 
 #### METHOD: VisibilityEvaluator.isVisible
 - **Scope:** instance
@@ -450,8 +450,8 @@ Supports static rules ('always', 'never'), simple path truthiness, and complex e
 <br>
 
 ## CLASS: BlockRenderer
-**File Path:** `ComposableContentLib/src/internal/BlockRenderer.js`
-**Constructor Usage:** `const instance = new BlockRenderer(options, options.logger, options.templates);`
+**File Path:** `ComposableContentLib/src/internal/BlockRenderer.ts`
+**Constructor Usage:** `const instance = new BlockRenderer();`
 **Description:** Abstract base class for block rendering engines. Subclasses must implement format-specific logic.
 
 ### Raw JSDoc Context:
@@ -463,7 +463,7 @@ Supports static rules ('always', 'never'), simple path truthiness, and complex e
  */
 ```
 
-### Methods of BlockRenderer
+### Methods and properties of BlockRenderer
 
 #### METHOD: BlockRenderer.getFormat
 - **Scope:** instance
@@ -601,7 +601,7 @@ Supports static rules ('always', 'never'), simple path truthiness, and complex e
 <br>
 
 ## CLASS: MarkdownRenderer
-**File Path:** `ComposableContentLib/src/internal/BlockRenderer.js`
+**File Path:** `ComposableContentLib/src/internal/BlockRenderer.ts`
 **Constructor Usage:** `const instance = new MarkdownRenderer();`
 **Description:** Markdown-specialized renderer implementation.
 
@@ -614,7 +614,7 @@ Supports static rules ('always', 'never'), simple path truthiness, and complex e
  */
 ```
 
-### Methods of MarkdownRenderer
+### Methods and properties of MarkdownRenderer
 
 #### METHOD: MarkdownRenderer.getFormat
 - **Scope:** instance
@@ -642,115 +642,10 @@ Supports static rules ('always', 'never'), simple path truthiness, and complex e
    */
 ```
 ---
-#### METHOD: MarkdownRenderer.render
-- **Scope:** instance
-- **LLM Call Syntax:** `const result = markdownRenderer.render(templateId, data, options, options.containerType, options.blockType);`
-- **Pure JSDoc:**
-```javascript
-/**
-   * Executes template rendering with provided data and options.
-   * @param {string} templateId Target template identifier.
-   * @param {Object} data Source data for interpolation.
-   * @param {Object} [options={}] Rendering configuration.
-   * @param {string} [options.containerType] Optional container wrapping (ContainerType enum).
-   * @param {string} [options.blockType] Block type ID for class name generation.
-   * @returns {string} Fully rendered content string.
-   * @throws {TemplateNotFoundError} If templateId is not registered.
-   * @throws {RenderingError} If rendering logic or interpolation fails.
-   */
-```
----
-#### METHOD: MarkdownRenderer._processTemplate
-- **Scope:** instance
-- **LLM Call Syntax:** `const result = markdownRenderer._processTemplate(template, data);`
-- **Pure JSDoc:**
-```javascript
-/**
-   * Processes template string via regex-based interpolation ({{path.to.value}}).
-   * @param {string} template Source template string.
-   * @param {Object} data Source data object.
-   * @returns {string} Interpolated output.
-   * @protected
-   */
-```
----
-#### METHOD: MarkdownRenderer._getValueByPath
-- **Scope:** instance
-- **LLM Call Syntax:** `const result = markdownRenderer._getValueByPath(obj, path);`
-- **Pure JSDoc:**
-```javascript
-/**
-   * Resolves a value from a nested object using dot-notation.
-   * @param {Object} obj Target object.
-   * @param {string} path Dot-separated property path.
-   * @returns {*} Resolved value or undefined if path does not exist.
-   * @protected
-   */
-```
----
-#### METHOD: MarkdownRenderer.registerTemplate
-- **Scope:** instance
-- **LLM Call Syntax:** `const result = markdownRenderer.registerTemplate(templateId, template);`
-- **Pure JSDoc:**
-```javascript
-/**
-   * Registers a single template string or function.
-   * @param {string} templateId Target template identifier.
-   * @param {string|Function} template Template payload.
-   * @returns {BlockRenderer} Fluent interface for chaining.
-   */
-```
----
-#### METHOD: MarkdownRenderer.registerTemplates
-- **Scope:** instance
-- **LLM Call Syntax:** `const result = markdownRenderer.registerTemplates(templates);`
-- **Pure JSDoc:**
-```javascript
-/**
-   * Registers multiple templates from a KV map.
-   * @param {Object<string, string|Function>} templates Map of template identifiers to payloads.
-   * @returns {BlockRenderer} Fluent interface for chaining.
-   */
-```
----
-#### METHOD: MarkdownRenderer.hasTemplate
-- **Scope:** instance
-- **LLM Call Syntax:** `const result = markdownRenderer.hasTemplate(templateId);`
-- **Pure JSDoc:**
-```javascript
-/**
-   * Validates presence of a template in the renderer registry.
-   * @param {string} templateId Target template identifier.
-   * @returns {boolean} True if registered.
-   */
-```
----
-#### METHOD: MarkdownRenderer.templateCount
-- **Scope:** instance
-- **LLM Call Syntax:** `const result = markdownRenderer.templateCount();`
-- **Pure JSDoc:**
-```javascript
-/**
-   * Returns total number of registered templates.
-   * @returns {number} Template count.
-   */
-```
----
-#### METHOD: MarkdownRenderer.toString
-- **Scope:** instance
-- **LLM Call Syntax:** `const result = markdownRenderer.toString();`
-- **Pure JSDoc:**
-```javascript
-/**
-   * Returns diagnostic summary string including format and template count.
-   * @returns {string} Diagnostic summary.
-   */
-```
----
 <br>
 
 ## CLASS: PlainTextRenderer
-**File Path:** `ComposableContentLib/src/internal/BlockRenderer.js`
+**File Path:** `ComposableContentLib/src/internal/BlockRenderer.ts`
 **Constructor Usage:** `const instance = new PlainTextRenderer();`
 **Description:** Plain text specialized renderer implementation.
 
@@ -763,7 +658,7 @@ Supports static rules ('always', 'never'), simple path truthiness, and complex e
  */
 ```
 
-### Methods of PlainTextRenderer
+### Methods and properties of PlainTextRenderer
 
 #### METHOD: PlainTextRenderer.getFormat
 - **Scope:** instance
@@ -791,115 +686,10 @@ Supports static rules ('always', 'never'), simple path truthiness, and complex e
    */
 ```
 ---
-#### METHOD: PlainTextRenderer.render
-- **Scope:** instance
-- **LLM Call Syntax:** `const result = plainTextRenderer.render(templateId, data, options, options.containerType, options.blockType);`
-- **Pure JSDoc:**
-```javascript
-/**
-   * Executes template rendering with provided data and options.
-   * @param {string} templateId Target template identifier.
-   * @param {Object} data Source data for interpolation.
-   * @param {Object} [options={}] Rendering configuration.
-   * @param {string} [options.containerType] Optional container wrapping (ContainerType enum).
-   * @param {string} [options.blockType] Block type ID for class name generation.
-   * @returns {string} Fully rendered content string.
-   * @throws {TemplateNotFoundError} If templateId is not registered.
-   * @throws {RenderingError} If rendering logic or interpolation fails.
-   */
-```
----
-#### METHOD: PlainTextRenderer._processTemplate
-- **Scope:** instance
-- **LLM Call Syntax:** `const result = plainTextRenderer._processTemplate(template, data);`
-- **Pure JSDoc:**
-```javascript
-/**
-   * Processes template string via regex-based interpolation ({{path.to.value}}).
-   * @param {string} template Source template string.
-   * @param {Object} data Source data object.
-   * @returns {string} Interpolated output.
-   * @protected
-   */
-```
----
-#### METHOD: PlainTextRenderer._getValueByPath
-- **Scope:** instance
-- **LLM Call Syntax:** `const result = plainTextRenderer._getValueByPath(obj, path);`
-- **Pure JSDoc:**
-```javascript
-/**
-   * Resolves a value from a nested object using dot-notation.
-   * @param {Object} obj Target object.
-   * @param {string} path Dot-separated property path.
-   * @returns {*} Resolved value or undefined if path does not exist.
-   * @protected
-   */
-```
----
-#### METHOD: PlainTextRenderer.registerTemplate
-- **Scope:** instance
-- **LLM Call Syntax:** `const result = plainTextRenderer.registerTemplate(templateId, template);`
-- **Pure JSDoc:**
-```javascript
-/**
-   * Registers a single template string or function.
-   * @param {string} templateId Target template identifier.
-   * @param {string|Function} template Template payload.
-   * @returns {BlockRenderer} Fluent interface for chaining.
-   */
-```
----
-#### METHOD: PlainTextRenderer.registerTemplates
-- **Scope:** instance
-- **LLM Call Syntax:** `const result = plainTextRenderer.registerTemplates(templates);`
-- **Pure JSDoc:**
-```javascript
-/**
-   * Registers multiple templates from a KV map.
-   * @param {Object<string, string|Function>} templates Map of template identifiers to payloads.
-   * @returns {BlockRenderer} Fluent interface for chaining.
-   */
-```
----
-#### METHOD: PlainTextRenderer.hasTemplate
-- **Scope:** instance
-- **LLM Call Syntax:** `const result = plainTextRenderer.hasTemplate(templateId);`
-- **Pure JSDoc:**
-```javascript
-/**
-   * Validates presence of a template in the renderer registry.
-   * @param {string} templateId Target template identifier.
-   * @returns {boolean} True if registered.
-   */
-```
----
-#### METHOD: PlainTextRenderer.templateCount
-- **Scope:** instance
-- **LLM Call Syntax:** `const result = plainTextRenderer.templateCount();`
-- **Pure JSDoc:**
-```javascript
-/**
-   * Returns total number of registered templates.
-   * @returns {number} Template count.
-   */
-```
----
-#### METHOD: PlainTextRenderer.toString
-- **Scope:** instance
-- **LLM Call Syntax:** `const result = plainTextRenderer.toString();`
-- **Pure JSDoc:**
-```javascript
-/**
-   * Returns diagnostic summary string including format and template count.
-   * @returns {string} Diagnostic summary.
-   */
-```
----
 <br>
 
 ## CLASS: HtmlRenderer
-**File Path:** `ComposableContentLib/src/internal/BlockRenderer.js`
+**File Path:** `ComposableContentLib/src/internal/BlockRenderer.ts`
 **Constructor Usage:** `const instance = new HtmlRenderer();`
 **Description:** HTML-specialized renderer implementation.
 
@@ -912,7 +702,7 @@ Supports static rules ('always', 'never'), simple path truthiness, and complex e
  */
 ```
 
-### Methods of HtmlRenderer
+### Methods and properties of HtmlRenderer
 
 #### METHOD: HtmlRenderer.getFormat
 - **Scope:** instance
@@ -940,116 +730,11 @@ Supports static rules ('always', 'never'), simple path truthiness, and complex e
    */
 ```
 ---
-#### METHOD: HtmlRenderer.render
-- **Scope:** instance
-- **LLM Call Syntax:** `const result = htmlRenderer.render(templateId, data, options, options.containerType, options.blockType);`
-- **Pure JSDoc:**
-```javascript
-/**
-   * Executes template rendering with provided data and options.
-   * @param {string} templateId Target template identifier.
-   * @param {Object} data Source data for interpolation.
-   * @param {Object} [options={}] Rendering configuration.
-   * @param {string} [options.containerType] Optional container wrapping (ContainerType enum).
-   * @param {string} [options.blockType] Block type ID for class name generation.
-   * @returns {string} Fully rendered content string.
-   * @throws {TemplateNotFoundError} If templateId is not registered.
-   * @throws {RenderingError} If rendering logic or interpolation fails.
-   */
-```
----
-#### METHOD: HtmlRenderer._processTemplate
-- **Scope:** instance
-- **LLM Call Syntax:** `const result = htmlRenderer._processTemplate(template, data);`
-- **Pure JSDoc:**
-```javascript
-/**
-   * Processes template string via regex-based interpolation ({{path.to.value}}).
-   * @param {string} template Source template string.
-   * @param {Object} data Source data object.
-   * @returns {string} Interpolated output.
-   * @protected
-   */
-```
----
-#### METHOD: HtmlRenderer._getValueByPath
-- **Scope:** instance
-- **LLM Call Syntax:** `const result = htmlRenderer._getValueByPath(obj, path);`
-- **Pure JSDoc:**
-```javascript
-/**
-   * Resolves a value from a nested object using dot-notation.
-   * @param {Object} obj Target object.
-   * @param {string} path Dot-separated property path.
-   * @returns {*} Resolved value or undefined if path does not exist.
-   * @protected
-   */
-```
----
-#### METHOD: HtmlRenderer.registerTemplate
-- **Scope:** instance
-- **LLM Call Syntax:** `const result = htmlRenderer.registerTemplate(templateId, template);`
-- **Pure JSDoc:**
-```javascript
-/**
-   * Registers a single template string or function.
-   * @param {string} templateId Target template identifier.
-   * @param {string|Function} template Template payload.
-   * @returns {BlockRenderer} Fluent interface for chaining.
-   */
-```
----
-#### METHOD: HtmlRenderer.registerTemplates
-- **Scope:** instance
-- **LLM Call Syntax:** `const result = htmlRenderer.registerTemplates(templates);`
-- **Pure JSDoc:**
-```javascript
-/**
-   * Registers multiple templates from a KV map.
-   * @param {Object<string, string|Function>} templates Map of template identifiers to payloads.
-   * @returns {BlockRenderer} Fluent interface for chaining.
-   */
-```
----
-#### METHOD: HtmlRenderer.hasTemplate
-- **Scope:** instance
-- **LLM Call Syntax:** `const result = htmlRenderer.hasTemplate(templateId);`
-- **Pure JSDoc:**
-```javascript
-/**
-   * Validates presence of a template in the renderer registry.
-   * @param {string} templateId Target template identifier.
-   * @returns {boolean} True if registered.
-   */
-```
----
-#### METHOD: HtmlRenderer.templateCount
-- **Scope:** instance
-- **LLM Call Syntax:** `const result = htmlRenderer.templateCount();`
-- **Pure JSDoc:**
-```javascript
-/**
-   * Returns total number of registered templates.
-   * @returns {number} Template count.
-   */
-```
----
-#### METHOD: HtmlRenderer.toString
-- **Scope:** instance
-- **LLM Call Syntax:** `const result = htmlRenderer.toString();`
-- **Pure JSDoc:**
-```javascript
-/**
-   * Returns diagnostic summary string including format and template count.
-   * @returns {string} Diagnostic summary.
-   */
-```
----
 <br>
 
 ## CLASS: ComposableContentError
-**File Path:** `ComposableContentLib/src/errors/ComposableContentError.js`
-**Constructor Usage:** `const instance = new ComposableContentError(message, details);`
+**File Path:** `ComposableContentLib/src/errors/ComposableContentError.ts`
+**Constructor Usage:** `const instance = new ComposableContentError();`
 **Description:** Base class for domain-specific exceptions within the composition engine.
 Extends the shared {@link BaseError} to inherit standardized stack-trace capture and timestamping.
 
@@ -1066,8 +751,8 @@ Extends the shared {@link BaseError} to inherit standardized stack-trace capture
 <br>
 
 ## CLASS: BlockNotFoundError
-**File Path:** `ComposableContentLib/src/errors/ComposableContentError.js`
-**Constructor Usage:** `const instance = new BlockNotFoundError(blockType);`
+**File Path:** `ComposableContentLib/src/errors/ComposableContentError.ts`
+**Constructor Usage:** `const instance = new BlockNotFoundError();`
 **Description:** Exception thrown when a requested block type is not registered.
 
 ### Raw JSDoc Context:
@@ -1082,8 +767,8 @@ Extends the shared {@link BaseError} to inherit standardized stack-trace capture
 <br>
 
 ## CLASS: RenderingError
-**File Path:** `ComposableContentLib/src/errors/ComposableContentError.js`
-**Constructor Usage:** `const instance = new RenderingError(message, blockType, format, cause);`
+**File Path:** `ComposableContentLib/src/errors/ComposableContentError.ts`
+**Constructor Usage:** `const instance = new RenderingError();`
 **Description:** Exception thrown when template rendering fails during block execution.
 
 ### Raw JSDoc Context:
@@ -1098,8 +783,8 @@ Extends the shared {@link BaseError} to inherit standardized stack-trace capture
 <br>
 
 ## CLASS: RecipeValidationError
-**File Path:** `ComposableContentLib/src/errors/ComposableContentError.js`
-**Constructor Usage:** `const instance = new RecipeValidationError(message, recipeId, validationErrors);`
+**File Path:** `ComposableContentLib/src/errors/ComposableContentError.ts`
+**Constructor Usage:** `const instance = new RecipeValidationError();`
 **Description:** Exception thrown when a Recipe definition manifest fails structural validation.
 
 ### Raw JSDoc Context:
@@ -1114,8 +799,8 @@ Extends the shared {@link BaseError} to inherit standardized stack-trace capture
 <br>
 
 ## CLASS: RendererNotFoundError
-**File Path:** `ComposableContentLib/src/errors/ComposableContentError.js`
-**Constructor Usage:** `const instance = new RendererNotFoundError(format);`
+**File Path:** `ComposableContentLib/src/errors/ComposableContentError.ts`
+**Constructor Usage:** `const instance = new RendererNotFoundError();`
 **Description:** Exception thrown when no renderer is registered for a requested output format.
 
 ### Raw JSDoc Context:
@@ -1130,8 +815,8 @@ Extends the shared {@link BaseError} to inherit standardized stack-trace capture
 <br>
 
 ## CLASS: TemplateNotFoundError
-**File Path:** `ComposableContentLib/src/errors/ComposableContentError.js`
-**Constructor Usage:** `const instance = new TemplateNotFoundError(templateId);`
+**File Path:** `ComposableContentLib/src/errors/ComposableContentError.ts`
+**Constructor Usage:** `const instance = new TemplateNotFoundError();`
 **Description:** Exception thrown when a block's required template ID cannot be resolved.
 
 ### Raw JSDoc Context:
@@ -1146,8 +831,8 @@ Extends the shared {@link BaseError} to inherit standardized stack-trace capture
 <br>
 
 ## CLASS: DataRequirementError
-**File Path:** `ComposableContentLib/src/errors/ComposableContentError.js`
-**Constructor Usage:** `const instance = new DataRequirementError(blockType, missingKeys);`
+**File Path:** `ComposableContentLib/src/errors/ComposableContentError.ts`
+**Constructor Usage:** `const instance = new DataRequirementError();`
 **Description:** Exception thrown when a block's defined context data dependencies are unfulfilled.
 
 ### Raw JSDoc Context:
@@ -1162,8 +847,8 @@ Extends the shared {@link BaseError} to inherit standardized stack-trace capture
 <br>
 
 ## CLASS: BlockDataContext
-**File Path:** `ComposableContentLib/src/data/BlockDataContext.js`
-**Constructor Usage:** `const instance = new BlockDataContext(data, globalContext);`
+**File Path:** `ComposableContentLib/src/data/BlockDataContext.ts`
+**Constructor Usage:** `const instance = new BlockDataContext();`
 **Description:** Encapsulated state container for rendering context.
 Supports dot-notation resolution, merging global vs. block-local data, and immutable scoping.
 
@@ -1179,7 +864,7 @@ Supports dot-notation resolution, merging global vs. block-local data, and immut
  */
 ```
 
-### Methods of BlockDataContext
+### Methods and properties of BlockDataContext
 
 #### METHOD: BlockDataContext.get
 - **Scope:** instance
@@ -1300,8 +985,8 @@ Supports dot-notation resolution, merging global vs. block-local data, and immut
 <br>
 
 ## CLASS: ContentBlock
-**File Path:** `ComposableContentLib/src/core/ContentBlock.js`
-**Constructor Usage:** `const instance = new ContentBlock(definition, config);`
+**File Path:** `ComposableContentLib/src/core/ContentBlock.ts`
+**Constructor Usage:** `const instance = new ContentBlock();`
 **Description:** Abstract base class defining the execution contract for content blocks.
 Subclasses implement data extraction and template resolution and may customize empty-state
 evaluation.
@@ -1322,7 +1007,7 @@ evaluation.
  */
 ```
 
-### Methods of ContentBlock
+### Methods and properties of ContentBlock
 
 #### METHOD: ContentBlock.getTypeId
 - **Scope:** instance
@@ -1455,8 +1140,8 @@ evaluation.
 <br>
 
 ## CLASS: SimpleContentBlock
-**File Path:** `ComposableContentLib/src/core/ContentBlock.js`
-**Constructor Usage:** `const instance = new SimpleContentBlock(definition, config, config.dataExtractor, config.emptyChecker, config.templates);`
+**File Path:** `ComposableContentLib/src/core/ContentBlock.ts`
+**Constructor Usage:** `const instance = new SimpleContentBlock();`
 **Description:** Concrete implementation of ContentBlock using injected extractor functions instead of subclassing.
 
 ### Raw JSDoc Context:
@@ -1473,7 +1158,7 @@ evaluation.
  */
 ```
 
-### Methods of SimpleContentBlock
+### Methods and properties of SimpleContentBlock
 
 #### METHOD: SimpleContentBlock.getData
 - **Scope:** instance
@@ -1512,100 +1197,11 @@ evaluation.
    */
 ```
 ---
-#### METHOD: SimpleContentBlock.getTypeId
-- **Scope:** instance
-- **LLM Call Syntax:** `const result = simpleContentBlock.getTypeId();`
-- **Pure JSDoc:**
-```javascript
-/**
-   * @description Returns the unique identifier from the block definition.
-   * @returns {string} Block type ID.
-   */
-```
----
-#### METHOD: SimpleContentBlock.getName
-- **Scope:** instance
-- **LLM Call Syntax:** `const result = simpleContentBlock.getName();`
-- **Pure JSDoc:**
-```javascript
-/**
-   * @description Returns the human-readable name from the block definition.
-   * @returns {string} Block name.
-   */
-```
----
-#### METHOD: SimpleContentBlock.evaluate
-- **Scope:** instance
-- **LLM Call Syntax:** `const result = simpleContentBlock.evaluate(instanceId, context, format, renderer);`
-- **Pure JSDoc:**
-```javascript
-/**
-   * @description Orchestrates the block lifecycle: data extraction, empty state handling, and template rendering.
-   * @param {string} instanceId Unique instance identifier.
-   * @param {BlockDataContext} context Data payload.
-   * @param {string} format Target output format.
-   * @param {BlockRenderer} renderer Engine capable of processing the template.
-   * @returns {BlockResult} Encapsulated execution outcome.
-   */
-```
----
-#### METHOD: SimpleContentBlock.render
-- **Scope:** instance
-- **LLM Call Syntax:** `const result = simpleContentBlock.render(data, format, renderer, templateId);`
-- **Pure JSDoc:**
-```javascript
-/**
-   * @description Delegates final string generation to the injected renderer.
-   * @param {Object} data Extracted payload.
-   * @param {string} format Output format.
-   * @param {BlockRenderer} renderer Engine instance.
-   * @param {string} templateId Resolved template identifier.
-   * @returns {string} Rendered content string.
-   * @throws {Error} If renderer is not provided.
-   */
-```
----
-#### METHOD: SimpleContentBlock._getMetadata
-- **Scope:** instance
-- **LLM Call Syntax:** `const result = simpleContentBlock._getMetadata(data);`
-- **Pure JSDoc:**
-```javascript
-/**
-   * @description Generates diagnostic metadata for the BlockResult.
-   * @param {Object} data Extracted block data.
-   * @returns {Object} Metadata dictionary.
-   * @protected
-   */
-```
----
-#### METHOD: SimpleContentBlock.supportsFormat
-- **Scope:** instance
-- **LLM Call Syntax:** `const result = simpleContentBlock.supportsFormat(format);`
-- **Pure JSDoc:**
-```javascript
-/**
-   * @description Verifies format support against the block definition.
-   * @param {string} format Target output format.
-   * @returns {boolean} True if supported.
-   */
-```
----
-#### METHOD: SimpleContentBlock.toString
-- **Scope:** instance
-- **LLM Call Syntax:** `const result = simpleContentBlock.toString();`
-- **Pure JSDoc:**
-```javascript
-/**
-   * @description Returns a diagnostic string identifier for the block.
-   * @returns {string} String representation.
-   */
-```
----
 <br>
 
 ## CLASS: CompositionResult
-**File Path:** `ComposableContentLib/src/core/CompositionResult.js`
-**Constructor Usage:** `const instance = new CompositionResult(result, result.recipeId, result.outputFormat, result.content, result.blocks, result.errors, result.processingTime, result.metadata);`
+**File Path:** `ComposableContentLib/src/core/CompositionResult.ts`
+**Constructor Usage:** `const instance = new CompositionResult();`
 **Description:** Immutable DTO for final content composition output, aggregating block results, rendered content, and orchestration metrics.
 
 ### Raw JSDoc Context:
@@ -1616,7 +1212,7 @@ evaluation.
  */
 ```
 
-### Methods of CompositionResult
+### Methods and properties of CompositionResult
 
 #### METHOD: CompositionResult.isSuccess
 - **Scope:** instance
@@ -1759,8 +1355,8 @@ evaluation.
 <br>
 
 ## CLASS: BlockResult
-**File Path:** `ComposableContentLib/src/core/BlockResult.js`
-**Constructor Usage:** `const instance = new BlockResult(result, result.instanceId, result.blockType, result.isEmpty, result.isVisible, result.content, result.metadata, result.processingTime, result.error);`
+**File Path:** `ComposableContentLib/src/core/BlockResult.ts`
+**Constructor Usage:** `const instance = new BlockResult();`
 **Description:** Immutable data transfer object representing the outcome of a block rendering execution.
 Extends the shared {@link Result} base for the success/error contract.
 Encapsulates generated content, visibility state, errors, and profiling metrics.
@@ -1782,7 +1378,7 @@ Encapsulates generated content, visibility state, errors, and profiling metrics.
  */
 ```
 
-### Methods of BlockResult
+### Methods and properties of BlockResult
 
 #### METHOD: BlockResult.hasDisplayableContent
 - **Scope:** instance
@@ -1863,8 +1459,8 @@ Encapsulates generated content, visibility state, errors, and profiling metrics.
 <br>
 
 ## CLASS: BlockDefinition
-**File Path:** `ComposableContentLib/src/core/BlockDefinition.js`
-**Constructor Usage:** `const instance = new BlockDefinition(definition, definition.id, definition.name, definition.description, definition.supportedFormats, definition.emptyBehavior, definition.containerType);`
+**File Path:** `ComposableContentLib/src/core/BlockDefinition.ts`
+**Constructor Usage:** `const instance = new BlockDefinition();`
 **Description:** Immutable blueprint for a reusable content block type.
 Specifies rendering capabilities, structural containment, and fallback behaviors.
 
@@ -1884,7 +1480,7 @@ Specifies rendering capabilities, structural containment, and fallback behaviors
  */
 ```
 
-### Methods of BlockDefinition
+### Methods and properties of BlockDefinition
 
 #### METHOD: BlockDefinition.supportsFormat
 - **Scope:** instance
@@ -1947,8 +1543,8 @@ Specifies rendering capabilities, structural containment, and fallback behaviors
 <br>
 
 ## CLASS: ContentComposer
-**File Path:** `ComposableContentLib/src/composition/ContentComposer.js`
-**Constructor Usage:** `const instance = new ContentComposer(options, options.blockRegistry, options.rendererRegistry, options.logger, options.expressionEngine);`
+**File Path:** `ComposableContentLib/src/composition/ContentComposer.ts`
+**Constructor Usage:** `const instance = new ContentComposer();`
 **Description:** Central orchestration engine for content block resolution and rendering.
 Coordinates block registry lookups, visibility evaluation, and sequential block execution to generate aggregate content.
 
@@ -1964,7 +1560,7 @@ Coordinates block registry lookups, visibility evaluation, and sequential block 
  */
 ```
 
-### Methods of ContentComposer
+### Methods and properties of ContentComposer
 
 #### METHOD: ContentComposer.compose
 - **Scope:** instance
@@ -2063,8 +1659,8 @@ Coordinates block registry lookups, visibility evaluation, and sequential block 
 <br>
 
 ## CLASS: CompositionRecipe
-**File Path:** `ComposableContentLib/src/composition/CompositionRecipe.js`
-**Constructor Usage:** `const instance = new CompositionRecipe(definition, definition.id, definition.name, definition.description, definition.outputFormat, definition.blocks, definition.separator, definition.metadata);`
+**File Path:** `ComposableContentLib/src/composition/CompositionRecipe.ts`
+**Constructor Usage:** `const instance = new CompositionRecipe();`
 **Description:** Immutable model for multi-block content composition.
 Defines block selection, execution order, visibility logic, and serialization metadata.
 
@@ -2087,7 +1683,7 @@ Defines block selection, execution order, visibility logic, and serialization me
  */
 ```
 
-### Methods of CompositionRecipe
+### Methods and properties of CompositionRecipe
 
 #### METHOD: CompositionRecipe.getOrderedBlocks
 - **Scope:** instance
@@ -2198,7 +1794,7 @@ Defines block selection, execution order, visibility logic, and serialization me
 ## GLOBAL FUNCTIONS
 
 ### FUNCTION: isValidEmptyBehavior
-- **Source:** `ComposableContentLib/src/core/EmptyBehavior.js`
+- **Source:** `ComposableContentLib/src/core/EmptyBehavior.ts`
 - **LLM Call Syntax:** `const result = isValidEmptyBehavior(value);`
 - **Pure JSDoc:**
 ```javascript
@@ -2211,7 +1807,7 @@ Defines block selection, execution order, visibility logic, and serialization me
 
 ---
 ### FUNCTION: isValidContainerType
-- **Source:** `ComposableContentLib/src/core/EmptyBehavior.js`
+- **Source:** `ComposableContentLib/src/core/EmptyBehavior.ts`
 - **LLM Call Syntax:** `const result = isValidContainerType(value);`
 - **Pure JSDoc:**
 ```javascript
@@ -2224,7 +1820,7 @@ Defines block selection, execution order, visibility logic, and serialization me
 
 ---
 ### FUNCTION: isValidOutputFormat
-- **Source:** `ComposableContentLib/src/core/EmptyBehavior.js`
+- **Source:** `ComposableContentLib/src/core/EmptyBehavior.ts`
 - **LLM Call Syntax:** `const result = isValidOutputFormat(value);`
 - **Pure JSDoc:**
 ```javascript

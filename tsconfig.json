@@ -1,0 +1,35 @@
+{
+  "extends": "./tsconfig.base.json",
+  "include": [
+    "ComposableContentLib/**/*",
+    "GasProcessMonitorLib/**/*",
+    "ContextEngine/**/*",
+    "CoreUtilsLib/**/*",
+    "DomainRepositoryLib/**/*",
+    "GasDataImporter/**/*",
+    "GasExpressionEngineLib/**/*",
+    "GasOnlineTestFramework/**/*",
+    "GasResilienceLib/**/*",
+    "GasSchemaValidatorLib/**/*",
+    "GoogleApiWrapper/**/*",
+    "JobRunnerLib/**/*",
+    "PipelineFramework/**/*",
+    "RoleResolutionLib/**/*",
+    "SheetDBLib/**/*",
+    "WorkspaceTemplateEngine/**/*",
+    "src/**/*",
+    "types/**/*.d.ts",
+    "test/types/**/*.ts"
+  ],
+  "exclude": [
+    "node_modules",
+    "dist",
+    ".cache",
+    ".superpowers",
+    "**/__tests__/**",
+    "**/*.test.*",
+    "**/*.spec.*",
+    "**/__testOnline__/**",
+    "test/types/published.ts"
+  ]
+}

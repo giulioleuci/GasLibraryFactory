@@ -10,11 +10,11 @@ module.exports = {
   testEnvironment: 'node',
 
   // Setup files to run after the test framework is installed
-  setupFilesAfterEnv: ['<rootDir>/test/setup.js'],
+  setupFilesAfterEnv: ['<rootDir>/test/setup.ts'],
 
   // Transform files with babel-jest
   transform: {
-    '^.+\\.js$': 'babel-jest'
+    '^.+\\.[cm]?[jt]s$': 'babel-jest'
   },
 
   // Transform ES modules in node_modules (es-toolkit, nanoid, date-fns, ms, @faker-js/faker)
@@ -23,90 +23,100 @@ module.exports = {
   // Module name mapper - maps Webpack aliases to actual paths
   // This allows imports like "import { X } from '@GasResilienceLib'" to work in tests
   moduleNameMapper: {
-    '^@CoreUtilsLib$': '<rootDir>/CoreUtilsLib/index.js',
-    '^@CoreUtilsLib/(.*)$': '<rootDir>/CoreUtilsLib/$1',
+    '^(\\.{1,2}/.*load-bundle)\\.cjs$': '$1.cts',
+    '^@GasOnlineTestFramework$': '<rootDir>/GasOnlineTestFramework/index',
+    '^@GasOnlineTestFramework/(.*?)(?:\\.js)?$': '<rootDir>/GasOnlineTestFramework/$1',
+    '^(\\.{1,2}/.*)\\.js$': '$1',
+    '^@CoreUtilsLib$': '<rootDir>/CoreUtilsLib/index',
+    '^@CoreUtilsLib/(.*?)(?:\\.js)?$': '<rootDir>/CoreUtilsLib/$1',
 
-    '^@GasResilienceLib$': '<rootDir>/GasResilienceLib/index.js',
-    '^@GasResilienceLib/(.*)$': '<rootDir>/GasResilienceLib/$1',
+    '^@GasResilienceLib$': '<rootDir>/GasResilienceLib/index',
+    '^@GasResilienceLib/(.*?)(?:\\.js)?$': '<rootDir>/GasResilienceLib/$1',
 
-    '^@GoogleApiWrapper$': '<rootDir>/GoogleApiWrapper/index.js',
-    '^@GoogleApiWrapper/(.*)$': '<rootDir>/GoogleApiWrapper/$1',
+    '^@GoogleApiWrapper$': '<rootDir>/GoogleApiWrapper/index',
+    '^@GoogleApiWrapper/(.*?)(?:\\.js)?$': '<rootDir>/GoogleApiWrapper/$1',
 
-    '^@WorkspaceTemplateEngine$': '<rootDir>/WorkspaceTemplateEngine/index.js',
-    '^@WorkspaceTemplateEngine/(.*)$': '<rootDir>/WorkspaceTemplateEngine/$1',
+    '^@WorkspaceTemplateEngine$': '<rootDir>/WorkspaceTemplateEngine/index',
+    '^@WorkspaceTemplateEngine/(.*?)(?:\\.js)?$': '<rootDir>/WorkspaceTemplateEngine/$1',
 
-    '^@GasExpressionEngineLib$': '<rootDir>/GasExpressionEngineLib/index.js',
-    '^@GasExpressionEngineLib/(.*)$': '<rootDir>/GasExpressionEngineLib/$1',
+    '^@GasExpressionEngineLib$': '<rootDir>/GasExpressionEngineLib/index',
+    '^@GasExpressionEngineLib/(.*?)(?:\\.js)?$': '<rootDir>/GasExpressionEngineLib/$1',
 
-    '^@SheetDBLib$': '<rootDir>/SheetDBLib/index.js',
-    '^@SheetDBLib/(.*)$': '<rootDir>/SheetDBLib/$1',
+    '^@SheetDBLib$': '<rootDir>/SheetDBLib/index',
+    '^@SheetDBLib/(.*?)(?:\\.js)?$': '<rootDir>/SheetDBLib/$1',
 
-    '^@JobRunnerLib$': '<rootDir>/JobRunnerLib/index.js',
-    '^@JobRunnerLib/(.*)$': '<rootDir>/JobRunnerLib/$1',
+    '^@JobRunnerLib$': '<rootDir>/JobRunnerLib/index',
+    '^@JobRunnerLib/(.*?)(?:\\.js)?$': '<rootDir>/JobRunnerLib/$1',
 
-    '^@PipelineFramework$': '<rootDir>/PipelineFramework/index.js',
-    '^@PipelineFramework/(.*)$': '<rootDir>/PipelineFramework/$1',
+    '^@PipelineFramework$': '<rootDir>/PipelineFramework/index',
+    '^@PipelineFramework/(.*?)(?:\\.js)?$': '<rootDir>/PipelineFramework/$1',
 
-    '^@ContextEngine$': '<rootDir>/ContextEngine/index.js',
-    '^@ContextEngine/(.*)$': '<rootDir>/ContextEngine/$1',
+    '^@ContextEngine$': '<rootDir>/ContextEngine/index',
+    '^@ContextEngine/(.*?)(?:\\.js)?$': '<rootDir>/ContextEngine/$1',
 
-    '^@GasDataImporter$': '<rootDir>/GasDataImporter/index.js',
-    '^@GasDataImporter/(.*)$': '<rootDir>/GasDataImporter/$1',
+    '^@GasDataImporter$': '<rootDir>/GasDataImporter/index',
+    '^@GasDataImporter/(.*?)(?:\\.js)?$': '<rootDir>/GasDataImporter/$1',
 
-    '^@DomainRepositoryLib$': '<rootDir>/DomainRepositoryLib/index.js',
-    '^@DomainRepositoryLib/(.*)$': '<rootDir>/DomainRepositoryLib/$1',
+    '^@DomainRepositoryLib$': '<rootDir>/DomainRepositoryLib/index',
+    '^@DomainRepositoryLib/(.*?)(?:\\.js)?$': '<rootDir>/DomainRepositoryLib/$1',
 
-    '^@RoleResolutionLib$': '<rootDir>/RoleResolutionLib/index.js',
-    '^@RoleResolutionLib/(.*)$': '<rootDir>/RoleResolutionLib/$1',
+    '^@RoleResolutionLib$': '<rootDir>/RoleResolutionLib/index',
+    '^@RoleResolutionLib/(.*?)(?:\\.js)?$': '<rootDir>/RoleResolutionLib/$1',
 
-    '^@ComposableContentLib$': '<rootDir>/ComposableContentLib/index.js',
-    '^@ComposableContentLib/(.*)$': '<rootDir>/ComposableContentLib/$1',
+    '^@GasProcessMonitorLib$': '<rootDir>/GasProcessMonitorLib/index',
+    '^@GasProcessMonitorLib/(.*?)(?:\\.js)?$': '<rootDir>/GasProcessMonitorLib/$1',
 
-    '^@GasProcessMonitorLib$': '<rootDir>/GasProcessMonitorLib/index.js',
-    '^@GasProcessMonitorLib/(.*)$': '<rootDir>/GasProcessMonitorLib/$1',
+    '^@ComposableContentLib$': '<rootDir>/ComposableContentLib/index',
+    '^@ComposableContentLib/(.*?)(?:\\.js)?$': '<rootDir>/ComposableContentLib/$1',
 
-    '^@GasSchemaValidatorLib$': '<rootDir>/GasSchemaValidatorLib/index.js',
-    '^@GasSchemaValidatorLib/(.*)$': '<rootDir>/GasSchemaValidatorLib/$1'
+    '^@GasSchemaValidatorLib$': '<rootDir>/GasSchemaValidatorLib/index',
+    '^@GasSchemaValidatorLib/(.*?)(?:\\.js)?$': '<rootDir>/GasSchemaValidatorLib/$1'
   },
 
   // Test match patterns - where to find test files
-  testMatch: ['**/__tests__/**/*.js', '**/*.test.js', '**/*.spec.js'],
+  testMatch: ['**/__tests__/**/*.ts', '**/*.test.ts', '**/*.spec.ts'],
 
   // Coverage configuration
   collectCoverage: false, // Set to true to collect coverage by default
   collectCoverageFrom: [
     // Include all source files
-    'CoreUtilsLib/src/**/*.js',
-    'GasResilienceLib/src/**/*.js',
-    'GoogleApiWrapper/src/**/*.js',
-    'WorkspaceTemplateEngine/src/**/*.js',
-    'GasExpressionEngineLib/src/**/*.js',
-    'SheetDBLib/src/**/*.js',
-    'JobRunnerLib/src/**/*.js',
-    'PipelineFramework/src/**/*.js',
-    'ContextEngine/src/**/*.js',
-    'GasDataImporter/src/**/*.js',
-    'DomainRepositoryLib/src/**/*.js',
-    'RoleResolutionLib/src/**/*.js',
-    'ComposableContentLib/src/**/*.js',
-    'CoreUtilsLib/index.js',
-    'GasResilienceLib/index.js',
-    'GoogleApiWrapper/index.js',
-    'WorkspaceTemplateEngine/index.js',
-    'GasExpressionEngineLib/index.js',
-    'SheetDBLib/index.js',
-    'JobRunnerLib/index.js',
-    'PipelineFramework/index.js',
-    'ContextEngine/index.js',
-    'GasDataImporter/index.js',
-    'DomainRepositoryLib/index.js',
-    'RoleResolutionLib/index.js',
-    'ComposableContentLib/index.js',
+    'GasOnlineTestFramework/src/**/*.ts',
+    'GasSchemaValidatorLib/src/**/*.ts',
+    'GasOnlineTestFramework/index.ts',
+    'GasSchemaValidatorLib/index.ts',
+    'CoreUtilsLib/src/**/*.ts',
+    'GasResilienceLib/src/**/*.ts',
+    'GoogleApiWrapper/src/**/*.ts',
+    'WorkspaceTemplateEngine/src/**/*.ts',
+    'GasExpressionEngineLib/src/**/*.ts',
+    'SheetDBLib/src/**/*.ts',
+    'JobRunnerLib/src/**/*.ts',
+    'PipelineFramework/src/**/*.ts',
+    'ContextEngine/src/**/*.ts',
+    'GasDataImporter/src/**/*.ts',
+    'DomainRepositoryLib/src/**/*.ts',
+    'RoleResolutionLib/src/**/*.ts',
+    'ComposableContentLib/src/**/*.ts',
+    'GasProcessMonitorLib/src/**/*.ts',
+    'CoreUtilsLib/index.ts',
+    'GasResilienceLib/index.ts',
+    'GoogleApiWrapper/index.ts',
+    'WorkspaceTemplateEngine/index.ts',
+    'GasExpressionEngineLib/index.ts',
+    'SheetDBLib/index.ts',
+    'JobRunnerLib/index.ts',
+    'PipelineFramework/index.ts',
+    'ContextEngine/index.ts',
+    'GasDataImporter/index.ts',
+    'DomainRepositoryLib/index.ts',
+    'RoleResolutionLib/index.ts',
+    'ComposableContentLib/index.ts',
+    'GasProcessMonitorLib/index.ts',
 
     // Exclude test files
     '!**/__tests__/**',
-    '!**/*.test.js',
-    '!**/*.spec.js',
+    '!**/*.test.ts',
+    '!**/*.spec.ts',
     '!**/node_modules/**',
     '!**/dist/**'
   ],
@@ -128,14 +138,19 @@ module.exports = {
   coverageDirectory: '<rootDir>/coverage',
 
   // Ignore patterns
+  modulePathIgnorePatterns: ['<rootDir>/GLF_OLD/'],
+
   testPathIgnorePatterns: [
+    '/GLF_OLD/',
     '/node_modules/',
     '/dist/',
+    '/.cache/',
+    '/.superpowers/',
     '\\.gs$' // Ignore .gs test files (these are for GAS environment only)
   ],
 
   // Module file extensions
-  moduleFileExtensions: ['js', 'json'],
+  moduleFileExtensions: ['ts', 'cts', 'js', 'cjs', 'json'],
 
   // Verbose output
   verbose: true,

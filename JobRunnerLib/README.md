@@ -2,6 +2,7 @@
 
 **Version:** 2.0.0  
 **Layer:** Application Orchestration (Layer 3)  
+**Language:** TypeScript (strict, ES modules; Babel emits GAS V8 JavaScript)
 **Dependencies:** GoogleApiWrapper, GasResilienceLib
 
 ## 🏗️ File and Folder Structure
@@ -11,10 +12,10 @@ A focused architecture for managing stateful, long-running processes:
 ```text
 JobRunnerLib/
 ├── src/
-│   ├── JobRunnerService.js     # Main facade: starts, resumes, and cancels jobs
-│   ├── JobQueue.js             # Core engine: manages the generator execution loop
-│   ├── JobDefinitionRegistry.js # Registry for job types and handler functions
-│   ├── CapturingLogger.js      # Utility to capture logs during job execution
+│   ├── JobRunnerService.ts     # Main facade: starts, resumes, and cancels jobs
+│   ├── JobQueue.ts             # Core engine: manages the generator execution loop
+│   ├── JobDefinitionRegistry.ts # Registry for job types and handler functions
+│   ├── CapturingLogger.ts      # Utility to capture logs during job execution
 │   └── __tests__/              # Unit and state-serialization tests
 ```
 
@@ -44,7 +45,7 @@ It implements the **Recursive Trigger Pattern** but abstracts all the complexity
 
 ## 📦 Installation
 
-```javascript
+```typescript
 import { JobRunnerService, JobDefinitionRegistry } from '@JobRunnerLib';
 import { LoggerService, UtilsService } from '@GoogleApiWrapper';
 ```
@@ -55,7 +56,7 @@ import { LoggerService, UtilsService } from '@GoogleApiWrapper';
 
 A job handler is a generator function. It yields progress updates. When it yields, the library checks the time; if time is running out, it pauses here.
 
-```javascript
+```typescript
 /**
  * @param {Object} params - { resumeState, ...args }
  */
@@ -86,7 +87,7 @@ function* importDataHandler(params) {
 
 ### 2. Register and Run
 
-```javascript
+```typescript
 // Initialize services
 const logger = new LoggerService();
 const utils = new UtilsService(logger);

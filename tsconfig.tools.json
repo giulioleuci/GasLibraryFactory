@@ -1,0 +1,20 @@
+{
+  "extends": "./tsconfig.base.json",
+  "compilerOptions": {
+    "module": "NodeNext",
+    "moduleResolution": "NodeNext",
+    "types": ["node"],
+    "noEmit": false,
+    "outDir": ".cache/ts-tools",
+    "rootDir": "."
+  },
+  "include": [
+    "scripts/**/*.cts",
+    "scripts/**/*.ts",
+    "webpack*.cts",
+    "fix-db.cts",
+    "types/jsdoc-api.d.ts",
+    "webpack-plugins/**/*"
+  ],
+  "exclude": ["node_modules", "dist", ".cache"]
+}

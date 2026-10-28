@@ -1,116 +1,63 @@
 # API Reference: JobRunnerLib
 
 ## CLASS: QueueStateManager
-**File Path:** `JobRunnerLib/src/QueueStateManager.js`
+**File Path:** `JobRunnerLib/src/QueueStateManager.ts`
 **Constructor Usage:** `const instance = new QueueStateManager();`
-**Description:** Manages atomic lock acquisition, versioning, state tracking, and retries.
-Extracted from JobStateManager for improved separation of concerns.
+**Description:** N/A
 
 ### Raw JSDoc Context:
 ```javascript
-/**
- * @file JobRunnerLib/src/QueueStateManager.js
- * @description Manages atomic lock acquisition, versioning, state tracking, and retries.
- * Extracted from JobStateManager for improved separation of concerns.
- */
+/** No comment available */
 ```
 
-### Methods of QueueStateManager
+### Methods and properties of QueueStateManager
 
-#### METHOD: QueueStateManager.STATE_RUNNING
-- **Scope:** instance
-- **LLM Call Syntax:** `queueStateManager.STATE_RUNNING();`
+#### PROPERTY: QueueStateManager.STATE_RUNNING
+- **Scope:** static
+- **LLM Call Syntax:** `const result = QueueStateManager.STATE_RUNNING;`
 - **Pure JSDoc:**
 ```javascript
-/** Method STATE_RUNNING */
+/** No comment available */
 ```
 ---
-#### METHOD: QueueStateManager.STATE_COMPLETED
-- **Scope:** instance
-- **LLM Call Syntax:** `queueStateManager.STATE_COMPLETED();`
+#### PROPERTY: QueueStateManager.STATE_COMPLETED
+- **Scope:** static
+- **LLM Call Syntax:** `const result = QueueStateManager.STATE_COMPLETED;`
 - **Pure JSDoc:**
 ```javascript
-/** Method STATE_COMPLETED */
+/** No comment available */
 ```
 ---
-#### METHOD: QueueStateManager.STATE_CANCELLED
-- **Scope:** instance
-- **LLM Call Syntax:** `queueStateManager.STATE_CANCELLED();`
+#### PROPERTY: QueueStateManager.STATE_CANCELLED
+- **Scope:** static
+- **LLM Call Syntax:** `const result = QueueStateManager.STATE_CANCELLED;`
 - **Pure JSDoc:**
 ```javascript
-/** Method STATE_CANCELLED */
+/** No comment available */
 ```
 ---
-#### METHOD: QueueStateManager.STATE_FAILED
-- **Scope:** instance
-- **LLM Call Syntax:** `queueStateManager.STATE_FAILED();`
+#### PROPERTY: QueueStateManager.STATE_FAILED
+- **Scope:** static
+- **LLM Call Syntax:** `const result = QueueStateManager.STATE_FAILED;`
 - **Pure JSDoc:**
 ```javascript
-/** Method STATE_FAILED */
+/** No comment available */
 ```
 ---
-#### METHOD: QueueStateManager.STATE_PENDING
-- **Scope:** instance
-- **LLM Call Syntax:** `queueStateManager.STATE_PENDING();`
+#### PROPERTY: QueueStateManager.STATE_PENDING
+- **Scope:** static
+- **LLM Call Syntax:** `const result = QueueStateManager.STATE_PENDING;`
 - **Pure JSDoc:**
 ```javascript
-/** Method STATE_PENDING */
+/** No comment available */
 ```
 ---
-#### METHOD: QueueStateManager.if
+#### METHOD: QueueStateManager._key
 - **Scope:** instance
-- **LLM Call Syntax:** `queueStateManager.if(!jobName || typeof jobName !);`
+- **LLM Call Syntax:** `queueStateManager._key();`
 - **Pure JSDoc:**
 ```javascript
-/** Method if */
-```
----
-#### METHOD: QueueStateManager.if
-- **Scope:** instance
-- **LLM Call Syntax:** `queueStateManager.if(!propertiesService || typeof propertiesService !);`
-- **Pure JSDoc:**
-```javascript
-/** Method if */
-```
----
-#### METHOD: QueueStateManager.if
-- **Scope:** instance
-- **LLM Call Syntax:** `queueStateManager.if(typeof propertiesService.getProperty !);`
-- **Pure JSDoc:**
-```javascript
-/** Method if */
-```
----
-#### METHOD: QueueStateManager.if
-- **Scope:** instance
-- **LLM Call Syntax:** `queueStateManager.if(!utils || typeof utils !);`
-- **Pure JSDoc:**
-```javascript
-/** Method if */
-```
----
-#### METHOD: QueueStateManager.if
-- **Scope:** instance
-- **LLM Call Syntax:** `queueStateManager.if(typeof utils.sleep !);`
-- **Pure JSDoc:**
-```javascript
-/** Method if */
-```
----
-#### METHOD: QueueStateManager.if
-- **Scope:** instance
-- **LLM Call Syntax:** `queueStateManager.if(!lockService || typeof lockService !);`
-- **Pure JSDoc:**
-```javascript
-/** Method if */
-```
----
-#### METHOD: QueueStateManager.if
-- **Scope:** instance
-- **LLM Call Syntax:** `queueStateManager.if(typeof lockService.getScriptLock !);`
-- **Pure JSDoc:**
-```javascript
-/** Method if */
+/** No comment available */
 ```
 ---
 #### METHOD: QueueStateManager.getStateVersion
@@ -118,31 +65,23 @@ Extracted from JobStateManager for improved separation of concerns.
 - **LLM Call Syntax:** `queueStateManager.getStateVersion();`
 - **Pure JSDoc:**
 ```javascript
-/** Method getStateVersion */
+/** No comment available */
+```
+---
+#### METHOD: QueueStateManager._incrementVersion
+- **Scope:** instance
+- **LLM Call Syntax:** `queueStateManager._incrementVersion();`
+- **Pure JSDoc:**
+```javascript
+/** No comment available */
 ```
 ---
 #### METHOD: QueueStateManager.setState
 - **Scope:** instance
-- **LLM Call Syntax:** `queueStateManager.setState(state, expectedVersion);`
+- **LLM Call Syntax:** `queueStateManager.setState();`
 - **Pure JSDoc:**
 ```javascript
-/** Method setState */
-```
----
-#### METHOD: QueueStateManager.if
-- **Scope:** instance
-- **LLM Call Syntax:** `queueStateManager.if(expectedVersion !);`
-- **Pure JSDoc:**
-```javascript
-/** Method if */
-```
----
-#### METHOD: QueueStateManager.if
-- **Scope:** instance
-- **LLM Call Syntax:** `queueStateManager.if(currentVersion !);`
-- **Pure JSDoc:**
-```javascript
-/** Method if */
+/** No comment available */
 ```
 ---
 #### METHOD: QueueStateManager.getState
@@ -150,7 +89,7 @@ Extracted from JobStateManager for improved separation of concerns.
 - **LLM Call Syntax:** `queueStateManager.getState();`
 - **Pure JSDoc:**
 ```javascript
-/** Method getState */
+/** No comment available */
 ```
 ---
 #### METHOD: QueueStateManager.isCancelled
@@ -158,7 +97,7 @@ Extracted from JobStateManager for improved separation of concerns.
 - **LLM Call Syntax:** `queueStateManager.isCancelled();`
 - **Pure JSDoc:**
 ```javascript
-/** Method isCancelled */
+/** No comment available */
 ```
 ---
 #### METHOD: QueueStateManager.getStateWithVersion
@@ -166,7 +105,7 @@ Extracted from JobStateManager for improved separation of concerns.
 - **LLM Call Syntax:** `queueStateManager.getStateWithVersion();`
 - **Pure JSDoc:**
 ```javascript
-/** Method getStateWithVersion */
+/** No comment available */
 ```
 ---
 #### METHOD: QueueStateManager.tryAcquireRunning
@@ -186,36 +125,12 @@ Extracted from JobStateManager for improved separation of concerns.
    */
 ```
 ---
-#### METHOD: QueueStateManager.if
-- **Scope:** instance
-- **LLM Call Syntax:** `queueStateManager.if(currentState);`
-- **Pure JSDoc:**
-```javascript
-/** Method if */
-```
----
-#### METHOD: QueueStateManager.if
-- **Scope:** instance
-- **LLM Call Syntax:** `queueStateManager.if(lockTimestamp);`
-- **Pure JSDoc:**
-```javascript
-/** Method if */
-```
----
-#### METHOD: QueueStateManager.if
-- **Scope:** instance
-- **LLM Call Syntax:** `queueStateManager.if(blockIfSuspended && currentState);`
-- **Pure JSDoc:**
-```javascript
-/** Method if */
-```
----
 #### METHOD: QueueStateManager.releaseLock
 - **Scope:** instance
 - **LLM Call Syntax:** `queueStateManager.releaseLock();`
 - **Pure JSDoc:**
 ```javascript
-/** Method releaseLock */
+/** No comment available */
 ```
 ---
 #### METHOD: QueueStateManager.getRetryCount
@@ -223,7 +138,7 @@ Extracted from JobStateManager for improved separation of concerns.
 - **LLM Call Syntax:** `queueStateManager.getRetryCount();`
 - **Pure JSDoc:**
 ```javascript
-/** Method getRetryCount */
+/** No comment available */
 ```
 ---
 #### METHOD: QueueStateManager.incrementRetryCount
@@ -231,7 +146,7 @@ Extracted from JobStateManager for improved separation of concerns.
 - **LLM Call Syntax:** `queueStateManager.incrementRetryCount();`
 - **Pure JSDoc:**
 ```javascript
-/** Method incrementRetryCount */
+/** No comment available */
 ```
 ---
 #### METHOD: QueueStateManager.resetRetryCount
@@ -239,15 +154,15 @@ Extracted from JobStateManager for improved separation of concerns.
 - **LLM Call Syntax:** `queueStateManager.resetRetryCount();`
 - **Pure JSDoc:**
 ```javascript
-/** Method resetRetryCount */
+/** No comment available */
 ```
 ---
 #### METHOD: QueueStateManager.saveFailureInfo
 - **Scope:** instance
-- **LLM Call Syntax:** `queueStateManager.saveFailureInfo(failureInfo);`
+- **LLM Call Syntax:** `queueStateManager.saveFailureInfo();`
 - **Pure JSDoc:**
 ```javascript
-/** Method saveFailureInfo */
+/** No comment available */
 ```
 ---
 #### METHOD: QueueStateManager.getFailureInfo
@@ -255,7 +170,7 @@ Extracted from JobStateManager for improved separation of concerns.
 - **LLM Call Syntax:** `queueStateManager.getFailureInfo();`
 - **Pure JSDoc:**
 ```javascript
-/** Method getFailureInfo */
+/** No comment available */
 ```
 ---
 #### METHOD: QueueStateManager.reset
@@ -263,199 +178,44 @@ Extracted from JobStateManager for improved separation of concerns.
 - **LLM Call Syntax:** `queueStateManager.reset();`
 - **Pure JSDoc:**
 ```javascript
-/** Method reset */
+/** No comment available */
 ```
 ---
 <br>
 
 ## CLASS: MyJobRunnerService
-**File Path:** `JobRunnerLib/src/JobRunnerService.js`
+**File Path:** `JobRunnerLib/src/JobRunnerService.ts`
 **Constructor Usage:** `const instance = new MyJobRunnerService();`
 **Description:** N/A
 
 ### Raw JSDoc Context:
 ```javascript
-/** Class definition */
+/** No comment available */
 ```
 
-### Methods of MyJobRunnerService
+### Methods and properties of MyJobRunnerService
 
-#### METHOD: MyJobRunnerService.if
+#### METHOD: MyJobRunnerService._createQueue
 - **Scope:** instance
-- **LLM Call Syntax:** `myJobRunnerService.if(logger);`
+- **LLM Call Syntax:** `const result = myJobRunnerService._createQueue();`
 - **Pure JSDoc:**
 ```javascript
-/** Method if */
-```
----
-#### METHOD: MyJobRunnerService.if
-- **Scope:** instance
-- **LLM Call Syntax:** `myJobRunnerService.if(typeof logger !);`
-- **Pure JSDoc:**
-```javascript
-/** Method if */
-```
----
-#### METHOD: MyJobRunnerService.if
-- **Scope:** instance
-- **LLM Call Syntax:** `myJobRunnerService.if(typeof logger[method] !);`
-- **Pure JSDoc:**
-```javascript
-/** Method if */
-```
----
-#### METHOD: MyJobRunnerService.if
-- **Scope:** instance
-- **LLM Call Syntax:** `myJobRunnerService.if(utils);`
-- **Pure JSDoc:**
-```javascript
-/** Method if */
-```
----
-#### METHOD: MyJobRunnerService.if
-- **Scope:** instance
-- **LLM Call Syntax:** `myJobRunnerService.if(typeof utils !);`
-- **Pure JSDoc:**
-```javascript
-/** Method if */
-```
----
-#### METHOD: MyJobRunnerService.if
-- **Scope:** instance
-- **LLM Call Syntax:** `myJobRunnerService.if(jobDefinitionRegistry);`
-- **Pure JSDoc:**
-```javascript
-/** Method if */
-```
----
-#### METHOD: MyJobRunnerService.if
-- **Scope:** instance
-- **LLM Call Syntax:** `myJobRunnerService.if(typeof jobDefinitionRegistry !);`
-- **Pure JSDoc:**
-```javascript
-/** Method if */
-```
----
-#### METHOD: MyJobRunnerService.if
-- **Scope:** instance
-- **LLM Call Syntax:** `myJobRunnerService.if(typeof jobDefinitionRegistry.getDefinition !);`
-- **Pure JSDoc:**
-```javascript
-/** Method if */
+/**
+   * Factory for JobQueue instances with injected platform services.
+   * @private
+   * @returns {JobQueue} Initialized queue with native GAS lock/trigger support.
+   */
 ```
 ---
 <br>
 
 ## CLASS: JobExecutor
-**File Path:** `JobRunnerLib/src/JobQueue.js`
+**File Path:** `JobRunnerLib/src/JobQueue.ts`
 **Constructor Usage:** `const instance = new JobExecutor();`
-**Description:** Core job queue service for managing long-running tasks with automatic
-             state persistence and resumption via triggers.
-
-
-@requires GasResilienceLib - TimeoutException class
-/
-
-import { TimeoutException } from '@GasResilienceLib';
-import { QueueStateManager } from './QueueStateManager';
-import { QueuePersistenceHandler } from './internal/QueuePersistenceHandler';
-import { QueueProgressTracker } from './internal/QueueProgressTracker';
-import { JobTriggerManager } from './internal/managers/JobRunnerTriggerManager.js';
-import { JobStateManager } from './internal/managers/JobRunnerStateManager.js';
-
-export { JobTriggerManager, JobStateManager };
-
-// ===================================================================
-// HELPER FUNCTIONS
-// ===================================================================
-
-/**
-Decorates a generator with execution time limits.
-@param {Generator} generator Target generator to monitor.
-@param {number} maxDuration Maximum execution time in milliseconds.
-@param {number} startTime Unix timestamp of execution start.
-@yields {*} Values from the original generator.
-@throws {TimeoutException} After exposing the latest checkpoint if
-  `now() - startTime >= maxDuration`, before advancing the generator again.
-/
-function* withTimeout(generator, maxDuration, startTime) {
-  let next = generator.next();
-  while (!next.done) {
-    // A yielded value is the consumer's resume contract. Expose it before
-    // evaluating the deadline so JobExecutor can persist it even when the
-    // work that produced this checkpoint crossed maxDuration.
-    yield next.value;
-    if (new Date().getTime() - startTime >= maxDuration) {
-      throw new TimeoutException(`Timeout of ${maxDuration}ms exceeded`);
-    }
-    next = generator.next();
-  }
-  // Return the final return value from the generator
-  return next.value;
-}
-
-// ===================================================================
-// SPECIALIZED HANDLERS FOR MyJobQueue
-// ===================================================================
-
-/**
-Handles the low-level execution and monitoring of job generators.
-@private
-@class
+**Description:** Handles the low-level execution and monitoring of job generators.
 
 ### Raw JSDoc Context:
 ```javascript
-/**
- * @file JobRunnerLib/src/JobQueue.js
- * @description Core job queue service for managing long-running tasks with automatic
- *              state persistence and resumption via triggers.
- * @version 2.1 - Removed immer dependency (using native spread)
- *
- * @requires GasResilienceLib - TimeoutException class
- */
-
-import { TimeoutException } from '@GasResilienceLib';
-import { QueueStateManager } from './QueueStateManager';
-import { QueuePersistenceHandler } from './internal/QueuePersistenceHandler';
-import { QueueProgressTracker } from './internal/QueueProgressTracker';
-import { JobTriggerManager } from './internal/managers/JobRunnerTriggerManager.js';
-import { JobStateManager } from './internal/managers/JobRunnerStateManager.js';
-
-export { JobTriggerManager, JobStateManager };
-
-// ===================================================================
-// HELPER FUNCTIONS
-// ===================================================================
-
-/**
- * Decorates a generator with execution time limits.
- * @param {Generator} generator Target generator to monitor.
- * @param {number} maxDuration Maximum execution time in milliseconds.
- * @param {number} startTime Unix timestamp of execution start.
- * @yields {*} Values from the original generator.
- * @throws {TimeoutException} After exposing the latest checkpoint if
- *   `now() - startTime >= maxDuration`, before advancing the generator again.
- */
-function* withTimeout(generator, maxDuration, startTime) {
-  let next = generator.next();
-  while (!next.done) {
-    // A yielded value is the consumer's resume contract. Expose it before
-    // evaluating the deadline so JobExecutor can persist it even when the
-    // work that produced this checkpoint crossed maxDuration.
-    yield next.value;
-    if (new Date().getTime() - startTime >= maxDuration) {
-      throw new TimeoutException(`Timeout of ${maxDuration}ms exceeded`);
-    }
-    next = generator.next();
-  }
-  // Return the final return value from the generator
-  return next.value;
-}
-
-// ===================================================================
-// SPECIALIZED HANDLERS FOR MyJobQueue
-// ===================================================================
-
 /**
  * Handles the low-level execution and monitoring of job generators.
  * @private
@@ -463,7 +223,7 @@ function* withTimeout(generator, maxDuration, startTime) {
  */
 ```
 
-### Methods of JobExecutor
+### Methods and properties of JobExecutor
 
 #### METHOD: JobExecutor.execute
 - **Scope:** instance
@@ -482,486 +242,29 @@ function* withTimeout(generator, maxDuration, startTime) {
    */
 ```
 ---
-#### METHOD: JobExecutor.if
-- **Scope:** instance
-- **LLM Call Syntax:** `jobExecutor.if(parameters.jobDefinition && parameters.jobDefinition.iterationLevels);`
-- **Pure JSDoc:**
-```javascript
-/** Method if */
-```
----
-#### METHOD: JobExecutor.if
-- **Scope:** instance
-- **LLM Call Syntax:** `jobExecutor.if(!parameters.resumeState);`
-- **Pure JSDoc:**
-```javascript
-/** Method if */
-```
----
-#### METHOD: JobExecutor.if
-- **Scope:** instance
-- **LLM Call Syntax:** `jobExecutor.if(!parameters.resumeState.total || parameters.resumeState.total);`
-- **Pure JSDoc:**
-```javascript
-/** Method if */
-```
----
-#### METHOD: JobExecutor.if
-- **Scope:** instance
-- **LLM Call Syntax:** `jobExecutor.if(parameters.services);`
-- **Pure JSDoc:**
-```javascript
-/** Method if */
-```
----
-#### METHOD: JobExecutor.if
-- **Scope:** instance
-- **LLM Call Syntax:** `jobExecutor.if(!generator || typeof generator.next !);`
-- **Pure JSDoc:**
-```javascript
-/** Method if */
-```
----
-#### METHOD: JobExecutor.while
-- **Scope:** instance
-- **LLM Call Syntax:** `jobExecutor.while(!next.done);`
-- **Pure JSDoc:**
-```javascript
-/** Method while */
-```
----
-#### METHOD: JobExecutor.if
-- **Scope:** instance
-- **LLM Call Syntax:** `jobExecutor.if(progress);`
-- **Pure JSDoc:**
-```javascript
-/** Method if */
-```
----
-#### METHOD: JobExecutor.if
-- **Scope:** instance
-- **LLM Call Syntax:** `jobExecutor.if(monitor && typeof monitor.updateProgress);`
-- **Pure JSDoc:**
-```javascript
-/** Method if */
-```
----
-#### METHOD: JobExecutor.catch
-- **Scope:** instance
-- **LLM Call Syntax:** `jobExecutor.catch(error);`
-- **Pure JSDoc:**
-```javascript
-/** Method catch */
-```
----
-#### METHOD: JobExecutor.if
-- **Scope:** instance
-- **LLM Call Syntax:** `jobExecutor.if(error instanceof TimeoutException);`
-- **Pure JSDoc:**
-```javascript
-/** Method if */
-```
----
 <br>
 
 ## CLASS: JobQueue
-**File Path:** `JobRunnerLib/src/JobQueue.js`
+**File Path:** `JobRunnerLib/src/JobQueue.ts`
 **Constructor Usage:** `const instance = new JobQueue();`
-**Description:** @param {Object} logger Logger instance.
-@param {JobStateManager} stateManager Persistence and lock manager.
-@param {JobTriggerManager} triggerManager Resume trigger controller.
-/
-  constructor(logger, stateManager, triggerManager) {
-    this._logger = logger;
-    this._stateManager = stateManager;
-    this._triggerManager = triggerManager;
-    this.progressTracker = new QueueProgressTracker(
-      this._stateManager.jobName,
-      this._stateManager._propertiesService
-    );
-    this._calculateExactTotal = this.progressTracker._calculateExactTotal.bind(
-      this.progressTracker
-    );
-  }
-
-  /**
-Executes job logic with interruption and persistence support.
-@param {Function} handler Generator-based job function.
-@param {Object} parameters Job context and resume state.
-@param {number} startTime Execution start timestamp.
-@param {number} maxDuration Timeout threshold.
-@returns {{done: boolean, value?: *, cancelled?: boolean}} Execution outcome.
-@throws {Error} If handler is not a generator.
-@throws {TimeoutException} Captured internally to trigger state save and resume.
-/
-  execute(handler, parameters, startTime, maxDuration) {
-    // JRL-H001: Check if job was cancelled before starting
-    if (this._stateManager.isCancelled()) {
-      this._stateManager.releaseLock();
-      return { done: true, cancelled: true };
-    }
-
-    // Calculate total if not present in resume state
-    // NOTE: This section references application-specific code that should be
-    // injected by the consuming application through the jobHandlerRegistryCallback
-    if (parameters.jobDefinition && parameters.jobDefinition.iterationLevels) {
-      // Initialize resumeState immutably if not present
-      if (!parameters.resumeState) {
-        parameters.resumeState = {};
-      }
-
-      if (!parameters.resumeState.total || parameters.resumeState.total === 0) {
-        this._logger.debug(`[JOB] Calculating total number of elements...`);
-
-        // The services object should be provided by the consuming application
-        // through the parameters
-        if (parameters.services) {
-          const total = this._calculateExactTotal(
-            parameters.jobDefinition.iterationLevels,
-            parameters.services
-          );
-
-          // OPTIMIZATION: Use native spread to update state immutably
-          parameters.resumeState = {
-            ...parameters.resumeState,
-            total: total
-          };
-
-          this._logger.info(`[JOB] Exact total elements to process: ${total}`);
-        }
-      }
-    }
-
-    const generator = handler(parameters);
-    if (!generator || typeof generator.next !== 'function') {
-      throw new Error(`The handler for job ${this._stateManager.jobName} is not a valid generator`);
-    }
-
-    // Wrap the generator with timeout check
-    const generatorWithTimeout = withTimeout(generator, maxDuration, startTime);
-
-    let result = null,
-      progress = null,
-      _done = false;
-
-    try {
-      // Manually iterate to capture both yielded values and return value
-      let next = generatorWithTimeout.next();
-
-      while (!next.done) {
-        // JRL-H001: Check for cancellation during execution
-        if (this._stateManager.isCancelled()) {
-          this._stateManager.releaseLock();
-          this._triggerManager.deleteExistingTriggers();
-          return { done: true, cancelled: true };
-        }
-
-        progress = next.value;
-        if (progress) {
-          this._stateManager.saveProgress({
-            completed: false,
-            percentage: progress.percentage || 0,
-            timestamp: new Date().getTime()
-          });
-
-          // Notify monitor of progress update (optional - uses optional chaining)
-          const monitor = parameters.services?.monitor;
-          if (monitor && typeof monitor.updateProgress === 'function') {
-            monitor.updateProgress(
-              this._stateManager.jobName,
-              progress.percentage || 0,
-              progress.message || ''
-            );
-          }
-        }
-
-        next = generatorWithTimeout.next();
-      }
-
-      // Capture the final return value from the generator
-      // Use next.value if it exists (even if falsy), otherwise fall back to progress
-      result = next.value !== undefined ? next.value : progress;
-      this._triggerManager.deleteExistingTriggers();
-      this._stateManager.clearResumeState();
-      // JRL-H006, JRL-H007: Batch state updates into single operation
-      this._stateManager.releaseLock(); // JRL-C001: Release lock on completion
-      this._stateManager.batchSave({
-        state: JobStateManager.STATE_COMPLETED,
-        progress: {
-          completed: true,
-          percentage: 100,
-          timestamp: new Date().getTime()
-        }
-      });
-      return { done: true, value: result };
-    } catch (error) {
-      // Handle timeout separately from other errors
-      if (error instanceof TimeoutException) {
-        // JRL-H006, JRL-H007: Batch state updates into single operation
-        this._stateManager.releaseLock(); // JRL-C001: Release lock when suspending
-        this._stateManager.batchSave({
-          state: 'to_resume',
-          resumeState: progress,
-          progress: {
-            completed: false,
-            percentage: progress?.percentage || 0,
-            timestamp: new Date().getTime()
-          }
-        });
-        this._triggerManager.createResumeTrigger();
-        return { done: false };
-      }
-
-      // JRL-C003: Complete error cleanup for non-timeout errors
-      // JRL-H006, JRL-H007: Batch state updates into single operation
-      this._stateManager.releaseLock();
-      this._stateManager.batchSave({
-        state: 'error',
-        progress: {
-          completed: false,
-          percentage: progress?.percentage || 0,
-          timestamp: new Date().getTime(),
-          error: error.message
-        }
-      });
-      // Re-throw the error after cleanup
-      throw error;
-    }
-  }
-}
-
-// ===================================================================
-// FACADE: MyJobQueue
-// ===================================================================
-
-/**
-High-level API for job registration, execution, and lifecycle management.
-@class
+**Description:** High-level API for job registration, execution, and lifecycle management.
 
 ### Raw JSDoc Context:
 ```javascript
-/**
-   * @param {Object} logger Logger instance.
-   * @param {JobStateManager} stateManager Persistence and lock manager.
-   * @param {JobTriggerManager} triggerManager Resume trigger controller.
-   */
-  constructor(logger, stateManager, triggerManager) {
-    this._logger = logger;
-    this._stateManager = stateManager;
-    this._triggerManager = triggerManager;
-    this.progressTracker = new QueueProgressTracker(
-      this._stateManager.jobName,
-      this._stateManager._propertiesService
-    );
-    this._calculateExactTotal = this.progressTracker._calculateExactTotal.bind(
-      this.progressTracker
-    );
-  }
-
-  /**
-   * Executes job logic with interruption and persistence support.
-   * @param {Function} handler Generator-based job function.
-   * @param {Object} parameters Job context and resume state.
-   * @param {number} startTime Execution start timestamp.
-   * @param {number} maxDuration Timeout threshold.
-   * @returns {{done: boolean, value?: *, cancelled?: boolean}} Execution outcome.
-   * @throws {Error} If handler is not a generator.
-   * @throws {TimeoutException} Captured internally to trigger state save and resume.
-   */
-  execute(handler, parameters, startTime, maxDuration) {
-    // JRL-H001: Check if job was cancelled before starting
-    if (this._stateManager.isCancelled()) {
-      this._stateManager.releaseLock();
-      return { done: true, cancelled: true };
-    }
-
-    // Calculate total if not present in resume state
-    // NOTE: This section references application-specific code that should be
-    // injected by the consuming application through the jobHandlerRegistryCallback
-    if (parameters.jobDefinition && parameters.jobDefinition.iterationLevels) {
-      // Initialize resumeState immutably if not present
-      if (!parameters.resumeState) {
-        parameters.resumeState = {};
-      }
-
-      if (!parameters.resumeState.total || parameters.resumeState.total === 0) {
-        this._logger.debug(`[JOB] Calculating total number of elements...`);
-
-        // The services object should be provided by the consuming application
-        // through the parameters
-        if (parameters.services) {
-          const total = this._calculateExactTotal(
-            parameters.jobDefinition.iterationLevels,
-            parameters.services
-          );
-
-          // OPTIMIZATION: Use native spread to update state immutably
-          parameters.resumeState = {
-            ...parameters.resumeState,
-            total: total
-          };
-
-          this._logger.info(`[JOB] Exact total elements to process: ${total}`);
-        }
-      }
-    }
-
-    const generator = handler(parameters);
-    if (!generator || typeof generator.next !== 'function') {
-      throw new Error(`The handler for job ${this._stateManager.jobName} is not a valid generator`);
-    }
-
-    // Wrap the generator with timeout check
-    const generatorWithTimeout = withTimeout(generator, maxDuration, startTime);
-
-    let result = null,
-      progress = null,
-      _done = false;
-
-    try {
-      // Manually iterate to capture both yielded values and return value
-      let next = generatorWithTimeout.next();
-
-      while (!next.done) {
-        // JRL-H001: Check for cancellation during execution
-        if (this._stateManager.isCancelled()) {
-          this._stateManager.releaseLock();
-          this._triggerManager.deleteExistingTriggers();
-          return { done: true, cancelled: true };
-        }
-
-        progress = next.value;
-        if (progress) {
-          this._stateManager.saveProgress({
-            completed: false,
-            percentage: progress.percentage || 0,
-            timestamp: new Date().getTime()
-          });
-
-          // Notify monitor of progress update (optional - uses optional chaining)
-          const monitor = parameters.services?.monitor;
-          if (monitor && typeof monitor.updateProgress === 'function') {
-            monitor.updateProgress(
-              this._stateManager.jobName,
-              progress.percentage || 0,
-              progress.message || ''
-            );
-          }
-        }
-
-        next = generatorWithTimeout.next();
-      }
-
-      // Capture the final return value from the generator
-      // Use next.value if it exists (even if falsy), otherwise fall back to progress
-      result = next.value !== undefined ? next.value : progress;
-      this._triggerManager.deleteExistingTriggers();
-      this._stateManager.clearResumeState();
-      // JRL-H006, JRL-H007: Batch state updates into single operation
-      this._stateManager.releaseLock(); // JRL-C001: Release lock on completion
-      this._stateManager.batchSave({
-        state: JobStateManager.STATE_COMPLETED,
-        progress: {
-          completed: true,
-          percentage: 100,
-          timestamp: new Date().getTime()
-        }
-      });
-      return { done: true, value: result };
-    } catch (error) {
-      // Handle timeout separately from other errors
-      if (error instanceof TimeoutException) {
-        // JRL-H006, JRL-H007: Batch state updates into single operation
-        this._stateManager.releaseLock(); // JRL-C001: Release lock when suspending
-        this._stateManager.batchSave({
-          state: 'to_resume',
-          resumeState: progress,
-          progress: {
-            completed: false,
-            percentage: progress?.percentage || 0,
-            timestamp: new Date().getTime()
-          }
-        });
-        this._triggerManager.createResumeTrigger();
-        return { done: false };
-      }
-
-      // JRL-C003: Complete error cleanup for non-timeout errors
-      // JRL-H006, JRL-H007: Batch state updates into single operation
-      this._stateManager.releaseLock();
-      this._stateManager.batchSave({
-        state: 'error',
-        progress: {
-          completed: false,
-          percentage: progress?.percentage || 0,
-          timestamp: new Date().getTime(),
-          error: error.message
-        }
-      });
-      // Re-throw the error after cleanup
-      throw error;
-    }
-  }
-}
-
-// ===================================================================
-// FACADE: MyJobQueue
-// ===================================================================
-
 /**
  * High-level API for job registration, execution, and lifecycle management.
  * @class
  */
 ```
 
-### Methods of JobQueue
+### Methods and properties of JobQueue
 
-#### METHOD: JobQueue.if
-- **Scope:** instance
-- **LLM Call Syntax:** `jobQueue.if(!logger || typeof logger !);`
+#### PROPERTY: JobQueue.DEFAULT_TRIGGER_DELAY_MS
+- **Scope:** static
+- **LLM Call Syntax:** `const result = JobQueue.DEFAULT_TRIGGER_DELAY_MS;`
 - **Pure JSDoc:**
 ```javascript
-/** Method if */
-```
----
-#### METHOD: JobQueue.if
-- **Scope:** instance
-- **LLM Call Syntax:** `jobQueue.if(typeof logger.info !);`
-- **Pure JSDoc:**
-```javascript
-/** Method if */
-```
----
-#### METHOD: JobQueue.if
-- **Scope:** instance
-- **LLM Call Syntax:** `jobQueue.if(!utils || typeof utils !);`
-- **Pure JSDoc:**
-```javascript
-/** Method if */
-```
----
-#### METHOD: JobQueue.if
-- **Scope:** instance
-- **LLM Call Syntax:** `jobQueue.if(!propertiesService || typeof propertiesService !);`
-- **Pure JSDoc:**
-```javascript
-/** Method if */
-```
----
-#### METHOD: JobQueue.if
-- **Scope:** instance
-- **LLM Call Syntax:** `jobQueue.if(!triggerService || typeof triggerService !);`
-- **Pure JSDoc:**
-```javascript
-/** Method if */
-```
----
-#### METHOD: JobQueue.if
-- **Scope:** instance
-- **LLM Call Syntax:** `jobQueue.if(!lockService || typeof lockService !);`
-- **Pure JSDoc:**
-```javascript
-/** Method if */
+/** @returns {number} 60000ms default delay between timeout and resume. */
 ```
 ---
 #### METHOD: JobQueue.setMaxDuration
@@ -977,14 +280,6 @@ High-level API for job registration, execution, and lifecycle management.
    */
 ```
 ---
-#### METHOD: JobQueue.if
-- **Scope:** instance
-- **LLM Call Syntax:** `jobQueue.if(typeof durationMs !);`
-- **Pure JSDoc:**
-```javascript
-/** Method if */
-```
----
 #### METHOD: JobQueue.setTriggerDelay
 - **Scope:** instance
 - **LLM Call Syntax:** `const result = jobQueue.setTriggerDelay(delayMs);`
@@ -996,14 +291,6 @@ High-level API for job registration, execution, and lifecycle management.
    * @returns {JobQueue} Current instance.
    * @throws {Error} If delayMs is not positive.
    */
-```
----
-#### METHOD: JobQueue.if
-- **Scope:** instance
-- **LLM Call Syntax:** `jobQueue.if(typeof delayMs !);`
-- **Pure JSDoc:**
-```javascript
-/** Method if */
 ```
 ---
 #### METHOD: JobQueue.setMaxRetries
@@ -1019,6 +306,20 @@ High-level API for job registration, execution, and lifecycle management.
    */
 ```
 ---
+#### METHOD: JobQueue.setPurgeOnComplete
+- **Scope:** instance
+- **LLM Call Syntax:** `const result = jobQueue.setPurgeOnComplete(purge);`
+- **Pure JSDoc:**
+```javascript
+/**
+   * Purges all job ScriptProperties on successful completion (default: keep the COMPLETED
+   * tombstone). Persisted in the job config, so it also applies to trigger-driven resumes.
+   * After a purge `getStatus(jobName)` reports `not_started`.
+   * @param {boolean} purge
+   * @returns {JobQueue} Current instance.
+   */
+```
+---
 #### METHOD: JobQueue.setOnFailure
 - **Scope:** instance
 - **LLM Call Syntax:** `const result = jobQueue.setOnFailure(callback);`
@@ -1029,14 +330,6 @@ High-level API for job registration, execution, and lifecycle management.
    * @param {Function|null} callback Function(error, jobState).
    * @returns {JobQueue} Current instance.
    */
-```
----
-#### METHOD: JobQueue.if
-- **Scope:** instance
-- **LLM Call Syntax:** `jobQueue.if(callback !);`
-- **Pure JSDoc:**
-```javascript
-/** Method if */
 ```
 ---
 #### METHOD: JobQueue.applyConfiguration
@@ -1051,38 +344,6 @@ High-level API for job registration, execution, and lifecycle management.
    */
 ```
 ---
-#### METHOD: JobQueue.if
-- **Scope:** instance
-- **LLM Call Syntax:** `jobQueue.if(savedConfig);`
-- **Pure JSDoc:**
-```javascript
-/** Method if */
-```
----
-#### METHOD: JobQueue.if
-- **Scope:** instance
-- **LLM Call Syntax:** `jobQueue.if(savedConfig.maxExecutionDuration);`
-- **Pure JSDoc:**
-```javascript
-/** Method if */
-```
----
-#### METHOD: JobQueue.if
-- **Scope:** instance
-- **LLM Call Syntax:** `jobQueue.if(savedConfig.triggerDelayMs);`
-- **Pure JSDoc:**
-```javascript
-/** Method if */
-```
----
-#### METHOD: JobQueue.if
-- **Scope:** instance
-- **LLM Call Syntax:** `jobQueue.if(savedConfig.maxRetries !);`
-- **Pure JSDoc:**
-```javascript
-/** Method if */
-```
----
 #### METHOD: JobQueue.registerJobHandler
 - **Scope:** instance
 - **LLM Call Syntax:** `const result = jobQueue.registerJobHandler(jobType, handler);`
@@ -1095,14 +356,6 @@ High-level API for job registration, execution, and lifecycle management.
    * @returns {JobQueue} Current instance.
    * @throws {Error} If handler is not a function.
    */
-```
----
-#### METHOD: JobQueue.if
-- **Scope:** instance
-- **LLM Call Syntax:** `jobQueue.if(typeof handler !);`
-- **Pure JSDoc:**
-```javascript
-/** Method if */
 ```
 ---
 #### METHOD: JobQueue.execute
@@ -1133,94 +386,6 @@ High-level API for job registration, execution, and lifecycle management.
    */
 ```
 ---
-#### METHOD: JobQueue.if
-- **Scope:** instance
-- **LLM Call Syntax:** `jobQueue.if(forceRestart);`
-- **Pure JSDoc:**
-```javascript
-/** Method if */
-```
----
-#### METHOD: JobQueue.if
-- **Scope:** instance
-- **LLM Call Syntax:** `jobQueue.if(!jobState || forceRestart);`
-- **Pure JSDoc:**
-```javascript
-/** Method if */
-```
----
-#### METHOD: JobQueue.if
-- **Scope:** instance
-- **LLM Call Syntax:** `jobQueue.if(savedState && !forceRestart);`
-- **Pure JSDoc:**
-```javascript
-/** Method if */
-```
----
-#### METHOD: JobQueue.if
-- **Scope:** instance
-- **LLM Call Syntax:** `jobQueue.if(!handler);`
-- **Pure JSDoc:**
-```javascript
-/** Method if */
-```
----
-#### METHOD: JobQueue.if
-- **Scope:** instance
-- **LLM Call Syntax:** `jobQueue.if(executionResult.done);`
-- **Pure JSDoc:**
-```javascript
-/** Method if */
-```
----
-#### METHOD: JobQueue.if
-- **Scope:** instance
-- **LLM Call Syntax:** `jobQueue.if(this._maxRetries !);`
-- **Pure JSDoc:**
-```javascript
-/** Method if */
-```
----
-#### METHOD: JobQueue.if
-- **Scope:** instance
-- **LLM Call Syntax:** `jobQueue.if(this._onFailureCallback);`
-- **Pure JSDoc:**
-```javascript
-/** Method if */
-```
----
-#### METHOD: JobQueue.catch
-- **Scope:** instance
-- **LLM Call Syntax:** `jobQueue.catch(callbackError);`
-- **Pure JSDoc:**
-```javascript
-/** Method catch */
-```
----
-#### METHOD: JobQueue.catch
-- **Scope:** instance
-- **LLM Call Syntax:** `jobQueue.catch(error);`
-- **Pure JSDoc:**
-```javascript
-/** Method catch */
-```
----
-#### METHOD: JobQueue.if
-- **Scope:** instance
-- **LLM Call Syntax:** `jobQueue.if(this._maxRetries !);`
-- **Pure JSDoc:**
-```javascript
-/** Method if */
-```
----
-#### METHOD: JobQueue.catch
-- **Scope:** instance
-- **LLM Call Syntax:** `jobQueue.catch(callbackError);`
-- **Pure JSDoc:**
-```javascript
-/** Method catch */
-```
----
 #### METHOD: JobQueue.resetJobState
 - **Scope:** instance
 - **LLM Call Syntax:** `const result = jobQueue.resetJobState(jobName);`
@@ -1245,15 +410,6 @@ High-level API for job registration, execution, and lifecycle management.
    */
 ```
 ---
-#### METHOD: JobQueue.if
-- **Scope:** instance
-- **LLM Call Syntax:** `jobQueue.if(!currentState ||
-      currentState);`
-- **Pure JSDoc:**
-```javascript
-/** Method if */
-```
----
 #### METHOD: JobQueue.getStatus
 - **Scope:** instance
 - **LLM Call Syntax:** `const result = jobQueue.getStatus(jobName);`
@@ -1269,31 +425,14 @@ High-level API for job registration, execution, and lifecycle management.
 <br>
 
 ## CLASS: JobDefinitionRegistry
-**File Path:** `JobRunnerLib/src/JobDefinitionRegistry.js`
+**File Path:** `JobRunnerLib/src/JobDefinitionRegistry.ts`
 **Constructor Usage:** `const instance = new JobDefinitionRegistry();`
-**Description:** Service for dynamic management of job definition registry.
-
-/
-
-import { Registry } from '@CoreUtilsLib';
-
-/**
-Centralized registry for dynamic job definition management.
+**Description:** Centralized registry for dynamic job definition management.
 Uses the shared {@link Registry} primitive (CoreUtilsLib) for Map-backed storage;
 all job-specific validation, logging, and messages remain here.
 
-@class
-
 ### Raw JSDoc Context:
 ```javascript
-/**
- * @file JobRunnerLib/src/JobDefinitionRegistry.js
- * @description Service for dynamic management of job definition registry.
- * @version 2.0
- */
-
-import { Registry } from '@CoreUtilsLib';
-
 /**
  * Centralized registry for dynamic job definition management.
  * Uses the shared {@link Registry} primitive (CoreUtilsLib) for Map-backed storage;
@@ -1303,43 +442,11 @@ import { Registry } from '@CoreUtilsLib';
  */
 ```
 
-### Methods of JobDefinitionRegistry
+### Methods and properties of JobDefinitionRegistry
 
-#### METHOD: JobDefinitionRegistry.if
-- **Scope:** instance
-- **LLM Call Syntax:** `jobDefinitionRegistry.if(logger);`
-- **Pure JSDoc:**
-```javascript
-/** Method if */
-```
----
-#### METHOD: JobDefinitionRegistry.if
-- **Scope:** instance
-- **LLM Call Syntax:** `jobDefinitionRegistry.if(typeof logger !);`
-- **Pure JSDoc:**
-```javascript
-/** Method if */
-```
----
-#### METHOD: JobDefinitionRegistry.for
-- **Scope:** instance
-- **LLM Call Syntax:** `jobDefinitionRegistry.for(const method of ['debug', 'warn', 'error']);`
-- **Pure JSDoc:**
-```javascript
-/** Method for */
-```
----
-#### METHOD: JobDefinitionRegistry.if
-- **Scope:** instance
-- **LLM Call Syntax:** `jobDefinitionRegistry.if(typeof logger[method] !);`
-- **Pure JSDoc:**
-```javascript
-/** Method if */
-```
----
 #### METHOD: JobDefinitionRegistry.register
 - **Scope:** instance
-- **LLM Call Syntax:** `jobDefinitionRegistry.register(jobNameOrDefinition, jobDefinition);`
+- **LLM Call Syntax:** `jobDefinitionRegistry.register();`
 - **Pure JSDoc:**
 ```javascript
 /**
@@ -1347,38 +454,14 @@ import { Registry } from '@CoreUtilsLib';
    */
 ```
 ---
-#### METHOD: JobDefinitionRegistry.if
-- **Scope:** instance
-- **LLM Call Syntax:** `jobDefinitionRegistry.if(typeof jobName !);`
-- **Pure JSDoc:**
-```javascript
-/** Method if */
-```
----
-#### METHOD: JobDefinitionRegistry.if
-- **Scope:** instance
-- **LLM Call Syntax:** `jobDefinitionRegistry.if(definition.description);`
-- **Pure JSDoc:**
-```javascript
-/** Method if */
-```
----
 #### METHOD: JobDefinitionRegistry.getDefinition
 - **Scope:** instance
-- **LLM Call Syntax:** `jobDefinitionRegistry.getDefinition(jobName);`
+- **LLM Call Syntax:** `jobDefinitionRegistry.getDefinition();`
 - **Pure JSDoc:**
 ```javascript
 /**
    * Retrieves a registered definition.
    */
-```
----
-#### METHOD: JobDefinitionRegistry.if
-- **Scope:** instance
-- **LLM Call Syntax:** `jobDefinitionRegistry.if(typeof jobName !);`
-- **Pure JSDoc:**
-```javascript
-/** Method if */
 ```
 ---
 #### METHOD: JobDefinitionRegistry.listRegisteredJobs
@@ -1393,7 +476,7 @@ import { Registry } from '@CoreUtilsLib';
 ---
 #### METHOD: JobDefinitionRegistry.jobExists
 - **Scope:** instance
-- **LLM Call Syntax:** `jobDefinitionRegistry.jobExists(jobName);`
+- **LLM Call Syntax:** `jobDefinitionRegistry.jobExists();`
 - **Pure JSDoc:**
 ```javascript
 /**
@@ -1401,87 +484,44 @@ import { Registry } from '@CoreUtilsLib';
    */
 ```
 ---
-#### METHOD: JobDefinitionRegistry.if
+#### METHOD: JobDefinitionRegistry._validateJobDefinition
 - **Scope:** instance
-- **LLM Call Syntax:** `jobDefinitionRegistry.if(typeof jobName !);`
+- **LLM Call Syntax:** `jobDefinitionRegistry._validateJobDefinition();`
 - **Pure JSDoc:**
 ```javascript
-/** Method if */
-```
----
-#### METHOD: JobDefinitionRegistry.if
-- **Scope:** instance
-- **LLM Call Syntax:** `jobDefinitionRegistry.if(jobDefinition.name);`
-- **Pure JSDoc:**
-```javascript
-/** Method if */
-```
----
-#### METHOD: JobDefinitionRegistry.if
-- **Scope:** instance
-- **LLM Call Syntax:** `jobDefinitionRegistry.if(jobDefinition.action);`
-- **Pure JSDoc:**
-```javascript
-/** Method if */
-```
----
-#### METHOD: JobDefinitionRegistry.if
-- **Scope:** instance
-- **LLM Call Syntax:** `jobDefinitionRegistry.if(typeof jobDefinition.action !);`
-- **Pure JSDoc:**
-```javascript
-/** Method if */
-```
----
-#### METHOD: JobDefinitionRegistry.if
-- **Scope:** instance
-- **LLM Call Syntax:** `jobDefinitionRegistry.if(jobDefinition.finalAction !);`
-- **Pure JSDoc:**
-```javascript
-/** Method if */
+/**
+   * @private
+   */
 ```
 ---
 <br>
 
 ## CLASS: QueueProgressTracker
-**File Path:** `JobRunnerLib/src/internal/QueueProgressTracker.js`
+**File Path:** `JobRunnerLib/src/internal/QueueProgressTracker.ts`
 **Constructor Usage:** `const instance = new QueueProgressTracker();`
-**Description:** Tracks job progress and calculates exact total actions from iteration levels.
-Extracted from JobStateManager and JobExecutor for improved separation of concerns.
+**Description:** N/A
 
 ### Raw JSDoc Context:
 ```javascript
-/**
- * @file JobRunnerLib/src/QueueProgressTracker.js
- * @description Tracks job progress and calculates exact total actions from iteration levels.
- * Extracted from JobStateManager and JobExecutor for improved separation of concerns.
- */
+/** No comment available */
 ```
 
-### Methods of QueueProgressTracker
+### Methods and properties of QueueProgressTracker
 
-#### METHOD: QueueProgressTracker.if
+#### METHOD: QueueProgressTracker._key
 - **Scope:** instance
-- **LLM Call Syntax:** `queueProgressTracker.if(!jobName || typeof jobName !);`
+- **LLM Call Syntax:** `queueProgressTracker._key();`
 - **Pure JSDoc:**
 ```javascript
-/** Method if */
-```
----
-#### METHOD: QueueProgressTracker.if
-- **Scope:** instance
-- **LLM Call Syntax:** `queueProgressTracker.if(!propertiesService || typeof propertiesService !);`
-- **Pure JSDoc:**
-```javascript
-/** Method if */
+/** No comment available */
 ```
 ---
 #### METHOD: QueueProgressTracker.saveProgress
 - **Scope:** instance
-- **LLM Call Syntax:** `queueProgressTracker.saveProgress(progress);`
+- **LLM Call Syntax:** `queueProgressTracker.saveProgress();`
 - **Pure JSDoc:**
 ```javascript
-/** Method saveProgress */
+/** No comment available */
 ```
 ---
 #### METHOD: QueueProgressTracker.reset
@@ -1489,181 +529,124 @@ Extracted from JobStateManager and JobExecutor for improved separation of concer
 - **LLM Call Syntax:** `queueProgressTracker.reset();`
 - **Pure JSDoc:**
 ```javascript
-/** Method reset */
+/** No comment available */
 ```
 ---
-#### METHOD: QueueProgressTracker.calculateRecursively
+#### METHOD: QueueProgressTracker._calculateExactTotal
 - **Scope:** instance
-- **LLM Call Syntax:** `queueProgressTracker.calculateRecursively(levelIndex, currentContext);`
+- **LLM Call Syntax:** `queueProgressTracker._calculateExactTotal();`
 - **Pure JSDoc:**
 ```javascript
-/** Method calculateRecursively */
-```
----
-#### METHOD: QueueProgressTracker.if
-- **Scope:** instance
-- **LLM Call Syntax:** `queueProgressTracker.if(levelIndex >);`
-- **Pure JSDoc:**
-```javascript
-/** Method if */
-```
----
-#### METHOD: QueueProgressTracker.if
-- **Scope:** instance
-- **LLM Call Syntax:** `queueProgressTracker.if(levelIndex);`
-- **Pure JSDoc:**
-```javascript
-/** Method if */
-```
----
-#### METHOD: QueueProgressTracker.if
-- **Scope:** instance
-- **LLM Call Syntax:** `queueProgressTracker.if(typeof level.countGenerator !);`
-- **Pure JSDoc:**
-```javascript
-/** Method if */
-```
----
-#### METHOD: QueueProgressTracker.if
-- **Scope:** instance
-- **LLM Call Syntax:** `queueProgressTracker.if(typeof level.elementsGenerator !);`
-- **Pure JSDoc:**
-```javascript
-/** Method if */
-```
----
-#### METHOD: QueueProgressTracker.for
-- **Scope:** instance
-- **LLM Call Syntax:** `queueProgressTracker.for(const element of filteredElements);`
-- **Pure JSDoc:**
-```javascript
-/** Method for */
-```
----
-#### METHOD: QueueProgressTracker.if
-- **Scope:** instance
-- **LLM Call Syntax:** `queueProgressTracker.if(!levels || levels.length);`
-- **Pure JSDoc:**
-```javascript
-/** Method if */
+/** No comment available */
 ```
 ---
 <br>
 
 ## CLASS: QueuePersistenceHandler
-**File Path:** `JobRunnerLib/src/internal/QueuePersistenceHandler.js`
+**File Path:** `JobRunnerLib/src/internal/QueuePersistenceHandler.ts`
 **Constructor Usage:** `const instance = new QueuePersistenceHandler();`
 **Description:** N/A
 
 ### Raw JSDoc Context:
 ```javascript
-/** Class definition */
+/** No comment available */
 ```
 
-### Methods of QueuePersistenceHandler
+### Methods and properties of QueuePersistenceHandler
 
-#### METHOD: QueuePersistenceHandler.LARGE_STATE_THRESHOLD
-- **Scope:** instance
-- **LLM Call Syntax:** `queuePersistenceHandler.LARGE_STATE_THRESHOLD();`
+#### PROPERTY: QueuePersistenceHandler.LARGE_STATE_THRESHOLD
+- **Scope:** static
+- **LLM Call Syntax:** `const result = QueuePersistenceHandler.LARGE_STATE_THRESHOLD;`
 - **Pure JSDoc:**
 ```javascript
-/** Method LARGE_STATE_THRESHOLD */
+/** No comment available */
 ```
 ---
-#### METHOD: QueuePersistenceHandler.if
+#### METHOD: QueuePersistenceHandler._driveApp
 - **Scope:** instance
-- **LLM Call Syntax:** `queuePersistenceHandler.if(!jobName || typeof jobName !);`
+- **LLM Call Syntax:** `const result = queuePersistenceHandler._driveApp();`
 - **Pure JSDoc:**
 ```javascript
-/** Method if */
+/**
+   * Resolves the native Drive API surface via the wrapped DriveService (L2).
+   * @private
+   * @returns {GoogleAppsScript.Drive.DriveApp|undefined} Native DriveApp, or undefined outside GAS.
+   */
 ```
 ---
-#### METHOD: QueuePersistenceHandler.if
+#### METHOD: QueuePersistenceHandler._key
 - **Scope:** instance
-- **LLM Call Syntax:** `queuePersistenceHandler.if(!propertiesService || typeof propertiesService !);`
+- **LLM Call Syntax:** `queuePersistenceHandler._key();`
 - **Pure JSDoc:**
 ```javascript
-/** Method if */
+/** No comment available */
 ```
 ---
-#### METHOD: QueuePersistenceHandler.if
+#### METHOD: QueuePersistenceHandler._resolveResumeStatePatch
 - **Scope:** instance
-- **LLM Call Syntax:** `queuePersistenceHandler.if(!this._driveService);`
+- **LLM Call Syntax:** `const result = queuePersistenceHandler._resolveResumeStatePatch(state);`
 - **Pure JSDoc:**
 ```javascript
-/** Method if */
+/**
+   * Resolves the ScriptProperties patch for a resume-state value, offloading
+   * to Drive (and returning a `__DRIVE__:` pointer + recorded size instead
+   * of the inline JSON) whenever the serialized state exceeds
+   * `LARGE_STATE_THRESHOLD` — the same protection `saveResumeState` has
+   * always provided against `PropertiesService`'s ~9KB per-value cap.
+   * Shared by `saveResumeState` (applies the patch immediately) and
+   * `batchSave` (merges the patch into its single `setProperties` call), so
+   * both persistence paths get identical size-check-then-offload behavior;
+   * previously only `saveResumeState` had it, and `batchSave` — used on the
+   * timeout/suspension path — silently wrote oversized state inline instead.
+   * @private
+   * @param {*} state Resume-state value to persist.
+   * @returns {{properties: Object<string,string>, propertiesToDelete: string[]}}
+   *   `properties` to merge into a `setProperties` call (or apply
+   *   individually); `propertiesToDelete` are keys that must be explicitly
+   *   deleted afterward (`setProperties` can only set/overwrite, never
+   *   delete, keys).
+   */
 ```
 ---
-#### METHOD: QueuePersistenceHandler.if
+#### METHOD: QueuePersistenceHandler._resolveResumeStatePatchForBatch
 - **Scope:** instance
-- **LLM Call Syntax:** `queuePersistenceHandler.if(stateSize > QueuePersistenceHandler.LARGE_STATE_THRESHOLD);`
+- **LLM Call Syntax:** `const result = queuePersistenceHandler._resolveResumeStatePatchForBatch(state);`
 - **Pure JSDoc:**
 ```javascript
-/** Method if */
-```
----
-#### METHOD: QueuePersistenceHandler.catch
-- **Scope:** instance
-- **LLM Call Syntax:** `queuePersistenceHandler.catch(_driveError);`
-- **Pure JSDoc:**
-```javascript
-/** Method catch */
+/**
+   * `batchSave` is used on the timeout/suspension path (see JobQueue.js's
+   * `TimeoutException` handler): it must persist `state: 'to_resume'`,
+   * `progress`, and the version bump together so `createResumeTrigger()`
+   * runs afterward. If the Drive offload of an oversized `resumeState`
+   * fails (Drive unavailable/quota), `_resolveResumeStatePatch` throws —
+   * and letting that propagate would make the whole `batchSave` call fail,
+   * losing the suspend state and stranding the job with no resume trigger.
+   * So here (unlike `saveResumeState`, which intentionally still hard-fails
+   * on Drive errors since it isn't on the crash-recovery path) a Drive
+   * failure falls back to the old pre-tiering inline-JSON write instead of
+   * propagating: same risk of exceeding `PropertiesService`'s ~9KB cap that
+   * applied unconditionally before large-state tiering existed, but the job
+   * still gets flagged `to_resume` with a trigger created.
+   * @private
+   * @param {*} state Resume-state value to persist.
+   * @returns {{properties: Object<string,string>, propertiesToDelete: string[]}}
+   */
 ```
 ---
 #### METHOD: QueuePersistenceHandler.batchSave
 - **Scope:** instance
-- **LLM Call Syntax:** `queuePersistenceHandler.batchSave(updates);`
+- **LLM Call Syntax:** `queuePersistenceHandler.batchSave();`
 - **Pure JSDoc:**
 ```javascript
-/** Method batchSave */
-```
----
-#### METHOD: QueuePersistenceHandler.if
-- **Scope:** instance
-- **LLM Call Syntax:** `queuePersistenceHandler.if(updates.resumeState !);`
-- **Pure JSDoc:**
-```javascript
-/** Method if */
-```
----
-#### METHOD: QueuePersistenceHandler.if
-- **Scope:** instance
-- **LLM Call Syntax:** `queuePersistenceHandler.if(updates.progress !);`
-- **Pure JSDoc:**
-```javascript
-/** Method if */
-```
----
-#### METHOD: QueuePersistenceHandler.if
-- **Scope:** instance
-- **LLM Call Syntax:** `queuePersistenceHandler.if(updates.config !);`
-- **Pure JSDoc:**
-```javascript
-/** Method if */
-```
----
-#### METHOD: QueuePersistenceHandler.if
-- **Scope:** instance
-- **LLM Call Syntax:** `queuePersistenceHandler.if(updates.type !);`
-- **Pure JSDoc:**
-```javascript
-/** Method if */
-```
----
-#### METHOD: QueuePersistenceHandler.if
-- **Scope:** instance
-- **LLM Call Syntax:** `queuePersistenceHandler.if(updates.state !);`
-- **Pure JSDoc:**
-```javascript
-/** Method if */
+/** No comment available */
 ```
 ---
 #### METHOD: QueuePersistenceHandler.saveResumeState
 - **Scope:** instance
-- **LLM Call Syntax:** `queuePersistenceHandler.saveResumeState(state);`
+- **LLM Call Syntax:** `queuePersistenceHandler.saveResumeState();`
 - **Pure JSDoc:**
 ```javascript
-/** Method saveResumeState */
+/** No comment available */
 ```
 ---
 #### METHOD: QueuePersistenceHandler.loadResumeState
@@ -1671,71 +654,39 @@ Extracted from JobStateManager and JobExecutor for improved separation of concer
 - **LLM Call Syntax:** `queuePersistenceHandler.loadResumeState();`
 - **Pure JSDoc:**
 ```javascript
-/** Method loadResumeState */
+/** No comment available */
 ```
 ---
-#### METHOD: QueuePersistenceHandler.if
+#### METHOD: QueuePersistenceHandler._saveLargeStateToDrive
 - **Scope:** instance
-- **LLM Call Syntax:** `queuePersistenceHandler.if(!stateValue);`
+- **LLM Call Syntax:** `queuePersistenceHandler._saveLargeStateToDrive();`
 - **Pure JSDoc:**
 ```javascript
-/** Method if */
+/** No comment available */
 ```
 ---
-#### METHOD: QueuePersistenceHandler.if
+#### METHOD: QueuePersistenceHandler._loadLargeStateFromDrive
 - **Scope:** instance
-- **LLM Call Syntax:** `queuePersistenceHandler.if(!driveApp);`
+- **LLM Call Syntax:** `queuePersistenceHandler._loadLargeStateFromDrive();`
 - **Pure JSDoc:**
 ```javascript
-/** Method if */
+/** No comment available */
 ```
 ---
-#### METHOD: QueuePersistenceHandler.if
+#### METHOD: QueuePersistenceHandler._getOrCreateJobStateFolder
 - **Scope:** instance
-- **LLM Call Syntax:** `queuePersistenceHandler.if(existingFileId);`
+- **LLM Call Syntax:** `queuePersistenceHandler._getOrCreateJobStateFolder();`
 - **Pure JSDoc:**
 ```javascript
-/** Method if */
-```
----
-#### METHOD: QueuePersistenceHandler.catch
-- **Scope:** instance
-- **LLM Call Syntax:** `queuePersistenceHandler.catch(_e);`
-- **Pure JSDoc:**
-```javascript
-/** Method catch */
-```
----
-#### METHOD: QueuePersistenceHandler.if
-- **Scope:** instance
-- **LLM Call Syntax:** `queuePersistenceHandler.if(!driveApp);`
-- **Pure JSDoc:**
-```javascript
-/** Method if */
-```
----
-#### METHOD: QueuePersistenceHandler.catch
-- **Scope:** instance
-- **LLM Call Syntax:** `queuePersistenceHandler.catch(e);`
-- **Pure JSDoc:**
-```javascript
-/** Method catch */
-```
----
-#### METHOD: QueuePersistenceHandler.if
-- **Scope:** instance
-- **LLM Call Syntax:** `queuePersistenceHandler.if(!driveApp);`
-- **Pure JSDoc:**
-```javascript
-/** Method if */
+/** No comment available */
 ```
 ---
 #### METHOD: QueuePersistenceHandler.saveConfiguration
 - **Scope:** instance
-- **LLM Call Syntax:** `queuePersistenceHandler.saveConfiguration(config);`
+- **LLM Call Syntax:** `queuePersistenceHandler.saveConfiguration();`
 - **Pure JSDoc:**
 ```javascript
-/** Method saveConfiguration */
+/** No comment available */
 ```
 ---
 #### METHOD: QueuePersistenceHandler.loadConfiguration
@@ -1743,15 +694,15 @@ Extracted from JobStateManager and JobExecutor for improved separation of concer
 - **LLM Call Syntax:** `queuePersistenceHandler.loadConfiguration();`
 - **Pure JSDoc:**
 ```javascript
-/** Method loadConfiguration */
+/** No comment available */
 ```
 ---
 #### METHOD: QueuePersistenceHandler.saveType
 - **Scope:** instance
-- **LLM Call Syntax:** `queuePersistenceHandler.saveType(type);`
+- **LLM Call Syntax:** `queuePersistenceHandler.saveType();`
 - **Pure JSDoc:**
 ```javascript
-/** Method saveType */
+/** No comment available */
 ```
 ---
 #### METHOD: QueuePersistenceHandler.loadType
@@ -1759,7 +710,7 @@ Extracted from JobStateManager and JobExecutor for improved separation of concer
 - **LLM Call Syntax:** `queuePersistenceHandler.loadType();`
 - **Pure JSDoc:**
 ```javascript
-/** Method loadType */
+/** No comment available */
 ```
 ---
 #### METHOD: QueuePersistenceHandler.clearResumeState
@@ -1767,31 +718,7 @@ Extracted from JobStateManager and JobExecutor for improved separation of concer
 - **LLM Call Syntax:** `queuePersistenceHandler.clearResumeState();`
 - **Pure JSDoc:**
 ```javascript
-/** Method clearResumeState */
-```
----
-#### METHOD: QueuePersistenceHandler.if
-- **Scope:** instance
-- **LLM Call Syntax:** `queuePersistenceHandler.if(stateFileId && driveApp);`
-- **Pure JSDoc:**
-```javascript
-/** Method if */
-```
----
-#### METHOD: QueuePersistenceHandler.catch
-- **Scope:** instance
-- **LLM Call Syntax:** `queuePersistenceHandler.catch(_e);`
-- **Pure JSDoc:**
-```javascript
-/** Method catch */
-```
----
-#### METHOD: QueuePersistenceHandler.catch
-- **Scope:** instance
-- **LLM Call Syntax:** `queuePersistenceHandler.catch(_e);`
-- **Pure JSDoc:**
-```javascript
-/** Method catch */
+/** No comment available */
 ```
 ---
 #### METHOD: QueuePersistenceHandler.reset
@@ -1799,35 +726,18 @@ Extracted from JobStateManager and JobExecutor for improved separation of concer
 - **LLM Call Syntax:** `queuePersistenceHandler.reset();`
 - **Pure JSDoc:**
 ```javascript
-/** Method reset */
+/** No comment available */
 ```
 ---
 <br>
 
 ## CLASS: CapturingLogger
-**File Path:** `JobRunnerLib/src/internal/CapturingLogger.js`
+**File Path:** `JobRunnerLib/src/internal/CapturingLogger.ts`
 **Constructor Usage:** `const instance = new CapturingLogger();`
-**Description:** Proxy logger that captures all log messages while forwarding to a real logger
-
-/
-
-/**
-Transparent proxy logger that captures and buffers log messages for post-execution analysis.
-
-Intercepts all log calls (debug, info, warn, error), stores them in a memory buffer with timestamps
-and levels, and forwards them to an underlying LoggerService. Optimized for background job logging
-and UI replay.
-
-@class
+**Description:** Transparent proxy logger that captures and buffers log messages for post-execution analysis.
 
 ### Raw JSDoc Context:
 ```javascript
-/**
- * @file JobRunnerLib/src/CapturingLogger.js
- * @description Proxy logger that captures all log messages while forwarding to a real logger
- * @version 1.0 - Initial implementation
- */
-
 /**
  * Transparent proxy logger that captures and buffers log messages for post-execution analysis.
  *
@@ -1840,46 +750,35 @@ and UI replay.
  */
 ```
 
-### Methods of CapturingLogger
+### Methods and properties of CapturingLogger
 
-#### METHOD: CapturingLogger.if
+#### METHOD: CapturingLogger._capture
 - **Scope:** instance
-- **LLM Call Syntax:** `capturingLogger.if(!realLogger);`
+- **LLM Call Syntax:** `capturingLogger._capture(level, message, context);`
 - **Pure JSDoc:**
 ```javascript
-/** Method if */
+/**
+   * Internal buffer ingestion and eviction logic.
+   * @private
+   * @param {string} level Log level identifier (DEBUG|INFO|WARN|ERROR).
+   * @param {string} message Formatted log message string.
+   * @param {Object} [context=null] Metadata object associated with the log entry.
+   */
 ```
 ---
-#### METHOD: CapturingLogger.for
+#### METHOD: CapturingLogger._proxy
 - **Scope:** instance
-- **LLM Call Syntax:** `capturingLogger.for(const method of requiredMethods);`
+- **LLM Call Syntax:** `const result = capturingLogger._proxy(level, message, context);`
 - **Pure JSDoc:**
 ```javascript
-/** Method for */
-```
----
-#### METHOD: CapturingLogger.if
-- **Scope:** instance
-- **LLM Call Syntax:** `capturingLogger.if(typeof realLogger[method] !);`
-- **Pure JSDoc:**
-```javascript
-/** Method if */
-```
----
-#### METHOD: CapturingLogger.if
-- **Scope:** instance
-- **LLM Call Syntax:** `capturingLogger.if(typeof maxBufferSize !);`
-- **Pure JSDoc:**
-```javascript
-/** Method if */
-```
----
-#### METHOD: CapturingLogger.if
-- **Scope:** instance
-- **LLM Call Syntax:** `capturingLogger.if(this._capturedLogs.length > this._maxBufferSize);`
-- **Pure JSDoc:**
-```javascript
-/** Method if */
+/**
+   * Proxies and captures a log message at the given level.
+   * @private
+   * @param {string} level Log level name (debug|info|warn|error).
+   * @param {string|Object|Function} message Raw message, object to stringify, or lazy evaluation function.
+   * @param {Object|Function} [context] Optional metadata or lazy evaluation context function.
+   * @returns {CapturingLogger} Current instance for chaining.
+   */
 ```
 ---
 #### METHOD: CapturingLogger.debug
@@ -1949,114 +848,106 @@ and UI replay.
 ---
 #### METHOD: CapturingLogger.withPosition
 - **Scope:** instance
-- **LLM Call Syntax:** `capturingLogger.withPosition(position, callback);`
+- **LLM Call Syntax:** `capturingLogger.withPosition();`
 - **Pure JSDoc:**
 ```javascript
-/** Method withPosition */
+/** No comment available */
 ```
 ---
-#### METHOD: CapturingLogger.if
+#### METHOD: CapturingLogger._semantic
 - **Scope:** instance
-- **LLM Call Syntax:** `capturingLogger.if(typeof this._realLogger.withPosition);`
+- **LLM Call Syntax:** `capturingLogger._semantic();`
 - **Pure JSDoc:**
 ```javascript
-/** Method if */
+/** No comment available */
 ```
 ---
-#### METHOD: CapturingLogger.if
+#### METHOD: CapturingLogger._withoutTrailingUndefined
 - **Scope:** instance
-- **LLM Call Syntax:** `capturingLogger.if(typeof this._realLogger[method]);`
+- **LLM Call Syntax:** `capturingLogger._withoutTrailingUndefined();`
 - **Pure JSDoc:**
 ```javascript
-/** Method if */
-```
----
-#### METHOD: CapturingLogger.while
-- **Scope:** instance
-- **LLM Call Syntax:** `capturingLogger.while(result.length && result[result.length - 1]);`
-- **Pure JSDoc:**
-```javascript
-/** Method while */
+/** No comment available */
 ```
 ---
 #### METHOD: CapturingLogger.logJobStart
 - **Scope:** instance
-- **LLM Call Syntax:** `capturingLogger.logJobStart(jobName, jobType);`
+- **LLM Call Syntax:** `capturingLogger.logJobStart();`
 - **Pure JSDoc:**
 ```javascript
-/** Method logJobStart */
+/** No comment available */
 ```
 ---
 #### METHOD: CapturingLogger.logJobResume
 - **Scope:** instance
-- **LLM Call Syntax:** `capturingLogger.logJobResume(jobName, jobType, details);`
+- **LLM Call Syntax:** `capturingLogger.logJobResume();`
 - **Pure JSDoc:**
 ```javascript
-/** Method logJobResume */
+/** No comment available */
 ```
 ---
 #### METHOD: CapturingLogger.logJobEnd
 - **Scope:** instance
-- **LLM Call Syntax:** `capturingLogger.logJobEnd(jobName, isSuccess, details);`
+- **LLM Call Syntax:** `capturingLogger.logJobEnd();`
 - **Pure JSDoc:**
 ```javascript
-/** Method logJobEnd */
+/** No comment available */
 ```
 ---
 #### METHOD: CapturingLogger.logJobSuspended
 - **Scope:** instance
-- **LLM Call Syntax:** `capturingLogger.logJobSuspended(jobName, details);`
+- **LLM Call Syntax:** `capturingLogger.logJobSuspended();`
 - **Pure JSDoc:**
 ```javascript
-/** Method logJobSuspended */
+/** No comment available */
 ```
 ---
 #### METHOD: CapturingLogger.logBatchStart
 - **Scope:** instance
-- **LLM Call Syntax:** `capturingLogger.logBatchStart(totalItems, label);`
+- **LLM Call Syntax:** `capturingLogger.logBatchStart();`
 - **Pure JSDoc:**
 ```javascript
-/** Method logBatchStart */
+/** No comment available */
 ```
 ---
 #### METHOD: CapturingLogger.logItemStart
 - **Scope:** instance
-- **LLM Call Syntax:** `capturingLogger.logItemStart(itemIndex, totalItems, itemLabel, identifier, kind);`
+- **LLM Call Syntax:** `capturingLogger.logItemStart();`
 - **Pure JSDoc:**
 ```javascript
-/** Method logItemStart */
+/** No comment available */
 ```
 ---
 #### METHOD: CapturingLogger.logStep
 - **Scope:** instance
-- **LLM Call Syntax:** `capturingLogger.logStep(message, position);`
+- **LLM Call Syntax:** `capturingLogger.logStep();`
 - **Pure JSDoc:**
 ```javascript
-/** Method logStep */
+/** No comment available */
 ```
 ---
 #### METHOD: CapturingLogger.logPipelineStart
 - **Scope:** instance
-- **LLM Call Syntax:** `capturingLogger.logPipelineStart(pipelineName, totalSteps, position);`
+- **LLM Call Syntax:** `capturingLogger.logPipelineStart();`
 - **Pure JSDoc:**
 ```javascript
-/** Method logPipelineStart */
+/** No comment available */
 ```
 ---
 #### METHOD: CapturingLogger.logPipelineStep
 - **Scope:** instance
-- **LLM Call Syntax:** `capturingLogger.logPipelineStep(stepName, status, details, position);`
+- **LLM Call Syntax:** `capturingLogger.logPipelineStep();`
 - **Pure JSDoc:**
 ```javascript
-/** Method logPipelineStep */
+/** No comment available */
 ```
 ---
 #### METHOD: CapturingLogger.logSummary
 - **Scope:** instance
-- **LLM Call Syntax:** `capturingLogger.logSummary(label, durationMs, itemDetails, position);`
+- **LLM Call Syntax:** `capturingLogger.logSummary();`
 - **Pure JSDoc:**
 ```javascript
-/** Method logSummary */
+/** No comment available */
 ```
 ---
 #### METHOD: CapturingLogger.getLogsAsText
@@ -2069,14 +960,6 @@ and UI replay.
    * @param {string} [separator='\n'] Line delimiter.
    * @returns {string} Formatted string: `[LEVEL] ISO_TIMESTAMP - MESSAGE {JSON_CONTEXT}`.
    */
-```
----
-#### METHOD: CapturingLogger.if
-- **Scope:** instance
-- **LLM Call Syntax:** `capturingLogger.if(entry.context);`
-- **Pure JSDoc:**
-```javascript
-/** Method if */
 ```
 ---
 #### METHOD: CapturingLogger.getLogsAsHtml
@@ -2095,12 +978,17 @@ and UI replay.
    */
 ```
 ---
-#### METHOD: CapturingLogger.if
+#### METHOD: CapturingLogger._escapeHtml
 - **Scope:** instance
-- **LLM Call Syntax:** `capturingLogger.if(entry.context);`
+- **LLM Call Syntax:** `const result = capturingLogger._escapeHtml(text);`
 - **Pure JSDoc:**
 ```javascript
-/** Method if */
+/**
+   * XSS mitigation for HTML log output.
+   * @private
+   * @param {string} text Raw text to sanitize.
+   * @returns {string} HTML-escaped string.
+   */
 ```
 ---
 #### METHOD: CapturingLogger.getLogCount
@@ -2125,14 +1013,6 @@ and UI replay.
    */
 ```
 ---
-#### METHOD: CapturingLogger.if
-- **Scope:** instance
-- **LLM Call Syntax:** `capturingLogger.if(typeof this._realLogger.setLevel);`
-- **Pure JSDoc:**
-```javascript
-/** Method if */
-```
----
 #### METHOD: CapturingLogger.getLevel
 - **Scope:** instance
 - **LLM Call Syntax:** `const result = capturingLogger.getLevel();`
@@ -2144,37 +1024,26 @@ and UI replay.
    */
 ```
 ---
-#### METHOD: CapturingLogger.if
-- **Scope:** instance
-- **LLM Call Syntax:** `capturingLogger.if(typeof this._realLogger.getLevel);`
-- **Pure JSDoc:**
-```javascript
-/** Method if */
-```
----
 <br>
 
 ## CLASS: JobTriggerManager
-**File Path:** `JobRunnerLib/src/internal/managers/JobRunnerTriggerManager.js`
+**File Path:** `JobRunnerLib/src/internal/managers/JobRunnerTriggerManager.ts`
 **Constructor Usage:** `const instance = new JobTriggerManager();`
-**Description:** Manager for automatic resume triggers and trigger context discovery.
+**Description:** N/A
 
 ### Raw JSDoc Context:
 ```javascript
-/**
- * @file JobRunnerLib/src/managers/JobRunnerTriggerManager.js
- * @description Manager for automatic resume triggers and trigger context discovery.
- */
+/** No comment available */
 ```
 
-### Methods of JobTriggerManager
+### Methods and properties of JobTriggerManager
 
 #### METHOD: JobTriggerManager.createResumeTrigger
 - **Scope:** instance
 - **LLM Call Syntax:** `jobTriggerManager.createResumeTrigger();`
 - **Pure JSDoc:**
 ```javascript
-/** Method createResumeTrigger */
+/** No comment available */
 ```
 ---
 #### METHOD: JobTriggerManager.deleteExistingTriggers
@@ -2182,99 +1051,95 @@ and UI replay.
 - **LLM Call Syntax:** `jobTriggerManager.deleteExistingTriggers();`
 - **Pure JSDoc:**
 ```javascript
-/** Method deleteExistingTriggers */
-```
----
-#### METHOD: JobTriggerManager.if
-- **Scope:** instance
-- **LLM Call Syntax:** `jobTriggerManager.if(triggerId);`
-- **Pure JSDoc:**
-```javascript
-/** Method if */
+/** No comment available */
 ```
 ---
 <br>
 
 ## CLASS: JobRunnerTriggerManager
-**File Path:** `JobRunnerLib/src/internal/managers/JobRunnerTriggerManager.js`
+**File Path:** `JobRunnerLib/src/internal/managers/JobRunnerTriggerManager.ts`
 **Constructor Usage:** `const instance = new JobRunnerTriggerManager();`
 **Description:** N/A
 
 ### Raw JSDoc Context:
 ```javascript
-/** Class definition */
+/** No comment available */
 ```
 
-### Methods of JobRunnerTriggerManager
+### Methods and properties of JobRunnerTriggerManager
 
-#### METHOD: JobRunnerTriggerManager.catch
+#### METHOD: JobRunnerTriggerManager._getCurrentTriggerId
 - **Scope:** instance
-- **LLM Call Syntax:** `jobRunnerTriggerManager.catch(_error);`
+- **LLM Call Syntax:** `const result = jobRunnerTriggerManager._getCurrentTriggerId();`
 - **Pure JSDoc:**
 ```javascript
-/** Method catch */
+/**
+   * Discovers the unique identifier of the trigger that initiated current execution.
+   * @private
+   * @returns {string|null} Trigger ID if context is matched; null if direct execution or discovery fails.
+   */
 ```
 ---
 <br>
 
 ## CLASS: JobStateManager
-**File Path:** `JobRunnerLib/src/internal/managers/JobRunnerStateManager.js`
+**File Path:** `JobRunnerLib/src/internal/managers/JobRunnerStateManager.ts`
 **Constructor Usage:** `const instance = new JobStateManager();`
 **Description:** N/A
 
 ### Raw JSDoc Context:
 ```javascript
-/** Class definition */
+/** No comment available */
 ```
 
-### Methods of JobStateManager
+### Methods and properties of JobStateManager
 
-#### METHOD: JobStateManager.STATE_RUNNING
-- **Scope:** instance
-- **LLM Call Syntax:** `jobStateManager.STATE_RUNNING();`
+#### PROPERTY: JobStateManager.STATE_RUNNING
+- **Scope:** static
+- **LLM Call Syntax:** `const result = JobStateManager.STATE_RUNNING;`
 - **Pure JSDoc:**
 ```javascript
-/** Method STATE_RUNNING */
+/** No comment available */
 ```
 ---
-#### METHOD: JobStateManager.STATE_COMPLETED
-- **Scope:** instance
-- **LLM Call Syntax:** `jobStateManager.STATE_COMPLETED();`
+#### PROPERTY: JobStateManager.STATE_COMPLETED
+- **Scope:** static
+- **LLM Call Syntax:** `const result = JobStateManager.STATE_COMPLETED;`
 - **Pure JSDoc:**
 ```javascript
-/** Method STATE_COMPLETED */
+/** No comment available */
 ```
 ---
-#### METHOD: JobStateManager.STATE_CANCELLED
-- **Scope:** instance
-- **LLM Call Syntax:** `jobStateManager.STATE_CANCELLED();`
+#### PROPERTY: JobStateManager.STATE_CANCELLED
+- **Scope:** static
+- **LLM Call Syntax:** `const result = JobStateManager.STATE_CANCELLED;`
 - **Pure JSDoc:**
 ```javascript
-/** Method STATE_CANCELLED */
+/** No comment available */
 ```
 ---
-#### METHOD: JobStateManager.STATE_FAILED
-- **Scope:** instance
-- **LLM Call Syntax:** `jobStateManager.STATE_FAILED();`
+#### PROPERTY: JobStateManager.STATE_FAILED
+- **Scope:** static
+- **LLM Call Syntax:** `const result = JobStateManager.STATE_FAILED;`
 - **Pure JSDoc:**
 ```javascript
-/** Method STATE_FAILED */
+/** No comment available */
 ```
 ---
-#### METHOD: JobStateManager.STATE_PENDING
-- **Scope:** instance
-- **LLM Call Syntax:** `jobStateManager.STATE_PENDING();`
+#### PROPERTY: JobStateManager.STATE_PENDING
+- **Scope:** static
+- **LLM Call Syntax:** `const result = JobStateManager.STATE_PENDING;`
 - **Pure JSDoc:**
 ```javascript
-/** Method STATE_PENDING */
+/** No comment available */
 ```
 ---
-#### METHOD: JobStateManager.LARGE_STATE_THRESHOLD
-- **Scope:** instance
-- **LLM Call Syntax:** `jobStateManager.LARGE_STATE_THRESHOLD();`
+#### PROPERTY: JobStateManager.LARGE_STATE_THRESHOLD
+- **Scope:** static
+- **LLM Call Syntax:** `const result = JobStateManager.LARGE_STATE_THRESHOLD;`
 - **Pure JSDoc:**
 ```javascript
-/** Method LARGE_STATE_THRESHOLD */
+/** No comment available */
 ```
 ---
 #### METHOD: JobStateManager.reset
@@ -2282,378 +1147,181 @@ and UI replay.
 - **LLM Call Syntax:** `jobStateManager.reset();`
 - **Pure JSDoc:**
 ```javascript
-/** Method reset */
+/** No comment available */
 ```
 ---
 <br>
 
 ## CLASS: JobRunnerStateManager
-**File Path:** `JobRunnerLib/src/internal/managers/JobRunnerStateManager.js`
+**File Path:** `JobRunnerLib/src/internal/managers/JobRunnerStateManager.ts`
 **Constructor Usage:** `const instance = new JobRunnerStateManager();`
 **Description:** N/A
 
 ### Raw JSDoc Context:
 ```javascript
-/** Class definition */
+/** No comment available */
 ```
 
-### Methods of JobRunnerStateManager
+### Methods and properties of JobRunnerStateManager
 
 #### METHOD: JobRunnerStateManager.getStatus
 - **Scope:** instance
-- **LLM Call Syntax:** `jobRunnerStateManager.getStatus(jobName);`
+- **LLM Call Syntax:** `jobRunnerStateManager.getStatus();`
 - **Pure JSDoc:**
 ```javascript
-/** Method getStatus */
+/** No comment available */
 ```
 ---
 #### METHOD: JobRunnerStateManager.resetJob
 - **Scope:** instance
-- **LLM Call Syntax:** `jobRunnerStateManager.resetJob(jobName);`
+- **LLM Call Syntax:** `jobRunnerStateManager.resetJob();`
 - **Pure JSDoc:**
 ```javascript
-/** Method resetJob */
+/** No comment available */
 ```
 ---
 #### METHOD: JobRunnerStateManager.cancelJob
 - **Scope:** instance
-- **LLM Call Syntax:** `jobRunnerStateManager.cancelJob(jobName);`
+- **LLM Call Syntax:** `jobRunnerStateManager.cancelJob();`
 - **Pure JSDoc:**
 ```javascript
-/** Method cancelJob */
-```
----
-#### METHOD: JobRunnerStateManager.if
-- **Scope:** instance
-- **LLM Call Syntax:** `jobRunnerStateManager.if(!jobName || typeof jobName !);`
-- **Pure JSDoc:**
-```javascript
-/** Method if */
+/** No comment available */
 ```
 ---
 <br>
 
 ## CLASS: JobRunnerLogCapturer
-**File Path:** `JobRunnerLib/src/internal/managers/JobRunnerLogCapturer.js`
+**File Path:** `JobRunnerLib/src/internal/managers/JobRunnerLogCapturer.ts`
 **Constructor Usage:** `const instance = new JobRunnerLogCapturer();`
 **Description:** N/A
 
 ### Raw JSDoc Context:
 ```javascript
-/** Class definition */
+/** No comment available */
 ```
 
-### Methods of JobRunnerLogCapturer
+### Methods and properties of JobRunnerLogCapturer
 
-#### METHOD: JobRunnerLogCapturer.if
+#### METHOD: JobRunnerLogCapturer._validateLoggingConfig
 - **Scope:** instance
-- **LLM Call Syntax:** `jobRunnerLogCapturer.if(!loggingConfig.target);`
+- **LLM Call Syntax:** `jobRunnerLogCapturer._validateLoggingConfig();`
 - **Pure JSDoc:**
 ```javascript
-/** Method if */
+/** No comment available */
 ```
 ---
-#### METHOD: JobRunnerLogCapturer.if
+#### METHOD: JobRunnerLogCapturer._displayLogs
 - **Scope:** instance
-- **LLM Call Syntax:** `jobRunnerLogCapturer.if(loggingConfig.target);`
+- **LLM Call Syntax:** `jobRunnerLogCapturer._displayLogs();`
 - **Pure JSDoc:**
 ```javascript
-/** Method if */
+/** No comment available */
 ```
 ---
-#### METHOD: JobRunnerLogCapturer.if
+#### METHOD: JobRunnerLogCapturer._displayLogsInSidebar
 - **Scope:** instance
-- **LLM Call Syntax:** `jobRunnerLogCapturer.if(loggingConfig.target);`
+- **LLM Call Syntax:** `jobRunnerLogCapturer._displayLogsInSidebar();`
 - **Pure JSDoc:**
 ```javascript
-/** Method if */
+/** No comment available */
 ```
 ---
-#### METHOD: JobRunnerLogCapturer.if
+#### METHOD: JobRunnerLogCapturer._displayLogsInDriveFile
 - **Scope:** instance
-- **LLM Call Syntax:** `jobRunnerLogCapturer.if(logCount);`
+- **LLM Call Syntax:** `jobRunnerLogCapturer._displayLogsInDriveFile();`
 - **Pure JSDoc:**
 ```javascript
-/** Method if */
-```
----
-#### METHOD: JobRunnerLogCapturer.if
-- **Scope:** instance
-- **LLM Call Syntax:** `jobRunnerLogCapturer.if(loggingConfig.target);`
-- **Pure JSDoc:**
-```javascript
-/** Method if */
-```
----
-#### METHOD: JobRunnerLogCapturer.if
-- **Scope:** instance
-- **LLM Call Syntax:** `jobRunnerLogCapturer.if(loggingConfig.target);`
-- **Pure JSDoc:**
-```javascript
-/** Method if */
-```
----
-#### METHOD: JobRunnerLogCapturer.if
-- **Scope:** instance
-- **LLM Call Syntax:** `jobRunnerLogCapturer.if(folderId);`
-- **Pure JSDoc:**
-```javascript
-/** Method if */
-```
----
-#### METHOD: JobRunnerLogCapturer.catch
-- **Scope:** instance
-- **LLM Call Syntax:** `jobRunnerLogCapturer.catch(driveError);`
-- **Pure JSDoc:**
-```javascript
-/** Method catch */
+/** No comment available */
 ```
 ---
 <br>
 
 ## CLASS: JobRunnerExecutionController
-**File Path:** `JobRunnerLib/src/internal/managers/JobRunnerExecutionController.js`
+**File Path:** `JobRunnerLib/src/internal/managers/JobRunnerExecutionController.ts`
 **Constructor Usage:** `const instance = new JobRunnerExecutionController();`
 **Description:** N/A
 
 ### Raw JSDoc Context:
 ```javascript
-/** Class definition */
+/** No comment available */
 ```
 
-### Methods of JobRunnerExecutionController
+### Methods and properties of JobRunnerExecutionController
 
-#### METHOD: JobRunnerExecutionController.if
+#### METHOD: JobRunnerExecutionController._semantic
 - **Scope:** instance
-- **LLM Call Syntax:** `jobRunnerExecutionController.if(typeof logger[method]);`
+- **LLM Call Syntax:** `jobRunnerExecutionController._semantic();`
 - **Pure JSDoc:**
 ```javascript
-/** Method if */
+/** No comment available */
 ```
 ---
-#### METHOD: JobRunnerExecutionController.if
+#### METHOD: JobRunnerExecutionController._logJobStart
 - **Scope:** instance
-- **LLM Call Syntax:** `jobRunnerExecutionController.if(typeof logger[level]);`
+- **LLM Call Syntax:** `jobRunnerExecutionController._logJobStart();`
 - **Pure JSDoc:**
 ```javascript
-/** Method if */
+/** No comment available */
 ```
 ---
-#### METHOD: JobRunnerExecutionController.if
+#### METHOD: JobRunnerExecutionController._logJobResume
 - **Scope:** instance
-- **LLM Call Syntax:** `jobRunnerExecutionController.if(state);`
+- **LLM Call Syntax:** `jobRunnerExecutionController._logJobResume();`
 - **Pure JSDoc:**
 ```javascript
-/** Method if */
+/** No comment available */
 ```
 ---
-#### METHOD: JobRunnerExecutionController.if
+#### METHOD: JobRunnerExecutionController._logTerminal
 - **Scope:** instance
-- **LLM Call Syntax:** `jobRunnerExecutionController.if(state);`
+- **LLM Call Syntax:** `jobRunnerExecutionController._logTerminal();`
 - **Pure JSDoc:**
 ```javascript
-/** Method if */
+/** No comment available */
 ```
 ---
-#### METHOD: JobRunnerExecutionController.if
+#### METHOD: JobRunnerExecutionController._status
 - **Scope:** instance
-- **LLM Call Syntax:** `jobRunnerExecutionController.if(result);`
+- **LLM Call Syntax:** `jobRunnerExecutionController._status();`
 - **Pure JSDoc:**
 ```javascript
-/** Method if */
-```
----
-#### METHOD: JobRunnerExecutionController.if
-- **Scope:** instance
-- **LLM Call Syntax:** `jobRunnerExecutionController.if(typeof queue.getStatus);`
-- **Pure JSDoc:**
-```javascript
-/** Method if */
+/** No comment available */
 ```
 ---
 #### METHOD: JobRunnerExecutionController.run
 - **Scope:** instance
-- **LLM Call Syntax:** `jobRunnerExecutionController.run(jobName, jobType, parameters, jobHandlerRegistryCallback, forceRestart, maxDurationMs, loggingConfig);`
+- **LLM Call Syntax:** `jobRunnerExecutionController.run();`
 - **Pure JSDoc:**
 ```javascript
-/** Method run */
-```
----
-#### METHOD: JobRunnerExecutionController.if
-- **Scope:** instance
-- **LLM Call Syntax:** `jobRunnerExecutionController.if(!jobName || typeof jobName !);`
-- **Pure JSDoc:**
-```javascript
-/** Method if */
-```
----
-#### METHOD: JobRunnerExecutionController.if
-- **Scope:** instance
-- **LLM Call Syntax:** `jobRunnerExecutionController.if(!jobType || typeof jobType !);`
-- **Pure JSDoc:**
-```javascript
-/** Method if */
-```
----
-#### METHOD: JobRunnerExecutionController.if
-- **Scope:** instance
-- **LLM Call Syntax:** `jobRunnerExecutionController.if(!parameters || typeof parameters !);`
-- **Pure JSDoc:**
-```javascript
-/** Method if */
-```
----
-#### METHOD: JobRunnerExecutionController.if
-- **Scope:** instance
-- **LLM Call Syntax:** `jobRunnerExecutionController.if(typeof jobHandlerRegistryCallback !);`
-- **Pure JSDoc:**
-```javascript
-/** Method if */
-```
----
-#### METHOD: JobRunnerExecutionController.if
-- **Scope:** instance
-- **LLM Call Syntax:** `jobRunnerExecutionController.if(typeof forceRestart !);`
-- **Pure JSDoc:**
-```javascript
-/** Method if */
-```
----
-#### METHOD: JobRunnerExecutionController.if
-- **Scope:** instance
-- **LLM Call Syntax:** `jobRunnerExecutionController.if(typeof maxDurationMs !);`
-- **Pure JSDoc:**
-```javascript
-/** Method if */
-```
----
-#### METHOD: JobRunnerExecutionController.if
-- **Scope:** instance
-- **LLM Call Syntax:** `jobRunnerExecutionController.if(loggingConfig);`
-- **Pure JSDoc:**
-```javascript
-/** Method if */
-```
----
-#### METHOD: JobRunnerExecutionController.if
-- **Scope:** instance
-- **LLM Call Syntax:** `jobRunnerExecutionController.if(loggingConfig);`
-- **Pure JSDoc:**
-```javascript
-/** Method if */
-```
----
-#### METHOD: JobRunnerExecutionController.if
-- **Scope:** instance
-- **LLM Call Syntax:** `jobRunnerExecutionController.if(jobDefinition);`
-- **Pure JSDoc:**
-```javascript
-/** Method if */
-```
----
-#### METHOD: JobRunnerExecutionController.catch
-- **Scope:** instance
-- **LLM Call Syntax:** `jobRunnerExecutionController.catch(err);`
-- **Pure JSDoc:**
-```javascript
-/** Method catch */
-```
----
-#### METHOD: JobRunnerExecutionController.catch
-- **Scope:** instance
-- **LLM Call Syntax:** `jobRunnerExecutionController.catch(logError);`
-- **Pure JSDoc:**
-```javascript
-/** Method catch */
-```
----
-#### METHOD: JobRunnerExecutionController.if
-- **Scope:** instance
-- **LLM Call Syntax:** `jobRunnerExecutionController.if(error);`
-- **Pure JSDoc:**
-```javascript
-/** Method if */
+/** No comment available */
 ```
 ---
 #### METHOD: JobRunnerExecutionController.resume
 - **Scope:** instance
-- **LLM Call Syntax:** `jobRunnerExecutionController.resume(jobName, jobHandlerRegistryCallback, maxDurationMs);`
+- **LLM Call Syntax:** `jobRunnerExecutionController.resume();`
 - **Pure JSDoc:**
 ```javascript
-/** Method resume */
-```
----
-#### METHOD: JobRunnerExecutionController.if
-- **Scope:** instance
-- **LLM Call Syntax:** `jobRunnerExecutionController.if(!jobName);`
-- **Pure JSDoc:**
-```javascript
-/** Method if */
-```
----
-#### METHOD: JobRunnerExecutionController.if
-- **Scope:** instance
-- **LLM Call Syntax:** `jobRunnerExecutionController.if(triggerId);`
-- **Pure JSDoc:**
-```javascript
-/** Method if */
-```
----
-#### METHOD: JobRunnerExecutionController.if
-- **Scope:** instance
-- **LLM Call Syntax:** `jobRunnerExecutionController.if(!jobName);`
-- **Pure JSDoc:**
-```javascript
-/** Method if */
-```
----
-#### METHOD: JobRunnerExecutionController.if
-- **Scope:** instance
-- **LLM Call Syntax:** `jobRunnerExecutionController.if(maxDurationMs);`
-- **Pure JSDoc:**
-```javascript
-/** Method if */
-```
----
-#### METHOD: JobRunnerExecutionController.if
-- **Scope:** instance
-- **LLM Call Syntax:** `jobRunnerExecutionController.if(!jobType);`
-- **Pure JSDoc:**
-```javascript
-/** Method if */
-```
----
-#### METHOD: JobRunnerExecutionController.if
-- **Scope:** instance
-- **LLM Call Syntax:** `jobRunnerExecutionController.if(resumeState && resumeState.nextIndex !);`
-- **Pure JSDoc:**
-```javascript
-/** Method if */
-```
----
-#### METHOD: JobRunnerExecutionController.if
-- **Scope:** instance
-- **LLM Call Syntax:** `jobRunnerExecutionController.if(resumeState && resumeState.position !);`
-- **Pure JSDoc:**
-```javascript
-/** Method if */
-```
----
-#### METHOD: JobRunnerExecutionController.if
-- **Scope:** instance
-- **LLM Call Syntax:** `jobRunnerExecutionController.if(jobDefinition);`
-- **Pure JSDoc:**
-```javascript
-/** Method if */
-```
----
-#### METHOD: JobRunnerExecutionController.catch
-- **Scope:** instance
-- **LLM Call Syntax:** `jobRunnerExecutionController.catch(error);`
-- **Pure JSDoc:**
-```javascript
-/** Method catch */
+/** No comment available */
 ```
 ---
 <br>
 
+## GLOBAL FUNCTIONS
+
+### FUNCTION: withTimeout
+- **Source:** `JobRunnerLib/src/JobQueue.ts`
+- **LLM Call Syntax:** `withTimeout(generator, maxDuration, startTime);`
+- **Pure JSDoc:**
+```javascript
+/**
+ * Decorates a generator with execution time limits.
+ * @param {Generator} generator Target generator to monitor.
+ * @param {number} maxDuration Maximum execution time in milliseconds.
+ * @param {number} startTime Unix timestamp of execution start.
+ * @yields {*} Values from the original generator.
+ * @throws {TimeoutException} After exposing the latest checkpoint if
+ *   `now() - startTime >= maxDuration`, before advancing the generator again.
+ */
+```
+
+---

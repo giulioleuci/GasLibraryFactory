@@ -1,6 +1,6 @@
 # Project Overview
 
-This project is a monorepo for sixteen interconnected Google Apps Script (GAS) libraries. It uses modern JavaScript (ES Modules, classes) with Webpack bundling, targeting the Google Apps Script V8 runtime.
+This project is a monorepo for fifteen interconnected Google Apps Script (GAS) libraries. It uses modern JavaScript (ES Modules, classes) with Webpack bundling, targeting the Google Apps Script V8 runtime.
 
 - **Architecture:** Layered monorepo (L0 Foundation to L4 Context/Domain engines).
 - **Core Technologies:** JavaScript (ESM), Webpack 5, Babel (Chrome 80 target), CLASP, Jest.
@@ -119,7 +119,7 @@ Treat mappings as **approximate**.
 
 # Libraries Architecture
 
-The monorepo contains **16 interconnected GAS libraries**.
+The monorepo contains **15 interconnected GAS libraries**.
 
 Layered architecture:
 
@@ -153,7 +153,6 @@ CoreUtilsLib
 └─ PipelineFramework
 
 GasOnlineTestFramework (independent)
-GasProcessMonitorLib (optional)
 
 ```
 

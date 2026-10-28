@@ -2,6 +2,7 @@
 
 **Version:** 1.0.0  
 **Layer:** Application Orchestration (Layer 3)  
+**Language:** TypeScript (strict, ES modules; Babel emits GAS V8 JavaScript)
 **Dependencies:** SheetDBLib, GoogleApiWrapper, GasExpressionEngineLib, CoreUtilsLib
 
 ## 📥 Overview
@@ -15,17 +16,17 @@ Organized around the standard ETL stages:
 ```text
 GasDataImporter/
 ├── src/
-│   ├── ImportEngine.js         # Facade: orchestrates the ETL pipeline
-│   ├── ImportConfiguration.js  # Recipe parser and validation logic
+│   ├── ImportEngine.ts         # Facade: orchestrates the ETL pipeline
+│   ├── ImportConfiguration.ts  # Recipe parser and validation logic
 │   ├── extract/                # Data Extraction layer
-│   │   ├── SourceStrategy.js   # Base interface for data sources
-│   │   ├── SheetByIdStrategy.js # Logic for single sheet extraction
-│   │   ├── FolderStrategy.js   # Logic for directory-based bulk extraction
-│   │   └── SourceStrategyFactory.js # Creates the correct strategy per recipe
+│   │   ├── SourceStrategy.ts   # Base interface for data sources
+│   │   ├── SheetByIdStrategy.ts # Logic for single sheet extraction
+│   │   ├── FolderStrategy.ts   # Logic for directory-based bulk extraction
+│   │   └── SourceStrategyFactory.ts # Creates the correct strategy per recipe
 │   ├── transform/              # Data Transformation layer
-│   │   └── Transformer.js      # Applies mapping and calculated expressions
+│   │   └── Transformer.ts      # Applies mapping and calculated expressions
 │   ├── load/                   # Data Loading layer
-│   │   └── Loader.js           # Logic for INSERT/UPSERT via SheetDBLib
+│   │   └── Loader.ts           # Logic for INSERT/UPSERT via SheetDBLib
 │   ├── errors/                 # ETL-specific exceptions (TransformError, etc.)
 │   └── __tests__/              # Pipeline and strategy unit tests
 ```
@@ -59,7 +60,7 @@ Instead of writing custom scripts for every data import task, GasDataImporter us
 
 ## 📦 Installation
 
-```javascript
+```typescript
 import { ImportEngine } from '@GasDataImporter';
 import { LoggerService, DriveService, SpreadsheetService } from '@GoogleApiWrapper';
 import { DatabaseService } from '@SheetDBLib';
@@ -67,7 +68,7 @@ import { DatabaseService } from '@SheetDBLib';
 
 ## 🚀 Quick Start
 
-```javascript
+```typescript
 // 1. Initialize Services
 const logger = new LoggerService();
 const drive = new DriveService(logger, ...);

@@ -2,6 +2,7 @@
 
 **Version:** 1.0.0  
 **Layer:** Domain Logic (Layer 2)  
+**Language:** TypeScript (strict, ES modules; Babel emits GAS V8 JavaScript)
 **Dependencies:** CoreUtilsLib
 
 ## 🧩 Overview
@@ -18,21 +19,21 @@ A highly structured architecture focused on the composition lifecycle:
 ComposableContentLib/
 ├── src/
 │   ├── composition/        # Orchestration layer
-│   │   ├── ContentComposer.js # The main engine for assembling blocks
-│   │   ├── CompositionRecipe.js # Parser and validator for recipes
-│   │   └── VisibilityEvaluator.js # Evaluates whether a block should be shown
+│   │   ├── ContentComposer.ts # The main engine for assembling blocks
+│   │   ├── CompositionRecipe.ts # Parser and validator for recipes
+│   │   └── VisibilityEvaluator.ts # Evaluates whether a block should be shown
 │   ├── core/               # Domain primitives
-│   │   ├── ContentBlock.js    # Abstract base for all content units
-│   │   ├── BlockDefinition.js # Metadata and capabilities of a block type
-│   │   ├── BlockResult.js     # Output of a single block's evaluation
-│   │   └── CompositionResult.js # The final aggregated content and metadata
+│   │   ├── ContentBlock.ts    # Abstract base for all content units
+│   │   ├── BlockDefinition.ts # Metadata and capabilities of a block type
+│   │   ├── BlockResult.ts     # Output of a single block's evaluation
+│   │   └── CompositionResult.ts # The final aggregated content and metadata
 │   ├── data/               # Context management
-│   │   └── BlockDataContext.js # Shared data container for block evaluation
+│   │   └── BlockDataContext.ts # Shared data container for block evaluation
 │   ├── registry/           # Extensibility points
-│   │   ├── BlockRegistry.js   # Catalog of available block types
-│   │   └── RendererRegistry.js # Catalog of output format renderers
+│   │   ├── BlockRegistry.ts   # Catalog of available block types
+│   │   └── RendererRegistry.ts # Catalog of output format renderers
 │   ├── rendering/          # Presentation layer
-│   │   └── BlockRenderer.js   # Base interface for format-specific rendering
+│   │   └── BlockRenderer.ts   # Base interface for format-specific rendering
 │   └── errors/             # Domain exceptions
 ```
 
@@ -49,7 +50,7 @@ ComposableContentLib/
 
 ### 1. Define a Block
 
-```javascript
+```typescript
 import { ContentBlock } from '@ComposableContentLib';
 
 class GreetingBlock extends ContentBlock {
@@ -69,7 +70,7 @@ class GreetingBlock extends ContentBlock {
 
 ### 2. Register Components
 
-```javascript
+```typescript
 import { ContentComposer, BlockRegistry, RendererRegistry } from '@ComposableContentLib';
 
 const blockRegistry = new BlockRegistry();
@@ -86,7 +87,7 @@ const composer = new ContentComposer({ blockRegistry, rendererRegistry });
 
 ### 3. Compose Content
 
-```javascript
+```typescript
 const recipe = {
   id: 'welcome_email',
   outputFormat: 'html',

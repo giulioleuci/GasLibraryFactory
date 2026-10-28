@@ -29,3 +29,6 @@ yarn.lock
 
 # Generated files
 appsscript.json
+
+# Archived JavaScript implementation
+GLF_OLD/

@@ -1,8 +1,8 @@
 # API Reference: GasExpressionEngineLib
 
 ## CLASS: ExpressionParserService
-**File Path:** `GasExpressionEngineLib/src/ExpressionParserService.js`
-**Constructor Usage:** `const instance = new ExpressionParserService(logger);`
+**File Path:** `GasExpressionEngineLib/src/ExpressionParserService.ts`
+**Constructor Usage:** `const instance = new ExpressionParserService();`
 **Description:** Syntactic analyzer for logical expressions, transforming string templates into structured Abstract Syntax Trees (AST) using JSEP.
 
 ### Raw JSDoc Context:
@@ -13,8 +13,19 @@
  */
 ```
 
-### Methods of ExpressionParserService
+### Methods and properties of ExpressionParserService
 
+#### PROPERTY: ExpressionParserService.di
+- **Scope:** static
+- **LLM Call Syntax:** `const result = ExpressionParserService.di;`
+- **Pure JSDoc:**
+```javascript
+/**
+   * Dependency injection configuration (for DI containers)
+   * @returns {Object} DI configuration
+   */
+```
+---
 #### METHOD: ExpressionParserService.parse
 - **Scope:** instance
 - **LLM Call Syntax:** `const result = expressionParserService.parse(expressionString);`
@@ -108,8 +119,8 @@
 <br>
 
 ## CLASS: ExpressionEvaluatorService
-**File Path:** `GasExpressionEngineLib/src/ExpressionEvaluatorService.js`
-**Constructor Usage:** `const instance = new ExpressionEvaluatorService(logger, parserService, placeholderService);`
+**File Path:** `GasExpressionEngineLib/src/ExpressionEvaluatorService.ts`
+**Constructor Usage:** `const instance = new ExpressionEvaluatorService();`
 **Description:** Core engine for computing logical outcomes from expression ASTs, providing extensive built-in functions and strict relational comparisons.
 
 ### Raw JSDoc Context:
@@ -120,8 +131,19 @@
  */
 ```
 
-### Methods of ExpressionEvaluatorService
+### Methods and properties of ExpressionEvaluatorService
 
+#### PROPERTY: ExpressionEvaluatorService.di
+- **Scope:** static
+- **LLM Call Syntax:** `const result = ExpressionEvaluatorService.di;`
+- **Pure JSDoc:**
+```javascript
+/**
+   * Dependency injection configuration (for DI containers)
+   * @returns {Object} DI configuration
+   */
+```
+---
 #### METHOD: ExpressionEvaluatorService.evaluate
 - **Scope:** instance
 - **LLM Call Syntax:** `expressionEvaluatorService.evaluate();`
@@ -224,6 +246,19 @@
 /** @private */
 ```
 ---
+#### PROPERTY: ExpressionEvaluatorService._builtInFunctions
+- **Scope:** instance
+- **LLM Call Syntax:** `const result = expressionEvaluatorService._builtInFunctions;`
+- **Pure JSDoc:**
+```javascript
+/**
+   * Built-in expression functions (string, numeric, array), assembled from
+   * per-family modules under ./internal/builtins/ (GEL-HIGH-001).
+   * @returns {Object<string, Function>} Map of function name to implementation.
+   * @private
+   */
+```
+---
 #### METHOD: ExpressionEvaluatorService._evaluateBinaryExpression
 - **Scope:** instance
 - **LLM Call Syntax:** `expressionEvaluatorService._evaluateBinaryExpression();`
@@ -281,8 +316,8 @@
 <br>
 
 ## CLASS: ExpressionEngineService
-**File Path:** `GasExpressionEngineLib/src/ExpressionEngineService.js`
-**Constructor Usage:** `const instance = new ExpressionEngineService(options, options.logger, options.utils, options.cache);`
+**File Path:** `GasExpressionEngineLib/src/ExpressionEngineService.ts`
+**Constructor Usage:** `const instance = new ExpressionEngineService();`
 **Description:** Unified facade for dynamic business logic evaluation, orchestrating parsing, placeholder resolution, and AST computation.
 
 ### Raw JSDoc Context:
@@ -293,8 +328,19 @@
  */
 ```
 
-### Methods of ExpressionEngineService
+### Methods and properties of ExpressionEngineService
 
+#### PROPERTY: ExpressionEngineService.di
+- **Scope:** static
+- **LLM Call Syntax:** `const result = ExpressionEngineService.di;`
+- **Pure JSDoc:**
+```javascript
+/**
+   * Dependency injection configuration (for DI containers)
+   * @returns {Object} DI configuration
+   */
+```
+---
 #### METHOD: ExpressionEngineService._initializeServices
 - **Scope:** instance
 - **LLM Call Syntax:** `expressionEngineService._initializeServices();`
@@ -348,7 +394,7 @@
 ## GLOBAL FUNCTIONS
 
 ### FUNCTION: assertAllowedExpressionAst
-- **Source:** `GasExpressionEngineLib/src/internal/ExpressionPolicy.js`
+- **Source:** `GasExpressionEngineLib/src/internal/ExpressionPolicy.ts`
 - **LLM Call Syntax:** `assertAllowedExpressionAst(ast, policy);`
 - **Pure JSDoc:**
 ```javascript
@@ -364,7 +410,7 @@
 
 ---
 ### FUNCTION: createStringFunctions
-- **Source:** `GasExpressionEngineLib/src/internal/builtins/StringFunctions.js`
+- **Source:** `GasExpressionEngineLib/src/internal/builtins/StringFunctions.ts`
 - **LLM Call Syntax:** `const result = createStringFunctions();`
 - **Pure JSDoc:**
 ```javascript
@@ -376,7 +422,7 @@
 
 ---
 ### FUNCTION: len
-- **Source:** `GasExpressionEngineLib/src/internal/builtins/StringFunctions.js`
+- **Source:** `GasExpressionEngineLib/src/internal/builtins/StringFunctions.ts`
 - **LLM Call Syntax:** `const result = len(str);`
 - **Pure JSDoc:**
 ```javascript
@@ -395,7 +441,7 @@
 
 ---
 ### FUNCTION: upper
-- **Source:** `GasExpressionEngineLib/src/internal/builtins/StringFunctions.js`
+- **Source:** `GasExpressionEngineLib/src/internal/builtins/StringFunctions.ts`
 - **LLM Call Syntax:** `const result = upper(str);`
 - **Pure JSDoc:**
 ```javascript
@@ -414,7 +460,7 @@
 
 ---
 ### FUNCTION: lower
-- **Source:** `GasExpressionEngineLib/src/internal/builtins/StringFunctions.js`
+- **Source:** `GasExpressionEngineLib/src/internal/builtins/StringFunctions.ts`
 - **LLM Call Syntax:** `const result = lower(str);`
 - **Pure JSDoc:**
 ```javascript
@@ -433,7 +479,7 @@
 
 ---
 ### FUNCTION: trim
-- **Source:** `GasExpressionEngineLib/src/internal/builtins/StringFunctions.js`
+- **Source:** `GasExpressionEngineLib/src/internal/builtins/StringFunctions.ts`
 - **LLM Call Syntax:** `const result = trim(str);`
 - **Pure JSDoc:**
 ```javascript
@@ -452,7 +498,7 @@
 
 ---
 ### FUNCTION: substring
-- **Source:** `GasExpressionEngineLib/src/internal/builtins/StringFunctions.js`
+- **Source:** `GasExpressionEngineLib/src/internal/builtins/StringFunctions.ts`
 - **LLM Call Syntax:** `const result = substring(str, start, end);`
 - **Pure JSDoc:**
 ```javascript
@@ -473,7 +519,7 @@
 
 ---
 ### FUNCTION: replace
-- **Source:** `GasExpressionEngineLib/src/internal/builtins/StringFunctions.js`
+- **Source:** `GasExpressionEngineLib/src/internal/builtins/StringFunctions.ts`
 - **LLM Call Syntax:** `const result = replace(str, search, replacement);`
 - **Pure JSDoc:**
 ```javascript
@@ -496,7 +542,7 @@
 
 ---
 ### FUNCTION: split
-- **Source:** `GasExpressionEngineLib/src/internal/builtins/StringFunctions.js`
+- **Source:** `GasExpressionEngineLib/src/internal/builtins/StringFunctions.ts`
 - **LLM Call Syntax:** `const result = split(str, delimiter);`
 - **Pure JSDoc:**
 ```javascript
@@ -516,7 +562,7 @@
 
 ---
 ### FUNCTION: createNumericFunctions
-- **Source:** `GasExpressionEngineLib/src/internal/builtins/NumericFunctions.js`
+- **Source:** `GasExpressionEngineLib/src/internal/builtins/NumericFunctions.ts`
 - **LLM Call Syntax:** `const result = createNumericFunctions();`
 - **Pure JSDoc:**
 ```javascript
@@ -528,7 +574,7 @@
 
 ---
 ### FUNCTION: abs
-- **Source:** `GasExpressionEngineLib/src/internal/builtins/NumericFunctions.js`
+- **Source:** `GasExpressionEngineLib/src/internal/builtins/NumericFunctions.ts`
 - **LLM Call Syntax:** `const result = abs(num);`
 - **Pure JSDoc:**
 ```javascript
@@ -548,7 +594,7 @@
 
 ---
 ### FUNCTION: round
-- **Source:** `GasExpressionEngineLib/src/internal/builtins/NumericFunctions.js`
+- **Source:** `GasExpressionEngineLib/src/internal/builtins/NumericFunctions.ts`
 - **LLM Call Syntax:** `const result = round(num, decimals);`
 - **Pure JSDoc:**
 ```javascript
@@ -569,7 +615,7 @@
 
 ---
 ### FUNCTION: ceil
-- **Source:** `GasExpressionEngineLib/src/internal/builtins/NumericFunctions.js`
+- **Source:** `GasExpressionEngineLib/src/internal/builtins/NumericFunctions.ts`
 - **LLM Call Syntax:** `const result = ceil(num);`
 - **Pure JSDoc:**
 ```javascript
@@ -589,7 +635,7 @@
 
 ---
 ### FUNCTION: floor
-- **Source:** `GasExpressionEngineLib/src/internal/builtins/NumericFunctions.js`
+- **Source:** `GasExpressionEngineLib/src/internal/builtins/NumericFunctions.ts`
 - **LLM Call Syntax:** `const result = floor(num);`
 - **Pure JSDoc:**
 ```javascript
@@ -609,7 +655,7 @@
 
 ---
 ### FUNCTION: min
-- **Source:** `GasExpressionEngineLib/src/internal/builtins/NumericFunctions.js`
+- **Source:** `GasExpressionEngineLib/src/internal/builtins/NumericFunctions.ts`
 - **LLM Call Syntax:** `const result = min(numbers);`
 - **Pure JSDoc:**
 ```javascript
@@ -631,7 +677,7 @@
 
 ---
 ### FUNCTION: max
-- **Source:** `GasExpressionEngineLib/src/internal/builtins/NumericFunctions.js`
+- **Source:** `GasExpressionEngineLib/src/internal/builtins/NumericFunctions.ts`
 - **LLM Call Syntax:** `const result = max(numbers);`
 - **Pure JSDoc:**
 ```javascript
@@ -653,7 +699,7 @@
 
 ---
 ### FUNCTION: sqrt
-- **Source:** `GasExpressionEngineLib/src/internal/builtins/NumericFunctions.js`
+- **Source:** `GasExpressionEngineLib/src/internal/builtins/NumericFunctions.ts`
 - **LLM Call Syntax:** `const result = sqrt(num);`
 - **Pure JSDoc:**
 ```javascript
@@ -673,7 +719,7 @@
 
 ---
 ### FUNCTION: pow
-- **Source:** `GasExpressionEngineLib/src/internal/builtins/NumericFunctions.js`
+- **Source:** `GasExpressionEngineLib/src/internal/builtins/NumericFunctions.ts`
 - **LLM Call Syntax:** `const result = pow(base, exponent);`
 - **Pure JSDoc:**
 ```javascript
@@ -694,7 +740,7 @@
 
 ---
 ### FUNCTION: between
-- **Source:** `GasExpressionEngineLib/src/internal/builtins/NumericFunctions.js`
+- **Source:** `GasExpressionEngineLib/src/internal/builtins/NumericFunctions.ts`
 - **LLM Call Syntax:** `const result = between(value, min, max);`
 - **Pure JSDoc:**
 ```javascript
@@ -718,7 +764,7 @@
 
 ---
 ### FUNCTION: createBuiltInFunctions
-- **Source:** `GasExpressionEngineLib/src/internal/builtins/BuiltInFunctions.js`
+- **Source:** `GasExpressionEngineLib/src/internal/builtins/BuiltInFunctions.ts`
 - **LLM Call Syntax:** `const result = createBuiltInFunctions(evaluator);`
 - **Pure JSDoc:**
 ```javascript
@@ -734,7 +780,7 @@
 
 ---
 ### FUNCTION: createArrayFunctions
-- **Source:** `GasExpressionEngineLib/src/internal/builtins/ArrayFunctions.js`
+- **Source:** `GasExpressionEngineLib/src/internal/builtins/ArrayFunctions.ts`
 - **LLM Call Syntax:** `const result = createArrayFunctions(evaluator);`
 - **Pure JSDoc:**
 ```javascript
@@ -753,7 +799,7 @@
 
 ---
 ### FUNCTION: length
-- **Source:** `GasExpressionEngineLib/src/internal/builtins/ArrayFunctions.js`
+- **Source:** `GasExpressionEngineLib/src/internal/builtins/ArrayFunctions.ts`
 - **LLM Call Syntax:** `const result = length(arr);`
 - **Pure JSDoc:**
 ```javascript
@@ -772,7 +818,7 @@
 
 ---
 ### FUNCTION: contains
-- **Source:** `GasExpressionEngineLib/src/internal/builtins/ArrayFunctions.js`
+- **Source:** `GasExpressionEngineLib/src/internal/builtins/ArrayFunctions.ts`
 - **LLM Call Syntax:** `const result = contains(arr, value);`
 - **Pure JSDoc:**
 ```javascript
@@ -792,7 +838,7 @@
 
 ---
 ### FUNCTION: indexOf
-- **Source:** `GasExpressionEngineLib/src/internal/builtins/ArrayFunctions.js`
+- **Source:** `GasExpressionEngineLib/src/internal/builtins/ArrayFunctions.ts`
 - **LLM Call Syntax:** `const result = indexOf(arr, value);`
 - **Pure JSDoc:**
 ```javascript
@@ -814,7 +860,7 @@
 
 ---
 ### FUNCTION: first
-- **Source:** `GasExpressionEngineLib/src/internal/builtins/ArrayFunctions.js`
+- **Source:** `GasExpressionEngineLib/src/internal/builtins/ArrayFunctions.ts`
 - **LLM Call Syntax:** `const result = first(arr);`
 - **Pure JSDoc:**
 ```javascript
@@ -833,7 +879,7 @@
 
 ---
 ### FUNCTION: last
-- **Source:** `GasExpressionEngineLib/src/internal/builtins/ArrayFunctions.js`
+- **Source:** `GasExpressionEngineLib/src/internal/builtins/ArrayFunctions.ts`
 - **LLM Call Syntax:** `const result = last(arr);`
 - **Pure JSDoc:**
 ```javascript

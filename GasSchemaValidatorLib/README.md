@@ -1,6 +1,8 @@
 # GasSchemaValidatorLib
 
 [![Layer: L1 Infrastructure](https://img.shields.io/badge/Layer-L1%20Infrastructure-blue.svg)](#architecture)
+**Language:** TypeScript (strict, ES modules; Babel emits GAS V8 JavaScript)
+
 [![Dependency: Zod](https://img.shields.io/badge/Dependency-Zod-green.svg)](https://zod.dev)
 
 A high-performance, **Zod-powered validation engine** for Google Apps Script. Part of the `GasLibraryFactory` monorepo, this library provides robust runtime type-checking and schema enforcement for data ingestion, API responses, and internal state management.
@@ -30,7 +32,7 @@ A high-performance, **Zod-powered validation engine** for Google Apps Script. Pa
 
 ## 💻 Usage Example
 
-```javascript
+```typescript
 import { SchemaValidator } from '@GasSchemaValidatorLib';
 import { z } from 'zod';
 

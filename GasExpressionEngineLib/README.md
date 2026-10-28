@@ -2,6 +2,7 @@
 
 **Version:** 1.0.0
 **Layer:** Domain Logic (Layer 2)  
+**Language:** TypeScript (strict, ES modules; Babel emits GAS V8 JavaScript)
 **Dependencies:** CoreUtilsLib  
 **External Libraries:** jsep (JavaScript Expression Parser)
 
@@ -12,9 +13,9 @@ The engine is split into three distinct phases to maximize performance and maint
 ```text
 GasExpressionEngineLib/
 ├── src/
-│   ├── ExpressionEngineService.js    # Main facade: coordinates parsing and evaluation
-│   ├── ExpressionParserService.js    # Pre-processes strings and generates JSEP AST
-│   ├── ExpressionEvaluatorService.js # Recursively traverses and evaluates the AST
+│   ├── ExpressionEngineService.ts    # Main facade: coordinates parsing and evaluation
+│   ├── ExpressionParserService.ts    # Pre-processes strings and generates JSEP AST
+│   ├── ExpressionEvaluatorService.ts # Recursively traverses and evaluates the AST
 │   └── __tests__/                    # Extensive unit and AST integration tests
 ```
 
@@ -52,14 +53,14 @@ This library uses **jsep** (^1.4.0) - A lightweight, standards-compliant JavaScr
 
 ## 📦 Installation
 
-```javascript
+```typescript
 import { ExpressionEngineService } from '@GasExpressionEngineLib';
 import { LoggerService } from '@GoogleApiWrapper';
 ```
 
 ## 🚀 Quick Start
 
-```javascript
+```typescript
 // 1. Initialize
 const logger = new LoggerService();
 const engine = new ExpressionEngineService({ logger });
@@ -126,7 +127,7 @@ The engine supports Excel-like functions within expressions:
 
 **Example:**
 
-```javascript
+```typescript
 engine.evaluate('len({{username}}) > 5 && max({{score1}}, {{score2}}) >= 50', data);
 ```
 

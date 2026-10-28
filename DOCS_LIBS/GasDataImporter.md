@@ -1,7 +1,7 @@
 # API Reference: GasDataImporter
 
 ## CLASS: ImportEngine
-**File Path:** `GasDataImporter/src/ImportEngine.js`
+**File Path:** `GasDataImporter/src/ImportEngine.ts`
 **Constructor Usage:** `const instance = new ImportEngine(logger, driveService, spreadsheetService, databaseService, expressionEngine, exceptionService, monitor);`
 **Description:** Primary facade for the ETL pipeline, orchestrating extraction, transformation, and database persistence with built-in resilience and dry-run support.
 
@@ -13,7 +13,7 @@
  */
 ```
 
-### Methods of ImportEngine
+### Methods and properties of ImportEngine
 
 #### METHOD: ImportEngine.registerCustomSource
 - **Scope:** instance
@@ -62,7 +62,7 @@
 <br>
 
 ## CLASS: ImportConfiguration
-**File Path:** `GasDataImporter/src/ImportConfiguration.js`
+**File Path:** `GasDataImporter/src/ImportConfiguration.ts`
 **Constructor Usage:** `const instance = new ImportConfiguration(recipe, recipe.name, recipe.source, recipe.transform, recipe.load, logger);`
 **Description:** Validator and value object for ETL import recipes, ensuring structural integrity and providing normalized access to source, transform, and load configurations.
 
@@ -74,7 +74,7 @@
  */
 ```
 
-### Methods of ImportConfiguration
+### Methods and properties of ImportConfiguration
 
 #### METHOD: ImportConfiguration.registerSourceType
 - **Scope:** static
@@ -216,7 +216,7 @@
 <br>
 
 ## CLASS: ImportCheckpoint
-**File Path:** `GasDataImporter/src/ImportCheckpoint.js`
+**File Path:** `GasDataImporter/src/ImportCheckpoint.ts`
 **Constructor Usage:** `const instance = new ImportCheckpoint(recipeName, stage, sourceCursor, rowOffset, loadOffset, counters, buffer, done);`
 **Description:** Plain, JSON-serializable checkpoint describing progress through a single
 recipe's ETL pipeline (EXTRACT -> LOAD -> DONE, transform runs inline
@@ -236,7 +236,7 @@ windows and resumed with `ImportEngine.runImportChunk`.
  */
 ```
 
-### Methods of ImportCheckpoint
+### Methods and properties of ImportCheckpoint
 
 #### METHOD: ImportCheckpoint.initial
 - **Scope:** static
@@ -279,7 +279,7 @@ windows and resumed with `ImportEngine.runImportChunk`.
 <br>
 
 ## CLASS: Transformer
-**File Path:** `GasDataImporter/src/pipeline/Transformer.js`
+**File Path:** `GasDataImporter/src/pipeline/Transformer.ts`
 **Constructor Usage:** `const instance = new Transformer(logger, expressionEngine, utils);`
 **Description:** Orchestrator for the data transformation phase, managing column mapping, calculated field evaluation, data normalization, and record validation.
 
@@ -291,7 +291,7 @@ windows and resumed with `ImportEngine.runImportChunk`.
  */
 ```
 
-### Methods of Transformer
+### Methods and properties of Transformer
 
 #### METHOD: Transformer.transform
 - **Scope:** instance
@@ -450,8 +450,165 @@ windows and resumed with `ImportEngine.runImportChunk`.
 ---
 <br>
 
+## CLASS: ImportPipelineExecutor
+**File Path:** `GasDataImporter/src/pipeline/ImportPipelineExecutor.ts`
+**Constructor Usage:** `const instance = new ImportPipelineExecutor();`
+**Description:** N/A
+
+### Raw JSDoc Context:
+```javascript
+/** No comment available */
+```
+
+### Methods and properties of ImportPipelineExecutor
+
+#### METHOD: ImportPipelineExecutor.startImport
+- **Scope:** instance
+- **LLM Call Syntax:** `const result = importPipelineExecutor.startImport(recipe, _options);`
+- **Pure JSDoc:**
+```javascript
+/**
+   * Creates the initial checkpoint for a resumable/checkpointed import run,
+   * without executing any pipeline phase yet. Pair with `runImportChunk` in
+   * a loop (persisting the checkpoint to `PropertiesService` between GAS
+   * execution windows via `JobRunnerLib`) to drive the recipe to completion
+   * across multiple bounded chunks instead of one synchronous `runImport`.
+   * @param {Object} recipe Import configuration (see ImportConfiguration).
+   * @param {Object} [_options={}] Reserved for future use.
+   * @returns {ImportCheckpoint} Initial checkpoint at the EXTRACT stage.
+   * @throws {ConfigurationError} If the recipe fails validation.
+   */
+```
+---
+#### METHOD: ImportPipelineExecutor.runImportChunk
+- **Scope:** instance
+- **LLM Call Syntax:** `const result = importPipelineExecutor.runImportChunk(recipe, checkpoint, budget, budget.maxRows);`
+- **Pure JSDoc:**
+```javascript
+/**
+   * Advances a checkpoint by one bounded unit of work. The recipe must be
+   * re-passed on every call — it is intentionally not part of the
+   * serializable checkpoint, to keep checkpoints small (`PropertiesService`
+   * has per-key size limits) and because the recipe is normally already
+   * available to the caller (e.g. `JobHandlerParams` in ALDO's `JobRunnerLib`
+   * integration).
+   *
+   * Unlike the original design (extract everything into the buffer, then
+   * transform the whole buffer, then load the whole buffer), each call now
+   * does bounded work and `checkpoint.buffer` never holds more than roughly
+   * one `maxRows`-sized batch at rest between calls (for the cursor-aware
+   * case) — otherwise `checkpoint.buffer` could grow to the size of the
+   * entire dataset, which won't fit in `PropertiesService` (~9KB per key,
+   * ~500KB total), and TRANSFORM/LOAD would each still run unbounded in one
+   * call, defeating the point of chunking:
+   *
+   * - **`EXTRACT`** (entered when `checkpoint.buffer` is empty and
+   *   extraction isn't exhausted): pulls one bounded window of rows (see
+   *   "Cursor-aware extraction" below), immediately transforms *that chunk*
+   *   (`Transformer.transform` is a pure per-row mapping, so transforming a
+   *   bounded slice is safe), and stores the transformed, load-ready rows as
+   *   `checkpoint.buffer`. Moves to `LOAD`. Whether the source is now fully
+   *   consumed is remembered in `checkpoint.rowOffset` (repurposed as a 0/1
+   *   "extraction exhausted" flag — the field was previously reserved and
+   *   unused) so the `LOAD` branch below can decide, without re-extracting,
+   *   whether there is more to pull after this buffer is loaded.
+   * - **`LOAD`** (entered when `checkpoint.buffer` has pending rows): loads
+   *   the buffer via `Loader.loadChunk` (already handles arbitrary-size
+   *   input, since it's already one bounded chunk) and clears the buffer.
+   *   `isFirstChunk` is true only on the very first `LOAD` call of the
+   *   entire run that actually carries a non-empty buffer
+   *   (`checkpoint.loadOffset === 0`); `loadOffset` only increments when the
+   *   chunk being loaded is non-empty — an empty chunk (e.g. a leading block
+   *   of rows that were all rejected by transform validation, or a genuinely
+   *   empty extracted window) does NOT consume the "first chunk" slot,
+   *   because `Loader.loadChunk` short-circuits on `data.length === 0`
+   *   before OVERWRITE's purge-then-insert logic ever runs — if `loadOffset`
+   *   advanced anyway, the table would never get purged for a run whose
+   *   first real data happened to arrive after an empty chunk. If
+   *   extraction was already exhausted, moves to `DONE`; otherwise moves
+   *   back to `EXTRACT` to pull the next bounded chunk.
+   *
+   * There is no standalone `TRANSFORM` stage: an earlier design produced one
+   * (transforming the whole accumulated buffer in its own step), but that
+   * design was replaced before ever shipping — transform now happens inline
+   * during `EXTRACT`, on the bounded chunk — so no checkpoint constructed by
+   * this pipeline (`startImport`, or any transition below) ever carries
+   * `stage: 'TRANSFORM'`. A checkpoint whose `stage` isn't `EXTRACT`, `LOAD`,
+   * or `DONE` is therefore foreign/corrupt and `runImportChunk` throws
+   * rather than silently treating it as complete.
+   *
+   * Extract-phase behavior depends on `SourceStrategy.supportsCursor()`:
+   * cursor-aware strategies (currently only `SheetByIdStrategy`) extract one
+   * bounded window per call via `extractChunk`, so the streaming/
+   * bounded-buffer guarantee above holds for them. Strategies that don't
+   * support cursors fall back to a compatibility path: the entire source is
+   * extracted (and, in this call, transformed) in a single call, reported as
+   * immediately exhausted — so the bounded-buffer guarantee does NOT hold
+   * for non-cursor sources; only `SheetById` truly streams.
+   * @param {Object} recipe Import configuration — must match `checkpoint.recipeName`.
+   * @param {ImportCheckpoint} checkpoint Checkpoint to resume from.
+   * @param {Object} [budget={}] Per-call work limits.
+   * @param {number} [budget.maxRows=500] Maximum rows to extract in this call.
+   * @returns {{checkpoint: ImportCheckpoint, done: boolean}} Advanced checkpoint and completion flag.
+   * @throws {ConfigurationError} If the recipe fails validation.
+   * @throws {Error} If `checkpoint.recipeName` doesn't match the recipe being resumed.
+   * @throws {ImportError} `UNRECOGNIZED_CHECKPOINT_STAGE` if `checkpoint.stage` isn't
+   *   one of `EXTRACT`, `LOAD`, or `DONE` (a foreign/corrupt checkpoint).
+   */
+```
+---
+#### METHOD: ImportPipelineExecutor.runImport
+- **Scope:** instance
+- **LLM Call Syntax:** `importPipelineExecutor.runImport();`
+- **Pure JSDoc:**
+```javascript
+/** No comment available */
+```
+---
+#### METHOD: ImportPipelineExecutor._executePipeline
+- **Scope:** instance
+- **LLM Call Syntax:** `importPipelineExecutor._executePipeline();`
+- **Pure JSDoc:**
+```javascript
+/** No comment available */
+```
+---
+#### METHOD: ImportPipelineExecutor._executeExtract
+- **Scope:** instance
+- **LLM Call Syntax:** `importPipelineExecutor._executeExtract();`
+- **Pure JSDoc:**
+```javascript
+/** No comment available */
+```
+---
+#### METHOD: ImportPipelineExecutor._executeTransform
+- **Scope:** instance
+- **LLM Call Syntax:** `importPipelineExecutor._executeTransform();`
+- **Pure JSDoc:**
+```javascript
+/** No comment available */
+```
+---
+#### METHOD: ImportPipelineExecutor._executeLoad
+- **Scope:** instance
+- **LLM Call Syntax:** `importPipelineExecutor._executeLoad();`
+- **Pure JSDoc:**
+```javascript
+/** No comment available */
+```
+---
+#### METHOD: ImportPipelineExecutor._generateDryRunLoadResult
+- **Scope:** instance
+- **LLM Call Syntax:** `importPipelineExecutor._generateDryRunLoadResult();`
+- **Pure JSDoc:**
+```javascript
+/** No comment available */
+```
+---
+<br>
+
 ## CLASS: Loader
-**File Path:** `GasDataImporter/src/internal/load/Loader.js`
+**File Path:** `GasDataImporter/src/internal/load/Loader.ts`
 **Constructor Usage:** `const instance = new Loader(logger, databaseService);`
 **Description:** Persistence engine for the ETL pipeline, managing data insertion and updates with configurable conflict resolution strategies and performance optimizations.
 
@@ -463,7 +620,7 @@ windows and resumed with `ImportEngine.runImportChunk`.
  */
 ```
 
-### Methods of Loader
+### Methods and properties of Loader
 
 #### METHOD: Loader.load
 - **Scope:** instance
@@ -508,6 +665,28 @@ windows and resumed with `ImportEngine.runImportChunk`.
    * @param {boolean} state.isFirstChunk True for the first LOAD chunk of a run.
    * @returns {Object} Operational statistics for this chunk.
    * @throws {LoadError} If database is inaccessible or strategy execution fails.
+   */
+```
+---
+#### METHOD: Loader._executeStrategy
+- **Scope:** instance
+- **LLM Call Syntax:** `const result = loader._executeStrategy(table, data, strategy, conflictKey, updateIfNewer, overwriteHandler);`
+- **Pure JSDoc:**
+```javascript
+/**
+   * Dispatches the conflict-resolution strategy, returning zeroed statistics
+   * for empty data. Shared by {@link Loader#load} and {@link Loader#loadChunk}.
+   * @private
+   * @param {Object} table Target persistence table.
+   * @param {Array<Object>} data Records to process (may be empty).
+   * @param {string} strategy Resolution strategy (INSERT_ONLY|UPDATE_ONLY|UPSERT|OVERWRITE).
+   * @param {string} conflictKey Attribute used for collision detection.
+   * @param {Object} updateIfNewer Optional timestamp comparison rules.
+   * @param {Function} overwriteHandler OVERWRITE implementation: `_overwrite`
+   *   for a single-shot load or the first chunk of a chunked run, `_appendAll`
+   *   for later chunks (see {@link Loader#_appendAll}).
+   * @returns {Object} Operational statistics.
+   * @throws {LoadError} If the strategy is unknown.
    */
 ```
 ---
@@ -629,7 +808,7 @@ windows and resumed with `ImportEngine.runImportChunk`.
 <br>
 
 ## CLASS: SourceStrategyFactory
-**File Path:** `GasDataImporter/src/internal/extract-strategies/SourceStrategyFactory.js`
+**File Path:** `GasDataImporter/src/internal/extract-strategies/SourceStrategyFactory.ts`
 **Constructor Usage:** `const instance = new SourceStrategyFactory(logger, driveService, spreadsheetService);`
 **Description:** Factory and registry for data extraction strategies, managing built-in Google services and runtime registration of custom source adapters.
 
@@ -641,7 +820,7 @@ windows and resumed with `ImportEngine.runImportChunk`.
  */
 ```
 
-### Methods of SourceStrategyFactory
+### Methods and properties of SourceStrategyFactory
 
 #### METHOD: SourceStrategyFactory._registerBuiltInStrategies
 - **Scope:** instance
@@ -707,7 +886,7 @@ windows and resumed with `ImportEngine.runImportChunk`.
 <br>
 
 ## CLASS: SourceStrategy
-**File Path:** `GasDataImporter/src/internal/extract-strategies/SourceStrategy.js`
+**File Path:** `GasDataImporter/src/internal/extract-strategies/SourceStrategy.ts`
 **Constructor Usage:** `const instance = new SourceStrategy(logger);`
 **Description:** Abstract base class defining the contract for data extraction strategies, providing common lifecycle hooks and data normalization utilities.
 
@@ -720,7 +899,7 @@ windows and resumed with `ImportEngine.runImportChunk`.
  */
 ```
 
-### Methods of SourceStrategy
+### Methods and properties of SourceStrategy
 
 #### METHOD: SourceStrategy.extract
 - **Scope:** instance
@@ -842,7 +1021,7 @@ windows and resumed with `ImportEngine.runImportChunk`.
 <br>
 
 ## CLASS: SheetByIdStrategy
-**File Path:** `GasDataImporter/src/internal/extract-strategies/SheetByIdStrategy.js`
+**File Path:** `GasDataImporter/src/internal/extract-strategies/SheetByIdStrategy.ts`
 **Constructor Usage:** `const instance = new SheetByIdStrategy(logger, spreadsheetService);`
 **Description:** Extraction strategy for retrieving data from a specific Google Sheets document using its ID, supporting targeted tab and range selection.
 
@@ -855,7 +1034,7 @@ windows and resumed with `ImportEngine.runImportChunk`.
  */
 ```
 
-### Methods of SheetByIdStrategy
+### Methods and properties of SheetByIdStrategy
 
 #### METHOD: SheetByIdStrategy._extractData
 - **Scope:** instance
@@ -974,80 +1153,10 @@ windows and resumed with `ImportEngine.runImportChunk`.
    */
 ```
 ---
-#### METHOD: SheetByIdStrategy.extract
-- **Scope:** instance
-- **LLM Call Syntax:** `const result = sheetByIdStrategy.extract(config);`
-- **Pure JSDoc:**
-```javascript
-/**
-   * Public interface method orchestrating the extraction lifecycle, including logging, subclass execution, and result validation.
-   * @param {Object} config Source-specific parameters.
-   * @returns {Array<Object>} Extracted and normalized data rows.
-   * @throws {SourceError} If extraction fails or result is not an array.
-   */
-```
----
-#### METHOD: SheetByIdStrategy._arrayToObjects
-- **Scope:** instance
-- **LLM Call Syntax:** `const result = sheetByIdStrategy._arrayToObjects(data, hasHeaders);`
-- **Pure JSDoc:**
-```javascript
-/**
-   * Normalizes 2D grid data into an array of objects, optionally using the first row as property keys.
-   * @protected
-   * @param {Array<Array>} data 2D data grid.
-   * @param {boolean} [hasHeaders=true] If true, uses first row for attribute keys.
-   * @returns {Array<Object>} Collection of row objects.
-   */
-```
----
-#### METHOD: SheetByIdStrategy._coerceValue
-- **Scope:** instance
-- **LLM Call Syntax:** `const result = sheetByIdStrategy._coerceValue(value);`
-- **Pure JSDoc:**
-```javascript
-/**
-   * Casts raw string values into their appropriate JavaScript types (Number, Boolean) for domain consistency.
-   * Delegates to CoreUtilsLib's shared CellValueCoercion (dedupe of the
-   * duplicate previously kept in sync manually with SheetDBLib).
-   * @protected
-   * @param {*} value Raw cell value.
-   * @returns {*} Coerced primitive value.
-   */
-```
----
-#### METHOD: SheetByIdStrategy._columnToLetter
-- **Scope:** instance
-- **LLM Call Syntax:** `const result = sheetByIdStrategy._columnToLetter(column);`
-- **Pure JSDoc:**
-```javascript
-/**
-   * Converts a 1-based column index into its A1-notation letter (1 -> 'A', 27 -> 'AA').
-   * Shared by strategies that build explicit A1 ranges (FolderStrategy, SheetByIdStrategy).
-   * @protected
-   * @param {number} column 1-based column index.
-   * @returns {string} A1-notation column letter(s).
-   */
-```
----
-#### METHOD: SheetByIdStrategy._validateConfig
-- **Scope:** instance
-- **LLM Call Syntax:** `sheetByIdStrategy._validateConfig(config, requiredFields);`
-- **Pure JSDoc:**
-```javascript
-/**
-   * Enforces existence of mandatory configuration parameters.
-   * @protected
-   * @param {Object} config extraction parameters.
-   * @param {string[]} requiredFields Collection of mandatory attribute keys.
-   * @throws {SourceError} If any mandatory fields are missing.
-   */
-```
----
 <br>
 
 ## CLASS: FolderStrategy
-**File Path:** `GasDataImporter/src/internal/extract-strategies/FolderStrategy.js`
+**File Path:** `GasDataImporter/src/internal/extract-strategies/FolderStrategy.ts`
 **Constructor Usage:** `const instance = new FolderStrategy(logger, driveService, spreadsheetService);`
 **Description:** Extraction strategy for bulk-processing all Google Sheets within a target Drive folder, supporting regex filtering and metadata tracking.
 
@@ -1060,7 +1169,7 @@ windows and resumed with `ImportEngine.runImportChunk`.
  */
 ```
 
-### Methods of FolderStrategy
+### Methods and properties of FolderStrategy
 
 #### METHOD: FolderStrategy._extractData
 - **Scope:** instance
@@ -1098,111 +1207,10 @@ windows and resumed with `ImportEngine.runImportChunk`.
    */
 ```
 ---
-#### METHOD: FolderStrategy.extract
-- **Scope:** instance
-- **LLM Call Syntax:** `const result = folderStrategy.extract(config);`
-- **Pure JSDoc:**
-```javascript
-/**
-   * Public interface method orchestrating the extraction lifecycle, including logging, subclass execution, and result validation.
-   * @param {Object} config Source-specific parameters.
-   * @returns {Array<Object>} Extracted and normalized data rows.
-   * @throws {SourceError} If extraction fails or result is not an array.
-   */
-```
----
-#### METHOD: FolderStrategy.supportsCursor
-- **Scope:** instance
-- **LLM Call Syntax:** `const result = folderStrategy.supportsCursor();`
-- **Pure JSDoc:**
-```javascript
-/**
-   * Indicates whether this strategy can extract data incrementally via
-   * `extractChunk` instead of loading the entire source in one `extract()`
-   * call. Strategies that don't override this fall back to the
-   * "compatibility path" in `ImportPipelineExecutor.runImportChunk`: the
-   * first (and only) extraction chunk pulls everything at once.
-   * @returns {boolean} True if `extractChunk` is implemented.
-   */
-```
----
-#### METHOD: FolderStrategy.extractChunk
-- **Scope:** instance
-- **LLM Call Syntax:** `const result = folderStrategy.extractChunk(_config, _cursor, _maxRows);`
-- **Pure JSDoc:**
-```javascript
-/**
-   * Extracts a single bounded chunk of rows starting from `cursor`, for
-   * strategies that support incremental extraction (see `supportsCursor`).
-   * @param {Object} _config Source-specific parameters.
-   * @param {*} _cursor Opaque cursor produced by a previous `extractChunk` call.
-   * @param {number} _maxRows Maximum number of rows to extract in this chunk.
-   * @returns {{rows: Array<Object>, nextCursor: *, exhausted: boolean}} Chunk result.
-   * @throws {Error} Always, unless overridden by a cursor-aware subclass.
-   */
-```
----
-#### METHOD: FolderStrategy._arrayToObjects
-- **Scope:** instance
-- **LLM Call Syntax:** `const result = folderStrategy._arrayToObjects(data, hasHeaders);`
-- **Pure JSDoc:**
-```javascript
-/**
-   * Normalizes 2D grid data into an array of objects, optionally using the first row as property keys.
-   * @protected
-   * @param {Array<Array>} data 2D data grid.
-   * @param {boolean} [hasHeaders=true] If true, uses first row for attribute keys.
-   * @returns {Array<Object>} Collection of row objects.
-   */
-```
----
-#### METHOD: FolderStrategy._coerceValue
-- **Scope:** instance
-- **LLM Call Syntax:** `const result = folderStrategy._coerceValue(value);`
-- **Pure JSDoc:**
-```javascript
-/**
-   * Casts raw string values into their appropriate JavaScript types (Number, Boolean) for domain consistency.
-   * Delegates to CoreUtilsLib's shared CellValueCoercion (dedupe of the
-   * duplicate previously kept in sync manually with SheetDBLib).
-   * @protected
-   * @param {*} value Raw cell value.
-   * @returns {*} Coerced primitive value.
-   */
-```
----
-#### METHOD: FolderStrategy._columnToLetter
-- **Scope:** instance
-- **LLM Call Syntax:** `const result = folderStrategy._columnToLetter(column);`
-- **Pure JSDoc:**
-```javascript
-/**
-   * Converts a 1-based column index into its A1-notation letter (1 -> 'A', 27 -> 'AA').
-   * Shared by strategies that build explicit A1 ranges (FolderStrategy, SheetByIdStrategy).
-   * @protected
-   * @param {number} column 1-based column index.
-   * @returns {string} A1-notation column letter(s).
-   */
-```
----
-#### METHOD: FolderStrategy._validateConfig
-- **Scope:** instance
-- **LLM Call Syntax:** `folderStrategy._validateConfig(config, requiredFields);`
-- **Pure JSDoc:**
-```javascript
-/**
-   * Enforces existence of mandatory configuration parameters.
-   * @protected
-   * @param {Object} config extraction parameters.
-   * @param {string[]} requiredFields Collection of mandatory attribute keys.
-   * @throws {SourceError} If any mandatory fields are missing.
-   */
-```
----
 <br>
 
 ## CLASS: TransformError
-**File Path:** `GasDataImporter/src/internal/errors/TransformError.js`
+**File Path:** `GasDataImporter/src/internal/errors/TransformError.ts`
 **Constructor Usage:** `const instance = new TransformError(message, code, context);`
 **Description:** Exception class for failures during the data transformation phase, capturing mapping errors, normalization failures, and expression evaluation exceptions.
 
@@ -1215,34 +1223,10 @@ windows and resumed with `ImportEngine.runImportChunk`.
  */
 ```
 
-### Methods of TransformError
-
-#### METHOD: TransformError.toJSON
-- **Scope:** instance
-- **LLM Call Syntax:** `const result = transformError.toJSON();`
-- **Pure JSDoc:**
-```javascript
-/**
-   * Serializes the structured error state into a plain object for logging or diagnostic transmission.
-   * @returns {Object} Serialized error state.
-   */
-```
----
-#### METHOD: TransformError.toString
-- **Scope:** instance
-- **LLM Call Syntax:** `const result = transformError.toString();`
-- **Pure JSDoc:**
-```javascript
-/**
-   * Generates a readable summary of the error including classification and description.
-   * @returns {string} Formatted error string ([name] CODE: message).
-   */
-```
----
 <br>
 
 ## CLASS: SourceError
-**File Path:** `GasDataImporter/src/internal/errors/SourceError.js`
+**File Path:** `GasDataImporter/src/internal/errors/SourceError.ts`
 **Constructor Usage:** `const instance = new SourceError(message, code, context);`
 **Description:** Exception class for failures during the extraction phase, capturing file resolution errors, permission denials, and malformed source configurations.
 
@@ -1255,34 +1239,10 @@ windows and resumed with `ImportEngine.runImportChunk`.
  */
 ```
 
-### Methods of SourceError
-
-#### METHOD: SourceError.toJSON
-- **Scope:** instance
-- **LLM Call Syntax:** `const result = sourceError.toJSON();`
-- **Pure JSDoc:**
-```javascript
-/**
-   * Serializes the structured error state into a plain object for logging or diagnostic transmission.
-   * @returns {Object} Serialized error state.
-   */
-```
----
-#### METHOD: SourceError.toString
-- **Scope:** instance
-- **LLM Call Syntax:** `const result = sourceError.toString();`
-- **Pure JSDoc:**
-```javascript
-/**
-   * Generates a readable summary of the error including classification and description.
-   * @returns {string} Formatted error string ([name] CODE: message).
-   */
-```
----
 <br>
 
 ## CLASS: LoadError
-**File Path:** `GasDataImporter/src/internal/errors/LoadError.js`
+**File Path:** `GasDataImporter/src/internal/errors/LoadError.ts`
 **Constructor Usage:** `const instance = new LoadError(message, code, context);`
 **Description:** Exception class for failures during the persistence phase, capturing table access errors, conflict resolution violations, and database-level exceptions.
 
@@ -1295,34 +1255,10 @@ windows and resumed with `ImportEngine.runImportChunk`.
  */
 ```
 
-### Methods of LoadError
-
-#### METHOD: LoadError.toJSON
-- **Scope:** instance
-- **LLM Call Syntax:** `const result = loadError.toJSON();`
-- **Pure JSDoc:**
-```javascript
-/**
-   * Serializes the structured error state into a plain object for logging or diagnostic transmission.
-   * @returns {Object} Serialized error state.
-   */
-```
----
-#### METHOD: LoadError.toString
-- **Scope:** instance
-- **LLM Call Syntax:** `const result = loadError.toString();`
-- **Pure JSDoc:**
-```javascript
-/**
-   * Generates a readable summary of the error including classification and description.
-   * @returns {string} Formatted error string ([name] CODE: message).
-   */
-```
----
 <br>
 
 ## CLASS: ImportError
-**File Path:** `GasDataImporter/src/internal/errors/ImportError.js`
+**File Path:** `GasDataImporter/src/internal/errors/ImportError.ts`
 **Constructor Usage:** `const instance = new ImportError(message, code, context);`
 **Description:** Foundational error class for the ETL pipeline, providing structured diagnostic state including classification codes, contextual metadata, and occurrence timestamps.
 Extends the shared {@link BaseError} to inherit standardized stack-trace capture and timestamping.
@@ -1337,7 +1273,7 @@ Extends the shared {@link BaseError} to inherit standardized stack-trace capture
  */
 ```
 
-### Methods of ImportError
+### Methods and properties of ImportError
 
 #### METHOD: ImportError.toJSON
 - **Scope:** instance
@@ -1364,7 +1300,7 @@ Extends the shared {@link BaseError} to inherit standardized stack-trace capture
 <br>
 
 ## CLASS: ConfigurationError
-**File Path:** `GasDataImporter/src/internal/errors/ConfigurationError.js`
+**File Path:** `GasDataImporter/src/internal/errors/ConfigurationError.ts`
 **Constructor Usage:** `const instance = new ConfigurationError(message, code, context);`
 **Description:** Exception class for ETL recipe validation failures, capturing structural violations, missing mandatory fields, or invalid strategy identifiers.
 
@@ -1377,29 +1313,5 @@ Extends the shared {@link BaseError} to inherit standardized stack-trace capture
  */
 ```
 
-### Methods of ConfigurationError
-
-#### METHOD: ConfigurationError.toJSON
-- **Scope:** instance
-- **LLM Call Syntax:** `const result = configurationError.toJSON();`
-- **Pure JSDoc:**
-```javascript
-/**
-   * Serializes the structured error state into a plain object for logging or diagnostic transmission.
-   * @returns {Object} Serialized error state.
-   */
-```
----
-#### METHOD: ConfigurationError.toString
-- **Scope:** instance
-- **LLM Call Syntax:** `const result = configurationError.toString();`
-- **Pure JSDoc:**
-```javascript
-/**
-   * Generates a readable summary of the error including classification and description.
-   * @returns {string} Formatted error string ([name] CODE: message).
-   */
-```
----
 <br>
 

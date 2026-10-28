@@ -1,0 +1,30 @@
+{
+  "extends": "./tsconfig.json",
+  "compilerOptions": {
+    "noEmit": false,
+    "declaration": true,
+    "emitDeclarationOnly": true,
+    "outDir": ".cache/types",
+    "rootDir": "."
+  },
+  "include": [
+    "ComposableContentLib/index.ts",
+    "GasProcessMonitorLib/index.ts",
+    "ContextEngine/index.ts",
+    "CoreUtilsLib/index.ts",
+    "DomainRepositoryLib/index.ts",
+    "GasDataImporter/index.ts",
+    "GasExpressionEngineLib/index.ts",
+    "GasOnlineTestFramework/index.ts",
+    "GasResilienceLib/index.ts",
+    "GasSchemaValidatorLib/index.ts",
+    "GoogleApiWrapper/index.ts",
+    "JobRunnerLib/index.ts",
+    "PipelineFramework/index.ts",
+    "RoleResolutionLib/index.ts",
+    "SheetDBLib/index.ts",
+    "WorkspaceTemplateEngine/index.ts",
+    "types/**/*.d.ts"
+  ],
+  "exclude": ["node_modules", "dist", ".cache", ".superpowers", "**/__tests__/**", "test/types/**"]
+}

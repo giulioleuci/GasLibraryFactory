@@ -2,6 +2,7 @@
 
 **Version:** 3.0.0  
 **Layer:** Infrastructure (Layer 1)  
+**Language:** TypeScript (strict, ES modules; Babel emits GAS V8 JavaScript)
 **Dependencies:** CoreUtilsLib, GasResilienceLib
 
 ## 🏗️ File and Folder Structure
@@ -11,21 +12,20 @@ A highly modularized structure organized by responsibility:
 ```text
 GoogleApiWrapper/
 ├── src/
-│   ├── core/               # Infrastructure logic
-│   │   ├── GoogleService.js  # Base class with common resilience logic
-│   │   └── ServiceFactory.js # Centralized DI container for all services
+│   ├── internal/core/      # Infrastructure logic
+│   │   ├── GoogleService.ts  # Base class with common resilience logic
+│   │   └── ServiceFactory.ts # Centralized DI container for all services
 │   ├── services/           # Concrete implementations (Adapter Layer)
-│   │   ├── DriveService.js   # Batch-first Drive v3 implementation
-│   │   ├── SpreadsheetService.js # Batch-first Sheets v4 implementation
-│   │   ├── MailService.js    # Gmail API with quota tracking
-│   │   ├── DocumentService.js # Google Docs v1 builder-style manipulation
-│   │   ├── PermissionService.js # Silent ACL management
-│   │   ├── CacheService.js   # Wrapper for GAS CacheService (with TTL)
-│   │   ├── PropertiesService.js # Wrapper for GAS PropertiesService
+│   │   ├── DriveService.ts   # Batch-first Drive v3 implementation
+│   │   ├── SpreadsheetService.ts # Batch-first Sheets v4 implementation
+│   │   ├── MailService.ts    # Gmail API with quota tracking
+│   │   ├── DocumentService.ts # Google Docs v1 builder-style manipulation
+│   │   ├── PermissionService.ts # Silent ACL management
+│   │   ├── CacheService.ts   # Wrapper for GAS CacheService (with TTL)
+│   │   ├── PropertiesService.ts # Wrapper for GAS PropertiesService
 │   │   └── ... (Lock, Trigger, Ui, Utilities)
-│   ├── utils/              # Low-level helpers
-│   │   ├── BatchUtilities.js # Logic for multipart/mixed payload creation
-│   │   └── ... (Builders for UI: Dialog, Menu, Sidebar)
+│   ├── internal/services-managers/ # Docs/Sheets helpers (grid, range, table, batch-update handlers)
+│   ├── builders/           # UI builders: Dialog, Menu, Sidebar
 │   └── __tests__/          # Extensive local and integration tests
 ```
 
@@ -62,7 +62,7 @@ All services that perform mutations (DriveService, SpreadsheetService) support d
 
 **Global (Constructor-Level):**
 
-```javascript
+```typescript
 const driveService = new DriveService(logger, cache, utils, exceptionService, {
   dryRun: true
 });
@@ -74,7 +74,7 @@ const sheetsService = new SpreadsheetService(logger, cache, utils, exceptionServ
 
 **Per-Operation Override:**
 
-```javascript
+```typescript
 // Dry-run for Drive operations
 driveService.deleteFiles(['id1', 'id2'], { dryRun: true });
 driveService.moveFiles([...], { dryRun: true });
@@ -89,7 +89,7 @@ sheetsService.clearRanges('spreadsheetId', ranges, { dryRun: true });
 
 Dry-run operations return a result with `dryRun: true` flag:
 
-```javascript
+```typescript
 const result = mailService.send({
   to: 'user@example.com',
   subject: 'Test',
@@ -101,7 +101,7 @@ const result = mailService.send({
 
 ## 📦 Installation
 
-```javascript
+```typescript
 import { ServiceFactory, DriveService, SpreadsheetService } from '@GoogleApiWrapper';
 ```
 
@@ -145,7 +145,7 @@ Services throw plain errors; retry/backoff and error classification are handled 
 
 Instead of manually instantiating services and passing dependencies, use the `ServiceFactory`.
 
-```javascript
+```typescript
 // Configure global settings (optional)
 ServiceFactory.configure({
   logLevel: 'DEBUG',
@@ -169,7 +169,7 @@ Replaces `DriveApp` for high-volume file operations. Uses Advanced Drive API v3.
 - **`copyFiles(requests)`**: Batch copies files.
 - **`searchFiles(query)`**: Paginated search using Drive Query Language.
 
-```javascript
+```typescript
 // Batch move example
 driveService.moveFiles([
   { fileId: 'id1', newParent: 'folderA', removeFromOtherParents: true },
@@ -186,7 +186,7 @@ Replaces `SpreadsheetApp` for data manipulation. Uses Advanced Sheets API v4.
 - **`appendRows(spreadsheetId, appends)`**: Appends data to multiple sheets.
 - **`formatRanges(spreadsheetId, formats)`**: Applies cell formatting (colors, fonts) in batch.
 
-```javascript
+```typescript
 // Batch update example
 sheetService.updateRanges('SPREADSHEET_ID', [
   {
@@ -209,7 +209,7 @@ Stateless service for managing and sending emails via GmailApp/MailApp.
 - **`sendBulk(recipients, bodyFn)`**: Mass mailing helper with personalization.
 - **`getQuotaUsage()`**: Returns current daily usage (remaining quota).
 
-```javascript
+```typescript
 mailService.sendBatch([
   { to: 'user1@example.com', subject: 'Update', body: '...' },
   { to: 'user2@example.com', subject: 'Update', body: '...' }
@@ -224,7 +224,7 @@ Manages ACLs via Drive API v3.
 - **`transferOwnership(fileIds, newOwner)`**: Batch ownership transfer.
 - **`getSharingLink(fileIds)`**: Generates web view links.
 
-```javascript
+```typescript
 // Share 50 files with a user silently
 permissionService.shareWithUsers(fileIdsArray, {
   email: 'newuser@example.com',
@@ -240,7 +240,7 @@ Manipulates Google Docs via Docs API v1.
 - **`document(id)`**: Returns a `DocumentBuilder` for fluent chaining.
 - **`scanDocumentStructure(id)`**: Returns a lightweight POJO representation of the doc structure (used by template engines).
 
-```javascript
+```typescript
 docService
   .document('DOC_ID')
   .appendParagraph('Chapter 1')

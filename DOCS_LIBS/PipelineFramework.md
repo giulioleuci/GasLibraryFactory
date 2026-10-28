@@ -1,183 +1,34 @@
 # API Reference: PipelineFramework
 
-## CLASS: for
-**File Path:** `PipelineFramework/index.js`
-**Constructor Usage:** `const instance = new for();`
-**Description:** N/A
-
-### Raw JSDoc Context:
-```javascript
-/** Class definition */
-```
-
-<br>
-
-## CLASS: LoadDataStep
-**File Path:** `PipelineFramework/index.js`
-**Constructor Usage:** `const instance = new LoadDataStep();`
-**Description:** N/A
-
-### Raw JSDoc Context:
-```javascript
-/** Class definition */
-```
-
-<br>
-
 ## CLASS: Step
-**File Path:** `PipelineFramework/src/Step.js`
+**File Path:** `PipelineFramework/src/Step.ts`
 **Constructor Usage:** `const instance = new Step();`
-**Description:** Abstract base class for pipeline steps.
-
-/
-
-import { ContextValidationError } from './internal/errors/ContextValidationError';
-import { StepExecutionError } from './internal/errors/StepExecutionError';
-
-/**
-Abstract foundation for all pipeline steps.
-Manages context validation, conditional execution, error handling, and performance tracking.
-
-@class Step
-@abstract
-@typedef {Object} StepOptions
-@property {string[]} [requiredKeys=[]] - Mandatory context keys for pre-execution validation.
-@property {boolean} [continueOnError=false] - Whether to proceed with the pipeline if this step fails.
-@property {Function} [shouldExecuteCondition=null] - Predicate function (context => boolean) for conditional logic.
-
-@typedef {Object} StepExecutionResult
-@property {boolean} success - True if step completed or continueOnError was active.
-@property {boolean} skipped - True if shouldExecute() returned false.
-@property {string} [skipReason] - Stable reason when skipped is true.
-@property {number} durationMs - Total execution time in milliseconds.
-@property {*} [logDetails] - Optional success details for pipeline observability.
-@property {Error} [error] - Captured error if continueOnError is true.
-
-@example
-class DataFetchStep extends Step {
-  _executeLogic(context) {
-    const data = fetch(context.get('id'));
-    this.setResult(context, 'result', data);
-  }
-}
+**Description:** N/A
 
 ### Raw JSDoc Context:
 ```javascript
-/**
- * @file PipelineFramework/src/Step.js
- * @description Abstract base class for pipeline steps.
- * @version 1.0.0
- */
-
-import { ContextValidationError } from './internal/errors/ContextValidationError';
-import { StepExecutionError } from './internal/errors/StepExecutionError';
-
-/**
- * Abstract foundation for all pipeline steps.
- * Manages context validation, conditional execution, error handling, and performance tracking.
- *
- * @class Step
- * @abstract
- * @typedef {Object} StepOptions
- * @property {string[]} [requiredKeys=[]] - Mandatory context keys for pre-execution validation.
- * @property {boolean} [continueOnError=false] - Whether to proceed with the pipeline if this step fails.
- * @property {Function} [shouldExecuteCondition=null] - Predicate function (context => boolean) for conditional logic.
- *
- * @typedef {Object} StepExecutionResult
- * @property {boolean} success - True if step completed or continueOnError was active.
- * @property {boolean} skipped - True if shouldExecute() returned false.
- * @property {string} [skipReason] - Stable reason when skipped is true.
- * @property {number} durationMs - Total execution time in milliseconds.
- * @property {*} [logDetails] - Optional success details for pipeline observability.
- * @property {Error} [error] - Captured error if continueOnError is true.
- *
- * @example
- * class DataFetchStep extends Step {
- *   _executeLogic(context) {
- *     const data = fetch(context.get('id'));
- *     this.setResult(context, 'result', data);
- *   }
- * }
- */
+/** No comment available */
 ```
 
-### Methods of Step
+### Methods and properties of Step
 
-#### METHOD: Step.if
-- **Scope:** instance
-- **LLM Call Syntax:** `step.if(!name || typeof name !);`
-- **Pure JSDoc:**
-```javascript
-/** Method if */
-```
----
-#### METHOD: Step.if
-- **Scope:** instance
-- **LLM Call Syntax:** `step.if(!logger || typeof logger !);`
-- **Pure JSDoc:**
-```javascript
-/** Method if */
-```
----
-#### METHOD: Step.if
-- **Scope:** instance
-- **LLM Call Syntax:** `step.if(typeof logger.debug !);`
-- **Pure JSDoc:**
-```javascript
-/** Method if */
-```
----
-#### METHOD: Step.if
-- **Scope:** instance
-- **LLM Call Syntax:** `step.if(options !);`
-- **Pure JSDoc:**
-```javascript
-/** Method if */
-```
----
 #### METHOD: Step.getName
 - **Scope:** instance
 - **LLM Call Syntax:** `const result = step.getName();`
 - **Pure JSDoc:**
 ```javascript
 /**
-     * Step name.
-     * @protected
-     * @type {string}
-     */
-    this._name = name;
-
-    /**
-     * Logger service.
-     * @protected
-     * @type {LoggerService}
-     */
-    this._logger = logger;
-
-    /**
-     * Required context keys for validation.
-     * @protected
-     * @type {string[]}
-     */
-    this._requiredKeys = options.requiredKeys || [];
-
-    /**
-     * Whether to continue pipeline on error.
-     * @protected
-     * @type {boolean}
-     */
-    this._continueOnError = options.continueOnError || false;
-
-    /**
-     * Custom condition function for conditional execution.
-     * @protected
-     * @type {Function|null}
-     */
-    this._shouldExecuteCondition = options.shouldExecuteCondition || null;
-  }
-
-  /**
    * @returns {string} Unique step identifier.
+   */
+```
+---
+#### PROPERTY: Step.logger
+- **Scope:** instance
+- **LLM Call Syntax:** `const result = step.logger;`
+- **Pure JSDoc:**
+```javascript
+/**
+   * @returns {LoggerService} Active logging instance.
    */
 ```
 ---
@@ -187,27 +38,12 @@ import { StepExecutionError } from './internal/errors/StepExecutionError';
 - **Pure JSDoc:**
 ```javascript
 /**
-   * @returns {LoggerService} Active logging instance.
-   */
-  get logger() {
-    return this._logger;
-  }
-
-  /**
    * Evaluates if the step should execute based on current context.
    * Prioritizes 'shouldExecuteCondition' from options if present.
    *
    * @param {PipelineContext} context - Active pipeline execution context.
    * @returns {boolean} True if step execution should proceed.
    */
-```
----
-#### METHOD: Step.if
-- **Scope:** instance
-- **LLM Call Syntax:** `step.if(this._shouldExecuteCondition && typeof this._shouldExecuteCondition);`
-- **Pure JSDoc:**
-```javascript
-/** Method if */
 ```
 ---
 #### METHOD: Step.verifyContext
@@ -223,22 +59,6 @@ import { StepExecutionError } from './internal/errors/StepExecutionError';
    * @throws {ContextValidationError} If any required keys are missing from context.
    * @protected
    */
-```
----
-#### METHOD: Step.if
-- **Scope:** instance
-- **LLM Call Syntax:** `step.if(!keys || keys.length);`
-- **Pure JSDoc:**
-```javascript
-/** Method if */
-```
----
-#### METHOD: Step.if
-- **Scope:** instance
-- **LLM Call Syntax:** `step.if(missingKeys.length > 0);`
-- **Pure JSDoc:**
-```javascript
-/** Method if */
 ```
 ---
 #### METHOD: Step.setResult
@@ -258,14 +78,6 @@ import { StepExecutionError } from './internal/errors/StepExecutionError';
    */
 ```
 ---
-#### METHOD: Step.if
-- **Scope:** instance
-- **LLM Call Syntax:** `step.if(typeof key !);`
-- **Pure JSDoc:**
-```javascript
-/** Method if */
-```
----
 #### METHOD: Step.getContextValue
 - **Scope:** instance
 - **LLM Call Syntax:** `const result = step.getContextValue(context, key, defaultValue);`
@@ -278,6 +90,35 @@ import { StepExecutionError } from './internal/errors/StepExecutionError';
    * @param {string} key - Context key to read.
    * @param {*} [defaultValue=null] - Fallback if key is absent.
    * @returns {*} Context value or defaultValue.
+   * @protected
+   */
+```
+---
+#### METHOD: Step._executeLogic
+- **Scope:** instance
+- **LLM Call Syntax:** `const result = step._executeLogic(context);`
+- **Pure JSDoc:**
+```javascript
+/**
+   * Core business logic implementation. Must be implemented by subclasses.
+   *
+   * @param {PipelineContext} context - Active pipeline execution context.
+   * @returns {void}
+   * @throws {Error} If not implemented by subclass.
+   * @protected
+   * @abstract
+   */
+```
+---
+#### METHOD: Step._getLogDetails
+- **Scope:** instance
+- **LLM Call Syntax:** `const result = step._getLogDetails(_context);`
+- **Pure JSDoc:**
+```javascript
+/**
+   * Returns optional success details for pipeline observability.
+   * @param {PipelineContext} _context - Completed execution context.
+   * @returns {*|null} Scalar, short scalar array, or null when no detail is available.
    * @protected
    */
 ```
@@ -296,55 +137,15 @@ import { StepExecutionError } from './internal/errors/StepExecutionError';
    */
 ```
 ---
-#### METHOD: Step.catch
-- **Scope:** instance
-- **LLM Call Syntax:** `step.catch(detailError);`
-- **Pure JSDoc:**
-```javascript
-/** Method catch */
-```
----
-#### METHOD: Step.catch
-- **Scope:** instance
-- **LLM Call Syntax:** `step.catch(error);`
-- **Pure JSDoc:**
-```javascript
-/** Method catch */
-```
----
-#### METHOD: Step.if
-- **Scope:** instance
-- **LLM Call Syntax:** `step.if(this._continueOnError);`
-- **Pure JSDoc:**
-```javascript
-/** Method if */
-```
----
 <br>
 
 ## CLASS: PipelineContext
-**File Path:** `PipelineFramework/src/PipelineContext.js`
+**File Path:** `PipelineFramework/src/PipelineContext.ts`
 **Constructor Usage:** `const instance = new PipelineContext();`
-**Description:** Wrapper for shared context state with metadata tracking.
-
-/
-
-/**
-Shared state container and telemetry tracker for pipeline executions.
-
-Wraps a mutable data payload and maintains execution metadata, including step history,
-timing, and graceful termination signals.
-
-@class
+**Description:** Shared state container and telemetry tracker for pipeline executions.
 
 ### Raw JSDoc Context:
 ```javascript
-/**
- * @file PipelineFramework/src/PipelineContext.js
- * @description Wrapper for shared context state with metadata tracking.
- * @version 1.0.0
- */
-
 /**
  * Shared state container and telemetry tracker for pipeline executions.
  *
@@ -356,7 +157,7 @@ timing, and graceful termination signals.
  */
 ```
 
-### Methods of PipelineContext
+### Methods and properties of PipelineContext
 
 #### METHOD: PipelineContext.getData
 - **Scope:** instance
@@ -366,12 +167,18 @@ timing, and graceful termination signals.
 /** @returns {Object} Raw underlying data reference. */
 ```
 ---
-#### METHOD: PipelineContext.if
+#### METHOD: PipelineContext.get
 - **Scope:** instance
-- **LLM Call Syntax:** `pipelineContext.if(typeof key !);`
+- **LLM Call Syntax:** `const result = pipelineContext.get(key, defaultValue);`
 - **Pure JSDoc:**
 ```javascript
-/** Method if */
+/**
+   * Retrieves a value from context.
+   * @param {string} key Target key.
+   * @param {*} [defaultValue=null] Value returned if key is missing.
+   * @returns {*}
+   * @throws {Error} If key is not a string.
+   */
 ```
 ---
 #### METHOD: PipelineContext.set
@@ -388,14 +195,6 @@ timing, and graceful termination signals.
    */
 ```
 ---
-#### METHOD: PipelineContext.if
-- **Scope:** instance
-- **LLM Call Syntax:** `pipelineContext.if(typeof key !);`
-- **Pure JSDoc:**
-```javascript
-/** Method if */
-```
----
 #### METHOD: PipelineContext.has
 - **Scope:** instance
 - **LLM Call Syntax:** `const result = pipelineContext.has(key);`
@@ -407,14 +206,6 @@ timing, and graceful termination signals.
    * @returns {boolean}
    * @throws {Error} If key is not a string.
    */
-```
----
-#### METHOD: PipelineContext.if
-- **Scope:** instance
-- **LLM Call Syntax:** `pipelineContext.if(typeof key !);`
-- **Pure JSDoc:**
-```javascript
-/** Method if */
 ```
 ---
 #### METHOD: PipelineContext.requestStop
@@ -497,14 +288,6 @@ timing, and graceful termination signals.
 /** @returns {number} Wall-clock duration in milliseconds. */
 ```
 ---
-#### METHOD: PipelineContext.if
-- **Scope:** instance
-- **LLM Call Syntax:** `pipelineContext.if(this._metadata.endTime);`
-- **Pure JSDoc:**
-```javascript
-/** Method if */
-```
----
 #### METHOD: PipelineContext.getSummary
 - **Scope:** instance
 - **LLM Call Syntax:** `const result = pipelineContext.getSummary();`
@@ -519,29 +302,12 @@ timing, and graceful termination signals.
 <br>
 
 ## CLASS: Pipeline
-**File Path:** `PipelineFramework/src/Pipeline.js`
+**File Path:** `PipelineFramework/src/Pipeline.ts`
 **Constructor Usage:** `const instance = new Pipeline();`
-**Description:** Main pipeline orchestrator for sequential step execution.
-
-/
-
-import { PipelineContext } from './PipelineContext';
-
-/**
-Orchestrator for sequential step execution with shared context and lifecycle hooks.
-
-@class
+**Description:** Orchestrator for sequential step execution with shared context and lifecycle hooks.
 
 ### Raw JSDoc Context:
 ```javascript
-/**
- * @file PipelineFramework/src/Pipeline.js
- * @description Main pipeline orchestrator for sequential step execution.
- * @version 1.0.0
- */
-
-import { PipelineContext } from './PipelineContext';
-
 /**
  * Orchestrator for sequential step execution with shared context and lifecycle hooks.
  *
@@ -549,30 +315,70 @@ import { PipelineContext } from './PipelineContext';
  */
 ```
 
-### Methods of Pipeline
+### Methods and properties of Pipeline
 
-#### METHOD: Pipeline.if
+#### METHOD: Pipeline._normalizeLogPosition
 - **Scope:** instance
-- **LLM Call Syntax:** `pipeline.if(!logger || typeof logger !);`
+- **LLM Call Syntax:** `pipeline._normalizeLogPosition();`
 - **Pure JSDoc:**
 ```javascript
-/** Method if */
+/** No comment available */
 ```
 ---
-#### METHOD: Pipeline.for
+#### METHOD: Pipeline._stepLogPosition
 - **Scope:** instance
-- **LLM Call Syntax:** `pipeline.for(const method of ['debug', 'info', 'warn', 'error']);`
+- **LLM Call Syntax:** `pipeline._stepLogPosition();`
 - **Pure JSDoc:**
 ```javascript
-/** Method for */
+/** No comment available */
 ```
 ---
-#### METHOD: Pipeline.if
+#### METHOD: Pipeline._summaryLogPosition
 - **Scope:** instance
-- **LLM Call Syntax:** `pipeline.if(typeof logger[method] !);`
+- **LLM Call Syntax:** `pipeline._summaryLogPosition();`
 - **Pure JSDoc:**
 ```javascript
-/** Method if */
+/** No comment available */
+```
+---
+#### METHOD: Pipeline._executionLogPosition
+- **Scope:** instance
+- **LLM Call Syntax:** `pipeline._executionLogPosition();`
+- **Pure JSDoc:**
+```javascript
+/** No comment available */
+```
+---
+#### METHOD: Pipeline._logPipelineStart
+- **Scope:** instance
+- **LLM Call Syntax:** `pipeline._logPipelineStart();`
+- **Pure JSDoc:**
+```javascript
+/** No comment available */
+```
+---
+#### METHOD: Pipeline._logPipelineStep
+- **Scope:** instance
+- **LLM Call Syntax:** `pipeline._logPipelineStep();`
+- **Pure JSDoc:**
+```javascript
+/** No comment available */
+```
+---
+#### METHOD: Pipeline._fallbackDetailText
+- **Scope:** instance
+- **LLM Call Syntax:** `pipeline._fallbackDetailText();`
+- **Pure JSDoc:**
+```javascript
+/** No comment available */
+```
+---
+#### METHOD: Pipeline._logPipelineSummary
+- **Scope:** instance
+- **LLM Call Syntax:** `pipeline._logPipelineSummary();`
+- **Pure JSDoc:**
+```javascript
+/** No comment available */
 ```
 ---
 #### METHOD: Pipeline.getName
@@ -580,139 +386,15 @@ import { PipelineContext } from './PipelineContext';
 - **LLM Call Syntax:** `const result = pipeline.getName();`
 - **Pure JSDoc:**
 ```javascript
-/** When true, consecutive skipped steps sharing a reason are logged as one line. */
-    this._collapseSkippedSteps = options.collapseSkippedSteps === true;
-    this._steps = [];
-    this._hooks = {
-      beforeStep: [],
-      afterStep: [],
-      onError: [],
-      onComplete: []
-    };
-  }
-
-  _normalizeLogPosition(position) {
-    const value = position && typeof position === 'object' ? position : {};
-    return {
-      depth: Math.max(0, Number.isFinite(value.depth) ? value.depth : 0),
-      isLast: Boolean(value.isLast),
-      ancestorHasNext: Array.isArray(value.ancestorHasNext) ? value.ancestorHasNext.slice() : []
-    };
-  }
-
-  _stepLogPosition(index) {
-    return {
-      depth: this._logPosition.depth + 1,
-      isLast: index === this._steps.length - 1,
-      ancestorHasNext: [...this._logPosition.ancestorHasNext, true]
-    };
-  }
-
-  _summaryLogPosition() {
-    return { ...this._logPosition, isLast: true };
-  }
-
-  _executionLogPosition(index) {
-    const stepPosition = this._stepLogPosition(index);
-    return {
-      depth: stepPosition.depth + 1,
-      isLast: false,
-      ancestorHasNext: [...stepPosition.ancestorHasNext, !stepPosition.isLast]
-    };
-  }
-
-  _logPipelineStart() {
-    if (typeof this._logger.logPipelineStart === 'function') {
-      this._logger.logPipelineStart(this._name, this._steps.length, this._logPosition);
-    } else {
-      this._logger.info(`[${this._name}] Starting pipeline (${this._steps.length} steps)`);
-    }
-  }
-
-  _logPipelineStep(stepName, status, details, position) {
-    if (typeof this._logger.logPipelineStep === 'function') {
-      this._logger.logPipelineStep(stepName, status, details, position);
-      return;
-    }
-    const isEnvelope = Boolean(
-      details &&
-      typeof details === 'object' &&
-      !Array.isArray(details) &&
-      (Object.prototype.hasOwnProperty.call(details, 'content') ||
-        Object.prototype.hasOwnProperty.call(details, 'durationMs') ||
-        Object.prototype.hasOwnProperty.call(details, 'reason'))
-    );
-    const envelope = isEnvelope ? details : {};
-    const content = isEnvelope ? envelope.content : details;
-    const reason =
-      envelope.reason !== undefined
-        ? envelope.reason
-        : status === 'SKIPPED'
-          ? 'condition not met'
-          : 'step failed';
-    const duration =
-      Number.isFinite(envelope.durationMs) && envelope.durationMs >= 0 ? envelope.durationMs : null;
-    const fallbackDetails = this._fallbackDetailText(status === 'EXECUTED' ? content : reason);
-    const displayStatus = status === 'ERROR' ? 'FAILED' : status;
-    const timedStatus =
-      status !== 'SKIPPED' && duration !== null
-        ? `${displayStatus} in ${duration}ms`
-        : displayStatus;
-    const body = fallbackDetails ? `${fallbackDetails} (${timedStatus})` : timedStatus;
-    const message = `[${this._name}] [${stepName}] ${body}`;
-    if (status === 'ERROR') {
-      this._logger.error(message);
-    } else if (status === 'SKIPPED') {
-      this._logger.warn(message);
-    } else {
-      this._logger.info(message);
-    }
-  }
-
-  _fallbackDetailText(details) {
-    if (details === undefined || details === null || details === '') {
-      return '';
-    }
-    if (Array.isArray(details)) {
-      return details.join('\n');
-    }
-    if (typeof details === 'object') {
-      try {
-        return JSON.stringify(details);
-      } catch (_error) {
-        return '[Unrenderable details]';
-      }
-    }
-    return String(details);
-  }
-
-  _logPipelineSummary(context, prefix = '') {
-    const summary = context.getSummary();
-    let details =
-      `${summary.completedSteps} executed, ${summary.skippedSteps} skipped, ` +
-      `${summary.failedSteps} failed`;
-    if (prefix) {
-      details = `${prefix}; ${details}`;
-    }
-    if (summary.stopRequested) {
-      details += `; stopped: ${summary.stopReason}`;
-    }
-    const icon = summary.failedSteps > 0 ? '❌' : '✅';
-    if (typeof this._logger.logSummary === 'function') {
-      this._logger.logSummary(
-        `${icon} Pipeline completed`,
-        context.getTotalDuration(),
-        details,
-        this._summaryLogPosition()
-      );
-    } else {
-      this._logger.info(
-        `${icon} [${this._name}] Pipeline completed in ${context.getTotalDuration()}ms (${details})`
-      );
-    }
-  }
-
-  /** @returns {string} */
+/** @returns {string} */
+```
+---
+#### PROPERTY: Pipeline.logger
+- **Scope:** instance
+- **LLM Call Syntax:** `const result = pipeline.logger;`
+- **Pure JSDoc:**
+```javascript
+/** @returns {Object} Logger instance. */
 ```
 ---
 #### METHOD: Pipeline.getSteps
@@ -720,12 +402,7 @@ import { PipelineContext } from './PipelineContext';
 - **LLM Call Syntax:** `const result = pipeline.getSteps();`
 - **Pure JSDoc:**
 ```javascript
-/** @returns {Object} Logger instance. */
-  get logger() {
-    return this._logger;
-  }
-
-  /** @returns {Step[]} Active sequence. */
+/** @returns {Step[]} Active sequence. */
 ```
 ---
 #### METHOD: Pipeline.addStep
@@ -740,30 +417,6 @@ import { PipelineContext } from './PipelineContext';
    */
 ```
 ---
-#### METHOD: Pipeline.if
-- **Scope:** instance
-- **LLM Call Syntax:** `pipeline.if(!step || typeof step !);`
-- **Pure JSDoc:**
-```javascript
-/** Method if */
-```
----
-#### METHOD: Pipeline.if
-- **Scope:** instance
-- **LLM Call Syntax:** `pipeline.if(typeof step.execute !);`
-- **Pure JSDoc:**
-```javascript
-/** Method if */
-```
----
-#### METHOD: Pipeline.if
-- **Scope:** instance
-- **LLM Call Syntax:** `pipeline.if(typeof step.getName !);`
-- **Pure JSDoc:**
-```javascript
-/** Method if */
-```
----
 #### METHOD: Pipeline.beforeStep
 - **Scope:** instance
 - **LLM Call Syntax:** `const result = pipeline.beforeStep(callback);`
@@ -774,14 +427,6 @@ import { PipelineContext } from './PipelineContext';
    * @param {Function} callback
    * @returns {Pipeline}
    */
-```
----
-#### METHOD: Pipeline.if
-- **Scope:** instance
-- **LLM Call Syntax:** `pipeline.if(typeof callback !);`
-- **Pure JSDoc:**
-```javascript
-/** Method if */
 ```
 ---
 #### METHOD: Pipeline.afterStep
@@ -796,14 +441,6 @@ import { PipelineContext } from './PipelineContext';
    */
 ```
 ---
-#### METHOD: Pipeline.if
-- **Scope:** instance
-- **LLM Call Syntax:** `pipeline.if(typeof callback !);`
-- **Pure JSDoc:**
-```javascript
-/** Method if */
-```
----
 #### METHOD: Pipeline.onError
 - **Scope:** instance
 - **LLM Call Syntax:** `const result = pipeline.onError(callback);`
@@ -814,14 +451,6 @@ import { PipelineContext } from './PipelineContext';
    * @param {Function} callback
    * @returns {Pipeline}
    */
-```
----
-#### METHOD: Pipeline.if
-- **Scope:** instance
-- **LLM Call Syntax:** `pipeline.if(typeof callback !);`
-- **Pure JSDoc:**
-```javascript
-/** Method if */
 ```
 ---
 #### METHOD: Pipeline.onComplete
@@ -836,36 +465,29 @@ import { PipelineContext } from './PipelineContext';
    */
 ```
 ---
-#### METHOD: Pipeline.if
+#### METHOD: Pipeline._invokeHooks
 - **Scope:** instance
-- **LLM Call Syntax:** `pipeline.if(typeof callback !);`
+- **LLM Call Syntax:** `pipeline._invokeHooks();`
 - **Pure JSDoc:**
 ```javascript
-/** Method if */
+/**
+   * Safely invoke a list of hook callbacks, swallowing and logging errors.
+   * @private
+   */
 ```
 ---
-#### METHOD: Pipeline.for
+#### METHOD: Pipeline._executeStep
 - **Scope:** instance
-- **LLM Call Syntax:** `pipeline.for(const cb of hookList);`
+- **LLM Call Syntax:** `const result = pipeline._executeStep(step, context);`
 - **Pure JSDoc:**
 ```javascript
-/** Method for */
-```
----
-#### METHOD: Pipeline.catch
-- **Scope:** instance
-- **LLM Call Syntax:** `pipeline.catch(e);`
-- **Pure JSDoc:**
-```javascript
-/** Method catch */
-```
----
-#### METHOD: Pipeline.if
-- **Scope:** instance
-- **LLM Call Syntax:** `pipeline.if(this._exceptionService && typeof this._exceptionService.executeWithRetry);`
-- **Pure JSDoc:**
-```javascript
-/** Method if */
+/**
+   * Internal step execution wrapper with hook and retry orchestration.
+   * @private
+   * @param {Step} step
+   * @param {PipelineContext} context
+   * @returns {{success: boolean, skipped: boolean, durationMs: number, error?: Error}}
+   */
 ```
 ---
 #### METHOD: Pipeline.execute
@@ -878,78 +500,6 @@ import { PipelineContext } from './PipelineContext';
    * @param {Object} [initialData={}]
    * @returns {PipelineContext}
    */
-```
----
-#### METHOD: Pipeline.if
-- **Scope:** instance
-- **LLM Call Syntax:** `pipeline.if(skippedRun.length);`
-- **Pure JSDoc:**
-```javascript
-/** Method if */
-```
----
-#### METHOD: Pipeline.for
-- **Scope:** instance
-- **LLM Call Syntax:** `pipeline.for(let stepIndex);`
-- **Pure JSDoc:**
-```javascript
-/** Method for */
-```
----
-#### METHOD: Pipeline.if
-- **Scope:** instance
-- **LLM Call Syntax:** `pipeline.if(typeof this._logger.logStep);`
-- **Pure JSDoc:**
-```javascript
-/** Method if */
-```
----
-#### METHOD: Pipeline.catch
-- **Scope:** instance
-- **LLM Call Syntax:** `pipeline.catch(error);`
-- **Pure JSDoc:**
-```javascript
-/** Method catch */
-```
----
-#### METHOD: Pipeline.if
-- **Scope:** instance
-- **LLM Call Syntax:** `pipeline.if(this._stopOnError);`
-- **Pure JSDoc:**
-```javascript
-/** Method if */
-```
----
-#### METHOD: Pipeline.if
-- **Scope:** instance
-- **LLM Call Syntax:** `pipeline.if(status);`
-- **Pure JSDoc:**
-```javascript
-/** Method if */
-```
----
-#### METHOD: Pipeline.if
-- **Scope:** instance
-- **LLM Call Syntax:** `pipeline.if(skippedRun.length > 0 && skippedRun[0].reason !);`
-- **Pure JSDoc:**
-```javascript
-/** Method if */
-```
----
-#### METHOD: Pipeline.if
-- **Scope:** instance
-- **LLM Call Syntax:** `pipeline.if(status);`
-- **Pure JSDoc:**
-```javascript
-/** Method if */
-```
----
-#### METHOD: Pipeline.if
-- **Scope:** instance
-- **LLM Call Syntax:** `pipeline.if(this._stopOnError);`
-- **Pure JSDoc:**
-```javascript
-/** Method if */
 ```
 ---
 #### METHOD: Pipeline.clearSteps
@@ -965,115 +515,37 @@ import { PipelineContext } from './PipelineContext';
 <br>
 
 ## CLASS: StepMock
-**File Path:** `PipelineFramework/src/testing/mocks.js`
+**File Path:** `PipelineFramework/src/testing/mocks.ts`
 **Constructor Usage:** `const instance = new StepMock();`
-**Description:** Centralized high-fidelity mocks for PipelineFramework services.
-
-/
-
-/**
-@class StepMock
-Jest-based high-fidelity mock for Pipeline Step implementation.
+**Description:** Jest-based high-fidelity mock for Pipeline Step implementation.
 
 ### Raw JSDoc Context:
 ```javascript
-/**
- * @file PipelineFramework/src/testing/mocks.js
- * @description Centralized high-fidelity mocks for PipelineFramework services.
- * @version 1.0.0
- */
-
 /**
  * @class StepMock
  * @description Jest-based high-fidelity mock for Pipeline Step implementation.
  */
 ```
 
-### Methods of StepMock
+### Methods and properties of StepMock
 
 #### METHOD: StepMock.setupExecution
 - **Scope:** instance
-- **LLM Call Syntax:** `const result = stepMock.setupExecution(success, data, error);`
+- **LLM Call Syntax:** `stepMock.setupExecution();`
 - **Pure JSDoc:**
 ```javascript
-/**
-   * @function setupExecution
-   * @description Configures the 'execute' jest.fn return value.
-   * @param {boolean} success - Target success status.
-   * @param {*} [data={}] - Result data payload.
-   * @param {Error} [error] - Error object (if success is false).
-   * @returns {StepMock} Fluent interface.
-   */
+/** No comment available */
 ```
 ---
 <br>
 
 ## CLASS: PipelineContextMock
-**File Path:** `PipelineFramework/src/testing/mocks.js`
+**File Path:** `PipelineFramework/src/testing/mocks.ts`
 **Constructor Usage:** `const instance = new PipelineContextMock();`
-**Description:** @constructor
-@param {string} [name='TestStep'] - Step name.
-/
-  constructor(name = 'TestStep') {
-    this.name = name;
-    this.getName = jest.fn(() => this.name);
-    this.getDescription = jest.fn(() => `Description for ${this.name}`);
-    this.execute = jest.fn((context) => ({ success: true, data: {} }));
-    this.shouldExecute = jest.fn(() => true);
-    this.beforeStep = jest.fn();
-    this.afterStep = jest.fn();
-    this.onError = jest.fn();
-  }
-
-  /**
-@function setupExecution
-Configures the 'execute' jest.fn return value.
-@param {boolean} success - Target success status.
-@param {*} [data={}] - Result data payload.
-@param {Error} [error] - Error object (if success is false).
-@returns {StepMock} Fluent interface.
-/
-  setupExecution(success, data = {}, error = null) {
-    this.execute.mockReturnValue({ success, data, error });
-    return this;
-  }
-}
-
-/**
-@class PipelineContextMock
-Jest-based high-fidelity mock for PipelineContext.
+**Description:** Jest-based high-fidelity mock for PipelineContext.
 
 ### Raw JSDoc Context:
 ```javascript
-/**
-   * @constructor
-   * @param {string} [name='TestStep'] - Step name.
-   */
-  constructor(name = 'TestStep') {
-    this.name = name;
-    this.getName = jest.fn(() => this.name);
-    this.getDescription = jest.fn(() => `Description for ${this.name}`);
-    this.execute = jest.fn((context) => ({ success: true, data: {} }));
-    this.shouldExecute = jest.fn(() => true);
-    this.beforeStep = jest.fn();
-    this.afterStep = jest.fn();
-    this.onError = jest.fn();
-  }
-
-  /**
-   * @function setupExecution
-   * @description Configures the 'execute' jest.fn return value.
-   * @param {boolean} success - Target success status.
-   * @param {*} [data={}] - Result data payload.
-   * @param {Error} [error] - Error object (if success is false).
-   * @returns {StepMock} Fluent interface.
-   */
-  setupExecution(success, data = {}, error = null) {
-    this.execute.mockReturnValue({ success, data, error });
-    return this;
-  }
-}
-
 /**
  * @class PipelineContextMock
  * @description Jest-based high-fidelity mock for PipelineContext.
@@ -1083,33 +555,12 @@ Jest-based high-fidelity mock for PipelineContext.
 <br>
 
 ## CLASS: StepExecutionError
-**File Path:** `PipelineFramework/src/internal/errors/StepExecutionError.js`
+**File Path:** `PipelineFramework/src/internal/errors/StepExecutionError.ts`
 **Constructor Usage:** `const instance = new StepExecutionError();`
-**Description:** Error thrown when a step execution fails.
-
-/
-
-import { PipelineError } from './PipelineError';
-
-/**
-Error signaling a failure within a step's execution logic.
-
-@class StepExecutionError
-@extends PipelineError
-
-@example
-throw new StepExecutionError('StepName', originalError, contextData);
+**Description:** Error signaling a failure within a step's execution logic.
 
 ### Raw JSDoc Context:
 ```javascript
-/**
- * @file PipelineFramework/src/errors/StepExecutionError.js
- * @description Error thrown when a step execution fails.
- * @version 1.0.0
- */
-
-import { PipelineError } from './PipelineError';
-
 /**
  * Error signaling a failure within a step's execution logic.
  *
@@ -1124,76 +575,31 @@ import { PipelineError } from './PipelineError';
 <br>
 
 ## CLASS: PipelineError
-**File Path:** `PipelineFramework/src/internal/errors/PipelineError.js`
-**Constructor Usage:** `const instance = new PipelineError();`
-**Description:** Base error class for pipeline-related errors.
-
-/
-
-import { BaseError } from '@CoreUtilsLib';
-
-/**
-Base class for all errors in the PipelineFramework.
-Extends the shared {@link BaseError} to inherit standardized stack-trace capture and timestamping.
-
-@class PipelineError
-@extends BaseError
-
-@example
-throw new PipelineError('Failure message', { step: 'StepName' });
+**File Path:** `PipelineFramework/src/internal/errors/PipelineError.ts`
+**Constructor Usage:** `const instance = new PipelineError(message, context, context.pipelineName, context.currentStep, context.stepIndex, context.originalError);`
+**Description:** N/A
 
 ### Raw JSDoc Context:
 ```javascript
 /**
- * @file PipelineFramework/src/errors/PipelineError.js
- * @description Base error class for pipeline-related errors.
- * @version 1.0.0
- */
-
-import { BaseError } from '@CoreUtilsLib';
-
-/**
- * Base class for all errors in the PipelineFramework.
- * Extends the shared {@link BaseError} to inherit standardized stack-trace capture and timestamping.
- *
- * @class PipelineError
- * @extends BaseError
- *
- * @example
- * throw new PipelineError('Failure message', { step: 'StepName' });
- */
+   * @param {string} message - Descriptive error text.
+   * @param {Object} [context={}] - Diagnostic metadata.
+   * @param {string} [context.pipelineName] - Identifier of the active pipeline.
+   * @param {string} [context.currentStep] - Identifier of the failed step.
+   * @param {number} [context.stepIndex] - 0-based index of the failed step.
+   * @param {Error} [context.originalError] - Root cause exception.
+   */
 ```
 
 <br>
 
 ## CLASS: ContextValidationError
-**File Path:** `PipelineFramework/src/internal/errors/ContextValidationError.js`
+**File Path:** `PipelineFramework/src/internal/errors/ContextValidationError.ts`
 **Constructor Usage:** `const instance = new ContextValidationError();`
-**Description:** Error thrown when context validation fails.
-
-/
-
-import { PipelineError } from './PipelineError';
-
-/**
-Error signaling a failure in context key validation before step execution.
-
-@class ContextValidationError
-@extends PipelineError
-
-@example
-throw new ContextValidationError('StepName', ['requiredKey'], contextData);
+**Description:** Error signaling a failure in context key validation before step execution.
 
 ### Raw JSDoc Context:
 ```javascript
-/**
- * @file PipelineFramework/src/errors/ContextValidationError.js
- * @description Error thrown when context validation fails.
- * @version 1.0.0
- */
-
-import { PipelineError } from './PipelineError';
-
 /**
  * Error signaling a failure in context key validation before step execution.
  *
@@ -1207,3 +613,21 @@ import { PipelineError } from './PipelineError';
 
 <br>
 
+## GLOBAL FUNCTIONS
+
+### FUNCTION: setupExecution
+- **Source:** `PipelineFramework/src/testing/mocks.ts`
+- **LLM Call Syntax:** `const result = setupExecution(success, data, error);`
+- **Pure JSDoc:**
+```javascript
+/**
+   * @function setupExecution
+   * @description Configures the 'execute' jest.fn return value.
+   * @param {boolean} success - Target success status.
+   * @param {*} [data={}] - Result data payload.
+   * @param {Error} [error] - Error object (if success is false).
+   * @returns {StepMock} Fluent interface.
+   */
+```
+
+---

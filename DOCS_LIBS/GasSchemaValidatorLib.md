@@ -1,78 +1,62 @@
 # API Reference: GasSchemaValidatorLib
 
 ## CLASS: SchemaValidator
-**File Path:** `GasSchemaValidatorLib/src/SchemaValidator.js`
+**File Path:** `GasSchemaValidatorLib/src/SchemaValidator.ts`
 **Constructor Usage:** `const instance = new SchemaValidator();`
 **Description:** N/A
 
 ### Raw JSDoc Context:
 ```javascript
-/** Class definition */
+/** No comment available */
 ```
 
-### Methods of SchemaValidator
+### Methods and properties of SchemaValidator
 
 #### METHOD: SchemaValidator.validate
 - **Scope:** instance
-- **LLM Call Syntax:** `schemaValidator.validate(schema, data, entityType);`
+- **LLM Call Syntax:** `schemaValidator.validate();`
 - **Pure JSDoc:**
 ```javascript
-/** Method validate */
-```
----
-#### METHOD: SchemaValidator.if
-- **Scope:** instance
-- **LLM Call Syntax:** `schemaValidator.if(!result.success);`
-- **Pure JSDoc:**
-```javascript
-/** Method if */
+/** No comment available */
 ```
 ---
 #### METHOD: SchemaValidator.safeValidate
 - **Scope:** instance
-- **LLM Call Syntax:** `schemaValidator.safeValidate(schema, data, _entityType);`
+- **LLM Call Syntax:** `schemaValidator.safeValidate();`
 - **Pure JSDoc:**
 ```javascript
-/** Method safeValidate */
-```
----
-#### METHOD: SchemaValidator.if
-- **Scope:** instance
-- **LLM Call Syntax:** `schemaValidator.if(result.success);`
-- **Pure JSDoc:**
-```javascript
-/** Method if */
+/** No comment available */
 ```
 ---
 #### METHOD: SchemaValidator.formatZodError
 - **Scope:** static
-- **LLM Call Syntax:** `SchemaValidator.formatZodError(zodError);`
+- **LLM Call Syntax:** `SchemaValidator.formatZodError();`
 - **Pure JSDoc:**
 ```javascript
-/** Method formatZodError */
+/** No comment available */
 ```
 ---
 #### METHOD: SchemaValidator.toValidationException
 - **Scope:** static
-- **LLM Call Syntax:** `SchemaValidator.toValidationException(zodError, entityType);`
+- **LLM Call Syntax:** `SchemaValidator.toValidationException();`
 - **Pure JSDoc:**
 ```javascript
-/** Method toValidationException */
+/** No comment available */
 ```
 ---
 <br>
 
 ## CLASS: DatasetValidator
-**File Path:** `GasSchemaValidatorLib/src/DatasetValidator.js`
+**File Path:** `GasSchemaValidatorLib/src/DatasetValidator.ts`
 **Constructor Usage:** `const instance = new DatasetValidator();`
 **Description:** N/A
 
 ### Raw JSDoc Context:
 ```javascript
-/** Class definition */
+/** No comment available */
 ```
 
-### Methods of DatasetValidator
+### Methods and properties of DatasetValidator
 
 #### METHOD: DatasetValidator.validate
 - **Scope:** instance
@@ -86,123 +70,91 @@
    */
 ```
 ---
-#### METHOD: DatasetValidator.if
+#### METHOD: DatasetValidator._applyRule
 - **Scope:** instance
-- **LLM Call Syntax:** `datasetValidator.if(this._logger);`
+- **LLM Call Syntax:** `datasetValidator._applyRule();`
 - **Pure JSDoc:**
 ```javascript
-/** Method if */
+/** No comment available */
 ```
 ---
-#### METHOD: DatasetValidator.switch
+#### METHOD: DatasetValidator._violation
 - **Scope:** instance
-- **LLM Call Syntax:** `datasetValidator.switch(rule.type);`
+- **LLM Call Syntax:** `datasetValidator._violation();`
 - **Pure JSDoc:**
 ```javascript
-/** Method switch */
+/** No comment available */
 ```
 ---
-#### METHOD: DatasetValidator.if
+#### METHOD: DatasetValidator._index
 - **Scope:** instance
-- **LLM Call Syntax:** `datasetValidator.if(set);`
+- **LLM Call Syntax:** `datasetValidator._index();`
 - **Pure JSDoc:**
 ```javascript
-/** Method if */
+/** No comment available */
 ```
 ---
-#### METHOD: DatasetValidator.if
+#### METHOD: DatasetValidator._required
 - **Scope:** instance
-- **LLM Call Syntax:** `datasetValidator.if(value !);`
+- **LLM Call Syntax:** `datasetValidator._required();`
 - **Pure JSDoc:**
 ```javascript
-/** Method if */
+/** No comment available */
 ```
 ---
-#### METHOD: DatasetValidator.if
+#### METHOD: DatasetValidator._enum
 - **Scope:** instance
-- **LLM Call Syntax:** `datasetValidator.if(value);`
+- **LLM Call Syntax:** `datasetValidator._enum();`
 - **Pure JSDoc:**
 ```javascript
-/** Method if */
+/** No comment available */
 ```
 ---
-#### METHOD: DatasetValidator.if
+#### METHOD: DatasetValidator._json
 - **Scope:** instance
-- **LLM Call Syntax:** `datasetValidator.if(raw);`
+- **LLM Call Syntax:** `datasetValidator._json();`
 - **Pure JSDoc:**
 ```javascript
-/** Method if */
+/** No comment available */
 ```
 ---
-#### METHOD: DatasetValidator.if
+#### METHOD: DatasetValidator._foreignKey
 - **Scope:** instance
-- **LLM Call Syntax:** `datasetValidator.if(typeof raw);`
+- **LLM Call Syntax:** `datasetValidator._foreignKey();`
 - **Pure JSDoc:**
 ```javascript
-/** Method if */
+/** No comment available */
 ```
 ---
-#### METHOD: DatasetValidator.if
+#### METHOD: DatasetValidator._columnName
 - **Scope:** instance
-- **LLM Call Syntax:** `datasetValidator.if(value);`
+- **LLM Call Syntax:** `datasetValidator._columnName();`
 - **Pure JSDoc:**
 ```javascript
-/** Method if */
+/** No comment available */
 ```
 ---
-#### METHOD: DatasetValidator.catch
+#### METHOD: DatasetValidator._rowPredicate
 - **Scope:** instance
-- **LLM Call Syntax:** `datasetValidator.catch(error);`
+- **LLM Call Syntax:** `datasetValidator._rowPredicate();`
 - **Pure JSDoc:**
 ```javascript
-/** Method catch */
-```
----
-#### METHOD: DatasetValidator.if
-- **Scope:** instance
-- **LLM Call Syntax:** `datasetValidator.if(raw);`
-- **Pure JSDoc:**
-```javascript
-/** Method if */
-```
----
-#### METHOD: DatasetValidator.if
-- **Scope:** instance
-- **LLM Call Syntax:** `datasetValidator.if(!allowEmpty);`
-- **Pure JSDoc:**
-```javascript
-/** Method if */
-```
----
-#### METHOD: DatasetValidator.if
-- **Scope:** instance
-- **LLM Call Syntax:** `datasetValidator.if(rule.allowWildcard && token);`
-- **Pure JSDoc:**
-```javascript
-/** Method if */
-```
----
-#### METHOD: DatasetValidator.if
-- **Scope:** instance
-- **LLM Call Syntax:** `datasetValidator.if(!hit);`
-- **Pure JSDoc:**
-```javascript
-/** Method if */
+/** No comment available */
 ```
 ---
 <br>
 
 ## CLASS: GasValidators
-**File Path:** `GasSchemaValidatorLib/src/internal/validators/GasValidators.js`
+**File Path:** `GasSchemaValidatorLib/src/internal/validators/GasValidators.ts`
 **Constructor Usage:** `const instance = new GasValidators();`
 **Description:** N/A
 
 ### Raw JSDoc Context:
 ```javascript
-/** Class definition */
+/** No comment available */
 ```
 
-### Methods of GasValidators
+### Methods and properties of GasValidators
 
 #### METHOD: GasValidators.a1Notation
 - **Scope:** static
@@ -228,26 +180,34 @@
 /** Validates "#FFF" or "#FFFFFF" */
 ```
 ---
+#### METHOD: GasValidators.jsonString
+- **Scope:** static
+- **LLM Call Syntax:** `GasValidators.jsonString();`
+- **Pure JSDoc:**
+```javascript
+/** Parses JSON string, optionally validates against inner schema */
+```
+---
 <br>
 
 ## CLASS: ValidationException
-**File Path:** `GasSchemaValidatorLib/src/internal/errors/ValidationException.js`
+**File Path:** `GasSchemaValidatorLib/src/internal/errors/ValidationException.ts`
 **Constructor Usage:** `const instance = new ValidationException();`
 **Description:** N/A
 
 ### Raw JSDoc Context:
 ```javascript
-/** Class definition */
+/** No comment available */
 ```
 
-### Methods of ValidationException
+### Methods and properties of ValidationException
 
 #### METHOD: ValidationException.getErrors
 - **Scope:** instance
 - **LLM Call Syntax:** `validationException.getErrors();`
 - **Pure JSDoc:**
 ```javascript
-/** Method getErrors */
+/** No comment available */
 ```
 ---
 #### METHOD: ValidationException.hasErrors
@@ -255,15 +215,15 @@
 - **LLM Call Syntax:** `validationException.hasErrors();`
 - **Pure JSDoc:**
 ```javascript
-/** Method hasErrors */
+/** No comment available */
 ```
 ---
 #### METHOD: ValidationException.getErrorsForField
 - **Scope:** instance
-- **LLM Call Syntax:** `validationException.getErrorsForField(fieldName);`
+- **LLM Call Syntax:** `validationException.getErrorsForField();`
 - **Pure JSDoc:**
 ```javascript
-/** Method getErrorsForField */
+/** No comment available */
 ```
 ---
 #### METHOD: ValidationException.toObject
@@ -271,15 +231,15 @@
 - **LLM Call Syntax:** `validationException.toObject();`
 - **Pure JSDoc:**
 ```javascript
-/** Method toObject */
+/** No comment available */
 ```
 ---
 #### METHOD: ValidationException.withContext
 - **Scope:** instance
-- **LLM Call Syntax:** `validationException.withContext(additionalContext);`
+- **LLM Call Syntax:** `validationException.withContext();`
 - **Pure JSDoc:**
 ```javascript
-/** Method withContext */
+/** No comment available */
 ```
 ---
 <br>

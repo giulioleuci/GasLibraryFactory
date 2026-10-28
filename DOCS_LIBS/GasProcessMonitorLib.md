@@ -1,8 +1,8 @@
 # API Reference: GasProcessMonitorLib
 
 ## CLASS: ProcessMonitorService
-**File Path:** `GasProcessMonitorLib/src/ProcessMonitorService.js`
-**Constructor Usage:** `const instance = new ProcessMonitorService(logger, cacheService, propertiesService);`
+**File Path:** `GasProcessMonitorLib/src/ProcessMonitorService.ts`
+**Constructor Usage:** `const instance = new ProcessMonitorService();`
 **Description:** Orchestrator for tracking long-running process lifecycles, managing job states, progress metrics, and task-level auditing via tiered Cache and Properties storage.
 
 ### Raw JSDoc Context:
@@ -13,8 +13,44 @@
  */
 ```
 
-### Methods of ProcessMonitorService
+### Methods and properties of ProcessMonitorService
 
+#### PROPERTY: ProcessMonitorService.CACHE_PREFIX
+- **Scope:** static
+- **LLM Call Syntax:** `const result = ProcessMonitorService.CACHE_PREFIX;`
+- **Pure JSDoc:**
+```javascript
+/**
+   * Cache key prefix for process state
+   * @static
+   * @type {string}
+   */
+```
+---
+#### PROPERTY: ProcessMonitorService.PROPS_PREFIX
+- **Scope:** static
+- **LLM Call Syntax:** `const result = ProcessMonitorService.PROPS_PREFIX;`
+- **Pure JSDoc:**
+```javascript
+/**
+   * Properties key prefix for process state
+   * @static
+   * @type {string}
+   */
+```
+---
+#### PROPERTY: ProcessMonitorService.CACHE_EXPIRATION
+- **Scope:** static
+- **LLM Call Syntax:** `const result = ProcessMonitorService.CACHE_EXPIRATION;`
+- **Pure JSDoc:**
+```javascript
+/**
+   * Default cache expiration (6 hours in seconds)
+   * @static
+   * @type {number}
+   */
+```
+---
 #### METHOD: ProcessMonitorService._getCache
 - **Scope:** instance
 - **LLM Call Syntax:** `const result = processMonitorService._getCache();`
@@ -125,6 +161,7 @@
 ```javascript
 /**
    * Finalizes a successful process, setting status to COMPLETED and recording the end timestamp.
+   * The final state is kept in cache only; the persisted `PM_<jobId>` property is deleted.
    * @param {string} jobId Unique process identifier.
    * @param {string} [message='Completed successfully'] final outcome summary.
    * @returns {this} Chainable monitor instance.
@@ -239,8 +276,8 @@
 <br>
 
 ## CLASS: DashboardUi
-**File Path:** `GasProcessMonitorLib/src/DashboardUi.js`
-**Constructor Usage:** `const instance = new DashboardUi(uiService, logger);`
+**File Path:** `GasProcessMonitorLib/src/DashboardUi.ts`
+**Constructor Usage:** `const instance = new DashboardUi();`
 **Description:** UI generation service for process monitoring, creating interactive Google Apps Script sidebars with real-time status polling and progress visualization.
 
 ### Raw JSDoc Context:
@@ -251,8 +288,32 @@
  */
 ```
 
-### Methods of DashboardUi
+### Methods and properties of DashboardUi
 
+#### PROPERTY: DashboardUi.DEFAULT_POLLING_INTERVAL
+- **Scope:** static
+- **LLM Call Syntax:** `const result = DashboardUi.DEFAULT_POLLING_INTERVAL;`
+- **Pure JSDoc:**
+```javascript
+/**
+   * Default polling interval in milliseconds
+   * @static
+   * @type {number}
+   */
+```
+---
+#### PROPERTY: DashboardUi.DEFAULT_WIDTH
+- **Scope:** static
+- **LLM Call Syntax:** `const result = DashboardUi.DEFAULT_WIDTH;`
+- **Pure JSDoc:**
+```javascript
+/**
+   * Default sidebar width in pixels
+   * @static
+   * @type {number}
+   */
+```
+---
 #### METHOD: DashboardUi.createSidebar
 - **Scope:** instance
 - **LLM Call Syntax:** `const result = dashboardUi.createSidebar(jobId, title, options, options.pollingInterval, options.width);`
@@ -313,7 +374,7 @@
 <br>
 
 ## CLASS: ProcessMonitorServiceMock
-**File Path:** `GasProcessMonitorLib/src/testing/mocks.js`
+**File Path:** `GasProcessMonitorLib/src/testing/mocks.ts`
 **Constructor Usage:** `const instance = new ProcessMonitorServiceMock();`
 **Description:** High-fidelity mock for ProcessMonitorService, providing jest.fn() instrumentation for job lifecycles, progress tracking, and auditing.
 

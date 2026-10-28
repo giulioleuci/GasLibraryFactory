@@ -1,8 +1,8 @@
 # API Reference: GasResilienceLib
 
 ## CLASS: ExceptionService
-**File Path:** `GasResilienceLib/src/ExceptionService.js`
-**Constructor Usage:** `const instance = new ExceptionService(logger, utils, dependencies, dependencies.classifier, dependencies.recoveryManager, dependencies.reporter, dependencies.circuitBreaker, dependencies.config);`
+**File Path:** `GasResilienceLib/src/ExceptionService.ts`
+**Constructor Usage:** `const instance = new ExceptionService();`
 **Description:** Primary facade for automated error handling, coordinating classification, intelligent retries with backoff, and circuit breaker protection.
 
 ### Raw JSDoc Context:
@@ -13,8 +13,32 @@
  */
 ```
 
-### Methods of ExceptionService
+### Methods and properties of ExceptionService
 
+#### PROPERTY: ExceptionService.ABSOLUTE_MAX_ATTEMPTS
+- **Scope:** static
+- **LLM Call Syntax:** `const result = ExceptionService.ABSOLUTE_MAX_ATTEMPTS;`
+- **Pure JSDoc:**
+```javascript
+/** No comment available */
+```
+---
+#### PROPERTY: ExceptionService.MAX_JITTER_MS
+- **Scope:** static
+- **LLM Call Syntax:** `const result = ExceptionService.MAX_JITTER_MS;`
+- **Pure JSDoc:**
+```javascript
+/** No comment available */
+```
+---
+#### PROPERTY: ExceptionService.MAX_WAIT_TIME_MS
+- **Scope:** static
+- **LLM Call Syntax:** `const result = ExceptionService.MAX_WAIT_TIME_MS;`
+- **Pure JSDoc:**
+```javascript
+/** No comment available */
+```
+---
 #### METHOD: ExceptionService._generateCorrelationId
 - **Scope:** instance
 - **LLM Call Syntax:** `const result = exceptionService._generateCorrelationId();`
@@ -167,11 +191,83 @@
    */
 ```
 ---
+#### PROPERTY: ExceptionService.logger
+- **Scope:** instance
+- **LLM Call Syntax:** `const result = exceptionService.logger;`
+- **Pure JSDoc:**
+```javascript
+/**
+   * Gets the logger instance used by this service.
+   *
+   * @returns {Object} Logger instance with error, warn, debug, and info methods
+   */
+```
+---
+#### PROPERTY: ExceptionService.utils
+- **Scope:** instance
+- **LLM Call Syntax:** `const result = exceptionService.utils;`
+- **Pure JSDoc:**
+```javascript
+/**
+   * Gets the utils instance used by this service.
+   *
+   * @returns {Object} Utils instance with sleep and other utility methods
+   */
+```
+---
+#### PROPERTY: ExceptionService.errorClassifier
+- **Scope:** instance
+- **LLM Call Syntax:** `const result = exceptionService.errorClassifier;`
+- **Pure JSDoc:**
+```javascript
+/**
+   * Gets the error classifier instance.
+   *
+   * @returns {Object} Error classifier instance for manual error classification
+   */
+```
+---
+#### PROPERTY: ExceptionService.errorReporter
+- **Scope:** instance
+- **LLM Call Syntax:** `const result = exceptionService.errorReporter;`
+- **Pure JSDoc:**
+```javascript
+/**
+   * Gets the error reporter instance.
+   *
+   * @returns {Object} Error reporter instance for statistics and reporting
+   */
+```
+---
+#### PROPERTY: ExceptionService.recoveryManager
+- **Scope:** instance
+- **LLM Call Syntax:** `const result = exceptionService.recoveryManager;`
+- **Pure JSDoc:**
+```javascript
+/**
+   * Gets the recovery manager instance.
+   *
+   * @returns {Object} Recovery manager instance for retry strategies
+   */
+```
+---
+#### PROPERTY: ExceptionService.circuitBreaker
+- **Scope:** instance
+- **LLM Call Syntax:** `const result = exceptionService.circuitBreaker;`
+- **Pure JSDoc:**
+```javascript
+/**
+   * Gets the circuit breaker instance if configured.
+   *
+   * @returns {Object|null} Circuit breaker instance, or null if not configured
+   */
+```
+---
 <br>
 
 ## CLASS: ResilienceConfiguration
-**File Path:** `GasResilienceLib/src/Configuration.js`
-**Constructor Usage:** `const instance = new ResilienceConfiguration(overrides, overrides.errorPatterns, overrides.recoveryStrategies, overrides.limits);`
+**File Path:** `GasResilienceLib/src/Configuration.ts`
+**Constructor Usage:** `const instance = new ResilienceConfiguration();`
 **Description:** Immutable configuration container for error handling behavior, managing regex patterns, recovery strategies, and safety limits.
 
 ### Raw JSDoc Context:
@@ -182,7 +278,7 @@
  */
 ```
 
-### Methods of ResilienceConfiguration
+### Methods and properties of ResilienceConfiguration
 
 #### METHOD: ResilienceConfiguration.getErrorPatterns
 - **Scope:** instance
@@ -268,7 +364,7 @@
 <br>
 
 ## CLASS: ExceptionServiceMock
-**File Path:** `GasResilienceLib/src/testing/mocks.js`
+**File Path:** `GasResilienceLib/src/testing/mocks.ts`
 **Constructor Usage:** `const instance = new ExceptionServiceMock();`
 **Description:** High-fidelity mock for ExceptionService, providing jest.fn() instrumentation for resilience operations and configurable retry simulations.
 
@@ -280,7 +376,7 @@
  */
 ```
 
-### Methods of ExceptionServiceMock
+### Methods and properties of ExceptionServiceMock
 
 #### METHOD: ExceptionServiceMock.setupRetrySuccess
 - **Scope:** instance
@@ -298,8 +394,8 @@
 <br>
 
 ## CLASS: TimeoutException
-**File Path:** `GasResilienceLib/src/internal/exceptions/TimeoutException.js`
-**Constructor Usage:** `const instance = new TimeoutException(message);`
+**File Path:** `GasResilienceLib/src/internal/exceptions/TimeoutException.ts`
+**Constructor Usage:** `const instance = new TimeoutException();`
 **Description:** Exception class for execution time violations, categorized as non-recoverable within the current runtime context.
 
 ### Raw JSDoc Context:
@@ -314,8 +410,8 @@
 <br>
 
 ## CLASS: RateLimitExceededException
-**File Path:** `GasResilienceLib/src/internal/exceptions/RateLimitExceededException.js`
-**Constructor Usage:** `const instance = new RateLimitExceededException(operationName, requiredWaitMs, message);`
+**File Path:** `GasResilienceLib/src/internal/exceptions/RateLimitExceededException.ts`
+**Constructor Usage:** `const instance = new RateLimitExceededException();`
 **Description:** Exception class for rate limit violations, signaling that an operation must be suspended and rescheduled due to excessive wait times.
 
 ### Raw JSDoc Context:
@@ -330,8 +426,8 @@
 <br>
 
 ## CLASS: RecoveryManager
-**File Path:** `GasResilienceLib/src/handlers/RecoveryManager.js`
-**Constructor Usage:** `const instance = new RecoveryManager(utils, utils.sleep, config);`
+**File Path:** `GasResilienceLib/src/handlers/RecoveryManager.ts`
+**Constructor Usage:** `const instance = new RecoveryManager();`
 **Description:** Decision engine for error recovery, implementing exponential backoff with jitter and category-specific retry strategies to maintain system stability.
 
 ### Raw JSDoc Context:
@@ -343,8 +439,24 @@
  */
 ```
 
-### Methods of RecoveryManager
+### Methods and properties of RecoveryManager
 
+#### PROPERTY: RecoveryManager.MAX_JITTER_MS
+- **Scope:** static
+- **LLM Call Syntax:** `const result = RecoveryManager.MAX_JITTER_MS;`
+- **Pure JSDoc:**
+```javascript
+/** No comment available */
+```
+---
+#### PROPERTY: RecoveryManager.MAX_WAIT_TIME_MS
+- **Scope:** static
+- **LLM Call Syntax:** `const result = RecoveryManager.MAX_WAIT_TIME_MS;`
+- **Pure JSDoc:**
+```javascript
+/** No comment available */
+```
+---
 #### METHOD: RecoveryManager.applyStrategy
 - **Scope:** instance
 - **LLM Call Syntax:** `const result = recoveryManager.applyStrategy(classification, attempt, mode, customMaxAttempts);`
@@ -363,9 +475,70 @@
 ---
 <br>
 
+## CLASS: ErrorReporter
+**File Path:** `GasResilienceLib/src/handlers/ErrorReporter.ts`
+**Constructor Usage:** `const instance = new ErrorReporter();`
+**Description:** N/A
+
+### Raw JSDoc Context:
+```javascript
+/** No comment available */
+```
+
+### Methods and properties of ErrorReporter
+
+#### METHOD: ErrorReporter._sanitizeMessage
+- **Scope:** static
+- **LLM Call Syntax:** `ErrorReporter._sanitizeMessage();`
+- **Pure JSDoc:**
+```javascript
+/**
+   * Sanitizes error messages to remove potential PII.
+   */
+```
+---
+#### METHOD: ErrorReporter.reset
+- **Scope:** instance
+- **LLM Call Syntax:** `errorReporter.reset();`
+- **Pure JSDoc:**
+```javascript
+/**
+   * Resets accumulated error statistics and session history.
+   */
+```
+---
+#### METHOD: ErrorReporter.record
+- **Scope:** instance
+- **LLM Call Syntax:** `errorReporter.record(details, details.type, details.operation, details.classification, details.attempt);`
+- **Pure JSDoc:**
+```javascript
+/**
+   * Records a FAILURE or RECOVERED event, updating counters and session history.
+   * @param {Object} details Event details.
+   * @param {string} details.type 'FAILURE' or 'RECOVERED'.
+   * @param {string} details.operation Operation label.
+   * @param {Object} [details.classification] Required for FAILURE type.
+   * @param {number} [details.attempt] Required for RECOVERED type (>= 1).
+   * @throws {Error} If details are missing/invalid for the given type.
+   */
+```
+---
+#### METHOD: ErrorReporter.getSummary
+- **Scope:** instance
+- **LLM Call Syntax:** `const result = errorReporter.getSummary();`
+- **Pure JSDoc:**
+```javascript
+/**
+   * Gets the current error summary (counters and recovery rate).
+   * @returns {Object} counters and recoveryRate.
+   */
+```
+---
+<br>
+
 ## CLASS: ErrorClassifier
-**File Path:** `GasResilienceLib/src/handlers/ErrorClassifier.js`
-**Constructor Usage:** `const instance = new ErrorClassifier(config);`
+**File Path:** `GasResilienceLib/src/handlers/ErrorClassifier.ts`
+**Constructor Usage:** `const instance = new ErrorClassifier();`
 **Description:** Diagnostic engine for categorizing errors using regex-based pattern matching against messages and stack traces, driving intelligent recovery decisions.
 
 ### Raw JSDoc Context:
@@ -377,7 +550,7 @@
  */
 ```
 
-### Methods of ErrorClassifier
+### Methods and properties of ErrorClassifier
 
 #### METHOD: ErrorClassifier.classify
 - **Scope:** instance
@@ -405,8 +578,8 @@
 <br>
 
 ## CLASS: CircuitBreaker
-**File Path:** `GasResilienceLib/src/handlers/CircuitBreaker.js`
-**Constructor Usage:** `const instance = new CircuitBreaker(config, logger, cache);`
+**File Path:** `GasResilienceLib/src/handlers/CircuitBreaker.ts`
+**Constructor Usage:** `const instance = new CircuitBreaker();`
 **Description:** Implementation of the Circuit Breaker pattern, preventing cascading failures by monitoring failure rates and gating requests through CLOSED, OPEN, and HALF_OPEN states.
 
 ### Raw JSDoc Context:
@@ -418,7 +591,7 @@
  */
 ```
 
-### Methods of CircuitBreaker
+### Methods and properties of CircuitBreaker
 
 #### METHOD: CircuitBreaker._getCacheKey
 - **Scope:** instance
@@ -554,6 +727,14 @@
    * @private
    * @param {string} message - Message to log
    */
+```
+---
+#### PROPERTY: CircuitBreaker.STATE
+- **Scope:** static
+- **LLM Call Syntax:** `const result = CircuitBreaker.STATE;`
+- **Pure JSDoc:**
+```javascript
+/** No comment available */
 ```
 ---
 <br>

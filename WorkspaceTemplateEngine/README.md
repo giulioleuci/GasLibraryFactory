@@ -2,6 +2,7 @@
 
 **Version:** 1.0.0  
 **Layer:** Domain Logic (Layer 2)  
+**Language:** TypeScript (strict, ES modules; Babel emits GAS V8 JavaScript)
 **Dependencies:** CoreUtilsLib, GoogleApiWrapper
 
 ## 🏗️ File and Folder Structure
@@ -11,15 +12,15 @@ Organized into specialized components for parsing, filtering, and processing:
 ```text
 WorkspaceTemplateEngine/
 ├── src/
-│   ├── PlaceholderService.js   # Main facade: scans and processes Docs/Sheets
-│   ├── Mustache.js             # Core interpreter for Mustache-style syntax
-│   ├── FilterStrategy.js       # Base class for all data transformation filters
+│   ├── PlaceholderService.ts   # Main facade: scans and processes Docs/Sheets
+│   ├── Mustache.ts             # Core interpreter for Mustache-style syntax
+│   ├── FilterStrategy.ts       # Base class for all data transformation filters
 │   ├── filters/                # Concrete filter implementations
-│   │   ├── BuiltInFilters.js   # Logic for date, case, and number formatting
-│   │   └── AdvancedFilters.js  # Logic for sorting and conditional filtering
+│   │   ├── BuiltInFilters.ts   # Logic for date, case, and number formatting
+│   │   └── AdvancedFilters.ts  # Logic for sorting and conditional filtering
 │   ├── processors/             # Platform-specific structural expansion logic
-│   │   ├── DocumentProcessor.js # Logic for Google Docs structural manipulation
-│   │   └── SheetProcessor.js   # Logic for Google Sheets matrix expansion
+│   │   ├── DocumentProcessor.ts # Logic for Google Docs structural manipulation
+│   │   └── SheetProcessor.ts   # Logic for Google Sheets matrix expansion
 │   └── __tests__/              # Unit and structural expansion tests
 ```
 
@@ -73,14 +74,14 @@ with `strictFilters: true`.
 
 ## 📦 Installation
 
-```javascript
+```typescript
 import { PlaceholderService, Mustache, FilterStrategy } from '@WorkspaceTemplateEngine';
 import { LoggerService } from '@GoogleApiWrapper';
 ```
 
 ## 🚀 Quick Start
 
-```javascript
+```typescript
 // 1. Initialize
 const logger = new LoggerService();
 const mustache = new Mustache({ logger });
@@ -129,7 +130,7 @@ The engine supports Unix-style pipes for filtering data.
 **Custom Filters (Strategy Pattern):**
 You can extend the engine by creating custom filter strategies.
 
-```javascript
+```typescript
 class ReverseFilter extends FilterStrategy {
   getName() {
     return 'reverse';

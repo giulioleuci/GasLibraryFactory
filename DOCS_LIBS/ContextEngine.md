@@ -1,31 +1,12 @@
 # API Reference: ContextEngine
 
 ## CLASS: ProviderRegistry
-**File Path:** `ContextEngine/src/ProviderRegistry.js`
+**File Path:** `ContextEngine/src/ProviderRegistry.ts`
 **Constructor Usage:** `const instance = new ProviderRegistry();`
-**Description:** Manages registration and retrieval of data providers.
-
-/
-
-import { TypedRegistry } from './internal/TypedRegistry';
-import { ProviderNotFoundError } from './internal/errors/ProviderNotFoundError';
-
-/**
-Registry for managing data provider lifecycles, supporting Singleton (stateless) and Factory (stateful) instantiation strategies.
-@class
-@extends TypedRegistry
+**Description:** Registry for managing data provider lifecycles, supporting Singleton (stateless) and Factory (stateful) instantiation strategies.
 
 ### Raw JSDoc Context:
 ```javascript
-/**
- * @file ContextEngine/src/ProviderRegistry.js
- * @description Manages registration and retrieval of data providers.
- * @version 1.0.0
- */
-
-import { TypedRegistry } from './internal/TypedRegistry';
-import { ProviderNotFoundError } from './internal/errors/ProviderNotFoundError';
-
 /**
  * Registry for managing data provider lifecycles, supporting Singleton (stateless) and Factory (stateful) instantiation strategies.
  * @class
@@ -36,74 +17,41 @@ import { ProviderNotFoundError } from './internal/errors/ProviderNotFoundError';
 <br>
 
 ## CLASS: PostProcessor
-**File Path:** `ContextEngine/src/PostProcessor.js`
+**File Path:** `ContextEngine/src/PostProcessor.ts`
 **Constructor Usage:** `const instance = new PostProcessor();`
-**Description:** Post-processing utilities for transforming provider data.
-
-/
-
-import { isPlainObject, isArray } from '@CoreUtilsLib';
-
-/**
-Registry and execution engine for sequential provider data transformation pipelines.
-@class
+**Description:** Registry and execution engine for sequential provider data transformation pipelines.
 
 ### Raw JSDoc Context:
 ```javascript
-/**
- * @file ContextEngine/src/PostProcessor.js
- * @description Post-processing utilities for transforming provider data.
- * @version 1.0.0
- */
-
-import { isPlainObject, isArray } from '@CoreUtilsLib';
-
 /**
  * Registry and execution engine for sequential provider data transformation pipelines.
  * @class
  */
 ```
 
-### Methods of PostProcessor
+### Methods and properties of PostProcessor
 
-#### METHOD: PostProcessor.if
+#### PROPERTY: PostProcessor.logger
 - **Scope:** instance
-- **LLM Call Syntax:** `postProcessor.if(!logger || typeof logger !);`
+- **LLM Call Syntax:** `const result = postProcessor.logger;`
 - **Pure JSDoc:**
 ```javascript
-/** Method if */
+/**
+   * Internal logger instance.
+   * @type {Object}
+   * @readonly
+   */
 ```
 ---
-#### METHOD: PostProcessor.if
+#### METHOD: PostProcessor._registerBuiltInProcessors
 - **Scope:** instance
-- **LLM Call Syntax:** `postProcessor.if(typeof logger.debug !);`
+- **LLM Call Syntax:** `postProcessor._registerBuiltInProcessors();`
 - **Pure JSDoc:**
 ```javascript
-/** Method if */
-```
----
-#### METHOD: PostProcessor.for
-- **Scope:** instance
-- **LLM Call Syntax:** `postProcessor.for(const key in item);`
-- **Pure JSDoc:**
-```javascript
-/** Method for */
-```
----
-#### METHOD: PostProcessor.for
-- **Scope:** instance
-- **LLM Call Syntax:** `postProcessor.for(const key in obj);`
-- **Pure JSDoc:**
-```javascript
-/** Method for */
-```
----
-#### METHOD: PostProcessor.for
-- **Scope:** instance
-- **LLM Call Syntax:** `postProcessor.for(const key in config.defaults);`
-- **Pure JSDoc:**
-```javascript
-/** Method for */
+/**
+   * Instantiates and registers the default transformation library.
+   * @private
+   */
 ```
 ---
 #### METHOD: PostProcessor.register
@@ -120,22 +68,6 @@ import { isPlainObject, isArray } from '@CoreUtilsLib';
    */
 ```
 ---
-#### METHOD: PostProcessor.if
-- **Scope:** instance
-- **LLM Call Syntax:** `postProcessor.if(!type || typeof type !);`
-- **Pure JSDoc:**
-```javascript
-/** Method if */
-```
----
-#### METHOD: PostProcessor.if
-- **Scope:** instance
-- **LLM Call Syntax:** `postProcessor.if(typeof processorFunc !);`
-- **Pure JSDoc:**
-```javascript
-/** Method if */
-```
----
 #### METHOD: PostProcessor.has
 - **Scope:** instance
 - **LLM Call Syntax:** `const result = postProcessor.has(type);`
@@ -146,14 +78,6 @@ import { isPlainObject, isArray } from '@CoreUtilsLib';
    * @param {string} type Transformation identifier.
    * @returns {boolean} True if registered.
    */
-```
----
-#### METHOD: PostProcessor.if
-- **Scope:** instance
-- **LLM Call Syntax:** `postProcessor.if(!type || typeof type !);`
-- **Pure JSDoc:**
-```javascript
-/** Method if */
 ```
 ---
 #### METHOD: PostProcessor.process
@@ -176,46 +100,6 @@ import { isPlainObject, isArray } from '@CoreUtilsLib';
    */
 ```
 ---
-#### METHOD: PostProcessor.if
-- **Scope:** instance
-- **LLM Call Syntax:** `postProcessor.if(processorConfigs.length);`
-- **Pure JSDoc:**
-```javascript
-/** Method if */
-```
----
-#### METHOD: PostProcessor.for
-- **Scope:** instance
-- **LLM Call Syntax:** `postProcessor.for(let i);`
-- **Pure JSDoc:**
-```javascript
-/** Method for */
-```
----
-#### METHOD: PostProcessor.if
-- **Scope:** instance
-- **LLM Call Syntax:** `postProcessor.if(!config || typeof config !);`
-- **Pure JSDoc:**
-```javascript
-/** Method if */
-```
----
-#### METHOD: PostProcessor.if
-- **Scope:** instance
-- **LLM Call Syntax:** `postProcessor.if(!config.type || typeof config.type !);`
-- **Pure JSDoc:**
-```javascript
-/** Method if */
-```
----
-#### METHOD: PostProcessor.catch
-- **Scope:** instance
-- **LLM Call Syntax:** `postProcessor.catch(error);`
-- **Pure JSDoc:**
-```javascript
-/** Method catch */
-```
----
 #### METHOD: PostProcessor.getRegisteredTypes
 - **Scope:** instance
 - **LLM Call Syntax:** `const result = postProcessor.getRegisteredTypes();`
@@ -230,29 +114,12 @@ import { isPlainObject, isArray } from '@CoreUtilsLib';
 <br>
 
 ## CLASS: DataProvider
-**File Path:** `ContextEngine/src/DataProvider.js`
+**File Path:** `ContextEngine/src/DataProvider.ts`
 **Constructor Usage:** `const instance = new DataProvider();`
-**Description:** Abstract base class for data providers.
-
-/
-
-import { ProviderExecutionError } from './internal/errors/ProviderExecutionError';
-
-/**
-Abstract base class for data providers, providing standardized interfaces for fetching, caching, and performance tracking.
-@class
-@abstract
+**Description:** Abstract base class for data providers, providing standardized interfaces for fetching, caching, and performance tracking.
 
 ### Raw JSDoc Context:
 ```javascript
-/**
- * @file ContextEngine/src/DataProvider.js
- * @description Abstract base class for data providers.
- * @version 1.0.0
- */
-
-import { ProviderExecutionError } from './internal/errors/ProviderExecutionError';
-
 /**
  * Abstract base class for data providers, providing standardized interfaces for fetching, caching, and performance tracking.
  * @class
@@ -260,62 +127,72 @@ import { ProviderExecutionError } from './internal/errors/ProviderExecutionError
  */
 ```
 
-### Methods of DataProvider
+### Methods and properties of DataProvider
 
-#### METHOD: DataProvider.if
+#### PROPERTY: DataProvider.logger
 - **Scope:** instance
-- **LLM Call Syntax:** `dataProvider.if(!logger || typeof logger !);`
+- **LLM Call Syntax:** `const result = dataProvider.logger;`
 - **Pure JSDoc:**
 ```javascript
-/** Method if */
+/**
+   * Internal logger instance.
+   * @type {Object}
+   * @readonly
+   */
 ```
 ---
-#### METHOD: DataProvider.if
+#### METHOD: DataProvider._fetchData
 - **Scope:** instance
-- **LLM Call Syntax:** `dataProvider.if(typeof logger.debug !);`
+- **LLM Call Syntax:** `const result = dataProvider._fetchData(parameters);`
 - **Pure JSDoc:**
 ```javascript
-/** Method if */
+/**
+   * Core data fetching logic. Must be implemented by subclasses.
+   * @param {Object} parameters Validated parameters for the fetch operation.
+   * @returns {*} Fetched data payload.
+   * @throws {Error} If not implemented by subclass or fetch fails.
+   * @protected
+   * @abstract
+   */
 ```
 ---
-#### METHOD: DataProvider.if
+#### METHOD: DataProvider._generateCacheKey
 - **Scope:** instance
-- **LLM Call Syntax:** `dataProvider.if(options !);`
+- **LLM Call Syntax:** `const result = dataProvider._generateCacheKey(parameters);`
 - **Pure JSDoc:**
 ```javascript
-/** Method if */
+/**
+   * Generates a unique, stable cache key from input parameters.
+   * @param {Object} parameters Input parameters.
+   * @returns {string} Pipe-delimited key string.
+   * @private
+   */
 ```
 ---
-#### METHOD: DataProvider.if
+#### METHOD: DataProvider._getFromCache
 - **Scope:** instance
-- **LLM Call Syntax:** `dataProvider.if(!this._cacheable);`
+- **LLM Call Syntax:** `const result = dataProvider._getFromCache(cacheKey);`
 - **Pure JSDoc:**
 ```javascript
-/** Method if */
+/**
+   * Retrieves non-expired data from the internal cache.
+   * @param {string} cacheKey Target cache key.
+   * @returns {*|null} Cached data or null if missing/expired.
+   * @private
+   */
 ```
 ---
-#### METHOD: DataProvider.if
+#### METHOD: DataProvider._storeInCache
 - **Scope:** instance
-- **LLM Call Syntax:** `dataProvider.if(!cached);`
+- **LLM Call Syntax:** `dataProvider._storeInCache(cacheKey, data);`
 - **Pure JSDoc:**
 ```javascript
-/** Method if */
-```
----
-#### METHOD: DataProvider.if
-- **Scope:** instance
-- **LLM Call Syntax:** `dataProvider.if(now - cached.timestamp > this._cacheDurationMs);`
-- **Pure JSDoc:**
-```javascript
-/** Method if */
-```
----
-#### METHOD: DataProvider.if
-- **Scope:** instance
-- **LLM Call Syntax:** `dataProvider.if(!this._cacheable);`
-- **Pure JSDoc:**
-```javascript
-/** Method if */
+/**
+   * Stores data in the internal cache with current timestamp.
+   * @param {string} cacheKey Target cache key.
+   * @param {*} data Data payload to cache.
+   * @private
+   */
 ```
 ---
 #### METHOD: DataProvider.clearCache
@@ -344,115 +221,29 @@ import { ProviderExecutionError } from './internal/errors/ProviderExecutionError
    */
 ```
 ---
-#### METHOD: DataProvider.if
+#### METHOD: DataProvider._validateParameters
 - **Scope:** instance
-- **LLM Call Syntax:** `dataProvider.if(!providerName || typeof providerName !);`
+- **LLM Call Syntax:** `dataProvider._validateParameters(parameters);`
 - **Pure JSDoc:**
 ```javascript
-/** Method if */
+/**
+   * Hooks for subclass-specific parameter validation. Executed before _fetchData().
+   * @param {Object} parameters Parameters to validate.
+   * @throws {Error} If validation constraints are violated.
+   * @protected
+   */
 ```
 ---
-#### METHOD: DataProvider.if
-- **Scope:** instance
-- **LLM Call Syntax:** `dataProvider.if(!parameters || typeof parameters !);`
-- **Pure JSDoc:**
-```javascript
-/** Method if */
-```
----
-#### METHOD: DataProvider.if
-- **Scope:** instance
-- **LLM Call Syntax:** `dataProvider.if(cachedData !);`
-- **Pure JSDoc:**
-```javascript
-/** Method if */
-```
----
-#### METHOD: DataProvider.catch
-- **Scope:** instance
-- **LLM Call Syntax:** `dataProvider.catch(error);`
-- **Pure JSDoc:**
-```javascript
-/** Method catch */
-```
----
-<br>
-
-## CLASS: or
-**File Path:** `ContextEngine/src/DataProvider.js`
-**Constructor Usage:** `const instance = new or();`
-**Description:** N/A
-
-### Raw JSDoc Context:
-```javascript
-/** Class definition */
-```
-
 <br>
 
 ## CLASS: ContextAssembler
-**File Path:** `ContextEngine/src/ContextAssembler.js`
+**File Path:** `ContextEngine/src/ContextAssembler.ts`
 **Constructor Usage:** `const instance = new ContextAssembler();`
-**Description:** Main facade for assembling data contexts from recipes.
-
-/
-
-import { DependencyResolver } from './internal/DependencyResolver';
-import { RecipeParser } from './internal/RecipeParser';
-import { PostProcessor } from './PostProcessor';
-import { ContextEngineError } from './internal/errors/ContextEngineError';
-import { ContextStepExecutor } from './internal/ContextStepExecutor';
-import { ContextDependencyAnalyzer } from './internal/ContextDependencyAnalyzer';
-
-/**
-Orchestrator facade for assembling complex data contexts from declarative JSON recipes.
+**Description:** Orchestrator facade for assembling complex data contexts from declarative JSON recipes.
 Coordinates validation, dependency resolution, conditional execution, provider invocation, and post-processing.
-@class
-@example
-const recipe = {
-  providers: [
-    {
-      name: 'user',
-      type: 'UserDataProvider',
-      condition: '{{userId}} != null',
-      parameters: { userId: '@userId' }
-    },
-    {
-      name: 'analytics',
-      type: 'AnalyticsProvider',
-      condition: 'len($user.orders) > 0',
-      parameters: { orders: '$user.orders' },
-      postProcess: [{ type: 'round', decimals: 2 }]
-    }
-  ]
-};
-const context = assembler.assemble(recipe, { userId: 123 });
-@example
-// Mutation mode: every provider mutates the SAME shared target object in
-// place instead of producing a value merged into a flat, provider-keyed
-// map. Useful for consumers whose "context" is one deeply nested object
-// multiple providers read from and write into at the same paths (e.g. a
-// recipe where a later provider must overwrite a field an earlier
-// provider already set). Provider return values are ignored in this mode.
-const sharedTarget = { meta: {}, focus: {} };
-assembler.assembleInto(sharedTarget, recipe, { userId: 123 });
-// sharedTarget now holds everything every provider wrote, in recipe order.
 
 ### Raw JSDoc Context:
 ```javascript
-/**
- * @file ContextEngine/src/ContextAssembler.js
- * @description Main facade for assembling data contexts from recipes.
- * @version 1.0.0
- */
-
-import { DependencyResolver } from './internal/DependencyResolver';
-import { RecipeParser } from './internal/RecipeParser';
-import { PostProcessor } from './PostProcessor';
-import { ContextEngineError } from './internal/errors/ContextEngineError';
-import { ContextStepExecutor } from './internal/ContextStepExecutor';
-import { ContextDependencyAnalyzer } from './internal/ContextDependencyAnalyzer';
-
 /**
  * Orchestrator facade for assembling complex data contexts from declarative JSON recipes.
  * Coordinates validation, dependency resolution, conditional execution, provider invocation, and post-processing.
@@ -489,135 +280,42 @@ import { ContextDependencyAnalyzer } from './internal/ContextDependencyAnalyzer'
  */
 ```
 
-### Methods of ContextAssembler
+### Methods and properties of ContextAssembler
 
-#### METHOD: ContextAssembler.if
+#### PROPERTY: ContextAssembler.logger
 - **Scope:** instance
-- **LLM Call Syntax:** `contextAssembler.if(logger);`
+- **LLM Call Syntax:** `const result = contextAssembler.logger;`
 - **Pure JSDoc:**
 ```javascript
-/** Method if */
+/**
+   * Internal logger instance.
+   * @type {Object}
+   * @readonly
+   */
 ```
 ---
-#### METHOD: ContextAssembler.if
+#### PROPERTY: ContextAssembler.providerRegistry
 - **Scope:** instance
-- **LLM Call Syntax:** `contextAssembler.if(typeof logger !);`
+- **LLM Call Syntax:** `const result = contextAssembler.providerRegistry;`
 - **Pure JSDoc:**
 ```javascript
-/** Method if */
-```
----
-#### METHOD: ContextAssembler.for
-- **Scope:** instance
-- **LLM Call Syntax:** `contextAssembler.for(const method of requiredLoggerMethods);`
-- **Pure JSDoc:**
-```javascript
-/** Method for */
-```
----
-#### METHOD: ContextAssembler.if
-- **Scope:** instance
-- **LLM Call Syntax:** `contextAssembler.if(typeof logger[method] !);`
-- **Pure JSDoc:**
-```javascript
-/** Method if */
-```
----
-#### METHOD: ContextAssembler.if
-- **Scope:** instance
-- **LLM Call Syntax:** `contextAssembler.if(providerRegistry);`
-- **Pure JSDoc:**
-```javascript
-/** Method if */
-```
----
-#### METHOD: ContextAssembler.if
-- **Scope:** instance
-- **LLM Call Syntax:** `contextAssembler.if(typeof providerRegistry !);`
-- **Pure JSDoc:**
-```javascript
-/** Method if */
-```
----
-#### METHOD: ContextAssembler.if
-- **Scope:** instance
-- **LLM Call Syntax:** `contextAssembler.if(typeof providerRegistry.get !);`
-- **Pure JSDoc:**
-```javascript
-/** Method if */
-```
----
-#### METHOD: ContextAssembler.if
-- **Scope:** instance
-- **LLM Call Syntax:** `contextAssembler.if(expressionEngine !);`
-- **Pure JSDoc:**
-```javascript
-/** Method if */
-```
----
-#### METHOD: ContextAssembler.if
-- **Scope:** instance
-- **LLM Call Syntax:** `contextAssembler.if(exceptionService !);`
-- **Pure JSDoc:**
-```javascript
-/** Method if */
-```
----
-#### METHOD: ContextAssembler.if
-- **Scope:** instance
-- **LLM Call Syntax:** `contextAssembler.if(interceptorRegistry !);`
-- **Pure JSDoc:**
-```javascript
-/** Method if */
-```
----
-#### METHOD: ContextAssembler.if
-- **Scope:** instance
-- **LLM Call Syntax:** `contextAssembler.if(options !);`
-- **Pure JSDoc:**
-```javascript
-/** Method if */
-```
----
-#### METHOD: ContextAssembler.logger
-- **Scope:** instance
-- **LLM Call Syntax:** `contextAssembler.logger();`
-- **Pure JSDoc:**
-```javascript
-/** Method logger */
-```
----
-#### METHOD: ContextAssembler.providerRegistry
-- **Scope:** instance
-- **LLM Call Syntax:** `contextAssembler.providerRegistry();`
-- **Pure JSDoc:**
-```javascript
-/** Method providerRegistry */
+/**
+   * Provider registry for type lookup.
+   * @type {Object}
+   * @readonly
+   */
 ```
 ---
 <br>
 
 ## CLASS: DataProviderMock
-**File Path:** `ContextEngine/src/testing/mocks.js`
+**File Path:** `ContextEngine/src/testing/mocks.ts`
 **Constructor Usage:** `const instance = new DataProviderMock();`
-**Description:** Centralized high-fidelity mocks for ContextEngine services.
-
-/
-
-/**
-High-fidelity mock for DataProvider implementation in unit tests.
+**Description:** High-fidelity mock for DataProvider implementation in unit tests.
 Simulates provider lifecycle, data retrieval, and parameter validation.
-
-@class DataProviderMock
 
 ### Raw JSDoc Context:
 ```javascript
-/**
- * @file ContextEngine/src/testing/mocks.js
- * @description Centralized high-fidelity mocks for ContextEngine services.
- * @version 1.0.0
- */
-
 /**
  * High-fidelity mock for DataProvider implementation in unit tests.
  * Simulates provider lifecycle, data retrieval, and parameter validation.
@@ -626,7 +324,7 @@ Simulates provider lifecycle, data retrieval, and parameter validation.
  */
 ```
 
-### Methods of DataProviderMock
+### Methods and properties of DataProviderMock
 
 #### METHOD: DataProviderMock.setupData
 - **Scope:** instance
@@ -644,25 +342,13 @@ Simulates provider lifecycle, data retrieval, and parameter validation.
 <br>
 
 ## CLASS: InterceptorMock
-**File Path:** `ContextEngine/src/testing/mocks.js`
+**File Path:** `ContextEngine/src/testing/mocks.ts`
 **Constructor Usage:** `const instance = new InterceptorMock();`
-**Description:** Fluent helper to configure static mock data return values.
+**Description:** High-fidelity mock for ContextInterceptor implementation.
+Simulates context transformation and conditional filtering logic.
 
 ### Raw JSDoc Context:
 ```javascript
-/**
-   * Fluent helper to configure static mock data return values.
-   *
-   * @param {*} data - Payload to return from provide and _fetchData.
-   * @returns {DataProviderMock} Current instance for chaining.
-   */
-  setupData(data) {
-    this.provide.mockReturnValue(data);
-    this._fetchData.mockReturnValue(data);
-    return this;
-  }
-}
-
 /**
  * High-fidelity mock for ContextInterceptor implementation.
  * Simulates context transformation and conditional filtering logic.
@@ -671,7 +357,7 @@ Simulates provider lifecycle, data retrieval, and parameter validation.
  */
 ```
 
-### Methods of InterceptorMock
+### Methods and properties of InterceptorMock
 
 #### METHOD: InterceptorMock.setupIntercept
 - **Scope:** instance
@@ -689,24 +375,12 @@ Simulates provider lifecycle, data retrieval, and parameter validation.
 <br>
 
 ## CLASS: ProviderRegistryMock
-**File Path:** `ContextEngine/src/testing/mocks.js`
+**File Path:** `ContextEngine/src/testing/mocks.ts`
 **Constructor Usage:** `const instance = new ProviderRegistryMock();`
-**Description:** Fluent helper to inject custom interception implementation.
+**Description:** In-memory registry mock for provider lifecycle and dependency resolution testing.
 
 ### Raw JSDoc Context:
 ```javascript
-/**
-   * Fluent helper to inject custom interception implementation.
-   *
-   * @param {Function} interceptFn - Logic mapping PipelineContext to transformed PipelineContext.
-   * @returns {InterceptorMock} Current instance for chaining.
-   */
-  setupIntercept(interceptFn) {
-    this.intercept.mockImplementation(interceptFn);
-    return this;
-  }
-}
-
 /**
  * In-memory registry mock for provider lifecycle and dependency resolution testing.
  *
@@ -717,7 +391,7 @@ Simulates provider lifecycle, data retrieval, and parameter validation.
 <br>
 
 ## CLASS: ProjectionRegistry
-**File Path:** `ContextEngine/src/projection/ProjectionRegistry.js`
+**File Path:** `ContextEngine/src/projection/ProjectionRegistry.ts`
 **Constructor Usage:** `const instance = new ProjectionRegistry();`
 **Description:** Registry for application-supplied, synchronous collection projection strategies.
 
@@ -728,44 +402,36 @@ Simulates provider lifecycle, data retrieval, and parameter validation.
  */
 ```
 
-### Methods of ProjectionRegistry
+### Methods and properties of ProjectionRegistry
 
 #### METHOD: ProjectionRegistry.register
 - **Scope:** instance
-- **LLM Call Syntax:** `projectionRegistry.register(name, strategy);`
+- **LLM Call Syntax:** `projectionRegistry.register();`
 - **Pure JSDoc:**
 ```javascript
-/** Method register */
+/** No comment available */
 ```
 ---
-#### METHOD: ProjectionRegistry.if
+#### METHOD: ProjectionRegistry.get
 - **Scope:** instance
-- **LLM Call Syntax:** `projectionRegistry.if(!name || typeof name !);`
+- **LLM Call Syntax:** `projectionRegistry.get();`
 - **Pure JSDoc:**
 ```javascript
-/** Method if */
-```
----
-#### METHOD: ProjectionRegistry.if
-- **Scope:** instance
-- **LLM Call Syntax:** `projectionRegistry.if(typeof strategy !);`
-- **Pure JSDoc:**
-```javascript
-/** Method if */
+/** No comment available */
 ```
 ---
 #### METHOD: ProjectionRegistry.has
 - **Scope:** instance
-- **LLM Call Syntax:** `projectionRegistry.has(name);`
+- **LLM Call Syntax:** `projectionRegistry.has();`
 - **Pure JSDoc:**
 ```javascript
-/** Method has */
+/** No comment available */
 ```
 ---
 <br>
 
 ## CLASS: CollectionProjector
-**File Path:** `ContextEngine/src/projection/CollectionProjector.js`
+**File Path:** `ContextEngine/src/projection/CollectionProjector.ts`
 **Constructor Usage:** `const instance = new CollectionProjector();`
 **Description:** Runs declarative, synchronous projections without mutating the source collection.
 
@@ -776,181 +442,171 @@ Simulates provider lifecycle, data retrieval, and parameter validation.
  */
 ```
 
-### Methods of CollectionProjector
+### Methods and properties of CollectionProjector
 
-#### METHOD: CollectionProjector.if
-- **Scope:** instance
-- **LLM Call Syntax:** `collectionProjector.if(!registry || typeof registry.get !);`
-- **Pure JSDoc:**
-```javascript
-/** Method if */
-```
----
-#### METHOD: CollectionProjector.if
-- **Scope:** instance
-- **LLM Call Syntax:** `collectionProjector.if(expressionEngine !);`
-- **Pure JSDoc:**
-```javascript
-/** Method if */
-```
----
 #### METHOD: CollectionProjector.project
 - **Scope:** instance
-- **LLM Call Syntax:** `collectionProjector.project(inputArray, operations, runtimeContext);`
+- **LLM Call Syntax:** `collectionProjector.project();`
 - **Pure JSDoc:**
 ```javascript
-/** Method project */
+/** No comment available */
 ```
 ---
-#### METHOD: CollectionProjector.catch
+#### METHOD: CollectionProjector._apply
 - **Scope:** instance
-- **LLM Call Syntax:** `collectionProjector.catch(error);`
+- **LLM Call Syntax:** `collectionProjector._apply();`
 - **Pure JSDoc:**
 ```javascript
-/** Method catch */
+/** No comment available */
 ```
 ---
-#### METHOD: CollectionProjector.if
+#### METHOD: CollectionProjector._filter
 - **Scope:** instance
-- **LLM Call Syntax:** `collectionProjector.if(error instanceof CollectionProjectionError);`
+- **LLM Call Syntax:** `collectionProjector._filter();`
 - **Pure JSDoc:**
 ```javascript
-/** Method if */
+/** No comment available */
 ```
 ---
-#### METHOD: CollectionProjector.switch
+#### METHOD: CollectionProjector._map
 - **Scope:** instance
-- **LLM Call Syntax:** `collectionProjector.switch(operation.type);`
+- **LLM Call Syntax:** `collectionProjector._map();`
 - **Pure JSDoc:**
 ```javascript
-/** Method switch */
+/** No comment available */
 ```
 ---
-#### METHOD: CollectionProjector.if
+#### METHOD: CollectionProjector._flatMap
 - **Scope:** instance
-- **LLM Call Syntax:** `collectionProjector.if(!operation.expression || typeof operation.expression !);`
+- **LLM Call Syntax:** `collectionProjector._flatMap();`
 - **Pure JSDoc:**
 ```javascript
-/** Method if */
+/** No comment available */
 ```
 ---
-#### METHOD: CollectionProjector.if
+#### METHOD: CollectionProjector._groupBy
 - **Scope:** instance
-- **LLM Call Syntax:** `collectionProjector.if(typeof config.from);`
+- **LLM Call Syntax:** `collectionProjector._groupBy();`
 - **Pure JSDoc:**
 ```javascript
-/** Method if */
+/** No comment available */
 ```
 ---
-#### METHOD: CollectionProjector.if
+#### METHOD: CollectionProjector._aggregate
 - **Scope:** instance
-- **LLM Call Syntax:** `collectionProjector.if(!operation.path && !operation.strategy);`
+- **LLM Call Syntax:** `collectionProjector._aggregate();`
 - **Pure JSDoc:**
 ```javascript
-/** Method if */
+/** No comment available */
 ```
 ---
-#### METHOD: CollectionProjector.if
+#### METHOD: CollectionProjector._distinctBy
 - **Scope:** instance
-- **LLM Call Syntax:** `collectionProjector.if(operation.mergeParent);`
+- **LLM Call Syntax:** `collectionProjector._distinctBy();`
 - **Pure JSDoc:**
 ```javascript
-/** Method if */
+/** No comment available */
 ```
 ---
-#### METHOD: CollectionProjector.switch
+#### METHOD: CollectionProjector._sortBy
 - **Scope:** instance
-- **LLM Call Syntax:** `collectionProjector.switch(config.type);`
+- **LLM Call Syntax:** `collectionProjector._sortBy();`
 - **Pure JSDoc:**
 ```javascript
-/** Method switch */
+/** No comment available */
 ```
 ---
-#### METHOD: CollectionProjector.for
+#### METHOD: CollectionProjector._insert
 - **Scope:** instance
-- **LLM Call Syntax:** `collectionProjector.for(const key of keys);`
+- **LLM Call Syntax:** `collectionProjector._insert();`
 - **Pure JSDoc:**
 ```javascript
-/** Method for */
+/** No comment available */
 ```
 ---
-#### METHOD: CollectionProjector.if
+#### METHOD: CollectionProjector._strategy
 - **Scope:** instance
-- **LLM Call Syntax:** `collectionProjector.if(leftValue);`
+- **LLM Call Syntax:** `collectionProjector._strategy();`
 - **Pure JSDoc:**
 ```javascript
-/** Method if */
+/** No comment available */
 ```
 ---
-#### METHOD: CollectionProjector.if
+#### METHOD: CollectionProjector._runStrategy
 - **Scope:** instance
-- **LLM Call Syntax:** `collectionProjector.if(!name || typeof name !);`
+- **LLM Call Syntax:** `collectionProjector._runStrategy();`
 - **Pure JSDoc:**
 ```javascript
-/** Method if */
+/** No comment available */
 ```
 ---
-#### METHOD: CollectionProjector.if
+#### METHOD: CollectionProjector._evaluate
 - **Scope:** instance
-- **LLM Call Syntax:** `collectionProjector.if(!strategy);`
+- **LLM Call Syntax:** `collectionProjector._evaluate();`
 - **Pure JSDoc:**
 ```javascript
-/** Method if */
+/** No comment available */
 ```
 ---
-#### METHOD: CollectionProjector.if
+#### METHOD: CollectionProjector._itemRuntime
 - **Scope:** instance
-- **LLM Call Syntax:** `collectionProjector.if(!this._expressionEngine);`
+- **LLM Call Syntax:** `collectionProjector._itemRuntime();`
 - **Pure JSDoc:**
 ```javascript
-/** Method if */
+/** No comment available */
 ```
 ---
-#### METHOD: CollectionProjector.catch
+#### METHOD: CollectionProjector._keys
 - **Scope:** instance
-- **LLM Call Syntax:** `collectionProjector.catch(error);`
+- **LLM Call Syntax:** `collectionProjector._keys();`
 - **Pure JSDoc:**
 ```javascript
-/** Method catch */
+/** No comment available */
 ```
 ---
-#### METHOD: CollectionProjector.if
+#### METHOD: CollectionProjector._read
 - **Scope:** instance
-- **LLM Call Syntax:** `collectionProjector.if(path);`
+- **LLM Call Syntax:** `collectionProjector._read();`
 - **Pure JSDoc:**
 ```javascript
-/** Method if */
+/** No comment available */
 ```
 ---
-<br>
-
-## CLASS: holds
-**File Path:** `ContextEngine/src/internal/TypedRegistry.js`
-**Constructor Usage:** `const instance = new holds();`
-**Description:** N/A
-
-### Raw JSDoc Context:
+#### METHOD: CollectionProjector._error
+- **Scope:** instance
+- **LLM Call Syntax:** `collectionProjector._error();`
+- **Pure JSDoc:**
 ```javascript
-/** Class definition */
+/** No comment available */
 ```
-
+---
 <br>
 
 ## CLASS: TypedRegistry
-**File Path:** `ContextEngine/src/internal/TypedRegistry.js`
-**Constructor Usage:** `const instance = new TypedRegistry();`
+**File Path:** `ContextEngine/src/internal/TypedRegistry.ts`
+**Constructor Usage:** `const instance = new TypedRegistry(logger, config, config.label, config.requiredMethod, config.noun, config.article, config.notFoundError);`
 **Description:** N/A
 
 ### Raw JSDoc Context:
 ```javascript
-/** Class definition */
+/**
+   * @param {Object} logger Logger service with debug, info, warn, error methods.
+   * @param {Object} config
+   * @param {string} config.label Class-style label used to prefix error/log messages (e.g. 'ProviderRegistry').
+   * @param {string} config.requiredMethod Instance method every registered entry must implement (e.g. 'provide').
+   * @param {string} config.noun Singular entity noun used in log messages (e.g. 'provider').
+   * @param {string} [config.article='a'] Indefinite article for `noun` in error messages ('a'/'an').
+   * @param {(type: string, registeredTypes: string[]) => Error} config.notFoundError Builds the error thrown
+   *   by {@link TypedRegistry#get} when `type` isn't registered.
+   * @throws {Error} If logger is missing or lacks required interface methods.
+   */
 ```
 
-### Methods of TypedRegistry
+### Methods and properties of TypedRegistry
 
-#### METHOD: TypedRegistry.registerSingleton
+#### PROPERTY: TypedRegistry.logger
 - **Scope:** instance
-- **LLM Call Syntax:** `const result = typedRegistry.registerSingleton(type, instance);`
+- **LLM Call Syntax:** `const result = typedRegistry.logger;`
 - **Pure JSDoc:**
 ```javascript
 /**
@@ -958,11 +614,14 @@ Simulates provider lifecycle, data retrieval, and parameter validation.
    * @type {Object}
    * @readonly
    */
-  get logger() {
-    return this._logger;
-  }
-
-  /**
+```
+---
+#### METHOD: TypedRegistry.registerSingleton
+- **Scope:** instance
+- **LLM Call Syntax:** `const result = typedRegistry.registerSingleton(type, instance);`
+- **Pure JSDoc:**
+```javascript
+/**
    * Registers a pre-instantiated stateless entry.
    * @param {string} type Unique type identifier.
    * @param {Object} instance Entry instance implementing the required method.
@@ -985,6 +644,19 @@ Simulates provider lifecycle, data retrieval, and parameter validation.
    */
 ```
 ---
+#### METHOD: TypedRegistry.get
+- **Scope:** instance
+- **LLM Call Syntax:** `const result = typedRegistry.get(type);`
+- **Pure JSDoc:**
+```javascript
+/**
+   * Resolves an entry instance by type identifier, prioritizing singletons over factories.
+   * @param {string} type Type identifier.
+   * @returns {Object} Entry instance implementing the required method.
+   * @throws {Error} If type is not a string, or a factory returns an invalid object.
+   */
+```
+---
 #### METHOD: TypedRegistry.getAll
 - **Scope:** instance
 - **LLM Call Syntax:** `const result = typedRegistry.getAll();`
@@ -994,14 +666,6 @@ Simulates provider lifecycle, data retrieval, and parameter validation.
    * Aggregates all registered singleton and factory-instantiated entries.
    * @returns {Object[]} Collection of active entry instances.
    */
-```
----
-#### METHOD: TypedRegistry.if
-- **Scope:** instance
-- **LLM Call Syntax:** `typedRegistry.if(instance && typeof instance[this._requiredMethod]);`
-- **Pure JSDoc:**
-```javascript
-/** Method if */
 ```
 ---
 #### METHOD: TypedRegistry.getRegisteredTypes
@@ -1018,40 +682,12 @@ Simulates provider lifecycle, data retrieval, and parameter validation.
 <br>
 
 ## CLASS: RecipeParser
-**File Path:** `ContextEngine/src/internal/RecipeParser.js`
+**File Path:** `ContextEngine/src/internal/RecipeParser.ts`
 **Constructor Usage:** `const instance = new RecipeParser();`
-**Description:** Validates and parses recipe configurations.
-
-/
-
-import { RecipeValidationError } from './errors/RecipeValidationError';
-
-/**
-Engine for structural validation, type checking, and normalization of JSON recipes.
-@class
-@example
-const recipe = {
-  providers: [
-    {
-      name: 'user',
-      type: 'UserDataProvider',
-      parameters: { id: '@userId' },
-      condition: 'is_admin == true',
-      postProcess: [{ type: 'filter', fields: ['id'] }]
-    }
-  ]
-};
+**Description:** Engine for structural validation, type checking, and normalization of JSON recipes.
 
 ### Raw JSDoc Context:
 ```javascript
-/**
- * @file ContextEngine/src/RecipeParser.js
- * @description Validates and parses recipe configurations.
- * @version 1.0.0
- */
-
-import { RecipeValidationError } from './errors/RecipeValidationError';
-
 /**
  * Engine for structural validation, type checking, and normalization of JSON recipes.
  * @class
@@ -1070,102 +706,32 @@ import { RecipeValidationError } from './errors/RecipeValidationError';
  */
 ```
 
-### Methods of RecipeParser
+### Methods and properties of RecipeParser
 
-#### METHOD: RecipeParser.if
+#### PROPERTY: RecipeParser.logger
 - **Scope:** instance
-- **LLM Call Syntax:** `recipeParser.if(!logger || typeof logger !);`
+- **LLM Call Syntax:** `const result = recipeParser.logger;`
 - **Pure JSDoc:**
 ```javascript
-/** Method if */
+/**
+   * Internal logger instance.
+   * @type {Object}
+   * @readonly
+   */
 ```
 ---
-#### METHOD: RecipeParser.if
+#### METHOD: RecipeParser._validateProvider
 - **Scope:** instance
-- **LLM Call Syntax:** `recipeParser.if(typeof logger.debug !);`
+- **LLM Call Syntax:** `const result = recipeParser._validateProvider(provider, index);`
 - **Pure JSDoc:**
 ```javascript
-/** Method if */
-```
----
-#### METHOD: RecipeParser.if
-- **Scope:** instance
-- **LLM Call Syntax:** `recipeParser.if(!provider || typeof provider !);`
-- **Pure JSDoc:**
-```javascript
-/** Method if */
-```
----
-#### METHOD: RecipeParser.if
-- **Scope:** instance
-- **LLM Call Syntax:** `recipeParser.if(!provider.name || typeof provider.name !);`
-- **Pure JSDoc:**
-```javascript
-/** Method if */
-```
----
-#### METHOD: RecipeParser.if
-- **Scope:** instance
-- **LLM Call Syntax:** `recipeParser.if(!provider.type || typeof provider.type !);`
-- **Pure JSDoc:**
-```javascript
-/** Method if */
-```
----
-#### METHOD: RecipeParser.if
-- **Scope:** instance
-- **LLM Call Syntax:** `recipeParser.if(provider.parameters !);`
-- **Pure JSDoc:**
-```javascript
-/** Method if */
-```
----
-#### METHOD: RecipeParser.if
-- **Scope:** instance
-- **LLM Call Syntax:** `recipeParser.if(provider.parameters);`
-- **Pure JSDoc:**
-```javascript
-/** Method if */
-```
----
-#### METHOD: RecipeParser.if
-- **Scope:** instance
-- **LLM Call Syntax:** `recipeParser.if(provider.condition !);`
-- **Pure JSDoc:**
-```javascript
-/** Method if */
-```
----
-#### METHOD: RecipeParser.if
-- **Scope:** instance
-- **LLM Call Syntax:** `recipeParser.if(typeof provider.condition !);`
-- **Pure JSDoc:**
-```javascript
-/** Method if */
-```
----
-#### METHOD: RecipeParser.if
-- **Scope:** instance
-- **LLM Call Syntax:** `recipeParser.if(provider.postProcess !);`
-- **Pure JSDoc:**
-```javascript
-/** Method if */
-```
----
-#### METHOD: RecipeParser.if
-- **Scope:** instance
-- **LLM Call Syntax:** `recipeParser.if(!pp || typeof pp !);`
-- **Pure JSDoc:**
-```javascript
-/** Method if */
-```
----
-#### METHOD: RecipeParser.if
-- **Scope:** instance
-- **LLM Call Syntax:** `recipeParser.if(!pp.type || typeof pp.type !);`
-- **Pure JSDoc:**
-```javascript
-/** Method if */
+/**
+   * Evaluates a provider configuration against structural and type constraints.
+   * @param {Object} provider Provider configuration object.
+   * @param {number} index Array index for error context.
+   * @returns {string[]} Collection of validation error messages.
+   * @private
+   */
 ```
 ---
 #### METHOD: RecipeParser.parse
@@ -1182,46 +748,6 @@ import { RecipeValidationError } from './errors/RecipeValidationError';
    */
 ```
 ---
-#### METHOD: RecipeParser.if
-- **Scope:** instance
-- **LLM Call Syntax:** `recipeParser.if(!recipe || typeof recipe !);`
-- **Pure JSDoc:**
-```javascript
-/** Method if */
-```
----
-#### METHOD: RecipeParser.if
-- **Scope:** instance
-- **LLM Call Syntax:** `recipeParser.if(!recipe.providers);`
-- **Pure JSDoc:**
-```javascript
-/** Method if */
-```
----
-#### METHOD: RecipeParser.if
-- **Scope:** instance
-- **LLM Call Syntax:** `recipeParser.if(recipe.providers.length);`
-- **Pure JSDoc:**
-```javascript
-/** Method if */
-```
----
-#### METHOD: RecipeParser.if
-- **Scope:** instance
-- **LLM Call Syntax:** `recipeParser.if(duplicates.length > 0);`
-- **Pure JSDoc:**
-```javascript
-/** Method if */
-```
----
-#### METHOD: RecipeParser.if
-- **Scope:** instance
-- **LLM Call Syntax:** `recipeParser.if(errors.length > 0);`
-- **Pure JSDoc:**
-```javascript
-/** Method if */
-```
----
 #### METHOD: RecipeParser.validate
 - **Scope:** instance
 - **LLM Call Syntax:** `const result = recipeParser.validate(recipe);`
@@ -1234,48 +760,16 @@ import { RecipeValidationError } from './errors/RecipeValidationError';
    */
 ```
 ---
-#### METHOD: RecipeParser.catch
-- **Scope:** instance
-- **LLM Call Syntax:** `recipeParser.catch(error);`
-- **Pure JSDoc:**
-```javascript
-/** Method catch */
-```
----
-#### METHOD: RecipeParser.if
-- **Scope:** instance
-- **LLM Call Syntax:** `recipeParser.if(error instanceof RecipeValidationError);`
-- **Pure JSDoc:**
-```javascript
-/** Method if */
-```
----
 <br>
 
 ## CLASS: DependencyResolver
-**File Path:** `ContextEngine/src/internal/DependencyResolver.js`
+**File Path:** `ContextEngine/src/internal/DependencyResolver.ts`
 **Constructor Usage:** `const instance = new DependencyResolver();`
-**Description:** Resolves dependencies in recipe configurations.
-
-/
-
-import { DependencyResolutionError } from './errors/DependencyResolutionError';
-
-/**
-Dependency resolution engine for @param (initial) and $provider (runtime) references in recipes.
+**Description:** Dependency resolution engine for @param (initial) and $provider (runtime) references in recipes.
 Supports dot-notation for nested properties and bracket-notation for array indices.
-@class
 
 ### Raw JSDoc Context:
 ```javascript
-/**
- * @file ContextEngine/src/DependencyResolver.js
- * @description Resolves dependencies in recipe configurations.
- * @version 1.0.0
- */
-
-import { DependencyResolutionError } from './errors/DependencyResolutionError';
-
 /**
  * Dependency resolution engine for @param (initial) and $provider (runtime) references in recipes.
  * Supports dot-notation for nested properties and bracket-notation for array indices.
@@ -1283,96 +777,75 @@ import { DependencyResolutionError } from './errors/DependencyResolutionError';
  */
 ```
 
-### Methods of DependencyResolver
+### Methods and properties of DependencyResolver
 
-#### METHOD: DependencyResolver.if
-- **Scope:** instance
-- **LLM Call Syntax:** `dependencyResolver.if(!logger || typeof logger !);`
-- **Pure JSDoc:**
-```javascript
-/** Method if */
-```
----
-#### METHOD: DependencyResolver.if
-- **Scope:** instance
-- **LLM Call Syntax:** `dependencyResolver.if(typeof logger.debug !);`
-- **Pure JSDoc:**
-```javascript
-/** Method if */
-```
----
-#### METHOD: DependencyResolver.isDependency
-- **Scope:** instance
-- **LLM Call Syntax:** `const result = dependencyResolver.isDependency(or, value);`
+#### PROPERTY: DependencyResolver.PARAM_PATTERN
+- **Scope:** static
+- **LLM Call Syntax:** `const result = DependencyResolver.PARAM_PATTERN;`
 - **Pure JSDoc:**
 ```javascript
 /**
-     * Logger service.
-     * @private
-     * @type {Object}
-     */
-    this._logger = logger;
-  }
-
-  /**
+   * Pattern for @param references (e.g., '@userId').
+   * @type {RegExp}
+   * @static
+   * @private
+   */
+```
+---
+#### PROPERTY: DependencyResolver.PROVIDER_PATTERN
+- **Scope:** static
+- **LLM Call Syntax:** `const result = DependencyResolver.PROVIDER_PATTERN;`
+- **Pure JSDoc:**
+```javascript
+/**
+   * Pattern for $provider references (e.g., '$user.profile.name', '$items[0].id').
+   * @type {RegExp}
+   * @static
+   * @private
+   */
+```
+---
+#### PROPERTY: DependencyResolver.logger
+- **Scope:** instance
+- **LLM Call Syntax:** `const result = dependencyResolver.logger;`
+- **Pure JSDoc:**
+```javascript
+/**
    * Internal logger instance.
    * @type {Object}
    * @readonly
    */
-  get logger() {
-    return this._logger;
-  }
-
-  /**
+```
+---
+#### METHOD: DependencyResolver.isDependency
+- **Scope:** instance
+- **LLM Call Syntax:** `const result = dependencyResolver.isDependency(value);`
+- **Pure JSDoc:**
+```javascript
+/**
    * Validates if a string value matches @param or $provider syntax.
    * @param {*} value Target value to inspect.
    * @returns {boolean} True if string matches dependency patterns.
    */
 ```
 ---
-#### METHOD: DependencyResolver.if
+#### METHOD: DependencyResolver._getNestedProperty
 - **Scope:** instance
-- **LLM Call Syntax:** `dependencyResolver.if(typeof value !);`
+- **LLM Call Syntax:** `const result = dependencyResolver._getNestedProperty(obj, path);`
 - **Pure JSDoc:**
 ```javascript
-/** Method if */
-```
----
-#### METHOD: DependencyResolver.if
-- **Scope:** instance
-- **LLM Call Syntax:** `dependencyResolver.if(!path);`
-- **Pure JSDoc:**
-```javascript
-/** Method if */
-```
----
-#### METHOD: DependencyResolver.for
-- **Scope:** instance
-- **LLM Call Syntax:** `dependencyResolver.for(const part of parts);`
-- **Pure JSDoc:**
-```javascript
-/** Method for */
-```
----
-#### METHOD: DependencyResolver.if
-- **Scope:** instance
-- **LLM Call Syntax:** `dependencyResolver.if(current);`
-- **Pure JSDoc:**
-```javascript
-/** Method if */
-```
----
-#### METHOD: DependencyResolver.if
-- **Scope:** instance
-- **LLM Call Syntax:** `dependencyResolver.if(arrayMatch);`
-- **Pure JSDoc:**
-```javascript
-/** Method if */
+/**
+   * Traverses a nested object/array structure based on dot-separated path.
+   * @param {Object|Array} obj Source container.
+   * @param {string} path Property path (e.g., 'items[0].id').
+   * @returns {*} Resolved value or undefined if path is unreachable.
+   * @private
+   */
 ```
 ---
 #### METHOD: DependencyResolver.resolve
 - **Scope:** instance
-- **LLM Call Syntax:** `const result = dependencyResolver.resolve(dependency, initialParams, identifiers, providerResults, providerName);`
+- **LLM Call Syntax:** `const result = dependencyResolver.resolve(dependency, initialParams, providerResults, providerName);`
 - **Pure JSDoc:**
 ```javascript
 /**
@@ -1387,65 +860,9 @@ import { DependencyResolutionError } from './errors/DependencyResolutionError';
    */
 ```
 ---
-#### METHOD: DependencyResolver.if
-- **Scope:** instance
-- **LLM Call Syntax:** `dependencyResolver.if(typeof dependency !);`
-- **Pure JSDoc:**
-```javascript
-/** Method if */
-```
----
-#### METHOD: DependencyResolver.if
-- **Scope:** instance
-- **LLM Call Syntax:** `dependencyResolver.if(!initialParams || typeof initialParams !);`
-- **Pure JSDoc:**
-```javascript
-/** Method if */
-```
----
-#### METHOD: DependencyResolver.if
-- **Scope:** instance
-- **LLM Call Syntax:** `dependencyResolver.if(!providerResults || typeof providerResults !);`
-- **Pure JSDoc:**
-```javascript
-/** Method if */
-```
----
-#### METHOD: DependencyResolver.if
-- **Scope:** instance
-- **LLM Call Syntax:** `dependencyResolver.if(paramMatch);`
-- **Pure JSDoc:**
-```javascript
-/** Method if */
-```
----
-#### METHOD: DependencyResolver.if
-- **Scope:** instance
-- **LLM Call Syntax:** `dependencyResolver.if(providerMatch);`
-- **Pure JSDoc:**
-```javascript
-/** Method if */
-```
----
-#### METHOD: DependencyResolver.if
-- **Scope:** instance
-- **LLM Call Syntax:** `dependencyResolver.if(!propertyPath);`
-- **Pure JSDoc:**
-```javascript
-/** Method if */
-```
----
-#### METHOD: DependencyResolver.if
-- **Scope:** instance
-- **LLM Call Syntax:** `dependencyResolver.if(value);`
-- **Pure JSDoc:**
-```javascript
-/** Method if */
-```
----
 #### METHOD: DependencyResolver.resolveAll
 - **Scope:** instance
-- **LLM Call Syntax:** `const result = dependencyResolver.resolveAll(parameters, initialParams, identifiers., providerResults, providerName);`
+- **LLM Call Syntax:** `const result = dependencyResolver.resolveAll(parameters, initialParams, providerResults, providerName);`
 - **Pure JSDoc:**
 ```javascript
 /**
@@ -1460,46 +877,6 @@ import { DependencyResolutionError } from './errors/DependencyResolutionError';
    */
 ```
 ---
-#### METHOD: DependencyResolver.if
-- **Scope:** instance
-- **LLM Call Syntax:** `dependencyResolver.if(!parameters || typeof parameters !);`
-- **Pure JSDoc:**
-```javascript
-/** Method if */
-```
----
-#### METHOD: DependencyResolver.if
-- **Scope:** instance
-- **LLM Call Syntax:** `dependencyResolver.if(!initialParams || typeof initialParams !);`
-- **Pure JSDoc:**
-```javascript
-/** Method if */
-```
----
-#### METHOD: DependencyResolver.if
-- **Scope:** instance
-- **LLM Call Syntax:** `dependencyResolver.if(!providerResults || typeof providerResults !);`
-- **Pure JSDoc:**
-```javascript
-/** Method if */
-```
----
-#### METHOD: DependencyResolver.for
-- **Scope:** instance
-- **LLM Call Syntax:** `dependencyResolver.for(const key in parameters);`
-- **Pure JSDoc:**
-```javascript
-/** Method for */
-```
----
-#### METHOD: DependencyResolver.if
-- **Scope:** instance
-- **LLM Call Syntax:** `dependencyResolver.if(item !);`
-- **Pure JSDoc:**
-```javascript
-/** Method if */
-```
----
 #### METHOD: DependencyResolver.analyzeDependencies
 - **Scope:** instance
 - **LLM Call Syntax:** `const result = dependencyResolver.analyzeDependencies(parameters);`
@@ -1512,234 +889,79 @@ import { DependencyResolutionError } from './errors/DependencyResolutionError';
    */
 ```
 ---
-#### METHOD: DependencyResolver.for
-- **Scope:** instance
-- **LLM Call Syntax:** `dependencyResolver.for(const key in obj);`
-- **Pure JSDoc:**
-```javascript
-/** Method for */
-```
----
-#### METHOD: DependencyResolver.if
-- **Scope:** instance
-- **LLM Call Syntax:** `dependencyResolver.if(typeof value);`
-- **Pure JSDoc:**
-```javascript
-/** Method if */
-```
----
-#### METHOD: DependencyResolver.if
-- **Scope:** instance
-- **LLM Call Syntax:** `dependencyResolver.if(paramMatch);`
-- **Pure JSDoc:**
-```javascript
-/** Method if */
-```
----
-#### METHOD: DependencyResolver.if
-- **Scope:** instance
-- **LLM Call Syntax:** `dependencyResolver.if(providerMatch);`
-- **Pure JSDoc:**
-```javascript
-/** Method if */
-```
----
-#### METHOD: DependencyResolver.if
-- **Scope:** instance
-- **LLM Call Syntax:** `dependencyResolver.if(value !);`
-- **Pure JSDoc:**
-```javascript
-/** Method if */
-```
----
 <br>
 
 ## CLASS: ContextStepExecutor
-**File Path:** `ContextEngine/src/internal/ContextStepExecutor.js`
+**File Path:** `ContextEngine/src/internal/ContextStepExecutor.ts`
 **Constructor Usage:** `const instance = new ContextStepExecutor();`
 **Description:** N/A
 
 ### Raw JSDoc Context:
 ```javascript
-/** Class definition */
+/** No comment available */
 ```
 
-### Methods of ContextStepExecutor
+### Methods and properties of ContextStepExecutor
 
-#### METHOD: ContextStepExecutor.if
+#### METHOD: ContextStepExecutor._evaluateCondition
 - **Scope:** instance
-- **LLM Call Syntax:** `contextStepExecutor.if(!condition);`
+- **LLM Call Syntax:** `contextStepExecutor._evaluateCondition();`
 - **Pure JSDoc:**
 ```javascript
-/** Method if */
+/** No comment available */
 ```
 ---
-#### METHOD: ContextStepExecutor.if
+#### METHOD: ContextStepExecutor._executeProvider
 - **Scope:** instance
-- **LLM Call Syntax:** `contextStepExecutor.if(!this.facade._expressionEngine);`
+- **LLM Call Syntax:** `contextStepExecutor._executeProvider();`
 - **Pure JSDoc:**
 ```javascript
-/** Method if */
-```
----
-#### METHOD: ContextStepExecutor.catch
-- **Scope:** instance
-- **LLM Call Syntax:** `contextStepExecutor.catch(error);`
-- **Pure JSDoc:**
-```javascript
-/** Method catch */
-```
----
-#### METHOD: ContextStepExecutor.if
-- **Scope:** instance
-- **LLM Call Syntax:** `contextStepExecutor.if(this.facade._exceptionService);`
-- **Pure JSDoc:**
-```javascript
-/** Method if */
-```
----
-#### METHOD: ContextStepExecutor.if
-- **Scope:** instance
-- **LLM Call Syntax:** `contextStepExecutor.if(providerConfig.postProcess && providerConfig.postProcess.length > 0);`
-- **Pure JSDoc:**
-```javascript
-/** Method if */
-```
----
-#### METHOD: ContextStepExecutor.if
-- **Scope:** instance
-- **LLM Call Syntax:** `contextStepExecutor.if(this.facade._interceptorRegistry);`
-- **Pure JSDoc:**
-```javascript
-/** Method if */
-```
----
-#### METHOD: ContextStepExecutor.if
-- **Scope:** instance
-- **LLM Call Syntax:** `contextStepExecutor.if(interceptors.length > 0);`
-- **Pure JSDoc:**
-```javascript
-/** Method if */
-```
----
-#### METHOD: ContextStepExecutor.for
-- **Scope:** instance
-- **LLM Call Syntax:** `contextStepExecutor.for(const interceptor of interceptors);`
-- **Pure JSDoc:**
-```javascript
-/** Method for */
+/** No comment available */
 ```
 ---
 #### METHOD: ContextStepExecutor.assemble
 - **Scope:** instance
-- **LLM Call Syntax:** `contextStepExecutor.assemble(recipe, initialParams, options);`
+- **LLM Call Syntax:** `contextStepExecutor.assemble();`
 - **Pure JSDoc:**
 ```javascript
-/** Method assemble */
+/** No comment available */
 ```
 ---
-#### METHOD: ContextStepExecutor.if
+#### METHOD: ContextStepExecutor._executeMutatingProvider
 - **Scope:** instance
-- **LLM Call Syntax:** `contextStepExecutor.if(!recipe || typeof recipe !);`
+- **LLM Call Syntax:** `contextStepExecutor._executeMutatingProvider(providerConfig, sharedTarget, initialParams, options);`
 - **Pure JSDoc:**
 ```javascript
-/** Method if */
+/**
+   * Invokes a single provider in "mutate" mode: the provider receives the
+   * shared target object directly (instead of resolved `@`/`$` parameters)
+   * and is expected to mutate it in place. This is a real behavioral fork
+   * from `_executeProvider`/flat mode, not an overload of it:
+   *  - No `DependencyResolver.resolveAll` parameter resolution — mutation-mode
+   *    providers read/write the shared target directly, they don't declare
+   *    `parameters` maps of `@param`/`$provider` references.
+   *  - No `postProcessor` pass — there is no return value to post-process.
+   *  - No return-value merge — the provider's return value is IGNORED.
+   *  - Registered interceptors ARE still invoked after the provider step
+   *    (mirrors flat mode), but they receive `(name, sharedTarget,
+   *    sharedTarget, options)` since there is no separate "this provider's
+   *    slice of data" — the whole shared target is the only payload.
+   * Provider lookup (`ProviderRegistry`) and retry (`exceptionService`) are
+   * reused unchanged from flat mode.
+   * @param {Object} providerConfig Normalized provider config (name, type).
+   * @param {Object} sharedTarget The shared object every provider mutates.
+   * @param {Object} initialParams Initial parameters passed to `assembleInto`.
+   * @param {Object} [options={}] Runtime options forwarded to providers/interceptors.
+   * @private
+   */
 ```
 ---
-#### METHOD: ContextStepExecutor.if
+#### METHOD: ContextStepExecutor._logAssemblySummary
 - **Scope:** instance
-- **LLM Call Syntax:** `contextStepExecutor.if(initialParams !);`
+- **LLM Call Syntax:** `contextStepExecutor._logAssemblySummary();`
 - **Pure JSDoc:**
 ```javascript
-/** Method if */
-```
----
-#### METHOD: ContextStepExecutor.if
-- **Scope:** instance
-- **LLM Call Syntax:** `contextStepExecutor.if(options !);`
-- **Pure JSDoc:**
-```javascript
-/** Method if */
-```
----
-#### METHOD: ContextStepExecutor.for
-- **Scope:** instance
-- **LLM Call Syntax:** `contextStepExecutor.for(const providerConfig of validatedRecipe.providers);`
-- **Pure JSDoc:**
-```javascript
-/** Method for */
-```
----
-#### METHOD: ContextStepExecutor.if
-- **Scope:** instance
-- **LLM Call Syntax:** `contextStepExecutor.if(!shouldExecute);`
-- **Pure JSDoc:**
-```javascript
-/** Method if */
-```
----
-#### METHOD: ContextStepExecutor.catch
-- **Scope:** instance
-- **LLM Call Syntax:** `contextStepExecutor.catch(error);`
-- **Pure JSDoc:**
-```javascript
-/** Method catch */
-```
----
-#### METHOD: ContextStepExecutor.catch
-- **Scope:** instance
-- **LLM Call Syntax:** `contextStepExecutor.catch(error);`
-- **Pure JSDoc:**
-```javascript
-/** Method catch */
-```
----
-#### METHOD: ContextStepExecutor.if
-- **Scope:** instance
-- **LLM Call Syntax:** `contextStepExecutor.if(error instanceof ContextEngineError);`
-- **Pure JSDoc:**
-```javascript
-/** Method if */
-```
----
-#### METHOD: ContextStepExecutor.if
-- **Scope:** instance
-- **LLM Call Syntax:** `contextStepExecutor.if(this.facade._exceptionService);`
-- **Pure JSDoc:**
-```javascript
-/** Method if */
-```
----
-#### METHOD: ContextStepExecutor.if
-- **Scope:** instance
-- **LLM Call Syntax:** `contextStepExecutor.if(this.facade._interceptorRegistry);`
-- **Pure JSDoc:**
-```javascript
-/** Method if */
-```
----
-#### METHOD: ContextStepExecutor.if
-- **Scope:** instance
-- **LLM Call Syntax:** `contextStepExecutor.if(interceptors.length > 0);`
-- **Pure JSDoc:**
-```javascript
-/** Method if */
-```
----
-#### METHOD: ContextStepExecutor.for
-- **Scope:** instance
-- **LLM Call Syntax:** `contextStepExecutor.for(const interceptor of interceptors);`
-- **Pure JSDoc:**
-```javascript
-/** Method for */
-```
----
-#### METHOD: ContextStepExecutor.if
-- **Scope:** instance
-- **LLM Call Syntax:** `contextStepExecutor.if(typeof this.facade._logger.logSummary);`
-- **Pure JSDoc:**
-```javascript
-/** Method if */
+/** No comment available */
 ```
 ---
 #### METHOD: ContextStepExecutor.assembleInto
@@ -1783,122 +1005,34 @@ import { DependencyResolutionError } from './errors/DependencyResolutionError';
    */
 ```
 ---
-#### METHOD: ContextStepExecutor.if
-- **Scope:** instance
-- **LLM Call Syntax:** `contextStepExecutor.if(sharedTarget);`
-- **Pure JSDoc:**
-```javascript
-/** Method if */
-```
----
-#### METHOD: ContextStepExecutor.if
-- **Scope:** instance
-- **LLM Call Syntax:** `contextStepExecutor.if(!recipe || typeof recipe !);`
-- **Pure JSDoc:**
-```javascript
-/** Method if */
-```
----
-#### METHOD: ContextStepExecutor.if
-- **Scope:** instance
-- **LLM Call Syntax:** `contextStepExecutor.if(initialParams !);`
-- **Pure JSDoc:**
-```javascript
-/** Method if */
-```
----
-#### METHOD: ContextStepExecutor.if
-- **Scope:** instance
-- **LLM Call Syntax:** `contextStepExecutor.if(options !);`
-- **Pure JSDoc:**
-```javascript
-/** Method if */
-```
----
-#### METHOD: ContextStepExecutor.for
-- **Scope:** instance
-- **LLM Call Syntax:** `contextStepExecutor.for(const providerConfig of validatedRecipe.providers);`
-- **Pure JSDoc:**
-```javascript
-/** Method for */
-```
----
-#### METHOD: ContextStepExecutor.if
-- **Scope:** instance
-- **LLM Call Syntax:** `contextStepExecutor.if(!shouldExecute);`
-- **Pure JSDoc:**
-```javascript
-/** Method if */
-```
----
-#### METHOD: ContextStepExecutor.catch
-- **Scope:** instance
-- **LLM Call Syntax:** `contextStepExecutor.catch(error);`
-- **Pure JSDoc:**
-```javascript
-/** Method catch */
-```
----
-#### METHOD: ContextStepExecutor.catch
-- **Scope:** instance
-- **LLM Call Syntax:** `contextStepExecutor.catch(error);`
-- **Pure JSDoc:**
-```javascript
-/** Method catch */
-```
----
-#### METHOD: ContextStepExecutor.if
-- **Scope:** instance
-- **LLM Call Syntax:** `contextStepExecutor.if(error instanceof ContextEngineError);`
-- **Pure JSDoc:**
-```javascript
-/** Method if */
-```
----
 <br>
 
 ## CLASS: ContextDependencyAnalyzer
-**File Path:** `ContextEngine/src/internal/ContextDependencyAnalyzer.js`
+**File Path:** `ContextEngine/src/internal/ContextDependencyAnalyzer.ts`
 **Constructor Usage:** `const instance = new ContextDependencyAnalyzer();`
 **Description:** N/A
 
 ### Raw JSDoc Context:
 ```javascript
-/** Class definition */
+/** No comment available */
 ```
 
-### Methods of ContextDependencyAnalyzer
+### Methods and properties of ContextDependencyAnalyzer
 
 #### METHOD: ContextDependencyAnalyzer.validateRecipe
 - **Scope:** instance
-- **LLM Call Syntax:** `contextDependencyAnalyzer.validateRecipe(recipe);`
+- **LLM Call Syntax:** `contextDependencyAnalyzer.validateRecipe();`
 - **Pure JSDoc:**
 ```javascript
-/** Method validateRecipe */
+/** No comment available */
 ```
 ---
 #### METHOD: ContextDependencyAnalyzer.analyzeRecipeDependencies
 - **Scope:** instance
-- **LLM Call Syntax:** `contextDependencyAnalyzer.analyzeRecipeDependencies(recipe);`
+- **LLM Call Syntax:** `contextDependencyAnalyzer.analyzeRecipeDependencies();`
 - **Pure JSDoc:**
 ```javascript
-/** Method analyzeRecipeDependencies */
-```
----
-#### METHOD: ContextDependencyAnalyzer.for
-- **Scope:** instance
-- **LLM Call Syntax:** `contextDependencyAnalyzer.for(const provider of validatedRecipe.providers);`
-- **Pure JSDoc:**
-```javascript
-/** Method for */
-```
----
-#### METHOD: ContextDependencyAnalyzer.catch
-- **Scope:** instance
-- **LLM Call Syntax:** `contextDependencyAnalyzer.catch(error);`
-- **Pure JSDoc:**
-```javascript
-/** Method catch */
+/** No comment available */
 ```
 ---
 #### METHOD: ContextDependencyAnalyzer.getConfigSummary
@@ -1906,111 +1040,20 @@ import { DependencyResolutionError } from './errors/DependencyResolutionError';
 - **LLM Call Syntax:** `contextDependencyAnalyzer.getConfigSummary();`
 - **Pure JSDoc:**
 ```javascript
-/** Method getConfigSummary */
+/** No comment available */
 ```
 ---
 <br>
 
 ## CLASS: RecipeValidationError
-**File Path:** `ContextEngine/src/internal/errors/RecipeValidationError.js`
+**File Path:** `ContextEngine/src/internal/errors/RecipeValidationError.ts`
 **Constructor Usage:** `const instance = new RecipeValidationError();`
-**Description:** Error thrown when recipe validation fails.
-
-
-@overview
-Thrown by RecipeParser.validate() when a recipe fails structural validation.
-This error indicates issues with recipe configuration before execution begins.
-
-## When This Error Occurs
-- **Missing Required Fields**: Recipe missing `providers` array
-- **Invalid Provider Structure**: Provider missing `name` or `type`
-- **Invalid Types**: Wrong data types (e.g., string instead of array)
-- **Duplicate Provider Names**: Multiple providers with same name
-- **Invalid Post-Processors**: Post-processor type not recognized
-- **Invalid Conditions**: Malformed conditional expressions
-
-## Common Validation Failures
-1. Missing `providers` array in recipe
-2. Provider missing required `name` field
-3. Provider missing required `type` field
-4. Provider `name` not a string
-5. Provider `type` not a string
-6. Provider `config` not an object
-7. Duplicate provider names in recipe
-8. Post-processor missing `type` field
-9. Post-processor `config` not an object
-
-## Error Handling
-- **Not Retryable**: Validation errors require recipe correction, not retry
-- **Fail Fast**: Thrown before any provider execution
-- **Multiple Errors**: `validationErrors` array contains all issues found
-- **UI/API Integration**: Use validation errors to show user-friendly messages
-
-## Prevention
-- Validate recipes before deployment
-- Use RecipeParser.validate() in tests
-- Check recipe structure in UI/API before submission
-/
-
-import { ContextEngineError } from './ContextEngineError';
-
-/**
-Error signaling structural or configuration non-compliance in a Context Recipe.
-
-@class RecipeValidationError
-@extends ContextEngineError
-
-Thrown by RecipeParser.validate() or parse() during pre-execution checks. Aggregates
+**Description:** Thrown by RecipeParser.validate() or parse() during pre-execution checks. Aggregates
 multiple validation failures (missing fields, duplicate names, invalid types) into
 the validationErrors property to enable comprehensive error reporting.
 
-@example
-throw new RecipeValidationError('Invalid Recipe', { validationErrors: ['providers is required'] });
-
 ### Raw JSDoc Context:
 ```javascript
-/**
- * @file ContextEngine/src/errors/RecipeValidationError.js
- * @description Error thrown when recipe validation fails.
- * @version 1.0.0
- *
- * @overview
- * Thrown by RecipeParser.validate() when a recipe fails structural validation.
- * This error indicates issues with recipe configuration before execution begins.
- *
- * ## When This Error Occurs
- * - **Missing Required Fields**: Recipe missing `providers` array
- * - **Invalid Provider Structure**: Provider missing `name` or `type`
- * - **Invalid Types**: Wrong data types (e.g., string instead of array)
- * - **Duplicate Provider Names**: Multiple providers with same name
- * - **Invalid Post-Processors**: Post-processor type not recognized
- * - **Invalid Conditions**: Malformed conditional expressions
- *
- * ## Common Validation Failures
- * 1. Missing `providers` array in recipe
- * 2. Provider missing required `name` field
- * 3. Provider missing required `type` field
- * 4. Provider `name` not a string
- * 5. Provider `type` not a string
- * 6. Provider `config` not an object
- * 7. Duplicate provider names in recipe
- * 8. Post-processor missing `type` field
- * 9. Post-processor `config` not an object
- *
- * ## Error Handling
- * - **Not Retryable**: Validation errors require recipe correction, not retry
- * - **Fail Fast**: Thrown before any provider execution
- * - **Multiple Errors**: `validationErrors` array contains all issues found
- * - **UI/API Integration**: Use validation errors to show user-friendly messages
- *
- * ## Prevention
- * - Validate recipes before deployment
- * - Use RecipeParser.validate() in tests
- * - Check recipe structure in UI/API before submission
- */
-
-import { ContextEngineError } from './ContextEngineError';
-
 /**
  * Error signaling structural or configuration non-compliance in a Context Recipe.
  *
@@ -2030,105 +1073,14 @@ import { ContextEngineError } from './ContextEngineError';
 <br>
 
 ## CLASS: ProviderNotFoundError
-**File Path:** `ContextEngine/src/internal/errors/ProviderNotFoundError.js`
+**File Path:** `ContextEngine/src/internal/errors/ProviderNotFoundError.ts`
 **Constructor Usage:** `const instance = new ProviderNotFoundError();`
-**Description:** Error thrown when a provider is not found in the registry.
-
-
-@overview
-Thrown by ProviderRegistry.get() when attempting to retrieve a provider that
-has not been registered. This error indicates a configuration issue where a
-recipe references a provider type that doesn't exist in the registry.
-
-## When This Error Occurs
-- **Provider Not Registered**: Recipe references provider type not registered
-- **Typo in Type Name**: Provider type misspelled in recipe
-- **Registration Missing**: Forgot to register provider before assembling recipe
-- **Case Sensitivity**: Provider type case doesn't match registration
-- **Wrong Environment**: Provider registered in different context/instance
-
-## Common Causes
-1. **Missing Registration**: Forgot `registry.registerSingleton('Type', instance)`
-2. **Typo**: Recipe uses "UserProvider" but registered as "UserDataProvider"
-3. **Case Mismatch**: Recipe uses "userProvider" but registered as "UserProvider"
-4. **Order Issue**: Recipe executed before provider registration
-5. **Wrong Registry**: Multiple ContextAssembler instances with separate registries
-6. **Built-in Provider**: Assuming built-in provider exists without registration
-
-## Troubleshooting
-- Check error context for `registeredProviders` array
-- Verify provider type spelling matches registration exactly
-- Ensure provider is registered before recipe execution
-- Use `getConfigSummary()` to list all registered providers
-- Check for case sensitivity issues in provider type names
-
-## Prevention
-- Register all providers at application startup
-- Use constants for provider type names
-- Document required providers in recipe documentation
-- Validate provider availability before recipe execution
-- Use centralized registration module
-/
-
-import { ContextEngineError } from './ContextEngineError';
-
-/**
-Error signaling a missing registration for a requested DataProvider type.
-
-@class ProviderNotFoundError
-@extends ContextEngineError
-
-Thrown during ContextAssembler.assemble() or ProviderRegistry.get() when a recipe
+**Description:** Thrown during ContextAssembler.assemble() or ProviderRegistry.get() when a recipe
 references an unregistered provider. Includes technical context for typo detection
 (registeredProviders) and dependency mapping (recipeName, currentProvider).
 
-@example
-throw new ProviderNotFoundError('UserDataProvider', { registeredProviders: ['Auth', 'Config'] });
-
 ### Raw JSDoc Context:
 ```javascript
-/**
- * @file ContextEngine/src/errors/ProviderNotFoundError.js
- * @description Error thrown when a provider is not found in the registry.
- * @version 1.0.0
- *
- * @overview
- * Thrown by ProviderRegistry.get() when attempting to retrieve a provider that
- * has not been registered. This error indicates a configuration issue where a
- * recipe references a provider type that doesn't exist in the registry.
- *
- * ## When This Error Occurs
- * - **Provider Not Registered**: Recipe references provider type not registered
- * - **Typo in Type Name**: Provider type misspelled in recipe
- * - **Registration Missing**: Forgot to register provider before assembling recipe
- * - **Case Sensitivity**: Provider type case doesn't match registration
- * - **Wrong Environment**: Provider registered in different context/instance
- *
- * ## Common Causes
- * 1. **Missing Registration**: Forgot `registry.registerSingleton('Type', instance)`
- * 2. **Typo**: Recipe uses "UserProvider" but registered as "UserDataProvider"
- * 3. **Case Mismatch**: Recipe uses "userProvider" but registered as "UserProvider"
- * 4. **Order Issue**: Recipe executed before provider registration
- * 5. **Wrong Registry**: Multiple ContextAssembler instances with separate registries
- * 6. **Built-in Provider**: Assuming built-in provider exists without registration
- *
- * ## Troubleshooting
- * - Check error context for `registeredProviders` array
- * - Verify provider type spelling matches registration exactly
- * - Ensure provider is registered before recipe execution
- * - Use `getConfigSummary()` to list all registered providers
- * - Check for case sensitivity issues in provider type names
- *
- * ## Prevention
- * - Register all providers at application startup
- * - Use constants for provider type names
- * - Document required providers in recipe documentation
- * - Validate provider availability before recipe execution
- * - Use centralized registration module
- */
-
-import { ContextEngineError } from './ContextEngineError';
-
 /**
  * Error signaling a missing registration for a requested DataProvider type.
  *
@@ -2148,125 +1100,14 @@ import { ContextEngineError } from './ContextEngineError';
 <br>
 
 ## CLASS: ProviderExecutionError
-**File Path:** `ContextEngine/src/internal/errors/ProviderExecutionError.js`
+**File Path:** `ContextEngine/src/internal/errors/ProviderExecutionError.ts`
 **Constructor Usage:** `const instance = new ProviderExecutionError();`
-**Description:** Error thrown when a provider execution fails.
-
-
-@overview
-Thrown by DataProvider.provide() when a provider's _fetchData() method fails
-during execution. This error wraps the original error and provides context about
-which provider failed and with what parameters.
-
-## When This Error Occurs
-- **Network Failures**: API calls timeout or return errors
-- **Database Errors**: Query failures or connection issues
-- **Authentication Errors**: API authentication failures
-- **Invalid Data**: Data source returns unexpected format
-- **Resource Not Found**: Requested resource doesn't exist
-- **Rate Limiting**: API rate limits exceeded
-- **Permission Errors**: Insufficient permissions to access resource
-- **Implementation Errors**: Bugs in provider's _fetchData() method
-
-## Common Failure Scenarios
-1. **Google API Errors**: SpreadsheetApp/DriveApp failures
-2. **External API Errors**: HTTP 500/503/504 responses
-3. **Data Validation**: Invalid data format from source
-4. **Timeout**: Operation exceeds time limit
-5. **Memory Errors**: Dataset too large for GAS
-6. **Logic Errors**: Null pointer, undefined property access
-
-## Integration with GasResilienceLib
-This error can be automatically retried if:
-- Error is classified as transient (network, timeout, rate limit)
-- ExceptionService is configured in ContextAssembler
-- Maximum retry attempts not exceeded
-
-Non-retryable errors (validation, permission) fail immediately.
-
-## Error Recovery
-- **Automatic Retry**: Transient errors retried with exponential backoff
-- **Circuit Breaker**: Repeated failures trigger circuit breaker
-- **Fallback**: Recipe can continue if provider is conditionally executed
-- **Logging**: All failures logged with full context
-
-## Prevention
-- Implement robust error handling in _fetchData()
-- Validate parameters before executing external operations
-- Use GasResilienceLib for automatic retry of transient errors
-- Add timeout handling for long-running operations
-- Test providers with invalid/missing data scenarios
-/
-
-import { ContextEngineError } from './ContextEngineError';
-
-/**
-Error signaling failure during DataProvider._fetchData() execution.
-
-@class ProviderExecutionError
-@extends ContextEngineError
-
-Wraps original exceptions caught during provider data retrieval. Provides technical context
+**Description:** Wraps original exceptions caught during provider data retrieval. Provides technical context
 for debugging and retry classification by GasResilienceLib, distinguishing between
 transient (e.g., timeouts, 429) and permanent (e.g., 401, 403, 404) failures.
 
-@example
-throw new ProviderExecutionError('UserDataProvider', new Error('Timeout'), { userId: 123 });
-
 ### Raw JSDoc Context:
 ```javascript
-/**
- * @file ContextEngine/src/errors/ProviderExecutionError.js
- * @description Error thrown when a provider execution fails.
- * @version 1.0.0
- *
- * @overview
- * Thrown by DataProvider.provide() when a provider's _fetchData() method fails
- * during execution. This error wraps the original error and provides context about
- * which provider failed and with what parameters.
- *
- * ## When This Error Occurs
- * - **Network Failures**: API calls timeout or return errors
- * - **Database Errors**: Query failures or connection issues
- * - **Authentication Errors**: API authentication failures
- * - **Invalid Data**: Data source returns unexpected format
- * - **Resource Not Found**: Requested resource doesn't exist
- * - **Rate Limiting**: API rate limits exceeded
- * - **Permission Errors**: Insufficient permissions to access resource
- * - **Implementation Errors**: Bugs in provider's _fetchData() method
- *
- * ## Common Failure Scenarios
- * 1. **Google API Errors**: SpreadsheetApp/DriveApp failures
- * 2. **External API Errors**: HTTP 500/503/504 responses
- * 3. **Data Validation**: Invalid data format from source
- * 4. **Timeout**: Operation exceeds time limit
- * 5. **Memory Errors**: Dataset too large for GAS
- * 6. **Logic Errors**: Null pointer, undefined property access
- *
- * ## Integration with GasResilienceLib
- * This error can be automatically retried if:
- * - Error is classified as transient (network, timeout, rate limit)
- * - ExceptionService is configured in ContextAssembler
- * - Maximum retry attempts not exceeded
- *
- * Non-retryable errors (validation, permission) fail immediately.
- *
- * ## Error Recovery
- * - **Automatic Retry**: Transient errors retried with exponential backoff
- * - **Circuit Breaker**: Repeated failures trigger circuit breaker
- * - **Fallback**: Recipe can continue if provider is conditionally executed
- * - **Logging**: All failures logged with full context
- *
- * ## Prevention
- * - Implement robust error handling in _fetchData()
- * - Validate parameters before executing external operations
- * - Use GasResilienceLib for automatic retry of transient errors
- * - Add timeout handling for long-running operations
- * - Test providers with invalid/missing data scenarios
- */
-
-import { ContextEngineError } from './ContextEngineError';
-
 /**
  * Error signaling failure during DataProvider._fetchData() execution.
  *
@@ -2286,29 +1127,12 @@ import { ContextEngineError } from './ContextEngineError';
 <br>
 
 ## CLASS: DependencyResolutionError
-**File Path:** `ContextEngine/src/internal/errors/DependencyResolutionError.js`
+**File Path:** `ContextEngine/src/internal/errors/DependencyResolutionError.ts`
 **Constructor Usage:** `const instance = new DependencyResolutionError();`
-**Description:** Error thrown when dependency resolution fails.
-
-/
-
-import { ContextEngineError } from './ContextEngineError';
-
-/**
-Error indicating failure to resolve @param or $provider references due to missing data, incorrect paths, or invalid execution order.
-@class
-@extends ContextEngineError
+**Description:** Error indicating failure to resolve @param or $provider references due to missing data, incorrect paths, or invalid execution order.
 
 ### Raw JSDoc Context:
 ```javascript
-/**
- * @file ContextEngine/src/errors/DependencyResolutionError.js
- * @description Error thrown when dependency resolution fails.
- * @version 1.0.0
- */
-
-import { ContextEngineError } from './ContextEngineError';
-
 /**
  * Error indicating failure to resolve @param or $provider references due to missing data, incorrect paths, or invalid execution order.
  * @class
@@ -2319,30 +1143,13 @@ import { ContextEngineError } from './ContextEngineError';
 <br>
 
 ## CLASS: ContextEngineError
-**File Path:** `ContextEngine/src/internal/errors/ContextEngineError.js`
+**File Path:** `ContextEngine/src/internal/errors/ContextEngineError.ts`
 **Constructor Usage:** `const instance = new ContextEngineError();`
-**Description:** Base error class for context engine-related errors.
-
-/
-
-import { BaseError } from '@CoreUtilsLib';
-
-/**
-Foundation error class for the ContextEngine hierarchy, providing structured metadata and error chaining.
+**Description:** Foundation error class for the ContextEngine hierarchy, providing structured metadata and error chaining.
 Extends the shared {@link BaseError} to inherit standardized stack-trace capture and timestamping.
-@class
-@extends BaseError
 
 ### Raw JSDoc Context:
 ```javascript
-/**
- * @file ContextEngine/src/errors/ContextEngineError.js
- * @description Base error class for context engine-related errors.
- * @version 1.0.0
- */
-
-import { BaseError } from '@CoreUtilsLib';
-
 /**
  * Foundation error class for the ContextEngine hierarchy, providing structured metadata and error chaining.
  * Extends the shared {@link BaseError} to inherit standardized stack-trace capture and timestamping.
@@ -2351,7 +1158,7 @@ import { BaseError } from '@CoreUtilsLib';
  */
 ```
 
-### Methods of ContextEngineError
+### Methods and properties of ContextEngineError
 
 #### METHOD: ContextEngineError.toString
 - **Scope:** instance
@@ -2367,7 +1174,7 @@ import { BaseError } from '@CoreUtilsLib';
 <br>
 
 ## CLASS: CollectionProjectionError
-**File Path:** `ContextEngine/src/internal/errors/CollectionProjectionError.js`
+**File Path:** `ContextEngine/src/internal/errors/CollectionProjectionError.ts`
 **Constructor Usage:** `const instance = new CollectionProjectionError();`
 **Description:** Signals invalid declarative collection-projection configuration or execution.
 
@@ -2381,29 +1188,12 @@ import { BaseError } from '@CoreUtilsLib';
 <br>
 
 ## CLASS: InterceptorRegistry
-**File Path:** `ContextEngine/src/interceptors/InterceptorRegistry.js`
+**File Path:** `ContextEngine/src/interceptors/InterceptorRegistry.ts`
 **Constructor Usage:** `const instance = new InterceptorRegistry();`
-**Description:** Manages registration and retrieval of context interceptors.
-
-/
-
-import { TypedRegistry } from '../internal/TypedRegistry';
-
-/**
-Registry for managing context interceptor lifecycles, supporting both Singleton (stateless) and Factory (stateful) instantiation strategies.
-@class
-@extends TypedRegistry
+**Description:** Registry for managing context interceptor lifecycles, supporting both Singleton (stateless) and Factory (stateful) instantiation strategies.
 
 ### Raw JSDoc Context:
 ```javascript
-/**
- * @file ContextEngine/src/InterceptorRegistry.js
- * @description Manages registration and retrieval of context interceptors.
- * @version 1.0.0
- */
-
-import { TypedRegistry } from '../internal/TypedRegistry';
-
 /**
  * Registry for managing context interceptor lifecycles, supporting both Singleton (stateless) and Factory (stateful) instantiation strategies.
  * @class
@@ -2414,32 +1204,13 @@ import { TypedRegistry } from '../internal/TypedRegistry';
 <br>
 
 ## CLASS: ContextInterceptor
-**File Path:** `ContextEngine/src/interceptors/ContextInterceptor.js`
+**File Path:** `ContextEngine/src/interceptors/ContextInterceptor.ts`
 **Constructor Usage:** `const instance = new ContextInterceptor();`
-**Description:** Abstract base class for context interceptors.
-
-/
-
-import { get } from '@CoreUtilsLib';
-import { CollectionProjectionError } from '../internal/errors/CollectionProjectionError';
-
-/**
-Abstract base class for context middleware/interceptor patterns.
+**Description:** Abstract base class for context middleware/interceptor patterns.
 Enables transparent transformation, enrichment, or substitution of provider results before UDC integration.
-@class
-@abstract
 
 ### Raw JSDoc Context:
 ```javascript
-/**
- * @file ContextEngine/src/ContextInterceptor.js
- * @description Abstract base class for context interceptors.
- * @version 1.0.0
- */
-
-import { get } from '@CoreUtilsLib';
-import { CollectionProjectionError } from '../internal/errors/CollectionProjectionError';
-
 /**
  * Abstract base class for context middleware/interceptor patterns.
  * Enables transparent transformation, enrichment, or substitution of provider results before UDC integration.
@@ -2448,22 +1219,55 @@ import { CollectionProjectionError } from '../internal/errors/CollectionProjecti
  */
 ```
 
-### Methods of ContextInterceptor
+### Methods and properties of ContextInterceptor
 
-#### METHOD: ContextInterceptor.if
+#### PROPERTY: ContextInterceptor.logger
 - **Scope:** instance
-- **LLM Call Syntax:** `contextInterceptor.if(!logger || typeof logger !);`
+- **LLM Call Syntax:** `const result = contextInterceptor.logger;`
 - **Pure JSDoc:**
 ```javascript
-/** Method if */
+/**
+   * Internal logger instance.
+   * @type {Object}
+   * @readonly
+   */
 ```
 ---
-#### METHOD: ContextInterceptor.if
+#### METHOD: ContextInterceptor._shouldIntercept
 - **Scope:** instance
-- **LLM Call Syntax:** `contextInterceptor.if(typeof logger.debug !);`
+- **LLM Call Syntax:** `const result = contextInterceptor._shouldIntercept(name, data, context, options);`
 - **Pure JSDoc:**
 ```javascript
-/** Method if */
+/**
+   * Evaluates if interception should occur based on runtime state and provider metadata.
+   * @param {string} name Provider name from recipe.
+   * @param {*} data Provider result payload (after post-processing).
+   * @param {Object} context Current partially assembled context.
+   * @param {Object} options Runtime options passed to ContextAssembler.assemble().
+   * @returns {boolean} True to activate interception, false to skip.
+   * @protected
+   */
+```
+---
+#### METHOD: ContextInterceptor._performIntercept
+- **Scope:** instance
+- **LLM Call Syntax:** `const result = contextInterceptor._performIntercept(name, data, context, options);`
+- **Pure JSDoc:**
+```javascript
+/**
+   * Executes core interception logic. Must be implemented by subclasses.
+   * @param {string} name Provider name from recipe.
+   * @param {*} data Provider result payload.
+   * @param {Object} context Current partially assembled context.
+   * @param {Object} options Runtime options.
+   * @returns {*} Modified data payload (type must match input data).
+   * @throws {Error} If not implemented by subclass or logic fails.
+   * @protected
+   * @abstract
+   * @example
+   * // Swap Pattern: return { ...substitute, titular: data }
+   * // Enrich Pattern: return { ...data, timestamp: Date.now() }
+   */
 ```
 ---
 #### METHOD: ContextInterceptor.intercept
@@ -2482,86 +1286,41 @@ import { CollectionProjectionError } from '../internal/errors/CollectionProjecti
    */
 ```
 ---
-#### METHOD: ContextInterceptor.if
+#### METHOD: ContextInterceptor._forEachAt
 - **Scope:** instance
-- **LLM Call Syntax:** `contextInterceptor.if(!name || typeof name !);`
+- **LLM Call Syntax:** `contextInterceptor._forEachAt(data, path, itemFn);`
 - **Pure JSDoc:**
 ```javascript
-/** Method if */
+/**
+   * Walks an array nested inside `data` at `path` (a dot-path string resolved
+   * via CoreUtilsLib's `get`, lodash-compatible) and applies a per-item
+   * decision to each element. This generalizes the "one atomic swap" model
+   * (a single `_performIntercept` deciding for the whole `data` payload) to
+   * "independent per-item decisions inside a nested array" — needed by
+   * consumers whose `data` is one shared, deeply nested object (e.g. a CDU)
+   * containing arrays that must be walked and decided on item-by-item.
+   *
+   * `itemFn(item, index, array)` may either:
+   *  - mutate `item` in place and return `undefined`/`null` (no further
+   *    action taken by this helper — the mutation already happened); or
+   *  - return a 3-way outcome descriptor the helper applies itself:
+   *    - `{ action: 'replace', value }` → `array[index] = value`
+   *    - `{ action: 'annotate', meta }` → `Object.assign(array[index], meta)`
+   *    - `{ action: 'skip' }` → no-op (equivalent to returning `null`)
+   *
+   * No-op (with a debug log) if `path` does not resolve to an array on `data`.
+   *
+   * @param {Object} data The object to resolve `path` against.
+   * @param {string} path Dot-path string (e.g. `'focus.classe.consiglioDiClasse'`).
+   * @param {Function} itemFn `(item, index, array) => undefined|null|{action, value?, meta?}`.
+   * @protected
+   */
 ```
 ---
-#### METHOD: ContextInterceptor.if
-- **Scope:** instance
-- **LLM Call Syntax:** `contextInterceptor.if(context);`
-- **Pure JSDoc:**
-```javascript
-/** Method if */
-```
----
-#### METHOD: ContextInterceptor.if
-- **Scope:** instance
-- **LLM Call Syntax:** `contextInterceptor.if(options !);`
-- **Pure JSDoc:**
-```javascript
-/** Method if */
-```
----
-#### METHOD: ContextInterceptor.if
-- **Scope:** instance
-- **LLM Call Syntax:** `contextInterceptor.if(!shouldIntercept);`
-- **Pure JSDoc:**
-```javascript
-/** Method if */
-```
----
-#### METHOD: ContextInterceptor.catch
-- **Scope:** instance
-- **LLM Call Syntax:** `contextInterceptor.catch(error);`
-- **Pure JSDoc:**
-```javascript
-/** Method catch */
-```
----
-#### METHOD: ContextInterceptor.if
-- **Scope:** instance
-- **LLM Call Syntax:** `contextInterceptor.if(error instanceof CollectionProjectionError);`
-- **Pure JSDoc:**
-```javascript
-/** Method if */
-```
----
-#### METHOD: ContextInterceptor.if
-- **Scope:** instance
-- **LLM Call Syntax:** `contextInterceptor.if(outcome);`
-- **Pure JSDoc:**
-```javascript
-/** Method if */
-```
----
-#### METHOD: ContextInterceptor.switch
-- **Scope:** instance
-- **LLM Call Syntax:** `contextInterceptor.switch(outcome.action);`
-- **Pure JSDoc:**
-```javascript
-/** Method switch */
-```
----
-<br>
-
-## CLASS: or
-**File Path:** `ContextEngine/src/interceptors/ContextInterceptor.js`
-**Constructor Usage:** `const instance = new or();`
-**Description:** N/A
-
-### Raw JSDoc Context:
-```javascript
-/** Class definition */
-```
-
 <br>
 
 ## CLASS: CollectionProjectionInterceptor
-**File Path:** `ContextEngine/src/interceptors/CollectionProjectionInterceptor.js`
+**File Path:** `ContextEngine/src/interceptors/CollectionProjectionInterceptor.ts`
 **Constructor Usage:** `const instance = new CollectionProjectionInterceptor();`
 **Description:** Applies a CollectionProjector to configured collection paths after selected providers.
 
@@ -2570,30 +1329,38 @@ import { CollectionProjectionError } from '../internal/errors/CollectionProjecti
 /** Applies a CollectionProjector to configured collection paths after selected providers. */
 ```
 
-### Methods of CollectionProjectionInterceptor
+### Methods and properties of CollectionProjectionInterceptor
 
-#### METHOD: CollectionProjectionInterceptor.if
+#### METHOD: CollectionProjectionInterceptor._shouldIntercept
 - **Scope:** instance
-- **LLM Call Syntax:** `collectionProjectionInterceptor.if(!projector || typeof projector.project !);`
+- **LLM Call Syntax:** `collectionProjectionInterceptor._shouldIntercept();`
 - **Pure JSDoc:**
 ```javascript
-/** Method if */
+/** No comment available */
 ```
 ---
-#### METHOD: CollectionProjectionInterceptor.if
+#### METHOD: CollectionProjectionInterceptor._performIntercept
 - **Scope:** instance
-- **LLM Call Syntax:** `collectionProjectionInterceptor.if(config.optionFlag !);`
+- **LLM Call Syntax:** `collectionProjectionInterceptor._performIntercept();`
 - **Pure JSDoc:**
 ```javascript
-/** Method if */
+/** No comment available */
 ```
 ---
-#### METHOD: CollectionProjectionInterceptor.if
+#### METHOD: CollectionProjectionInterceptor._readTarget
 - **Scope:** instance
-- **LLM Call Syntax:** `collectionProjectionInterceptor.if(this._logger && typeof this._logger.debug);`
+- **LLM Call Syntax:** `collectionProjectionInterceptor._readTarget();`
 - **Pure JSDoc:**
 ```javascript
-/** Method if */
+/** No comment available */
+```
+---
+#### METHOD: CollectionProjectionInterceptor._writeTarget
+- **Scope:** instance
+- **LLM Call Syntax:** `collectionProjectionInterceptor._writeTarget();`
+- **Pure JSDoc:**
+```javascript
+/** No comment available */
 ```
 ---
 <br>

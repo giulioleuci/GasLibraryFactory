@@ -47,16 +47,19 @@ The project follows a **Clean Architecture** approach with a strictly layered de
 - **ComposableContentLib**: A framework for building modular, reusable UI components and dynamic content.
 - **GasDataImporter**: Specialized logic for handling large-scale data ingestion and validation.
 
-### Testing & Monitoring
+### Monitoring
+
+- **GasProcessMonitorLib**: Cache-backed job progress and step tracking, durable lifecycle state, and polling dashboard sidebars. Ported to TypeScript with its original lifecycle and UI tests.
+
+### Testing
 
 - **GasOnlineTestFramework**: A native, lightweight testing framework designed to run **directly inside the GAS environment**.
-- **GasProcessMonitorLib**: Telemetry and monitoring for tracking execution health across complex script chains.
 
 ---
 
 ## 🛠️ Technology Stack
 
-- **Language**: Modern JavaScript (ES2022+ / ES Modules).
+- **Language**: Strict TypeScript with ES Modules; Babel emits JavaScript for GAS V8.
 - **Bundler**: **Webpack 5** with tree-shaking and library-target optimization.
 - **Transpiler**: **Babel** targeting Chrome 80 (GAS V8 baseline).
 - **Local Testing**: **Jest** with extensive mocks for Google services.
@@ -67,7 +70,7 @@ The project follows a **Clean Architecture** approach with a strictly layered de
 
 ## 🚀 GAS V8 Compatibility & Transformations
 
-Google Apps Script's V8 engine lacks support for certain modern JS features and has specific performance constraints. Our build pipeline (`scripts/build-and-prepare.cjs`) automatically patches the bundle:
+Google Apps Script's V8 engine lacks support for certain modern JS features and has specific performance constraints. Our build pipeline (`scripts/build-and-prepare.cts`, compiled under `.cache/ts-tools/`) automatically patches the bundle:
 
 ### 1. Feature Polyfills & Shims
 
@@ -105,10 +108,14 @@ clasp login
 - **Testing**: `npm run build:testing` (Readable code, includes online test files).
 - **Offline Verification**: `npm run build:testoffline` (Runs full Jest suite against source + bundle).
 
+### Monitoring
+
+- **GasProcessMonitorLib**: Cache-backed job progress and step tracking, durable lifecycle state, and polling dashboard sidebars. Ported to TypeScript with its original lifecycle and UI tests.
+
 ### Testing
 
-- **Local**: `npm test` (Fast, mocked environment).
-- **Online**: `npm run push:testing` (Deploys to a test script for live environment verification).
+- **Local**: `npm test` (Unit and integration tests using mocks and fakes).
+- **Online**: `npm run push:testing`, then `runAllOnlineTests()` in GAS (Real Google API boundary tests only; see the [online test guide](__testOnline__/README.md)).
 
 ### Deployment
 
@@ -121,7 +128,7 @@ npm run push:production
 
 ## 🔍 Debugging & Source Maps
 
-Because the code is bundled into a single `dist/Code.js`, the project generates a custom **Source Map Index** (`dist/source-map-index.json`). This allows you to map stack traces from GAS execution logs back to the exact module and line in the original source code.
+Because the code is bundled into a single `dist/Code.js`, the project generates a custom **Source Map Index** (`dist/source-map-index.json`). This maps GAS stack traces back to the original TypeScript modules. Maps are generated before the final GAS compatibility patches, so line offsets near those patches are approximate; retain the build warning when investigating a trace.
 
 ---
 
@@ -132,3 +139,20 @@ This project is licensed under the **GNU General Public License v3** - see the [
 ---
 
 Created with ❤️ by **GasLibraryFactory**
+
+## TypeScript checks and documentation
+
+The sixteen library barrels, implementations, test SDKs, Jest suites, and maintained online tests are TypeScript. Relative `.js` import specifiers resolve to their `.ts` sources and remain valid in emitted declarations. GAS code is checked with ES2020 and Google Apps Script types; Node tooling has its own compiler project.
+
+```bash
+npm run typecheck          # Libraries and Jest sources
+npm run typecheck:tools    # Node tools and Webpack implementations
+npm run typecheck:online   # Global GAS scripts, without Node or DOM globals
+npm run build:types        # Declarations under .cache/types/
+npm run verify:typescript  # Complete local/CI acceptance sequence
+npm run docs               # Compile tools, then write DOCS_LIBS/*.md
+```
+
+`npm run build:tools` compiles the maintained `.ts`/`.cts` tools to `.cache/ts-tools/`. The native Webpack `.cjs` entry files load those compiled implementations. `npm run docs` erases TypeScript into comment-preserving `.cache/jsdoc/` JavaScript, parses it with real JSDoc, restores the original comments and `.ts` paths, and checks that every source class and direct method is represented. Condensed API files in `docs/` use the same parser; see [scripts/README.md](scripts/README.md).
+
+Local verification does not run Google APIs. Real GAS acceptance remains a separate step using `runAllOnlineTests()`; the [online guide](__testOnline__/README.md) records the preserved online-test limitation.

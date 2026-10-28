@@ -1,19 +1,7 @@
 # API Reference: DomainRepositoryLib
 
-## CLASS: with
-**File Path:** `DomainRepositoryLib/index.js`
-**Constructor Usage:** `const instance = new with();`
-**Description:** N/A
-
-### Raw JSDoc Context:
-```javascript
-/** Class definition */
-```
-
-<br>
-
 ## CLASS: ValueObject
-**File Path:** `DomainRepositoryLib/src/ValueObject.js`
+**File Path:** `DomainRepositoryLib/src/ValueObject.ts`
 **Constructor Usage:** `const instance = new ValueObject();`
 **Description:** Abstract base class for domain value objects, enforcing immutability and value-based equality.
 
@@ -26,14 +14,17 @@
  */
 ```
 
-### Methods of ValueObject
+### Methods and properties of ValueObject
 
-#### METHOD: ValueObject.if
+#### METHOD: ValueObject._freeze
 - **Scope:** instance
-- **LLM Call Syntax:** `valueObject.if(new.target);`
+- **LLM Call Syntax:** `valueObject._freeze();`
 - **Pure JSDoc:**
 ```javascript
-/** Method if */
+/**
+   * Finalizes the value object by making it immutable via Object.freeze.
+   * @protected
+   */
 ```
 ---
 #### METHOD: ValueObject.equals
@@ -48,52 +39,18 @@
    */
 ```
 ---
-#### METHOD: ValueObject.if
+#### METHOD: ValueObject._deepEquals
 - **Scope:** instance
-- **LLM Call Syntax:** `valueObject.if(!other || this.constructor !);`
+- **LLM Call Syntax:** `const result = valueObject._deepEquals(a, b);`
 - **Pure JSDoc:**
 ```javascript
-/** Method if */
-```
----
-#### METHOD: ValueObject.if
-- **Scope:** instance
-- **LLM Call Syntax:** `valueObject.if(a);`
-- **Pure JSDoc:**
-```javascript
-/** Method if */
-```
----
-#### METHOD: ValueObject.if
-- **Scope:** instance
-- **LLM Call Syntax:** `valueObject.if(typeof a !);`
-- **Pure JSDoc:**
-```javascript
-/** Method if */
-```
----
-#### METHOD: ValueObject.if
-- **Scope:** instance
-- **LLM Call Syntax:** `valueObject.if(typeof a !);`
-- **Pure JSDoc:**
-```javascript
-/** Method if */
-```
----
-#### METHOD: ValueObject.if
-- **Scope:** instance
-- **LLM Call Syntax:** `valueObject.if(a.length !);`
-- **Pure JSDoc:**
-```javascript
-/** Method if */
-```
----
-#### METHOD: ValueObject.if
-- **Scope:** instance
-- **LLM Call Syntax:** `valueObject.if(keysA.length !);`
-- **Pure JSDoc:**
-```javascript
-/** Method if */
+/**
+   * Recursively evaluates equality between two values, supporting primitives, arrays, and objects.
+   * @private
+   * @param {*} a First value.
+   * @param {*} b Second value.
+   * @returns {boolean} True if values are deeply equivalent.
+   */
 ```
 ---
 #### METHOD: ValueObject.toString
@@ -105,14 +62,6 @@
    * Generates a stringified representation of the value object's public properties.
    * @returns {string} Formatted class name and JSON-serialized state.
    */
-```
----
-#### METHOD: ValueObject.catch
-- **Scope:** instance
-- **LLM Call Syntax:** `valueObject.catch(_error);`
-- **Pure JSDoc:**
-```javascript
-/** Method catch */
 ```
 ---
 #### METHOD: ValueObject.getValue
@@ -130,72 +79,8 @@
 ---
 <br>
 
-## CLASS: directly
-**File Path:** `DomainRepositoryLib/src/ValueObject.js`
-**Constructor Usage:** `const instance = new directly();`
-**Description:** N/A
-
-### Raw JSDoc Context:
-```javascript
-/** Class definition */
-```
-
-### Methods of directly
-
-#### METHOD: directly.if
-- **Scope:** instance
-- **LLM Call Syntax:** `directly.if(new.target);`
-- **Pure JSDoc:**
-```javascript
-/** Method if */
-```
----
-#### METHOD: directly.if
-- **Scope:** instance
-- **LLM Call Syntax:** `directly.if(new.target);`
-- **Pure JSDoc:**
-```javascript
-/** Method if */
-```
----
-<br>
-
-## CLASS: name
-**File Path:** `DomainRepositoryLib/src/ValueObject.js`
-**Constructor Usage:** `const instance = new name();`
-**Description:** N/A
-
-### Raw JSDoc Context:
-```javascript
-/** Class definition */
-```
-
-### Methods of name
-
-#### METHOD: name.catch
-- **Scope:** instance
-- **LLM Call Syntax:** `name.catch(_error);`
-- **Pure JSDoc:**
-```javascript
-/** Method catch */
-```
----
-<br>
-
-## CLASS: fails
-**File Path:** `DomainRepositoryLib/src/ValueObject.js`
-**Constructor Usage:** `const instance = new fails();`
-**Description:** N/A
-
-### Raw JSDoc Context:
-```javascript
-/** Class definition */
-```
-
-<br>
-
 ## CLASS: Repository
-**File Path:** `DomainRepositoryLib/src/Repository.js`
+**File Path:** `DomainRepositoryLib/src/Repository.ts`
 **Constructor Usage:** `const instance = new Repository();`
 **Description:** Abstract base class for domain repositories, coordinating CRUD operations, specification-based querying, and entity mapping.
 
@@ -208,46 +93,60 @@
  */
 ```
 
-### Methods of Repository
+### Methods and properties of Repository
 
-#### METHOD: Repository.if
+#### METHOD: Repository._isDryRun
 - **Scope:** instance
-- **LLM Call Syntax:** `repository.if(new.target);`
+- **LLM Call Syntax:** `const result = repository._isDryRun(options);`
 - **Pure JSDoc:**
 ```javascript
-/** Method if */
+/**
+   * Evaluates if operations should be simulated based on instance state or method overrides.
+   * @private
+   * @param {Object} [options={}] Call-specific options.
+   * @returns {boolean} True if simulation mode is active.
+   */
 ```
 ---
-#### METHOD: Repository.if
+#### METHOD: Repository._getTable
 - **Scope:** instance
-- **LLM Call Syntax:** `repository.if(typeof options.dryRun);`
+- **LLM Call Syntax:** `const result = repository._getTable();`
 - **Pure JSDoc:**
 ```javascript
-/** Method if */
+/**
+   * Resolves the primary table service from the database container.
+   * @private
+   * @returns {Object} Table interface for persistence operations.
+   * @throws {DomainException} If database is invalid or table does not exist.
+   */
 ```
 ---
-#### METHOD: Repository.if
+#### METHOD: Repository._executeWithRetry
 - **Scope:** instance
-- **LLM Call Syntax:** `repository.if(!this.database || !this.database.tables);`
+- **LLM Call Syntax:** `const result = repository._executeWithRetry(operation, maxRetries);`
 - **Pure JSDoc:**
 ```javascript
-/** Method if */
+/**
+   * Wraps an operation in transient error handling logic if ExceptionService is available.
+   * @private
+   * @param {Function} operation Logical block to execute.
+   * @param {number} [maxRetries=3] Maximum attempt limit.
+   * @returns {*} Result of the logical block execution.
+   */
 ```
 ---
-#### METHOD: Repository.if
+#### METHOD: Repository._withKey
 - **Scope:** instance
-- **LLM Call Syntax:** `repository.if(!table);`
+- **LLM Call Syntax:** `const result = repository._withKey(rows);`
 - **Pure JSDoc:**
 ```javascript
-/** Method if */
-```
----
-#### METHOD: Repository.if
-- **Scope:** instance
-- **LLM Call Syntax:** `repository.if(this.exceptionService && typeof this.exceptionService.executeWithRetry);`
-- **Pure JSDoc:**
-```javascript
-/** Method if */
+/**
+   * Drops rows whose primary-key cell is blank (e.g. a checkbox column pre-filled below the
+   * data makes SheetDBLib return a row that has no identity). Such rows are never entities.
+   * @private
+   * @param {Array<Object>} rows Raw table rows.
+   * @returns {Array<Object>} Rows with a non-blank primary key.
+   */
 ```
 ---
 #### METHOD: Repository.find
@@ -261,22 +160,6 @@
    * @returns {Array<Object>} Collection of hydrated domain entities.
    * @throws {DomainException} If specification is invalid.
    */
-```
----
-#### METHOD: Repository.if
-- **Scope:** instance
-- **LLM Call Syntax:** `repository.if(!specification);`
-- **Pure JSDoc:**
-```javascript
-/** Method if */
-```
----
-#### METHOD: Repository.if
-- **Scope:** instance
-- **LLM Call Syntax:** `repository.if(validation.valid);`
-- **Pure JSDoc:**
-```javascript
-/** Method if */
 ```
 ---
 #### METHOD: Repository.findOne
@@ -303,38 +186,6 @@
    */
 ```
 ---
-#### METHOD: Repository.if
-- **Scope:** instance
-- **LLM Call Syntax:** `repository.if(this.cache);`
-- **Pure JSDoc:**
-```javascript
-/** Method if */
-```
----
-#### METHOD: Repository.if
-- **Scope:** instance
-- **LLM Call Syntax:** `repository.if(cached);`
-- **Pure JSDoc:**
-```javascript
-/** Method if */
-```
----
-#### METHOD: Repository.if
-- **Scope:** instance
-- **LLM Call Syntax:** `repository.if(!row);`
-- **Pure JSDoc:**
-```javascript
-/** Method if */
-```
----
-#### METHOD: Repository.if
-- **Scope:** instance
-- **LLM Call Syntax:** `repository.if(this.cache);`
-- **Pure JSDoc:**
-```javascript
-/** Method if */
-```
----
 #### METHOD: Repository.findByIdOrFail
 - **Scope:** instance
 - **LLM Call Syntax:** `const result = repository.findByIdOrFail(id);`
@@ -346,14 +197,6 @@
    * @returns {Object} Hydrated entity instance.
    * @throws {EntityNotFoundException} If no record matches the identifier.
    */
-```
----
-#### METHOD: Repository.if
-- **Scope:** instance
-- **LLM Call Syntax:** `repository.if(!entity);`
-- **Pure JSDoc:**
-```javascript
-/** Method if */
 ```
 ---
 #### METHOD: Repository.findAll
@@ -405,22 +248,6 @@
    */
 ```
 ---
-#### METHOD: Repository.if
-- **Scope:** instance
-- **LLM Call Syntax:** `repository.if(entity.id);`
-- **Pure JSDoc:**
-```javascript
-/** Method if */
-```
----
-#### METHOD: Repository.if
-- **Scope:** instance
-- **LLM Call Syntax:** `repository.if(this.cache);`
-- **Pure JSDoc:**
-```javascript
-/** Method if */
-```
----
 #### METHOD: Repository.saveMany
 - **Scope:** instance
 - **LLM Call Syntax:** `const result = repository.saveMany(entities);`
@@ -431,70 +258,6 @@
    * @param {Array<Object>} entities Collection of entities to save.
    * @returns {Array<Object>} Collection of successfully persisted entities.
    */
-```
----
-#### METHOD: Repository.if
-- **Scope:** instance
-- **LLM Call Syntax:** `repository.if(!entities || entities.length);`
-- **Pure JSDoc:**
-```javascript
-/** Method if */
-```
----
-#### METHOD: Repository.for
-- **Scope:** instance
-- **LLM Call Syntax:** `repository.for(const entity of entities);`
-- **Pure JSDoc:**
-```javascript
-/** Method for */
-```
----
-#### METHOD: Repository.if
-- **Scope:** instance
-- **LLM Call Syntax:** `repository.if(newEntities.length > 0);`
-- **Pure JSDoc:**
-```javascript
-/** Method if */
-```
----
-#### METHOD: Repository.for
-- **Scope:** instance
-- **LLM Call Syntax:** `repository.for(let i);`
-- **Pure JSDoc:**
-```javascript
-/** Method for */
-```
----
-#### METHOD: Repository.for
-- **Scope:** instance
-- **LLM Call Syntax:** `repository.for(const entity of existingEntities);`
-- **Pure JSDoc:**
-```javascript
-/** Method for */
-```
----
-#### METHOD: Repository.if
-- **Scope:** instance
-- **LLM Call Syntax:** `repository.if(existingEntities.length > 0);`
-- **Pure JSDoc:**
-```javascript
-/** Method if */
-```
----
-#### METHOD: Repository.if
-- **Scope:** instance
-- **LLM Call Syntax:** `repository.if(this.cache);`
-- **Pure JSDoc:**
-```javascript
-/** Method if */
-```
----
-#### METHOD: Repository.for
-- **Scope:** instance
-- **LLM Call Syntax:** `repository.for(const entity of savedEntities);`
-- **Pure JSDoc:**
-```javascript
-/** Method for */
 ```
 ---
 #### METHOD: Repository.patch
@@ -509,22 +272,6 @@
    * @returns {Object} The patched and re-validated entity.
    * @throws {DomainException} If entity lacks a valid identifier.
    */
-```
----
-#### METHOD: Repository.if
-- **Scope:** instance
-- **LLM Call Syntax:** `repository.if(!entity.id);`
-- **Pure JSDoc:**
-```javascript
-/** Method if */
-```
----
-#### METHOD: Repository.if
-- **Scope:** instance
-- **LLM Call Syntax:** `repository.if(this.cache);`
-- **Pure JSDoc:**
-```javascript
-/** Method if */
 ```
 ---
 #### METHOD: Repository.patchById
@@ -552,14 +299,6 @@
    */
 ```
 ---
-#### METHOD: Repository.if
-- **Scope:** instance
-- **LLM Call Syntax:** `repository.if(!entity.id);`
-- **Pure JSDoc:**
-```javascript
-/** Method if */
-```
----
 #### METHOD: Repository.deleteById
 - **Scope:** instance
 - **LLM Call Syntax:** `repository.deleteById(id);`
@@ -571,14 +310,6 @@
    */
 ```
 ---
-#### METHOD: Repository.if
-- **Scope:** instance
-- **LLM Call Syntax:** `repository.if(this.cache);`
-- **Pure JSDoc:**
-```javascript
-/** Method if */
-```
----
 #### METHOD: Repository.deleteMany
 - **Scope:** instance
 - **LLM Call Syntax:** `repository.deleteMany(entities);`
@@ -588,46 +319,6 @@
    * Removes multiple entities from the persistent store in a batch operation.
    * @param {Array<Object>} entities Collection of entities to remove.
    */
-```
----
-#### METHOD: Repository.if
-- **Scope:** instance
-- **LLM Call Syntax:** `repository.if(!entities || entities.length);`
-- **Pure JSDoc:**
-```javascript
-/** Method if */
-```
----
-#### METHOD: Repository.for
-- **Scope:** instance
-- **LLM Call Syntax:** `repository.for(const entity of entities);`
-- **Pure JSDoc:**
-```javascript
-/** Method for */
-```
----
-#### METHOD: Repository.if
-- **Scope:** instance
-- **LLM Call Syntax:** `repository.if(!entity.id);`
-- **Pure JSDoc:**
-```javascript
-/** Method if */
-```
----
-#### METHOD: Repository.if
-- **Scope:** instance
-- **LLM Call Syntax:** `repository.if(this.cache);`
-- **Pure JSDoc:**
-```javascript
-/** Method if */
-```
----
-#### METHOD: Repository.for
-- **Scope:** instance
-- **LLM Call Syntax:** `repository.for(const entity of entities);`
-- **Pure JSDoc:**
-```javascript
-/** Method for */
 ```
 ---
 #### METHOD: Repository.refresh
@@ -643,36 +334,15 @@
    */
 ```
 ---
-#### METHOD: Repository.if
+#### METHOD: Repository._clearCache
 - **Scope:** instance
-- **LLM Call Syntax:** `repository.if(!entity.id);`
+- **LLM Call Syntax:** `repository._clearCache();`
 - **Pure JSDoc:**
 ```javascript
-/** Method if */
-```
----
-#### METHOD: Repository.if
-- **Scope:** instance
-- **LLM Call Syntax:** `repository.if(!freshData);`
-- **Pure JSDoc:**
-```javascript
-/** Method if */
-```
----
-#### METHOD: Repository.if
-- **Scope:** instance
-- **LLM Call Syntax:** `repository.if(this.cache && typeof this.cache.remove);`
-- **Pure JSDoc:**
-```javascript
-/** Method if */
-```
----
-#### METHOD: Repository.if
-- **Scope:** instance
-- **LLM Call Syntax:** `repository.if(entityId);`
-- **Pure JSDoc:**
-```javascript
-/** Method if */
+/**
+   * Clears the cache for this repository.
+   * @private
+   */
 ```
 ---
 #### METHOD: Repository.getTable
@@ -710,50 +380,8 @@
 ---
 <br>
 
-## CLASS: directly
-**File Path:** `DomainRepositoryLib/src/Repository.js`
-**Constructor Usage:** `const instance = new directly();`
-**Description:** N/A
-
-### Raw JSDoc Context:
-```javascript
-/** Class definition */
-```
-
-### Methods of directly
-
-#### METHOD: directly.if
-- **Scope:** instance
-- **LLM Call Syntax:** `directly.if(new.target);`
-- **Pure JSDoc:**
-```javascript
-/** Method if */
-```
----
-#### METHOD: directly.if
-- **Scope:** instance
-- **LLM Call Syntax:** `directly.if(new.target);`
-- **Pure JSDoc:**
-```javascript
-/** Method if */
-```
----
-<br>
-
-## CLASS: constructor
-**File Path:** `DomainRepositoryLib/src/Repository.js`
-**Constructor Usage:** `const instance = new constructor();`
-**Description:** N/A
-
-### Raw JSDoc Context:
-```javascript
-/** Class definition */
-```
-
-<br>
-
 ## CLASS: Entity
-**File Path:** `DomainRepositoryLib/src/Entity.js`
+**File Path:** `DomainRepositoryLib/src/Entity.ts`
 **Constructor Usage:** `const instance = new Entity();`
 **Description:** Abstract base class for domain entities providing identity management, lifecycle tracking, and validation.
 
@@ -766,14 +394,55 @@
  */
 ```
 
-### Methods of Entity
+### Methods and properties of Entity
 
-#### METHOD: Entity.if
+#### PROPERTY: Entity.id
 - **Scope:** instance
-- **LLM Call Syntax:** `entity.if(new.target);`
+- **LLM Call Syntax:** `const result = entity.id;`
 - **Pure JSDoc:**
 ```javascript
-/** Method if */
+/**
+   * Sets the entity ID.
+   *
+   * @param {string} value - The entity ID
+   */
+```
+---
+#### PROPERTY: Entity.createdAt
+- **Scope:** instance
+- **LLM Call Syntax:** `const result = entity.createdAt;`
+- **Pure JSDoc:**
+```javascript
+/**
+   * Gets the creation timestamp.
+   *
+   * @returns {Date} The creation timestamp
+   */
+```
+---
+#### PROPERTY: Entity.updatedAt
+- **Scope:** instance
+- **LLM Call Syntax:** `const result = entity.updatedAt;`
+- **Pure JSDoc:**
+```javascript
+/**
+   * Gets the last update timestamp.
+   *
+   * @returns {Date} The last update timestamp
+   */
+```
+---
+#### METHOD: Entity._parseDate
+- **Scope:** instance
+- **LLM Call Syntax:** `const result = entity._parseDate(value);`
+- **Pure JSDoc:**
+```javascript
+/**
+   * Centralized date parser delegating to CoreUtilsLib for consistent format handling.
+   * @private
+   * @param {Date|string|number} value Raw date input.
+   * @returns {Date|null} Parsed Date object or null if unparseable.
+   */
 ```
 ---
 #### METHOD: Entity.markDirty
@@ -843,22 +512,6 @@
    */
 ```
 ---
-#### METHOD: Entity.for
-- **Scope:** instance
-- **LLM Call Syntax:** `entity.for(const field of this._dirtyFields);`
-- **Pure JSDoc:**
-```javascript
-/** Method for */
-```
----
-#### METHOD: Entity.if
-- **Scope:** instance
-- **LLM Call Syntax:** `entity.if(field in data);`
-- **Pure JSDoc:**
-```javascript
-/** Method if */
-```
----
 #### METHOD: Entity.storeOriginalData
 - **Scope:** instance
 - **LLM Call Syntax:** `entity.storeOriginalData(data);`
@@ -901,14 +554,6 @@
    * unaffected (no-op).
    * @param {Object} data Raw persistence record this entity was hydrated from.
    */
-```
----
-#### METHOD: Entity.if
-- **Scope:** instance
-- **LLM Call Syntax:** `entity.if(typeof this.constructor.getKnownColumns !);`
-- **Pure JSDoc:**
-```javascript
-/** Method if */
 ```
 ---
 #### METHOD: Entity.getDynamicColumns
@@ -1017,14 +662,6 @@
    */
 ```
 ---
-#### METHOD: Entity.if
-- **Scope:** instance
-- **LLM Call Syntax:** `entity.if(!this._id || !other._id);`
-- **Pure JSDoc:**
-```javascript
-/** Method if */
-```
----
 #### METHOD: Entity.toData
 - **Scope:** instance
 - **LLM Call Syntax:** `const result = entity.toData();`
@@ -1069,76 +706,13 @@
 ---
 <br>
 
-## CLASS: directly
-**File Path:** `DomainRepositoryLib/src/Entity.js`
-**Constructor Usage:** `const instance = new directly();`
-**Description:** N/A
-
-### Raw JSDoc Context:
-```javascript
-/** Class definition */
-```
-
-### Methods of directly
-
-#### METHOD: directly.if
-- **Scope:** instance
-- **LLM Call Syntax:** `directly.if(new.target);`
-- **Pure JSDoc:**
-```javascript
-/** Method if */
-```
----
-#### METHOD: directly.if
-- **Scope:** instance
-- **LLM Call Syntax:** `directly.if(new.target);`
-- **Pure JSDoc:**
-```javascript
-/** Method if */
-```
----
-<br>
-
-## CLASS: whose
-**File Path:** `DomainRepositoryLib/src/Entity.js`
-**Constructor Usage:** `const instance = new whose();`
-**Description:** N/A
-
-### Raw JSDoc Context:
-```javascript
-/** Class definition */
-```
-
-<br>
-
-## CLASS: to
-**File Path:** `DomainRepositoryLib/src/Entity.js`
-**Constructor Usage:** `const instance = new to();`
-**Description:** N/A
-
-### Raw JSDoc Context:
-```javascript
-/** Class definition */
-```
-
-<br>
-
 ## CLASS: Specification
-**File Path:** `DomainRepositoryLib/src/specifications/Specification.js`
+**File Path:** `DomainRepositoryLib/src/specifications/Specification.ts`
 **Constructor Usage:** `const instance = new Specification();`
-**Description:** Internal registry hook to inject CompositeSpecification and resolve circular dependencies.
+**Description:** Abstract base class for the Specification pattern, enabling encapsulated business rules with in-memory evaluation and database query translation.
 
 ### Raw JSDoc Context:
 ```javascript
-/**
- * Internal registry hook to inject CompositeSpecification and resolve circular dependencies.
- * @private
- * @param {Function} cls CompositeSpecification constructor.
- */
-export function _registerCompositeSpecification(cls) {
-  _CompositeSpecificationClass = cls;
-}
-
 /**
  * Abstract base class for the Specification pattern, enabling encapsulated business rules with in-memory evaluation and database query translation.
  * @abstract
@@ -1146,16 +720,8 @@ export function _registerCompositeSpecification(cls) {
  */
 ```
 
-### Methods of Specification
+### Methods and properties of Specification
 
-#### METHOD: Specification.if
-- **Scope:** instance
-- **LLM Call Syntax:** `specification.if(new.target);`
-- **Pure JSDoc:**
-```javascript
-/** Method if */
-```
----
 #### METHOD: Specification.isSatisfiedBy
 - **Scope:** instance
 - **LLM Call Syntax:** `const result = specification.isSatisfiedBy(entity);`
@@ -1240,39 +806,23 @@ export function _registerCompositeSpecification(cls) {
    */
 ```
 ---
-#### METHOD: Specification.toString
+#### METHOD: Specification.canBeTranslatedToQuery
 - **Scope:** instance
-- **LLM Call Syntax:** `const result = specification.toString();`
+- **LLM Call Syntax:** `const result = specification.canBeTranslatedToQuery();`
 - **Pure JSDoc:**
 ```javascript
 /**
    * Uses the static query-object path first, then probes genuine toQuery overrides.
    * @returns {boolean} True if the specification can be expressed as a database query.
    */
-  canBeTranslatedToQuery(queryObjectCriteria = this.toQueryObject()) {
-    if (queryObjectCriteria !== null && queryObjectCriteria !== undefined) {
-      return true;
-    }
-    if (this.toQuery === Specification.prototype.toQuery) {
-      return false;
-    }
-
-    try {
-      const mockBuilder = {
-        where: () => mockBuilder,
-        andWhere: () => mockBuilder,
-        orWhere: () => mockBuilder,
-        whereLike: () => mockBuilder,
-        whereIn: () => mockBuilder
-      };
-      this.toQuery(mockBuilder);
-      return true;
-    } catch (_error) {
-      return false;
-    }
-  }
-
-  /**
+```
+---
+#### METHOD: Specification.toString
+- **Scope:** instance
+- **LLM Call Syntax:** `const result = specification.toString();`
+- **Pure JSDoc:**
+```javascript
+/**
    * Returns a concise string representation of the specification type.
    * @returns {string} Formatted class name.
    */
@@ -1280,72 +830,8 @@ export function _registerCompositeSpecification(cls) {
 ---
 <br>
 
-## CLASS: directly
-**File Path:** `DomainRepositoryLib/src/specifications/Specification.js`
-**Constructor Usage:** `const instance = new directly();`
-**Description:** N/A
-
-### Raw JSDoc Context:
-```javascript
-/** Class definition */
-```
-
-### Methods of directly
-
-#### METHOD: directly.if
-- **Scope:** instance
-- **LLM Call Syntax:** `directly.if(new.target);`
-- **Pure JSDoc:**
-```javascript
-/** Method if */
-```
----
-#### METHOD: directly.if
-- **Scope:** instance
-- **LLM Call Syntax:** `directly.if(new.target);`
-- **Pure JSDoc:**
-```javascript
-/** Method if */
-```
----
-<br>
-
-## CLASS: fails
-**File Path:** `DomainRepositoryLib/src/specifications/Specification.js`
-**Constructor Usage:** `const instance = new fails();`
-**Description:** N/A
-
-### Raw JSDoc Context:
-```javascript
-/** Class definition */
-```
-
-<br>
-
-## CLASS: name
-**File Path:** `DomainRepositoryLib/src/specifications/Specification.js`
-**Constructor Usage:** `const instance = new name();`
-**Description:** N/A
-
-### Raw JSDoc Context:
-```javascript
-/** Class definition */
-```
-
-### Methods of name
-
-#### METHOD: name.catch
-- **Scope:** instance
-- **LLM Call Syntax:** `name.catch(_error);`
-- **Pure JSDoc:**
-```javascript
-/** Method catch */
-```
----
-<br>
-
 ## CLASS: FunctionSpecification
-**File Path:** `DomainRepositoryLib/src/specifications/FunctionSpecification.js`
+**File Path:** `DomainRepositoryLib/src/specifications/FunctionSpecification.ts`
 **Constructor Usage:** `const instance = new FunctionSpecification();`
 **Description:** Specification implementation using arbitrary JavaScript predicates for in-memory entity evaluation.
 
@@ -1358,16 +844,8 @@ export function _registerCompositeSpecification(cls) {
  */
 ```
 
-### Methods of FunctionSpecification
+### Methods and properties of FunctionSpecification
 
-#### METHOD: FunctionSpecification.if
-- **Scope:** instance
-- **LLM Call Syntax:** `functionSpecification.if(typeof predicateFunction !);`
-- **Pure JSDoc:**
-```javascript
-/** Method if */
-```
----
 #### METHOD: FunctionSpecification.isSatisfiedBy
 - **Scope:** instance
 - **LLM Call Syntax:** `const result = functionSpecification.isSatisfiedBy(entity);`
@@ -1381,17 +859,9 @@ export function _registerCompositeSpecification(cls) {
    */
 ```
 ---
-#### METHOD: FunctionSpecification.catch
-- **Scope:** instance
-- **LLM Call Syntax:** `functionSpecification.catch(error);`
-- **Pure JSDoc:**
-```javascript
-/** Method catch */
-```
----
 #### METHOD: FunctionSpecification.toQuery
 - **Scope:** instance
-- **LLM Call Syntax:** `functionSpecification.toQuery(_queryBuilder);`
+- **LLM Call Syntax:** `functionSpecification.toQuery();`
 - **Pure JSDoc:**
 ```javascript
 /**
@@ -1425,7 +895,7 @@ export function _registerCompositeSpecification(cls) {
 <br>
 
 ## CLASS: FieldSpecification
-**File Path:** `DomainRepositoryLib/src/specifications/FieldSpecification.js`
+**File Path:** `DomainRepositoryLib/src/specifications/FieldSpecification.ts`
 **Constructor Usage:** `const instance = new FieldSpecification();`
 **Description:** Atomic specification for comparing entity field values against specific criteria using common relational operators.
 
@@ -1438,30 +908,31 @@ export function _registerCompositeSpecification(cls) {
  */
 ```
 
-### Methods of FieldSpecification
+### Methods and properties of FieldSpecification
 
-#### METHOD: FieldSpecification.if
+#### METHOD: FieldSpecification._validateOperator
 - **Scope:** instance
-- **LLM Call Syntax:** `fieldSpecification.if(!entity);`
+- **LLM Call Syntax:** `fieldSpecification._validateOperator();`
 - **Pure JSDoc:**
 ```javascript
-/** Method if */
+/**
+   * Enforces usage of supported relational comparison operators.
+   * @private
+   * @throws {SpecificationException} If operator classification is unknown.
+   */
 ```
 ---
-#### METHOD: FieldSpecification.for
+#### METHOD: FieldSpecification._getFieldValue
 - **Scope:** instance
-- **LLM Call Syntax:** `fieldSpecification.for(const part of parts);`
+- **LLM Call Syntax:** `const result = fieldSpecification._getFieldValue(entity);`
 - **Pure JSDoc:**
 ```javascript
-/** Method for */
-```
----
-#### METHOD: FieldSpecification.if
-- **Scope:** instance
-- **LLM Call Syntax:** `fieldSpecification.if(value && typeof value);`
-- **Pure JSDoc:**
-```javascript
-/** Method if */
+/**
+   * Safely resolves the value of the target field from an entity instance, supporting nested path navigation.
+   * @private
+   * @param {Object} entity Target domain entity.
+   * @returns {*} Resolved field value or undefined if path resolution fails.
+   */
 ```
 ---
 #### METHOD: FieldSpecification.isSatisfiedBy
@@ -1475,46 +946,6 @@ export function _registerCompositeSpecification(cls) {
    * @returns {boolean} True if the entity field satisfies the comparison.
    * @throws {SpecificationException} If entity is null/undefined or if operator-specific value constraints are violated.
    */
-```
----
-#### METHOD: FieldSpecification.if
-- **Scope:** instance
-- **LLM Call Syntax:** `fieldSpecification.if(entity);`
-- **Pure JSDoc:**
-```javascript
-/** Method if */
-```
----
-#### METHOD: FieldSpecification.switch
-- **Scope:** instance
-- **LLM Call Syntax:** `fieldSpecification.switch(this._operator);`
-- **Pure JSDoc:**
-```javascript
-/** Method switch */
-```
----
-#### METHOD: FieldSpecification.if
-- **Scope:** instance
-- **LLM Call Syntax:** `fieldSpecification.if(this._secondValue);`
-- **Pure JSDoc:**
-```javascript
-/** Method if */
-```
----
-#### METHOD: FieldSpecification.if
-- **Scope:** instance
-- **LLM Call Syntax:** `fieldSpecification.if(typeof fieldValue !);`
-- **Pure JSDoc:**
-```javascript
-/** Method if */
-```
----
-#### METHOD: FieldSpecification.if
-- **Scope:** instance
-- **LLM Call Syntax:** `fieldSpecification.if(typeof fieldValue !);`
-- **Pure JSDoc:**
-```javascript
-/** Method if */
 ```
 ---
 #### METHOD: FieldSpecification.toQueryObject
@@ -1541,14 +972,6 @@ export function _registerCompositeSpecification(cls) {
    */
 ```
 ---
-#### METHOD: FieldSpecification.switch
-- **Scope:** instance
-- **LLM Call Syntax:** `fieldSpecification.switch(this._operator);`
-- **Pure JSDoc:**
-```javascript
-/** Method switch */
-```
----
 #### METHOD: FieldSpecification.toString
 - **Scope:** instance
 - **LLM Call Syntax:** `const result = fieldSpecification.toString();`
@@ -1560,18 +983,10 @@ export function _registerCompositeSpecification(cls) {
    */
 ```
 ---
-#### METHOD: FieldSpecification.if
-- **Scope:** instance
-- **LLM Call Syntax:** `fieldSpecification.if(this._operator);`
-- **Pure JSDoc:**
-```javascript
-/** Method if */
-```
----
 <br>
 
 ## CLASS: EqualityFieldSpec
-**File Path:** `DomainRepositoryLib/src/specifications/EqualityFieldSpec.js`
+**File Path:** `DomainRepositoryLib/src/specifications/EqualityFieldSpec.ts`
 **Constructor Usage:** `const instance = new EqualityFieldSpec();`
 **Description:** Specification di uguaglianza in cui isSatisfiedBy e toQueryObject sono
 coerenti per costruzione: il valore letto dall'entità e quello confrontato
@@ -1586,14 +1001,14 @@ nella query sono lo stesso.
  */
 ```
 
-### Methods of EqualityFieldSpec
+### Methods and properties of EqualityFieldSpec
 
 #### METHOD: EqualityFieldSpec.isSatisfiedBy
 - **Scope:** instance
-- **LLM Call Syntax:** `equalityFieldSpec.isSatisfiedBy(entity);`
+- **LLM Call Syntax:** `equalityFieldSpec.isSatisfiedBy();`
 - **Pure JSDoc:**
 ```javascript
-/** Method isSatisfiedBy */
+/** No comment available */
 ```
 ---
 #### METHOD: EqualityFieldSpec.toQueryObject
@@ -1601,7 +1016,7 @@ nella query sono lo stesso.
 - **LLM Call Syntax:** `equalityFieldSpec.toQueryObject();`
 - **Pure JSDoc:**
 ```javascript
-/** Method toQueryObject */
+/** No comment available */
 ```
 ---
 #### METHOD: EqualityFieldSpec.toString
@@ -1609,13 +1024,13 @@ nella query sono lo stesso.
 - **LLM Call Syntax:** `equalityFieldSpec.toString();`
 - **Pure JSDoc:**
 ```javascript
-/** Method toString */
+/** No comment available */
 ```
 ---
 <br>
 
 ## CLASS: CompositeSpecification
-**File Path:** `DomainRepositoryLib/src/specifications/CompositeSpecification.js`
+**File Path:** `DomainRepositoryLib/src/specifications/CompositeSpecification.ts`
 **Constructor Usage:** `const instance = new CompositeSpecification();`
 **Description:** Logic-based specification container combining multiple child specifications using AND, OR, or NOT operators.
 
@@ -1628,14 +1043,30 @@ nella query sono lo stesso.
  */
 ```
 
-### Methods of CompositeSpecification
+### Methods and properties of CompositeSpecification
 
-#### METHOD: CompositeSpecification.for
+#### METHOD: CompositeSpecification._validateOperator
 - **Scope:** instance
-- **LLM Call Syntax:** `compositeSpecification.for(const spec of this.specifications);`
+- **LLM Call Syntax:** `compositeSpecification._validateOperator();`
 - **Pure JSDoc:**
 ```javascript
-/** Method for */
+/**
+   * Enforces usage of supported logical operators.
+   * @private
+   * @throws {SpecificationException} If operator is not AND, OR, or NOT.
+   */
+```
+---
+#### METHOD: CompositeSpecification._validateSpecifications
+- **Scope:** instance
+- **LLM Call Syntax:** `compositeSpecification._validateSpecifications();`
+- **Pure JSDoc:**
+```javascript
+/**
+   * Verifies that the constituent collection contains valid Specification instances.
+   * @private
+   * @throws {SpecificationException} If the collection is empty or contains non-Specification types.
+   */
 ```
 ---
 #### METHOD: CompositeSpecification.isSatisfiedBy
@@ -1651,22 +1082,6 @@ nella query sono lo stesso.
    */
 ```
 ---
-#### METHOD: CompositeSpecification.switch
-- **Scope:** instance
-- **LLM Call Syntax:** `compositeSpecification.switch(this.operator);`
-- **Pure JSDoc:**
-```javascript
-/** Method switch */
-```
----
-#### METHOD: CompositeSpecification.if
-- **Scope:** instance
-- **LLM Call Syntax:** `compositeSpecification.if(this.specifications.length !);`
-- **Pure JSDoc:**
-```javascript
-/** Method if */
-```
----
 #### METHOD: CompositeSpecification.toQuery
 - **Scope:** instance
 - **LLM Call Syntax:** `const result = compositeSpecification.toQuery(queryBuilder);`
@@ -1680,118 +1095,6 @@ nella query sono lo stesso.
    */
 ```
 ---
-#### METHOD: CompositeSpecification.if
-- **Scope:** instance
-- **LLM Call Syntax:** `compositeSpecification.if(this.operator);`
-- **Pure JSDoc:**
-```javascript
-/** Method if */
-```
----
-#### METHOD: CompositeSpecification.for
-- **Scope:** instance
-- **LLM Call Syntax:** `compositeSpecification.for(const spec of this.specifications);`
-- **Pure JSDoc:**
-```javascript
-/** Method for */
-```
----
-#### METHOD: CompositeSpecification.for
-- **Scope:** instance
-- **LLM Call Syntax:** `compositeSpecification.for(let i);`
-- **Pure JSDoc:**
-```javascript
-/** Method for */
-```
----
-#### METHOD: CompositeSpecification.where
-- **Scope:** instance
-- **LLM Call Syntax:** `compositeSpecification.where(field, operator, value);`
-- **Pure JSDoc:**
-```javascript
-/** Method where */
-```
----
-#### METHOD: CompositeSpecification.andWhere
-- **Scope:** instance
-- **LLM Call Syntax:** `compositeSpecification.andWhere(field, operator, value);`
-- **Pure JSDoc:**
-```javascript
-/** Method andWhere */
-```
----
-#### METHOD: CompositeSpecification.orWhere
-- **Scope:** instance
-- **LLM Call Syntax:** `compositeSpecification.orWhere(field, operator, value);`
-- **Pure JSDoc:**
-```javascript
-/** Method orWhere */
-```
----
-#### METHOD: CompositeSpecification.whereLike
-- **Scope:** instance
-- **LLM Call Syntax:** `compositeSpecification.whereLike(field, pattern);`
-- **Pure JSDoc:**
-```javascript
-/** Method whereLike */
-```
----
-#### METHOD: CompositeSpecification.whereIn
-- **Scope:** instance
-- **LLM Call Syntax:** `compositeSpecification.whereIn(field, values);`
-- **Pure JSDoc:**
-```javascript
-/** Method whereIn */
-```
----
-#### METHOD: CompositeSpecification.for
-- **Scope:** instance
-- **LLM Call Syntax:** `compositeSpecification.for(const clause of tempBuilder._whereClauses);`
-- **Pure JSDoc:**
-```javascript
-/** Method for */
-```
----
-#### METHOD: CompositeSpecification.if
-- **Scope:** instance
-- **LLM Call Syntax:** `compositeSpecification.if(clause.operator);`
-- **Pure JSDoc:**
-```javascript
-/** Method if */
-```
----
-#### METHOD: CompositeSpecification.if
-- **Scope:** instance
-- **LLM Call Syntax:** `compositeSpecification.if(this.operator);`
-- **Pure JSDoc:**
-```javascript
-/** Method if */
-```
----
-#### METHOD: CompositeSpecification.if
-- **Scope:** instance
-- **LLM Call Syntax:** `compositeSpecification.if(clause.operator);`
-- **Pure JSDoc:**
-```javascript
-/** Method if */
-```
----
-#### METHOD: CompositeSpecification.if
-- **Scope:** instance
-- **LLM Call Syntax:** `compositeSpecification.if(this.operator);`
-- **Pure JSDoc:**
-```javascript
-/** Method if */
-```
----
-#### METHOD: CompositeSpecification.if
-- **Scope:** instance
-- **LLM Call Syntax:** `compositeSpecification.if(this.operator);`
-- **Pure JSDoc:**
-```javascript
-/** Method if */
-```
----
 #### METHOD: CompositeSpecification.canBeTranslatedToQuery
 - **Scope:** instance
 - **LLM Call Syntax:** `const result = compositeSpecification.canBeTranslatedToQuery();`
@@ -1801,14 +1104,6 @@ nella query sono lo stesso.
    * Determines if the entire composite tree possesses a supported database mapping.
    * @returns {boolean} True if all branches are translatable and no unsupported operators are present.
    */
-```
----
-#### METHOD: CompositeSpecification.if
-- **Scope:** instance
-- **LLM Call Syntax:** `compositeSpecification.if(this.operator);`
-- **Pure JSDoc:**
-```javascript
-/** Method if */
 ```
 ---
 #### METHOD: CompositeSpecification.toString
@@ -1822,18 +1117,10 @@ nella query sono lo stesso.
    */
 ```
 ---
-#### METHOD: CompositeSpecification.if
-- **Scope:** instance
-- **LLM Call Syntax:** `compositeSpecification.if(this.operator);`
-- **Pure JSDoc:**
-```javascript
-/** Method if */
-```
----
 <br>
 
 ## CLASS: QueryTranslator
-**File Path:** `DomainRepositoryLib/src/internal/query/QueryTranslator.js`
+**File Path:** `DomainRepositoryLib/src/internal/query/QueryTranslator.ts`
 **Constructor Usage:** `const instance = new QueryTranslator();`
 **Description:** Bridge for converting domain Specifications into SheetDBLib AdvancedQueryBuilder instructions.
 
@@ -1845,11 +1132,11 @@ nella query sono lo stesso.
  */
 ```
 
-### Methods of QueryTranslator
+### Methods and properties of QueryTranslator
 
 #### METHOD: QueryTranslator.translate
 - **Scope:** instance
-- **LLM Call Syntax:** `const result = queryTranslator.translate(specification, queryBuilder, {{valid:boolean,);`
+- **LLM Call Syntax:** `const result = queryTranslator.translate(specification, queryBuilder, validation);`
 - **Pure JSDoc:**
 ```javascript
 /**
@@ -1862,68 +1149,31 @@ nella query sono lo stesso.
    */
 ```
 ---
-#### METHOD: QueryTranslator.if
+#### METHOD: QueryTranslator._queryObjectCriteria
 - **Scope:** instance
-- **LLM Call Syntax:** `queryTranslator.if(!specification);`
+- **LLM Call Syntax:** `const result = queryTranslator._queryObjectCriteria(specification);`
 - **Pure JSDoc:**
 ```javascript
-/** Method if */
+/**
+   * Reads the equality-criteria fast path once for the current operation.
+   * @private
+   * @param {Object} specification Candidate specification.
+   * @returns {Record<string, unknown>|null} Equality criteria or null.
+   */
 ```
 ---
-#### METHOD: QueryTranslator.if
+#### METHOD: QueryTranslator._applyQueryObject
 - **Scope:** instance
-- **LLM Call Syntax:** `queryTranslator.if(!queryBuilder);`
+- **LLM Call Syntax:** `const result = queryTranslator._applyQueryObject(criteria, queryBuilder);`
 - **Pure JSDoc:**
 ```javascript
-/** Method if */
-```
----
-#### METHOD: QueryTranslator.if
-- **Scope:** instance
-- **LLM Call Syntax:** `queryTranslator.if(!analysis.valid);`
-- **Pure JSDoc:**
-```javascript
-/** Method if */
-```
----
-#### METHOD: QueryTranslator.if
-- **Scope:** instance
-- **LLM Call Syntax:** `queryTranslator.if(analysis.queryObjectCriteria !);`
-- **Pure JSDoc:**
-```javascript
-/** Method if */
-```
----
-#### METHOD: QueryTranslator.catch
-- **Scope:** instance
-- **LLM Call Syntax:** `queryTranslator.catch(error);`
-- **Pure JSDoc:**
-```javascript
-/** Method catch */
-```
----
-#### METHOD: QueryTranslator.if
-- **Scope:** instance
-- **LLM Call Syntax:** `queryTranslator.if(error instanceof SpecificationException);`
-- **Pure JSDoc:**
-```javascript
-/** Method if */
-```
----
-#### METHOD: QueryTranslator.catch
-- **Scope:** instance
-- **LLM Call Syntax:** `queryTranslator.catch(error);`
-- **Pure JSDoc:**
-```javascript
-/** Method catch */
-```
----
-#### METHOD: QueryTranslator.if
-- **Scope:** instance
-- **LLM Call Syntax:** `queryTranslator.if(error instanceof SpecificationException);`
-- **Pure JSDoc:**
-```javascript
-/** Method if */
+/**
+   * Applies a plain equality-criteria object (`{column: value}`) to a query builder.
+   * @private
+   * @param {Record<string, unknown>} criteria Equality criteria.
+   * @param {Object} queryBuilder database query constructor.
+   * @returns {Object} The configured query builder.
+   */
 ```
 ---
 #### METHOD: QueryTranslator.validate
@@ -1936,22 +1186,6 @@ nella query sono lo stesso.
    * @param {Object} specification Criteria to validate.
    * @returns {{valid:boolean, reason:string|null, queryObjectCriteria:Record<string, unknown>|null}} Validation outcome and the criterion evaluation for this operation.
    */
-```
----
-#### METHOD: QueryTranslator.if
-- **Scope:** instance
-- **LLM Call Syntax:** `queryTranslator.if(!specification);`
-- **Pure JSDoc:**
-```javascript
-/** Method if */
-```
----
-#### METHOD: QueryTranslator.if
-- **Scope:** instance
-- **LLM Call Syntax:** `queryTranslator.if(queryObjectCriteria !);`
-- **Pure JSDoc:**
-```javascript
-/** Method if */
 ```
 ---
 #### METHOD: QueryTranslator.tryTranslate
@@ -1967,18 +1201,10 @@ nella query sono lo stesso.
    */
 ```
 ---
-#### METHOD: QueryTranslator.catch
-- **Scope:** instance
-- **LLM Call Syntax:** `queryTranslator.catch(error);`
-- **Pure JSDoc:**
-```javascript
-/** Method catch */
-```
----
 <br>
 
 ## CLASS: MappingConfiguration
-**File Path:** `DomainRepositoryLib/src/internal/mapping/MappingConfiguration.js`
+**File Path:** `DomainRepositoryLib/src/internal/mapping/MappingConfiguration.ts`
 **Constructor Usage:** `const instance = new MappingConfiguration();`
 **Description:** Registry for entity mapping strategies, coordinating dynamic field aggregations and JSON property expansions.
 
@@ -1990,7 +1216,7 @@ nella query sono lo stesso.
  */
 ```
 
-### Methods of MappingConfiguration
+### Methods and properties of MappingConfiguration
 
 #### METHOD: MappingConfiguration.addDynamicFieldMapping
 - **Scope:** instance
@@ -2109,7 +1335,7 @@ nella query sono lo stesso.
 <br>
 
 ## CLASS: JsonExpansionMapping
-**File Path:** `DomainRepositoryLib/src/internal/mapping/JsonExpansionMapping.js`
+**File Path:** `DomainRepositoryLib/src/internal/mapping/JsonExpansionMapping.ts`
 **Constructor Usage:** `const instance = new JsonExpansionMapping();`
 **Description:** Configuration for JSON-expanded property mapping.
 Enables expanding a single JSON column into multiple first-class entity properties.
@@ -2124,30 +1350,18 @@ Enables expanding a single JSON column into multiple first-class entity properti
  */
 ```
 
-### Methods of JsonExpansionMapping
+### Methods and properties of JsonExpansionMapping
 
-#### METHOD: JsonExpansionMapping.if
+#### METHOD: JsonExpansionMapping._validate
 - **Scope:** instance
-- **LLM Call Syntax:** `jsonExpansionMapping.if(!this.column || typeof this.column !);`
+- **LLM Call Syntax:** `jsonExpansionMapping._validate();`
 - **Pure JSDoc:**
 ```javascript
-/** Method if */
-```
----
-#### METHOD: JsonExpansionMapping.for
-- **Scope:** instance
-- **LLM Call Syntax:** `jsonExpansionMapping.for(const prop of this.properties);`
-- **Pure JSDoc:**
-```javascript
-/** Method for */
-```
----
-#### METHOD: JsonExpansionMapping.if
-- **Scope:** instance
-- **LLM Call Syntax:** `jsonExpansionMapping.if(typeof prop !);`
-- **Pure JSDoc:**
-```javascript
-/** Method if */
+/**
+   * Enforces structural integrity of the expansion mapping configuration.
+   * @private
+   * @throws {Error} If column identifier is missing or properties list is invalid.
+   */
 ```
 ---
 #### METHOD: JsonExpansionMapping.hydrate
@@ -2162,78 +1376,6 @@ Enables expanding a single JSON column into multiple first-class entity properti
    */
 ```
 ---
-#### METHOD: JsonExpansionMapping.if
-- **Scope:** instance
-- **LLM Call Syntax:** `jsonExpansionMapping.if(!jsonValue);`
-- **Pure JSDoc:**
-```javascript
-/** Method if */
-```
----
-#### METHOD: JsonExpansionMapping.for
-- **Scope:** instance
-- **LLM Call Syntax:** `jsonExpansionMapping.for(const prop of this.properties);`
-- **Pure JSDoc:**
-```javascript
-/** Method for */
-```
----
-#### METHOD: JsonExpansionMapping.if
-- **Scope:** instance
-- **LLM Call Syntax:** `jsonExpansionMapping.if(typeof jsonValue);`
-- **Pure JSDoc:**
-```javascript
-/** Method if */
-```
----
-#### METHOD: JsonExpansionMapping.catch
-- **Scope:** instance
-- **LLM Call Syntax:** `jsonExpansionMapping.catch(parseError);`
-- **Pure JSDoc:**
-```javascript
-/** Method catch */
-```
----
-#### METHOD: JsonExpansionMapping.for
-- **Scope:** instance
-- **LLM Call Syntax:** `jsonExpansionMapping.for(const prop of this.properties);`
-- **Pure JSDoc:**
-```javascript
-/** Method for */
-```
----
-#### METHOD: JsonExpansionMapping.if
-- **Scope:** instance
-- **LLM Call Syntax:** `jsonExpansionMapping.if(typeof jsonValue);`
-- **Pure JSDoc:**
-```javascript
-/** Method if */
-```
----
-#### METHOD: JsonExpansionMapping.for
-- **Scope:** instance
-- **LLM Call Syntax:** `jsonExpansionMapping.for(const prop of this.properties);`
-- **Pure JSDoc:**
-```javascript
-/** Method for */
-```
----
-#### METHOD: JsonExpansionMapping.for
-- **Scope:** instance
-- **LLM Call Syntax:** `jsonExpansionMapping.for(const prop of this.properties);`
-- **Pure JSDoc:**
-```javascript
-/** Method for */
-```
----
-#### METHOD: JsonExpansionMapping.catch
-- **Scope:** instance
-- **LLM Call Syntax:** `jsonExpansionMapping.catch(error);`
-- **Pure JSDoc:**
-```javascript
-/** Method catch */
-```
----
 #### METHOD: JsonExpansionMapping.dehydrate
 - **Scope:** instance
 - **LLM Call Syntax:** `const result = jsonExpansionMapping.dehydrate(entityData);`
@@ -2244,38 +1386,6 @@ Enables expanding a single JSON column into multiple first-class entity properti
    * @param {Object} entityData Attributes containing expanded properties.
    * @returns {Object} Object containing the serialized JSON column.
    */
-```
----
-#### METHOD: JsonExpansionMapping.for
-- **Scope:** instance
-- **LLM Call Syntax:** `jsonExpansionMapping.for(const prop of this.properties);`
-- **Pure JSDoc:**
-```javascript
-/** Method for */
-```
----
-#### METHOD: JsonExpansionMapping.if
-- **Scope:** instance
-- **LLM Call Syntax:** `jsonExpansionMapping.if(prop in entityData);`
-- **Pure JSDoc:**
-```javascript
-/** Method if */
-```
----
-#### METHOD: JsonExpansionMapping.if
-- **Scope:** instance
-- **LLM Call Syntax:** `jsonExpansionMapping.if(value !);`
-- **Pure JSDoc:**
-```javascript
-/** Method if */
-```
----
-#### METHOD: JsonExpansionMapping.catch
-- **Scope:** instance
-- **LLM Call Syntax:** `jsonExpansionMapping.catch(error);`
-- **Pure JSDoc:**
-```javascript
-/** Method catch */
 ```
 ---
 #### METHOD: JsonExpansionMapping.getColumnName
@@ -2315,7 +1425,7 @@ Enables expanding a single JSON column into multiple first-class entity properti
 <br>
 
 ## CLASS: HydrationService
-**File Path:** `DomainRepositoryLib/src/internal/mapping/HydrationService.js`
+**File Path:** `DomainRepositoryLib/src/internal/mapping/HydrationService.ts`
 **Constructor Usage:** `const instance = new HydrationService();`
 **Description:** Orchestrator for transforming persistence data records into domain Entity instances and vice versa.
 
@@ -2327,7 +1437,7 @@ Enables expanding a single JSON column into multiple first-class entity properti
  */
 ```
 
-### Methods of HydrationService
+### Methods and properties of HydrationService
 
 #### METHOD: HydrationService.hydrate
 - **Scope:** instance
@@ -2391,14 +1501,6 @@ Enables expanding a single JSON column into multiple first-class entity properti
    */
 ```
 ---
-#### METHOD: HydrationService.if
-- **Scope:** instance
-- **LLM Call Syntax:** `hydrationService.if(entity && typeof entity.storeOriginalData);`
-- **Pure JSDoc:**
-```javascript
-/** Method if */
-```
----
 #### METHOD: HydrationService.clearDirtyFields
 - **Scope:** instance
 - **LLM Call Syntax:** `hydrationService.clearDirtyFields(entity);`
@@ -2408,14 +1510,6 @@ Enables expanding a single JSON column into multiple first-class entity properti
    * Resets the modification tracking registry on the specified entity.
    * @param {Object} entity Target domain entity.
    */
-```
----
-#### METHOD: HydrationService.if
-- **Scope:** instance
-- **LLM Call Syntax:** `hydrationService.if(entity && typeof entity.clearDirtyFields);`
-- **Pure JSDoc:**
-```javascript
-/** Method if */
 ```
 ---
 #### METHOD: HydrationService.refresh
@@ -2430,34 +1524,10 @@ Enables expanding a single JSON column into multiple first-class entity properti
    */
 ```
 ---
-#### METHOD: HydrationService.if
-- **Scope:** instance
-- **LLM Call Syntax:** `hydrationService.if(!entity || !data);`
-- **Pure JSDoc:**
-```javascript
-/** Method if */
-```
----
-#### METHOD: HydrationService.for
-- **Scope:** instance
-- **LLM Call Syntax:** `hydrationService.for(const key of keys);`
-- **Pure JSDoc:**
-```javascript
-/** Method for */
-```
----
-#### METHOD: HydrationService.if
-- **Scope:** instance
-- **LLM Call Syntax:** `hydrationService.if(key in entity);`
-- **Pure JSDoc:**
-```javascript
-/** Method if */
-```
----
 <br>
 
 ## CLASS: EntityMapper
-**File Path:** `DomainRepositoryLib/src/internal/mapping/EntityMapper.js`
+**File Path:** `DomainRepositoryLib/src/internal/mapping/EntityMapper.ts`
 **Constructor Usage:** `const instance = new EntityMapper();`
 **Description:** Bidirectional transformer between domain Entity instances and persistent data structures, managing complex mapping strategies.
 
@@ -2469,7 +1539,7 @@ Enables expanding a single JSON column into multiple first-class entity properti
  */
 ```
 
-### Methods of EntityMapper
+### Methods and properties of EntityMapper
 
 #### METHOD: EntityMapper.registerTransformer
 - **Scope:** instance
@@ -2520,76 +1590,46 @@ Enables expanding a single JSON column into multiple first-class entity properti
    */
 ```
 ---
-#### METHOD: EntityMapper.if
+#### METHOD: EntityMapper._serializeEntityFields
 - **Scope:** instance
-- **LLM Call Syntax:** `entityMapper.if(!entity);`
+- **LLM Call Syntax:** `const result = entityMapper._serializeEntityFields(entity);`
 - **Pure JSDoc:**
 ```javascript
-/** Method if */
+/**
+   * Serializes an entity with no `toData()` method by copying its own
+   * non-underscore-prefixed properties.
+   * @private
+   * @param {Object} entity Domain entity to serialize.
+   * @returns {Object} Plain data record.
+   */
 ```
 ---
-#### METHOD: EntityMapper.for
+#### METHOD: EntityMapper._applyDynamicColumnPassthrough
 - **Scope:** instance
-- **LLM Call Syntax:** `entityMapper.for(const [fieldName, transformer] of this._customTransformers);`
+- **LLM Call Syntax:** `entityMapper._applyDynamicColumnPassthrough(data, entity);`
 - **Pure JSDoc:**
 ```javascript
-/** Method for */
+/**
+   * Fills in any column captured by `Entity.captureDynamicColumns` that is not
+   * already present in `data`, so wide/dynamic-column tables round-trip through
+   * `Repository.save()` without the caller hand-building the merged row.
+   * @private
+   * @param {Object} data target data record (mutated in place).
+   * @param {Object} entity source domain entity.
+   */
 ```
 ---
-#### METHOD: EntityMapper.if
+#### METHOD: EntityMapper._serializeValue
 - **Scope:** instance
-- **LLM Call Syntax:** `entityMapper.if(fieldName in data);`
+- **LLM Call Syntax:** `const result = entityMapper._serializeValue(value);`
 - **Pure JSDoc:**
 ```javascript
-/** Method if */
-```
----
-#### METHOD: EntityMapper.for
-- **Scope:** instance
-- **LLM Call Syntax:** `entityMapper.for(const key of keys);`
-- **Pure JSDoc:**
-```javascript
-/** Method for */
-```
----
-#### METHOD: EntityMapper.if
-- **Scope:** instance
-- **LLM Call Syntax:** `entityMapper.if(typeof entity.getDynamicColumns !);`
-- **Pure JSDoc:**
-```javascript
-/** Method if */
-```
----
-#### METHOD: EntityMapper.if
-- **Scope:** instance
-- **LLM Call Syntax:** `entityMapper.if(value);`
-- **Pure JSDoc:**
-```javascript
-/** Method if */
-```
----
-#### METHOD: EntityMapper.if
-- **Scope:** instance
-- **LLM Call Syntax:** `entityMapper.if(value instanceof ValueObject);`
-- **Pure JSDoc:**
-```javascript
-/** Method if */
-```
----
-#### METHOD: EntityMapper.if
-- **Scope:** instance
-- **LLM Call Syntax:** `entityMapper.if(value instanceof Date);`
-- **Pure JSDoc:**
-```javascript
-/** Method if */
-```
----
-#### METHOD: EntityMapper.if
-- **Scope:** instance
-- **LLM Call Syntax:** `entityMapper.if(value && typeof value.toData);`
-- **Pure JSDoc:**
-```javascript
-/** Method if */
+/**
+   * Recursively reduces complex domain values (ValueObjects, Dates, nested Entities) into serializable primitives.
+   * @private
+   * @param {*} value domain-layer value to serialize.
+   * @returns {*} Persistence-ready value.
+   */
 ```
 ---
 #### METHOD: EntityMapper.fromData
@@ -2604,46 +1644,6 @@ Enables expanding a single JSON column into multiple first-class entity properti
    * @returns {Object|null} Hydrated domain entity or null if data is missing.
    * @throws {DomainException} If EntityClass is not provided.
    */
-```
----
-#### METHOD: EntityMapper.if
-- **Scope:** instance
-- **LLM Call Syntax:** `entityMapper.if(!data);`
-- **Pure JSDoc:**
-```javascript
-/** Method if */
-```
----
-#### METHOD: EntityMapper.if
-- **Scope:** instance
-- **LLM Call Syntax:** `entityMapper.if(!EntityClass);`
-- **Pure JSDoc:**
-```javascript
-/** Method if */
-```
----
-#### METHOD: EntityMapper.for
-- **Scope:** instance
-- **LLM Call Syntax:** `entityMapper.for(const [fieldName, transformer] of this._customTransformers);`
-- **Pure JSDoc:**
-```javascript
-/** Method for */
-```
----
-#### METHOD: EntityMapper.if
-- **Scope:** instance
-- **LLM Call Syntax:** `entityMapper.if(fieldName in transformedData);`
-- **Pure JSDoc:**
-```javascript
-/** Method if */
-```
----
-#### METHOD: EntityMapper.if
-- **Scope:** instance
-- **LLM Call Syntax:** `entityMapper.if(entity && typeof entity.captureDynamicColumns);`
-- **Pure JSDoc:**
-```javascript
-/** Method if */
 ```
 ---
 #### METHOD: EntityMapper.fromDataArray
@@ -2683,82 +1683,59 @@ Enables expanding a single JSON column into multiple first-class entity properti
    */
 ```
 ---
-#### METHOD: EntityMapper.if
+#### METHOD: EntityMapper._applyJsonExpansionHydration
 - **Scope:** instance
-- **LLM Call Syntax:** `entityMapper.if(!data);`
+- **LLM Call Syntax:** `entityMapper._applyJsonExpansionHydration(data);`
 - **Pure JSDoc:**
 ```javascript
-/** Method if */
+/**
+   * Executes JSON-to-property expansion mappings on the provided data record.
+   * @private
+   * @param {Object} data target data record (mutated in place).
+   */
 ```
 ---
-#### METHOD: EntityMapper.for
+#### METHOD: EntityMapper._applyJsonExpansionDehydration
 - **Scope:** instance
-- **LLM Call Syntax:** `entityMapper.for(const mapping of mappings);`
+- **LLM Call Syntax:** `entityMapper._applyJsonExpansionDehydration(data);`
 - **Pure JSDoc:**
 ```javascript
-/** Method for */
+/**
+   * Executes property-to-JSON collapse mappings on the provided data record.
+   * @private
+   * @param {Object} data target data record (mutated in place).
+   */
 ```
 ---
-#### METHOD: EntityMapper.for
+#### METHOD: EntityMapper._applyDynamicFieldHydration
 - **Scope:** instance
-- **LLM Call Syntax:** `entityMapper.for(const mapping of mappings);`
+- **LLM Call Syntax:** `entityMapper._applyDynamicFieldHydration(data);`
 - **Pure JSDoc:**
 ```javascript
-/** Method for */
+/**
+   * Executes multi-column-to-Map aggregation mappings on the provided data record.
+   * @private
+   * @param {Object} data target data record (mutated in place).
+   */
 ```
 ---
-#### METHOD: EntityMapper.for
+#### METHOD: EntityMapper._applyDynamicFieldDehydration
 - **Scope:** instance
-- **LLM Call Syntax:** `entityMapper.for(const mapping of mappings);`
+- **LLM Call Syntax:** `entityMapper._applyDynamicFieldDehydration(data, entity);`
 - **Pure JSDoc:**
 ```javascript
-/** Method for */
+/**
+   * Executes Map-to-multi-column decomposition mappings on the provided data record.
+   * @private
+   * @param {Object} data target data record (mutated in place).
+   * @param {Object} entity source domain entity for Map extraction.
+   */
 ```
 ---
-#### METHOD: EntityMapper.for
-- **Scope:** instance
-- **LLM Call Syntax:** `entityMapper.for(const mapping of mappings);`
-- **Pure JSDoc:**
-```javascript
-/** Method for */
-```
----
-#### METHOD: EntityMapper.if
-- **Scope:** instance
-- **LLM Call Syntax:** `entityMapper.if(mapValue);`
-- **Pure JSDoc:**
-```javascript
-/** Method if */
-```
----
-<br>
-
-## CLASS: and
-**File Path:** `DomainRepositoryLib/src/internal/mapping/EntityMapper.js`
-**Constructor Usage:** `const instance = new and();`
-**Description:** N/A
-
-### Raw JSDoc Context:
-```javascript
-/** Class definition */
-```
-
-<br>
-
-## CLASS: has
-**File Path:** `DomainRepositoryLib/src/internal/mapping/EntityMapper.js`
-**Constructor Usage:** `const instance = new has();`
-**Description:** N/A
-
-### Raw JSDoc Context:
-```javascript
-/** Class definition */
-```
-
 <br>
 
 ## CLASS: DynamicFieldMapping
-**File Path:** `DomainRepositoryLib/src/internal/mapping/DynamicFieldMapping.js`
+**File Path:** `DomainRepositoryLib/src/internal/mapping/DynamicFieldMapping.ts`
 **Constructor Usage:** `const instance = new DynamicFieldMapping();`
 **Description:** Configuration for schema-driven dynamic field mapping, aggregating multiple database columns into entity Map properties.
 
@@ -2770,46 +1747,18 @@ Enables expanding a single JSON column into multiple first-class entity properti
  */
 ```
 
-### Methods of DynamicFieldMapping
+### Methods and properties of DynamicFieldMapping
 
-#### METHOD: DynamicFieldMapping.if
+#### METHOD: DynamicFieldMapping._validate
 - **Scope:** instance
-- **LLM Call Syntax:** `dynamicFieldMapping.if(!this.propertyName || typeof this.propertyName !);`
+- **LLM Call Syntax:** `dynamicFieldMapping._validate();`
 - **Pure JSDoc:**
 ```javascript
-/** Method if */
-```
----
-#### METHOD: DynamicFieldMapping.if
-- **Scope:** instance
-- **LLM Call Syntax:** `dynamicFieldMapping.if(!this.schemaProvider || typeof this.schemaProvider !);`
-- **Pure JSDoc:**
-```javascript
-/** Method if */
-```
----
-#### METHOD: DynamicFieldMapping.if
-- **Scope:** instance
-- **LLM Call Syntax:** `dynamicFieldMapping.if(!this.columnPattern || typeof this.columnPattern !);`
-- **Pure JSDoc:**
-```javascript
-/** Method if */
-```
----
-#### METHOD: DynamicFieldMapping.if
-- **Scope:** instance
-- **LLM Call Syntax:** `dynamicFieldMapping.if(!this.aggregate || typeof this.aggregate !);`
-- **Pure JSDoc:**
-```javascript
-/** Method if */
-```
----
-#### METHOD: DynamicFieldMapping.if
-- **Scope:** instance
-- **LLM Call Syntax:** `dynamicFieldMapping.if(!this.expand || typeof this.expand !);`
-- **Pure JSDoc:**
-```javascript
-/** Method if */
+/**
+   * Enforces structural integrity of the mapping configuration.
+   * @private
+   * @throws {Error} If required configuration properties or transform functions are missing.
+   */
 ```
 ---
 #### METHOD: DynamicFieldMapping.hydrate
@@ -2824,30 +1773,6 @@ Enables expanding a single JSON column into multiple first-class entity properti
    */
 ```
 ---
-#### METHOD: DynamicFieldMapping.for
-- **Scope:** instance
-- **LLM Call Syntax:** `dynamicFieldMapping.for(const key of schemaKeys);`
-- **Pure JSDoc:**
-```javascript
-/** Method for */
-```
----
-#### METHOD: DynamicFieldMapping.if
-- **Scope:** instance
-- **LLM Call Syntax:** `dynamicFieldMapping.if(aggregatedValue !);`
-- **Pure JSDoc:**
-```javascript
-/** Method if */
-```
----
-#### METHOD: DynamicFieldMapping.catch
-- **Scope:** instance
-- **LLM Call Syntax:** `dynamicFieldMapping.catch(error);`
-- **Pure JSDoc:**
-```javascript
-/** Method catch */
-```
----
 #### METHOD: DynamicFieldMapping.dehydrate
 - **Scope:** instance
 - **LLM Call Syntax:** `const result = dynamicFieldMapping.dehydrate(mapValue);`
@@ -2858,14 +1783,6 @@ Enables expanding a single JSON column into multiple first-class entity properti
    * @param {Map<string, *>} mapValue Aggregated domain attribute state.
    * @returns {Object.<string, *>} Flattened persistence data record.
    */
-```
----
-#### METHOD: DynamicFieldMapping.catch
-- **Scope:** instance
-- **LLM Call Syntax:** `dynamicFieldMapping.catch(error);`
-- **Pure JSDoc:**
-```javascript
-/** Method catch */
 ```
 ---
 #### METHOD: DynamicFieldMapping.getColumnNames
@@ -2879,34 +1796,10 @@ Enables expanding a single JSON column into multiple first-class entity properti
    */
 ```
 ---
-#### METHOD: DynamicFieldMapping.for
-- **Scope:** instance
-- **LLM Call Syntax:** `dynamicFieldMapping.for(const key of schemaKeys);`
-- **Pure JSDoc:**
-```javascript
-/** Method for */
-```
----
-#### METHOD: DynamicFieldMapping.if
-- **Scope:** instance
-- **LLM Call Syntax:** `dynamicFieldMapping.if(typeof columns);`
-- **Pure JSDoc:**
-```javascript
-/** Method if */
-```
----
-#### METHOD: DynamicFieldMapping.catch
-- **Scope:** instance
-- **LLM Call Syntax:** `dynamicFieldMapping.catch(error);`
-- **Pure JSDoc:**
-```javascript
-/** Method catch */
-```
----
 <br>
 
 ## CLASS: SpecificationException
-**File Path:** `DomainRepositoryLib/src/internal/errors/SpecificationException.js`
+**File Path:** `DomainRepositoryLib/src/internal/errors/SpecificationException.ts`
 **Constructor Usage:** `const instance = new SpecificationException();`
 **Description:** Exception class for failures during specification evaluation or translation to persistent queries.
 
@@ -2919,7 +1812,7 @@ Enables expanding a single JSON column into multiple first-class entity properti
  */
 ```
 
-### Methods of SpecificationException
+### Methods and properties of SpecificationException
 
 #### METHOD: SpecificationException.getSpecificationType
 - **Scope:** instance
@@ -2935,7 +1828,7 @@ Enables expanding a single JSON column into multiple first-class entity properti
 <br>
 
 ## CLASS: InvariantViolationException
-**File Path:** `DomainRepositoryLib/src/internal/errors/InvariantViolationException.js`
+**File Path:** `DomainRepositoryLib/src/internal/errors/InvariantViolationException.ts`
 **Constructor Usage:** `const instance = new InvariantViolationException();`
 **Description:** Exception class for business rule violations that compromise aggregate integrity.
 
@@ -2948,7 +1841,7 @@ Enables expanding a single JSON column into multiple first-class entity properti
  */
 ```
 
-### Methods of InvariantViolationException
+### Methods and properties of InvariantViolationException
 
 #### METHOD: InvariantViolationException.getAggregateType
 - **Scope:** instance
@@ -2986,7 +1879,7 @@ Enables expanding a single JSON column into multiple first-class entity properti
 <br>
 
 ## CLASS: EntityNotFoundException
-**File Path:** `DomainRepositoryLib/src/internal/errors/EntityNotFoundException.js`
+**File Path:** `DomainRepositoryLib/src/internal/errors/EntityNotFoundException.ts`
 **Constructor Usage:** `const instance = new EntityNotFoundException();`
 **Description:** Exception class for failed entity resolution by identifier or search specification.
 
@@ -2999,7 +1892,7 @@ Enables expanding a single JSON column into multiple first-class entity properti
  */
 ```
 
-### Methods of EntityNotFoundException
+### Methods and properties of EntityNotFoundException
 
 #### METHOD: EntityNotFoundException.getEntityType
 - **Scope:** instance
@@ -3026,10 +1919,14 @@ Enables expanding a single JSON column into multiple first-class entity properti
 <br>
 
 ## CLASS: DomainException
-**File Path:** `DomainRepositoryLib/src/internal/errors/DomainException.js`
+**File Path:** `DomainRepositoryLib/src/internal/errors/DomainException.ts`
 **Constructor Usage:** `const instance = new DomainException();`
 **Description:** Foundational exception class for domain-layer errors, providing contextual metadata and serialization support.
-Extends the shared {
+Extends the shared {@link BaseError} to inherit standardized stack-trace capture and timestamping.
+
+Note: this class uses `context` as a short architectural label (a string) rather than the
+structured-metadata object used by {@link BaseError}; it is reassigned explicitly below to
+preserve that public contract.
 
 ### Raw JSDoc Context:
 ```javascript
@@ -3045,7 +1942,7 @@ Extends the shared {
  */
 ```
 
-### Methods of DomainException
+### Methods and properties of DomainException
 
 #### METHOD: DomainException.getDetails
 - **Scope:** instance
@@ -3071,3 +1968,36 @@ Extends the shared {
 ---
 <br>
 
+## GLOBAL FUNCTIONS
+
+### FUNCTION: assertSpecificationContract
+- **Source:** `DomainRepositoryLib/src/testing/specificationContract.ts`
+- **LLM Call Syntax:** `const result = assertSpecificationContract(spec, rows, hydrate);`
+- **Pure JSDoc:**
+```javascript
+/**
+ * Verifica che le due metà di una specification concordino. Se toQueryObject()
+ * è non-null, il filtro di uguaglianza deve selezionare ESATTAMENTE le stesse
+ * righe di isSatisfiedBy().
+ *
+ * @param {Object} spec Specification da verificare.
+ * @param {Array<Object>} rows Righe grezze rappresentative — positive E negative.
+ * @param {Function} hydrate Trasforma una riga nell'entità valutata dalla spec.
+ * @returns {{ok: boolean, divergenti: Array<Object>}}
+ */
+```
+
+---
+### FUNCTION: _registerCompositeSpecification
+- **Source:** `DomainRepositoryLib/src/specifications/Specification.ts`
+- **LLM Call Syntax:** `_registerCompositeSpecification(cls);`
+- **Pure JSDoc:**
+```javascript
+/**
+ * Internal registry hook to inject CompositeSpecification and resolve circular dependencies.
+ * @private
+ * @param {Function} cls CompositeSpecification constructor.
+ */
+```
+
+---

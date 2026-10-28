@@ -3,6 +3,7 @@
 Process monitoring and visualization layer for Google Apps Script applications.
 
 **Layer:** Presentation & Monitoring (Layer 4)  
+**Language:** TypeScript (strict, ES modules; Babel emits GAS V8 JavaScript)
 **Dependencies:** SheetDBLib, GoogleApiWrapper, CoreUtilsLib
 
 ## 🏗️ File and Folder Structure
@@ -12,8 +13,8 @@ A lean architecture focused on state tracking and UI rendering:
 ```text
 GasProcessMonitorLib/
 ├── src/
-│   ├── ProcessMonitorService.js # Core service for state tracking and persistence
-│   ├── DashboardUi.js           # UI logic for generating the monitoring sidebar
+│   ├── ProcessMonitorService.ts # Core service for state tracking and persistence
+│   ├── DashboardUi.ts           # UI logic for generating the monitoring sidebar
 │   └── __tests__/               # Unit and integration (loose-coupling) tests
 ```
 
@@ -42,7 +43,7 @@ GasProcessMonitorLib provides real-time process monitoring and visualization cap
 
 Import from the library:
 
-```javascript
+```typescript
 import { ProcessMonitorService, DashboardUi } from '@GasProcessMonitorLib';
 ```
 
@@ -55,7 +56,7 @@ import { ProcessMonitorService, DashboardUi } from '@GasProcessMonitorLib';
 
 ### 1. Initialize Services
 
-```javascript
+```typescript
 import { ProcessMonitorService, DashboardUi } from '@GasProcessMonitorLib';
 import { LoggerService } from '@CoreUtilsLib';
 import { CacheService, PropertiesService, UiService, ServiceFactory } from '@GoogleApiWrapper';
@@ -73,7 +74,7 @@ const dashboardUi = new DashboardUi(uiService, logger);
 
 ### 2. Track a Job
 
-```javascript
+```typescript
 function runImportWithMonitor() {
   const jobId = 'import-' + Date.now();
 
@@ -114,7 +115,7 @@ function runImportWithMonitor() {
 
 **Important**: Expose this global function for the dashboard polling to work:
 
-```javascript
+```typescript
 // In your main script (global scope)
 function getMonitorState(jobId) {
   return monitor.getJobState(jobId);
@@ -129,7 +130,7 @@ Main service for managing process state.
 
 #### Constructor
 
-```javascript
+```typescript
 new ProcessMonitorService(logger, cacheService, propertiesService);
 ```
 
@@ -170,7 +171,7 @@ Service for generating monitoring sidebars.
 
 #### Constructor
 
-```javascript
+```typescript
 new DashboardUi(uiService, logger);
 ```
 
@@ -182,7 +183,7 @@ new DashboardUi(uiService, logger);
 
 #### Options
 
-```javascript
+```typescript
 {
   pollingInterval: 1500,  // ms between polls
   width: 300              // sidebar width in px
@@ -193,7 +194,7 @@ new DashboardUi(uiService, logger);
 
 The `getJobState()` method returns:
 
-```javascript
+```typescript
 {
   jobId: 'import-123',
   status: 'running',        // pending | running | completed | failed
@@ -223,7 +224,7 @@ The `getJobState()` method returns:
 
 ### PipelineFramework Integration
 
-```javascript
+```typescript
 import { Pipeline } from '@PipelineFramework';
 
 // Pass monitor in constructor options
@@ -240,7 +241,7 @@ const pipeline = new Pipeline(logger, exceptionService, {
 
 ### JobRunnerLib Integration
 
-```javascript
+```typescript
 import { JobQueue } from '@JobRunnerLib';
 
 // Pass monitor in services object
@@ -259,7 +260,7 @@ function* myHandler(params) {
 
 ### GasDataImporter Integration
 
-```javascript
+```typescript
 import { ImportEngine } from '@GasDataImporter';
 
 // Pass monitor in constructor

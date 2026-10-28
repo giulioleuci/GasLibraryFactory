@@ -1,4 +1,5 @@
 import js from '@eslint/js';
+import tseslint from 'typescript-eslint';
 import prettier from 'eslint-plugin-prettier';
 import jest from 'eslint-plugin-jest';
 
@@ -10,8 +11,12 @@ export default [
   {
     ignores: [
       'node_modules/**',
+      'GLF_OLD/**',
+      'types/vendor/**',
       'dist/**',
       'coverage/**',
+      '.cache/**',
+      '.superpowers/**',
       'test/offline-bundle/**',
       '**/*.min.js',
       '.clasp.json',
@@ -21,7 +26,7 @@ export default [
 
   // Main configuration for all JavaScript files
   {
-    files: ['**/*.js'],
+    files: ['**/*.{js,ts,cts}'],
     languageOptions: {
       ecmaVersion: 2022,
       sourceType: 'module',
@@ -142,7 +147,12 @@ export default [
 
   // Jest test files configuration
   {
-    files: ['**/__tests__/**/*.js', '**/*.test.js', '**/*.spec.js', 'test/**/*.js'],
+    files: [
+      '**/__tests__/**/*.{js,ts,cts}',
+      '**/*.test.{js,ts}',
+      '**/*.spec.{js,ts}',
+      'test/**/*.{js,ts,cts}'
+    ],
     plugins: {
       jest
     },
@@ -180,7 +190,7 @@ export default [
 
   // Test doubles use Jest factories but do not always live under __tests__.
   {
-    files: ['**/testing/**/*.js'],
+    files: ['**/testing/**/*.{js,ts,cts}'],
     languageOptions: { globals: { jest: 'readonly' } },
     rules: { 'no-unused-vars': 'off', 'no-dupe-class-members': 'off' }
   },
@@ -188,7 +198,7 @@ export default [
   // Build scripts use CommonJS and need Node globals. Their .cjs extension
   // does not match the JavaScript rule block above.
   {
-    files: ['**/*.cjs'],
+    files: ['**/*.{cjs,cts}'],
     languageOptions: {
       sourceType: 'commonjs',
       globals: {
@@ -206,11 +216,11 @@ export default [
 
   // Existing public APIs retain compatibility parameters; track unused values
   // without failing CI until their callers can be migrated.
-  { files: ['**/*.js'], rules: { 'no-unused-vars': 'warn', 'prefer-const': 'warn' } },
+  { files: ['**/*.{js,ts,cts}'], rules: { 'no-unused-vars': 'warn', 'prefer-const': 'warn' } },
 
   // Online test files configuration (GAS environment)
   {
-    files: ['**/__testOnline__/**/*.js'],
+    files: ['**/__testOnline__/**/*.{js,ts,cts}'],
     rules: {
       // Online tests may have different patterns
       'no-unused-vars': 'warn'
@@ -239,7 +249,7 @@ export default [
   // (like the JobRunnerLib -> DriveApp leak closed in WP-05) fail CI.
   // ---------------------------------------------------------------------------
   {
-    files: ['**/src/**/*.js'],
+    files: ['**/src/**/*.{js,ts,cts}'],
     rules: {
       'no-restricted-globals': [
         'error',
@@ -272,19 +282,38 @@ export default [
   // - test/mocks/testing helpers: legitimately stub the globals.
   {
     files: [
-      'GoogleApiWrapper/**/*.js',
-      'GasOnlineTestFramework/**/*.js',
-      'CoreUtilsLib/src/internal/HashUtils.js',
-      'CoreUtilsLib/src/utils/IdGenerator.js',
-      '**/__tests__/**/*.js',
-      '**/*.test.js',
-      '**/*.spec.js',
-      'test/**/*.js',
-      '**/testing/**/*.js',
-      '**/__testOnline__/**/*.js'
+      'GoogleApiWrapper/**/*.{js,ts,cts}',
+      'GasOnlineTestFramework/**/*.{js,ts,cts}',
+      'CoreUtilsLib/src/internal/HashUtils.{js,ts}',
+      'CoreUtilsLib/src/utils/IdGenerator.{js,ts}',
+      '**/__tests__/**/*.{js,ts,cts}',
+      '**/*.test.{js,ts}',
+      '**/*.spec.{js,ts}',
+      'test/**/*.{js,ts,cts}',
+      '**/testing/**/*.{js,ts,cts}',
+      '**/__testOnline__/**/*.{js,ts,cts}'
     ],
     rules: {
       'no-restricted-globals': 'off'
     }
-  }
+  },
+  {
+    files: ['**/*.ts', '**/*.cts'],
+    languageOptions: { parser: tseslint.parser, sourceType: 'module' },
+    plugins: { '@typescript-eslint': tseslint.plugin },
+    rules: {
+      'no-undef': 'off',
+      'no-unused-vars': 'off',
+      'no-dupe-class-members': 'off',
+      'no-redeclare': 'off',
+      '@typescript-eslint/no-redeclare': 'error',
+      '@typescript-eslint/no-unused-vars': [
+        'warn',
+        { argsIgnorePattern: '^_', varsIgnorePattern: '^_', caughtErrorsIgnorePattern: '^_' }
+      ],
+      '@typescript-eslint/no-explicit-any': 'error',
+      '@typescript-eslint/consistent-type-imports': ['error', { disallowTypeAnnotations: false }]
+    }
+  },
+  { files: ['**/*.d.ts'], rules: { 'no-var': 'off' } }
 ];

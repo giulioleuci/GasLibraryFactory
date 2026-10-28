@@ -1,6 +1,6 @@
 # GasLibraryFactory Monorepo: Gemini CLI Context
 
-This project is a high-performance, enterprise-grade monorepo for developing 16 interconnected **Google Apps Script (GAS)** libraries. It uses modern JavaScript (ES Modules, classes) and a sophisticated build pipeline to ensure compatibility with the GAS V8 runtime.
+This project is a high-performance, enterprise-grade monorepo for developing 15 interconnected **Google Apps Script (GAS)** libraries. It uses modern JavaScript (ES Modules, classes) and a sophisticated build pipeline to ensure compatibility with the GAS V8 runtime.
 
 ## 🏗️ Project Architecture
 

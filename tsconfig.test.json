@@ -1,0 +1,36 @@
+{
+  "extends": "./tsconfig.base.json",
+  "compilerOptions": {
+    "types": ["google-apps-script", "node", "jest"]
+  },
+  "include": [
+    "ComposableContentLib/**/*",
+    "GasProcessMonitorLib/**/*",
+    "ContextEngine/**/*",
+    "CoreUtilsLib/**/*",
+    "DomainRepositoryLib/**/*",
+    "GasDataImporter/**/*",
+    "GasExpressionEngineLib/**/*",
+    "GasOnlineTestFramework/**/*",
+    "GasResilienceLib/**/*",
+    "GasSchemaValidatorLib/**/*",
+    "GoogleApiWrapper/**/*",
+    "JobRunnerLib/**/*",
+    "PipelineFramework/**/*",
+    "RoleResolutionLib/**/*",
+    "SheetDBLib/**/*",
+    "WorkspaceTemplateEngine/**/*",
+    "src/**/*",
+    "test/**/*",
+    "types/**/*.d.ts"
+  ],
+  "exclude": [
+    "node_modules",
+    "dist",
+    ".cache",
+    ".superpowers",
+    "**/__testOnline__/**",
+    "test/types/gas-platform.ts",
+    "test/types/published.ts"
+  ]
+}

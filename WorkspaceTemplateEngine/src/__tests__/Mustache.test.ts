@@ -1,0 +1,854 @@
+// ===================================================================
+// FILE: WorkspaceTemplateEngine/src/__tests__/Mustache.test.js
+// ===================================================================
+// Comprehensive test suite for Mustache template engine
+// Using centralized MockFactory for consistent mocking
+// ===================================================================
+
+import { Mustache } from '../facades/Mustache.js';
+import { FilterStrategy } from '../FilterStrategy.js';
+import { MockFactory } from '../../../test/fakes/index.js';
+
+describe('Mustache - Comprehensive Test Suite', () => {
+  let mustache: InstanceType<typeof Mustache>;
+  let logger: ReturnType<typeof MockFactory.createJestLogger>;
+
+  beforeEach(() => {
+    logger = MockFactory.createJestLogger();
+    mustache = new Mustache({ logger });
+  });
+
+  describe('Constructor and Initialization', () => {
+    it('should create instance with logger', () => {
+      const instance = new Mustache({ logger });
+      expect(instance).toBeInstanceOf(Mustache);
+    });
+
+    it('should create instance with default logger (console)', () => {
+      const instance = new Mustache({});
+      expect(instance).toBeInstanceOf(Mustache);
+    });
+
+    it('should initialize with built-in filters', () => {
+      const instance = new Mustache({ logger });
+      const result = instance.render('{{name | uppercase}}', { name: 'test' });
+      expect(result).toBe('TEST');
+    });
+  });
+
+  describe('Basic Variable Substitution', () => {
+    it('should substitute simple variable', () => {
+      const result = mustache.render('Hello {{name}}!', { name: 'World' });
+      expect(result).toBe('Hello World!');
+    });
+
+    it('should substitute multiple variables', () => {
+      const result = mustache.render('{{first}} {{last}}', {
+        first: 'John',
+        last: 'Doe'
+      });
+      expect(result).toBe('John Doe');
+    });
+
+    it('should substitute nested properties with dot notation', () => {
+      const result = mustache.render('{{user.name}}', {
+        user: { name: 'Alice' }
+      });
+      expect(result).toBe('Alice');
+    });
+
+    it('should handle missing variables gracefully', () => {
+      const result = mustache.render('Hello {{name}}!', {});
+      expect(result).toBe('Hello !');
+    });
+  });
+
+  describe('Sections - Conditional Rendering', () => {
+    it('should render section when value is truthy', () => {
+      const result = mustache.render('{{#show}}Visible{{/show}}', { show: true });
+      expect(result).toBe('Visible');
+    });
+
+    it('should not render section when value is falsy', () => {
+      const result = mustache.render('{{#show}}Hidden{{/show}}', { show: false });
+      expect(result).toBe('');
+    });
+
+    it('should iterate over array in section', () => {
+      const result = mustache.render('{{#items}}{{name}},{{/items}}', {
+        items: [{ name: 'A' }, { name: 'B' }]
+      });
+      expect(result).toBe('A,B,');
+    });
+  });
+
+  describe('Filters', () => {
+    it('should apply uppercase filter', () => {
+      const result = mustache.render('{{name | uppercase}}', { name: 'hello' });
+      expect(result).toBe('HELLO');
+    });
+
+    it('should apply lowercase filter', () => {
+      const result = mustache.render('{{name | lowercase}}', { name: 'HELLO' });
+      expect(result).toBe('hello');
+    });
+
+    it('should support built-in filters', () => {
+      const result = mustache.render('{{name | capitalize}}', { name: 'hello world' });
+      expect(result).toBe('Hello world');
+    });
+
+    it('should apply filter with single argument', () => {
+      const result = mustache.render('{{items | join:", "}}', { items: ['a', 'b', 'c'] });
+      expect(result).toBe('a, b, c');
+    });
+
+    it('should apply filter with multiple arguments', () => {
+      const result = mustache.render('{{names | join:", "}}', {
+        names: ['Alice', 'Bob', 'Charlie']
+      });
+      // Multiple arguments are passed to the filter
+      expect(result).toContain('Alice');
+      expect(result).toContain('Bob');
+    });
+
+    it('should chain multiple filters', () => {
+      const result = mustache.render('{{name | lowercase | capitalize}}', { name: 'HELLO WORLD' });
+      expect(result).toBe('Hello world');
+    });
+
+    it('should handle filter with no arguments', () => {
+      const result = mustache.render('{{name | uppercase}}', { name: 'test' });
+      expect(result).toBe('TEST');
+    });
+
+    it('should warn on invalid filter syntax', () => {
+      const result = mustache.render('{{name | [invalid]}}', { name: 'test' });
+      expect(logger.hasLog('WARN', /Invalid filter syntax/)).toBe(true);
+      expect(result).toBe('test');
+    });
+
+    it('should warn on unknown filter', () => {
+      const result = mustache.render('{{name | unknownFilter}}', { name: 'test' });
+      expect(logger.hasLog('WARN', /Filter not found/)).toBe(true);
+      expect(result).toBe('test');
+    });
+
+    it('should handle filter errors gracefully', () => {
+      // Create a custom filter that throws an error
+      class ErrorFilter extends FilterStrategy {
+        getName() {
+          return 'errorFilter';
+        }
+        getDescription() {
+          return 'Throws error';
+        }
+        execute() {
+          throw new Error('Filter error');
+        }
+      }
+      mustache.registerFilter(new ErrorFilter());
+
+      const result = mustache.render('{{name | errorFilter}}', { name: 'test' });
+      expect(logger.hasLog('ERROR', /Error applying filter/)).toBe(true);
+      expect(result).toBe('test'); // Should return original value
+    });
+
+    it('should parse filter arguments with strings', () => {
+      const result = mustache.render('{{items | join:","}}', { items: ['a', 'b'] });
+      // Note: join filter may add spaces depending on implementation
+      expect(result).toContain('a');
+      expect(result).toContain('b');
+    });
+
+    it('should parse filter arguments with numbers', () => {
+      const result = mustache.render('{{items | join:123}}', { items: ['a', 'b'] });
+      expect(result).toContain('a');
+    });
+
+    it('should parse filter arguments with booleans', () => {
+      const result = mustache.render('{{items | sortBy:"value",true}}', {
+        items: [{ value: 2 }, { value: 1 }]
+      });
+      // sortBy(array, key) only accepts a key; the boolean 3rd arg parses correctly
+      // (to `true`, not the string 'true') but is otherwise unused by the filter.
+      // The stringified array-of-objects result is what render() actually produces.
+      expect(result).toBe('[object Object],[object Object]');
+    });
+
+    it('should parse filter arguments with quoted strings', () => {
+      const result = mustache.render('{{items | join:", "}}', { items: ['x', 'y'] });
+      expect(result).toBe('x, y');
+    });
+
+    it('should parse filter arguments with single quotes', () => {
+      const result = mustache.render("{{items | join:', '}}", { items: ['x', 'y'] });
+      expect(result).toBe('x, y');
+    });
+  });
+
+  describe('Static Methods', () => {
+    it('should have di configuration', () => {
+      const di = Mustache.di;
+      expect(di.name).toBe('mustache');
+      expect(di.dependencies).toEqual(['logger']);
+      expect(di.isSingleton).toBe(true);
+      expect(typeof di.factory).toBe('function');
+    });
+
+    it('should create instance via di factory', () => {
+      const instance = Mustache.di.factory(logger);
+      expect(instance).toBeInstanceOf(Mustache);
+    });
+
+    it('should check null with isNullOrUndefined', () => {
+      expect(Mustache.isNullOrUndefined(null)).toBe(true);
+    });
+
+    it('should check undefined with isNullOrUndefined', () => {
+      expect(Mustache.isNullOrUndefined(undefined)).toBe(true);
+    });
+
+    it('should return false for non-null values with isNullOrUndefined', () => {
+      expect(Mustache.isNullOrUndefined(0)).toBe(false);
+      expect(Mustache.isNullOrUndefined('')).toBe(false);
+      expect(Mustache.isNullOrUndefined(false)).toBe(false);
+    });
+
+    it('should have TOKEN constants', () => {
+      expect(Mustache.TOKEN_TYPE).toBe(0);
+      expect(Mustache.TOKEN_VALUE).toBe(1);
+      expect(Mustache.TOKEN_START).toBe(2);
+      expect(Mustache.TOKEN_END).toBe(3);
+      expect(Mustache.TOKEN_CHILDREN).toBe(4);
+      expect(Mustache.TOKEN_INDEX).toBe(5);
+    });
+
+    it('should have TAG constants', () => {
+      expect(Mustache.TAG_SECTION).toBe('#');
+      expect(Mustache.TAG_INVERTED).toBe('^');
+      expect(Mustache.TAG_SECTION_END).toBe('/');
+      expect(Mustache.TAG_COMMENT).toBe('!');
+      expect(Mustache.TAG_PARTIAL).toBe('>');
+      expect(Mustache.TAG_UNESCAPED).toBe('&');
+      expect(Mustache.TAG_UNESCAPED_ALT).toBe('{');
+      expect(Mustache.TAG_VARIABLE).toBe('name');
+      expect(Mustache.TAG_TEXT).toBe('text');
+    });
+  });
+
+  describe('getValue Method', () => {
+    it('should return undefined for null data', () => {
+      expect(mustache.getValue('key', null)).toBeUndefined();
+    });
+
+    it('should return undefined for undefined data', () => {
+      expect(mustache.getValue('key', undefined)).toBeUndefined();
+    });
+
+    it('should return undefined for empty key', () => {
+      expect(mustache.getValue('', { key: 'value' })).toBeUndefined();
+    });
+
+    it('should return undefined for null key', () => {
+      expect(mustache.getValue(null, { key: 'value' })).toBeUndefined();
+    });
+
+    it('should get simple property', () => {
+      expect(mustache.getValue('name', { name: 'test' })).toBe('test');
+    });
+
+    it('should get nested property', () => {
+      expect(mustache.getValue('user.name', { user: { name: 'John' } })).toBe('John');
+    });
+
+    it('should get deeply nested property', () => {
+      const data = { a: { b: { c: { d: 'value' } } } };
+      expect(mustache.getValue('a.b.c.d', data)).toBe('value');
+    });
+
+    it('should return undefined for missing nested property', () => {
+      expect(mustache.getValue('user.name', { user: {} })).toBeUndefined();
+    });
+
+    it('should return undefined for property on null', () => {
+      expect(mustache.getValue('user.name', { user: null })).toBeUndefined();
+    });
+
+    it('should return undefined for property on undefined', () => {
+      expect(mustache.getValue('user.name', { user: undefined })).toBeUndefined();
+    });
+
+    it('should prevent prototype pollution via __proto__', () => {
+      expect(mustache.getValue('__proto__', {})).toBeUndefined();
+    });
+
+    it('should prevent prototype pollution via constructor', () => {
+      expect(mustache.getValue('constructor', {})).toBeUndefined();
+    });
+
+    it('should prevent prototype pollution via prototype', () => {
+      expect(mustache.getValue('prototype', {})).toBeUndefined();
+    });
+
+    it('should prevent prototype pollution in nested keys', () => {
+      expect(mustache.getValue('user.__proto__', { user: {} })).toBeUndefined();
+    });
+
+    it('should use hasOwnProperty for property access', () => {
+      const data = Object.create({ inherited: 'value' });
+      data.own = 'ownValue';
+      expect(mustache.getValue('own', data)).toBe('ownValue');
+      expect(mustache.getValue('inherited', data)).toBeUndefined();
+    });
+  });
+
+  describe('Cache Management', () => {
+    it('should cache parsed templates', () => {
+      const template = '{{name}}';
+      mustache.render(template, { name: 'first' });
+      mustache.render(template, { name: 'second' });
+      // Same template + same tags => single cache entry, reused on the 2nd render.
+      expect(Object.keys(mustache.templateCache)).toEqual(['{{name}}:{{:}}']);
+    });
+
+    it('should use cached templates for better performance', () => {
+      const template = '{{name}}';
+      mustache.render(template, { name: 'first' });
+      const cacheSize = Object.keys(mustache.templateCache).length;
+      mustache.render(template, { name: 'second' });
+      expect(Object.keys(mustache.templateCache).length).toBe(cacheSize);
+    });
+  });
+
+  describe('Partial Templates', () => {
+    it('should use additional partials in render', () => {
+      const result = mustache.render(
+        '{{>temp}}',
+        { value: 'test' },
+        {
+          temp: '{{value}}'
+        }
+      );
+      expect(result).toBe('test');
+    });
+
+    it('should handle missing partial gracefully', () => {
+      const result = mustache.render('{{>missing}}', {});
+      expect(result).toBe('');
+    });
+
+    it('should support partial as function in partials object', () => {
+      // Note: The third parameter must be an object, but the partial values
+      // can be accessed via a function internally during rendering
+      const result = mustache.render(
+        '{{>test}}',
+        { value: 'result' },
+        {
+          test: '{{value}}'
+        }
+      );
+      expect(result).toBe('result');
+    });
+
+    it('should return empty string for null partial value', () => {
+      const result = mustache.render('{{>test}}', {}, { test: null });
+      expect(result).toBe('');
+    });
+  });
+
+  describe('Filter Registration', () => {
+    it('should register custom filter', () => {
+      class DoubleFilter extends FilterStrategy {
+        getName() {
+          return 'double';
+        }
+        getDescription() {
+          return 'Doubles a number';
+        }
+        execute(value: number) {
+          return value * 2;
+        }
+      }
+
+      mustache.registerFilter(new DoubleFilter());
+      const result = mustache.render('{{num | double}}', { num: 5 });
+      expect(result).toBe('10');
+    });
+
+    it('should throw error for non-FilterStrategy registration', () => {
+      expect(() => {
+        // @ts-expect-error Deliberately invalid input exercises the existing runtime validation.
+        mustache.registerFilter({ name: 'invalid' });
+      }).toThrow();
+    });
+
+    it('should throw error for function-based filter', () => {
+      expect(() => {
+        // @ts-expect-error Deliberately invalid input exercises the existing runtime validation.
+        mustache.registerFilter(() => 'value');
+      }).toThrow();
+    });
+  });
+
+  describe('Render Error Handling', () => {
+    it('should throw error for non-string template', () => {
+      expect(() => {
+        // @ts-expect-error Deliberately invalid input exercises the existing runtime validation.
+        mustache.render(123, {});
+      }).toThrow('template must be a string');
+    });
+
+    it('should throw error for invalid data type', () => {
+      expect(() => {
+        // @ts-expect-error Deliberately invalid input exercises the existing runtime validation.
+        mustache.render('{{name}}', 'invalid');
+      }).toThrow('data must be an object or null');
+    });
+
+    it('should throw error for array as additionalPartials', () => {
+      expect(() => {
+        // @ts-expect-error Deliberately invalid input exercises the existing runtime validation.
+        mustache.render('{{name}}', {}, []);
+      }).toThrow('additionalPartials must be an object, not an array');
+    });
+
+    it('should throw error for invalid additionalPartials type', () => {
+      expect(() => {
+        // @ts-expect-error Deliberately invalid input exercises the existing runtime validation.
+        mustache.render('{{name}}', {}, 'invalid');
+      }).toThrow('additionalPartials must be an object or null');
+    });
+
+    it('should handle render errors gracefully', () => {
+      // Create a malformed template that will cause an error during rendering
+      const result = mustache.render('{{#unclosed}}', {});
+      expect(result).toContain('[RENDER ERROR:');
+      const errorLogs = logger.getLogsByLevel('ERROR');
+      expect(errorLogs).toHaveLength(1);
+      expect(errorLogs[0].message).toContain('MyMustache render error');
+      expect(errorLogs[0].message).toContain('Unclosed section');
+    });
+
+    it('should accept null data', () => {
+      const result = mustache.render('Hello!', null);
+      expect(result).toBe('Hello!');
+    });
+
+    it('should accept null additionalPartials', () => {
+      const result = mustache.render('Hello!', {}, null);
+      expect(result).toBe('Hello!');
+    });
+  });
+
+  describe('Inverted Sections', () => {
+    it('should render inverted section when value is falsy', () => {
+      const result = mustache.render('{{^show}}Hidden{{/show}}', { show: false });
+      expect(result).toBe('Hidden');
+    });
+
+    it('should not render inverted section when value is truthy', () => {
+      const result = mustache.render('{{^show}}Hidden{{/show}}', { show: true });
+      expect(result).toBe('');
+    });
+
+    it('should render inverted section for empty array', () => {
+      const result = mustache.render('{{^items}}No items{{/items}}', { items: [] });
+      expect(result).toBe('No items');
+    });
+
+    it('should not render inverted section for non-empty array', () => {
+      const result = mustache.render('{{^items}}No items{{/items}}', { items: [1] });
+      expect(result).toBe('');
+    });
+
+    it('should render inverted section for undefined value', () => {
+      const result = mustache.render('{{^value}}Missing{{/value}}', {});
+      expect(result).toBe('Missing');
+    });
+
+    it('should render inverted section for null value', () => {
+      const result = mustache.render('{{^value}}Missing{{/value}}', { value: null });
+      expect(result).toBe('Missing');
+    });
+  });
+
+  describe('Section Rendering Edge Cases', () => {
+    it('should render section with object value', () => {
+      const result = mustache.render('{{#user}}{{name}}{{/user}}', {
+        user: { name: 'John' }
+      });
+      expect(result).toBe('John');
+    });
+
+    it('should render section with truthy primitive', () => {
+      const result = mustache.render('{{#show}}Yes{{/show}}', { show: 'truthy' });
+      expect(result).toBe('Yes');
+    });
+
+    it('should not render section with falsy value', () => {
+      const result = mustache.render('{{#show}}Yes{{/show}}', { show: null });
+      expect(result).toBe('');
+    });
+
+    it('should render section with function value', () => {
+      // Note: In this Mustache implementation, functions in sections work differently
+      // If the value is a function, it may or may not be called as a lambda
+      // Let's test that sections with functions don't crash
+      const data = {
+        wrapped: function () {
+          return 'value';
+        }
+      };
+      const result = mustache.render('{{#wrapped}}Content{{/wrapped}}', data);
+      // context.lookup() eagerly calls functions (see _MustacheContext.lookup), so the
+      // section value is the string 'value' by the time _renderSection sees it: a
+      // truthy, non-array, non-object, non-function value renders the section body
+      // literally against the unchanged (not pushed) context.
+      expect(result).toBe('Content');
+    });
+
+    it('should handle section with function in data', () => {
+      // Test that having a function in the data doesn't break rendering
+      const data = {
+        fn: function () {
+          return 'test';
+        }
+      };
+      const result = mustache.render('{{#fn}}Text{{/fn}}', data);
+      // Same eager function-resolution as above: the section body renders literally.
+      expect(result).toBe('Text');
+    });
+
+    it('should handle function returning null', () => {
+      const data = {
+        fn: function () {
+          return null;
+        }
+      };
+      const result = mustache.render('{{#fn}}Text{{/fn}}', data);
+      expect(result).toBe('');
+    });
+  });
+
+  describe('HTML Escaping', () => {
+    it('uses the shared five-character HTML escaping contract internally', () => {
+      expect(mustache._escapeHtml(`&<>"'`)).toBe('&amp;&lt;&gt;&quot;&#39;');
+    });
+
+    it('should pass through HTML content in GAS context', () => {
+      // GAS context: HTML escaping is not appropriate for Google Docs/Sheets output.
+      // HTML entities would appear as literal text in documents.
+      const result = mustache.render('{{html}}', { html: '<script>alert("xss")</script>' });
+      expect(result).toBe('<script>alert("xss")</script>');
+    });
+
+    it('should pass through ampersand in GAS context', () => {
+      const result = mustache.render('{{text}}', { text: 'A & B' });
+      expect(result).toBe('A & B');
+    });
+
+    it('should pass through quotes in GAS context', () => {
+      const result = mustache.render('{{text}}', { text: '"quoted" and \'single\'' });
+      expect(result).toBe('"quoted" and \'single\'');
+    });
+
+    it('should pass through backtick in GAS context', () => {
+      const result = mustache.render('{{text}}', { text: '`backtick`' });
+      expect(result).toBe('`backtick`');
+    });
+
+    it('should pass through equals sign in GAS context', () => {
+      const result = mustache.render('{{text}}', { text: 'a=b' });
+      expect(result).toBe('a=b');
+    });
+
+    it('should pass through HTML tags in GAS context', () => {
+      const result = mustache.render('{{text}}', { text: '</script>' });
+      expect(result).toBe('</script>');
+    });
+
+    it('should not escape with unescaped tag (&)', () => {
+      const result = mustache.render('{{&html}}', { html: '<b>Bold</b>' });
+      expect(result).toBe('<b>Bold</b>');
+    });
+
+    it('should not escape with triple mustache', () => {
+      const result = mustache.render('{{{html}}}', { html: '<b>Bold</b>' });
+      expect(result).toBe('<b>Bold</b>');
+    });
+  });
+
+  describe('Complex Template Parsing', () => {
+    it('should parse empty template', () => {
+      const result = mustache.render('', {});
+      expect(result).toBe('');
+    });
+
+    it('should parse template with only text', () => {
+      const result = mustache.render('Plain text', {});
+      expect(result).toBe('Plain text');
+    });
+
+    it('should parse template with comments', () => {
+      const result = mustache.render('Before{{! This is a comment }}After', {});
+      expect(result).toBe('BeforeAfter');
+    });
+
+    it('should handle whitespace correctly', () => {
+      const result = mustache.render('  {{name}}  ', { name: 'test' });
+      expect(result).toBe('  test  ');
+    });
+
+    it('should handle newlines correctly', () => {
+      const result = mustache.render('Line1\n{{name}}\nLine2', { name: 'test' });
+      expect(result).toBe('Line1\ntest\nLine2');
+    });
+
+    it('should handle Unicode characters', () => {
+      const result = mustache.render('{{text}}', { text: '🎉 emoji 中文' });
+      expect(result).toBe('🎉 emoji 中文');
+    });
+
+    it('should handle multi-byte Unicode in template', () => {
+      const result = mustache.render('Hello 🌍 {{name}}', { name: 'World' });
+      expect(result).toBe('Hello 🌍 World');
+    });
+
+    it('should throw error for unclosed tag', () => {
+      const result = mustache.render('{{name', {});
+      expect(result).toContain('[RENDER ERROR:');
+    });
+
+    it('should throw error for unopened section', () => {
+      const result = mustache.render('{{/section}}', {});
+      expect(result).toContain('[RENDER ERROR:');
+      expect(result).toContain('Unopened section');
+    });
+
+    it('should throw error for unclosed section', () => {
+      const result = mustache.render('{{#section}}content', {});
+      expect(result).toContain('[RENDER ERROR:');
+      expect(result).toContain('Unclosed section');
+    });
+
+    it('should throw error for mismatched section tags', () => {
+      const result = mustache.render('{{#section}}{{/different}}', {});
+      expect(result).toContain('[RENDER ERROR:');
+    });
+
+    it('should handle nested sections', () => {
+      const result = mustache.render('{{#a}}{{#b}}{{c}}{{/b}}{{/a}}', {
+        a: { b: { c: 'value' } }
+      });
+      expect(result).toBe('value');
+    });
+
+    it('should handle deeply nested sections', () => {
+      const data = {
+        level1: { level2: { level3: { value: 'deep' } } }
+      };
+      const result = mustache.render(
+        '{{#level1}}{{#level2}}{{#level3}}{{value}}{{/level3}}{{/level2}}{{/level1}}',
+        data
+      );
+      expect(result).toBe('deep');
+    });
+  });
+
+  describe('Custom Tags', () => {
+    it('should support custom delimiters', () => {
+      const instance = new Mustache({ logger, tags: ['<%', '%>'] });
+      const result = instance.render('<% name %>', { name: 'test' });
+      expect(result).toBe('test');
+    });
+
+    it('should change delimiters with set delimiter tags', () => {
+      const result = mustache.render('{{name}} {{=<% %>=}}<% value %>', {
+        name: 'first',
+        value: 'second'
+      });
+      expect(result).toBe('first second');
+    });
+  });
+
+  describe('Edge Cases and Integration', () => {
+    it('should handle function values', () => {
+      const data = {
+        name: function () {
+          return 'Dynamic';
+        }
+      };
+      const result = mustache.render('{{name}}', data);
+      expect(result).toBe('Dynamic');
+    });
+
+    it('should handle numeric values', () => {
+      const result = mustache.render('{{value}}', { value: 42 });
+      expect(result).toBe('42');
+    });
+
+    it('should handle boolean values', () => {
+      const result = mustache.render('{{value}}', { value: true });
+      expect(result).toBe('true');
+    });
+
+    it('should handle zero value', () => {
+      const result = mustache.render('{{value}}', { value: 0 });
+      expect(result).toBe('0');
+    });
+
+    it('should handle empty string', () => {
+      const result = mustache.render('{{value}}', { value: '' });
+      expect(result).toBe('');
+    });
+
+    it('should handle complex nested structure', () => {
+      const data = {
+        company: {
+          name: 'Acme Corp',
+          employees: [
+            { name: 'Alice', role: 'CEO' },
+            { name: 'Bob', role: 'CTO' }
+          ]
+        }
+      };
+      const template =
+        '{{company.name}}: {{#company.employees}}{{name}} ({{role}}), {{/company.employees}}';
+      const result = mustache.render(template, data);
+      expect(result).toContain('Acme Corp');
+      expect(result).toContain('Alice (CEO)');
+      expect(result).toContain('Bob (CTO)');
+    });
+
+    it('should handle circular reference protection in context', () => {
+      const data: { name: string; self?: unknown } = { name: 'test' };
+      data.self = data; // Create circular reference
+      const result = mustache.render('{{name}}', data);
+      expect(result).toBe('test');
+    });
+  });
+
+  describe('Render-Depth and Partial-Cycle Guards', () => {
+    it('should throw MustacheRenderError instead of overflowing the call stack on a self-referencing partial', () => {
+      const instance = new Mustache({ logger, partials: { loop: 'A {{> loop}} B' } });
+      const result = instance.render('{{> loop}}');
+      expect(result).toMatch(/RENDER ERROR/);
+      expect(result).toMatch(/ciclico|cycl/i);
+    });
+
+    it('should throw MustacheRenderError instead of overflowing the call stack on pathologically deep section nesting', () => {
+      const depth = 500;
+      const template = '{{#a}}'.repeat(depth) + 'x' + '{{/a}}'.repeat(depth);
+      const instance = new Mustache({ logger });
+      const result = instance.render(template, { a: { a: {} } });
+      expect(result).toMatch(/RENDER ERROR/);
+    });
+
+    it('should render normal, shallow nested sections correctly (no regression)', () => {
+      const instance = new Mustache({ logger });
+      const result = instance.render('{{#a}}{{#b}}{{c}}{{/b}}{{/a}}', { a: { b: { c: 'ok' } } });
+      expect(result).toBe('ok');
+    });
+
+    it('should render non-cyclic nested partials correctly (no regression)', () => {
+      const instance = new Mustache({
+        logger,
+        partials: { header: 'H', footer: 'F {{> header}}' }
+      });
+      expect(instance.render('{{> footer}}')).toBe('F H');
+    });
+  });
+
+  describe('renderSegments', () => {
+    it('splits plain text and a single variable into two segments with correct raw offsets', () => {
+      const segments = mustache.renderSegments('Hello {{name}}!', { name: 'World' });
+      expect(segments).toEqual([
+        { type: 'text' as const, raw: 'Hello ', rendered: 'Hello ', rawStart: 0, rawEnd: 6 },
+        { type: 'value' as const, raw: '{{name}}', rendered: 'World', rawStart: 6, rawEnd: 14 },
+        { type: 'text' as const, raw: '!', rendered: '!', rawStart: 14, rawEnd: 15 }
+      ]);
+    });
+
+    it('renders multiple adjacent variables as separate segments', () => {
+      const segments = mustache.renderSegments('{{first}} {{last}}', {
+        first: 'John',
+        last: 'Doe'
+      });
+      expect(segments.filter((s) => s.type === 'value').map((s) => s.rendered)).toEqual([
+        'John',
+        'Doe'
+      ]);
+    });
+
+    it("joining all segments' rendered text reproduces render()'s output", () => {
+      const template = 'Dear {{name}}, your total is {{total}}.';
+      const data = { name: 'Alice', total: 42 };
+      const segments = mustache.renderSegments(template, data);
+      const joined = segments.map((s) => s.rendered).join('');
+      expect(joined).toBe(mustache.render(template, data));
+    });
+
+    it('applies pipe filters within a value segment', () => {
+      const segments = mustache.renderSegments('{{name | uppercase}}', { name: 'test' });
+      expect(segments).toEqual([
+        {
+          type: 'value' as const,
+          raw: '{{name | uppercase}}',
+          rendered: 'TEST',
+          rawStart: 0,
+          rawEnd: 20
+        }
+      ]);
+    });
+
+    it('falls back to a single opaque value segment for a section token', () => {
+      const template = '{{#items}}x{{/items}}';
+      const segments = mustache.renderSegments(template, { items: [1] });
+      expect(segments).toHaveLength(1);
+      expect(segments[0].type).toBe('value');
+      expect(segments[0].rendered).toBe('x');
+      // Regression: rawEnd must extend past the closing "{{/items}}" tag (to the
+      // end of the template), not stop right after the section body ("x").
+      expect(segments[0].raw).toBe(template);
+      expect(segments[0].rawEnd).toBe(template.length);
+      expect(segments[0].rawEnd).toBe(21);
+    });
+
+    it('returns an empty array for an empty template', () => {
+      expect(mustache.renderSegments('', {})).toEqual([]);
+    });
+
+    it('throws TypeError for a non-string template (the one documented failure mode)', () => {
+      // @ts-expect-error Deliberately invalid input exercises the existing runtime validation.
+      expect(() => mustache.renderSegments(123, {})).toThrow('template must be a string');
+    });
+
+    it('degrades gracefully instead of throwing for an unclosed section, mirroring render()', () => {
+      const template = '{{#unclosed}}';
+      mustache.renderSegments(template, {});
+      const segments = mustache.renderSegments(template, {});
+      expect(segments).toHaveLength(1);
+      expect(segments[0]).toEqual({
+        type: 'value' as const,
+        raw: template,
+        rendered: mustache.render(template, {}),
+        rawStart: 0,
+        rawEnd: template.length
+      });
+      expect(segments[0].rendered).toContain('[RENDER ERROR:');
+    });
+
+    it('degrades gracefully instead of throwing for an unclosed tag', () => {
+      const template = '{{unclosed';
+      mustache.renderSegments(template, {});
+      const segments = mustache.renderSegments(template, {});
+      expect(segments).toHaveLength(1);
+      expect(segments[0].type).toBe('value');
+      expect(segments[0].raw).toBe(template);
+      expect(segments[0].rendered).toBe(mustache.render(template, {}));
+      expect(segments[0].rawStart).toBe(0);
+      expect(segments[0].rawEnd).toBe(template.length);
+    });
+  });
+});

@@ -3,6 +3,7 @@
 A Layer 2 library for resolving abstract roles to concrete actors with full delegation chain support and communication routing.
 
 **Layer:** Domain Logic (Layer 2)  
+**Language:** TypeScript (strict, ES modules; Babel emits GAS V8 JavaScript)
 **Dependencies:** GoogleApiWrapper (for caching), CoreUtilsLib
 
 ## 🏗️ File and Folder Structure
@@ -42,7 +43,7 @@ RoleResolutionLib provides a flexible, data-source-agnostic system for mapping a
 
 The library is part of the GasLibraryFactory monorepo and is bundled via Webpack:
 
-```javascript
+```typescript
 import { RoleResolver, Role, Actor, Scope, Delegation, RoutingPolicy } from '@RoleResolutionLib';
 ```
 
@@ -56,7 +57,7 @@ import { RoleResolver, Role, Actor, Scope, Delegation, RoutingPolicy } from '@Ro
 
 A Role is an abstract concept that can be assigned to actors:
 
-```javascript
+```typescript
 const projectManager = new Role({
   id: 'project_manager',
   name: 'Project Manager',
@@ -69,7 +70,7 @@ const projectManager = new Role({
 
 An Actor is a concrete entity that can fulfill a role:
 
-```javascript
+```typescript
 // Person actor
 const john = Actor.person('john@example.com', { displayName: 'John Doe' });
 
@@ -84,7 +85,7 @@ const reviewTeam = Actor.group('review_team', { members: ['alice', 'bob'] });
 
 A Scope defines the context for role assignments:
 
-```javascript
+```typescript
 // Global scope
 const global = Scope.global();
 
@@ -105,7 +106,7 @@ const customScope = Scope.custom('region', 'north_america');
 
 An Assignment links a role to an actor within a scope:
 
-```javascript
+```typescript
 const assignment = new Assignment({
   roleId: 'project_manager',
   actorId: 'john@example.com',
@@ -120,7 +121,7 @@ const assignment = new Assignment({
 
 A Delegation allows one actor to delegate their roles to another:
 
-```javascript
+```typescript
 const delegation = new Delegation({
   principalId: 'john@example.com', // Delegating from
   delegateId: 'jane@example.com', // Delegating to
@@ -156,7 +157,7 @@ When a role has been delegated, how should communications be routed?
 
 ### Basic Resolution
 
-```javascript
+```typescript
 import { Actor, WideRowAssignmentSource, EffectiveAssignmentResolver } from '@RoleResolutionLib';
 
 const actors = {
@@ -200,7 +201,7 @@ Implement the breaking public contracts used by `EffectiveAssignmentResolver`:
 `ActorSource.getActor(actorId)`. The generic row adapters avoid a custom source
 for most SheetDB-shaped data.
 
-```javascript
+```typescript
 import { AssignmentCandidate, AssignmentSlot } from '@RoleResolutionLib';
 
 class SheetDBAssignmentSource {
@@ -231,7 +232,7 @@ class SheetDBAssignmentSource {
 
 ## Error Handling
 
-```javascript
+```typescript
 import {
   AssignmentActorNotFoundError,
   CircularDelegationError,

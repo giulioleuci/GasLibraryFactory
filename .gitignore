@@ -39,3 +39,6 @@ test-output.txt
 # Analysis artifacts
 scan-google-apis.sh
 api-violations.txt
+
+# Archived JavaScript implementation
+GLF_OLD/

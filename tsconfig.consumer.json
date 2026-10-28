@@ -1,0 +1,42 @@
+{
+  "extends": "./tsconfig.base.json",
+  "compilerOptions": {
+    "allowJs": false,
+    "paths": {
+      "@ComposableContentLib": [".cache/types/ComposableContentLib/index.d.ts"],
+      "@ComposableContentLib/*": [".cache/types/ComposableContentLib/*"],
+      "@ContextEngine": [".cache/types/ContextEngine/index.d.ts"],
+      "@ContextEngine/*": [".cache/types/ContextEngine/*"],
+      "@CoreUtilsLib": [".cache/types/CoreUtilsLib/index.d.ts"],
+      "@CoreUtilsLib/*": [".cache/types/CoreUtilsLib/*"],
+      "@DomainRepositoryLib": [".cache/types/DomainRepositoryLib/index.d.ts"],
+      "@DomainRepositoryLib/*": [".cache/types/DomainRepositoryLib/*"],
+      "@GasDataImporter": [".cache/types/GasDataImporter/index.d.ts"],
+      "@GasDataImporter/*": [".cache/types/GasDataImporter/*"],
+      "@GasExpressionEngineLib": [".cache/types/GasExpressionEngineLib/index.d.ts"],
+      "@GasExpressionEngineLib/*": [".cache/types/GasExpressionEngineLib/*"],
+      "@GasOnlineTestFramework": [".cache/types/GasOnlineTestFramework/index.d.ts"],
+      "@GasOnlineTestFramework/*": [".cache/types/GasOnlineTestFramework/*"],
+      "@GasResilienceLib": [".cache/types/GasResilienceLib/index.d.ts"],
+      "@GasResilienceLib/*": [".cache/types/GasResilienceLib/*"],
+      "@GasSchemaValidatorLib": [".cache/types/GasSchemaValidatorLib/index.d.ts"],
+      "@GasSchemaValidatorLib/*": [".cache/types/GasSchemaValidatorLib/*"],
+      "@GoogleApiWrapper": [".cache/types/GoogleApiWrapper/index.d.ts"],
+      "@GoogleApiWrapper/*": [".cache/types/GoogleApiWrapper/*"],
+      "@JobRunnerLib": [".cache/types/JobRunnerLib/index.d.ts"],
+      "@JobRunnerLib/*": [".cache/types/JobRunnerLib/*"],
+      "@PipelineFramework": [".cache/types/PipelineFramework/index.d.ts"],
+      "@PipelineFramework/*": [".cache/types/PipelineFramework/*"],
+      "@RoleResolutionLib": [".cache/types/RoleResolutionLib/index.d.ts"],
+      "@RoleResolutionLib/*": [".cache/types/RoleResolutionLib/*"],
+      "@SheetDBLib": [".cache/types/SheetDBLib/index.d.ts"],
+      "@SheetDBLib/*": [".cache/types/SheetDBLib/*"],
+      "@WorkspaceTemplateEngine": [".cache/types/WorkspaceTemplateEngine/index.d.ts"],
+      "@WorkspaceTemplateEngine/*": [".cache/types/WorkspaceTemplateEngine/*"],
+      "jsep": [".cache/types/types/vendor/jsep.d.cts"],
+      "@GasProcessMonitorLib": [".cache/types/GasProcessMonitorLib/index.d.ts"],
+      "@GasProcessMonitorLib/*": [".cache/types/GasProcessMonitorLib/*"]
+    }
+  },
+  "include": ["test/types/published.ts"]
+}

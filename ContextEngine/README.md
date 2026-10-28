@@ -2,6 +2,7 @@
 
 **Version:** 1.0.0  
 **Layer:** Application Orchestration (Layer 3)  
+**Language:** TypeScript (strict, ES modules; Babel emits GAS V8 JavaScript)
 **Dependencies:** CoreUtilsLib, GasExpressionEngineLib (Optional), GasResilienceLib (Optional)
 
 ## 🏗️ File and Folder Structure
@@ -11,16 +12,16 @@ A highly decoupled architecture for dynamic context building:
 ```text
 ContextEngine/
 ├── src/
-│   ├── ContextAssembler.js     # The main orchestrator (Engine)
-│   ├── DataProvider.js         # Abstract base for all data fetching logic
-│   ├── ProviderRegistry.js     # Decoupled registry for provider instances
-│   ├── DependencyResolver.js   # Logic for DAG-based execution ordering
-│   ├── RecipeParser.js         # Validation and normalization of JSON recipes
-│   ├── ContextInterceptor.js   # Middleware base for data transformation
-│   ├── InterceptorRegistry.js  # Registry for context-building middleware
+│   ├── ContextAssembler.ts     # The main orchestrator (Engine)
+│   ├── DataProvider.ts         # Abstract base for all data fetching logic
+│   ├── ProviderRegistry.ts     # Decoupled registry for provider instances
+│   ├── DependencyResolver.ts   # Logic for DAG-based execution ordering
+│   ├── RecipeParser.ts         # Validation and normalization of JSON recipes
+│   ├── ContextInterceptor.ts   # Middleware base for data transformation
+│   ├── InterceptorRegistry.ts  # Registry for context-building middleware
 │   ├── projection/             # Declarative collection projection strategies
 │   ├── interceptors/           # Context and collection-projection interceptors
-│   ├── PostProcessor.js        # Logic for field-level transformations
+│   ├── PostProcessor.ts        # Logic for field-level transformations
 │   ├── errors/                 # Framework-specific exceptions (Recipe, Dependency)
 │   └── __tests__/              # Unit and integration tests
 ```
@@ -54,7 +55,7 @@ A Recipe is a JSON configuration that describes _what_ data is needed, _where_ i
 
 ## 📦 Installation
 
-```javascript
+```typescript
 import { ContextAssembler, ProviderRegistry, DataProvider } from '@ContextEngine';
 import { LoggerService } from '@CoreUtilsLib';
 ```
@@ -65,7 +66,7 @@ import { LoggerService } from '@CoreUtilsLib';
 
 Extend `DataProvider` and implement `_fetchData`.
 
-```javascript
+```typescript
 class UserProvider extends DataProvider {
   _fetchData(params) {
     // params.userId is automatically resolved before this method is called
@@ -77,7 +78,7 @@ class UserProvider extends DataProvider {
 
 ### 2. Register & Assemble
 
-```javascript
+```typescript
 // Initialize services
 const logger = new LoggerService();
 const registry = new ProviderRegistry(logger);
@@ -186,7 +187,7 @@ as an application-supplied projection strategy when they operate on collections.
 
 ### Quick Example: Project a collection
 
-```javascript
+```typescript
 import {
   CollectionProjector,
   CollectionProjectionInterceptor,
@@ -212,7 +213,7 @@ interceptors.registerSingleton('ProjectAssignments', interceptor);
 
 Extend `ContextInterceptor` base class:
 
-```javascript
+```typescript
 import { ContextInterceptor } from '@ContextEngine';
 
 class TimestampInterceptor extends ContextInterceptor {
@@ -248,7 +249,7 @@ Multiple interceptors are applied in registration order.
 
 Interceptors can be conditionally activated via runtime options:
 
-```javascript
+```typescript
 const context = assembler.assemble(recipe, params, {
   projectAssignments: true, // Enable configured collection projection
   environment: 'test', // Environment-specific overrides

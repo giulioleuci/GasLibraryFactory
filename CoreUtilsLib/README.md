@@ -2,6 +2,7 @@
 
 **Version:** 1.1.0
 **Layer:** Foundation (Layer 0)
+**Language:** TypeScript (strict, ES modules; Babel emits GAS V8 JavaScript)
 **Dependencies:** None (Zero internal dependencies)
 **External Libraries:** es-toolkit (Hybrid Strategic Retention)
 
@@ -18,15 +19,15 @@ The library follows a modular design where each file focuses on a specific utili
 ```text
 CoreUtilsLib/
 ├── src/
-│   ├── BaseError.js            # Standardized error class with context support
-│   ├── HashUtils.js            # SHA-256 hashing for strings and objects
-│   ├── LodashFacade.js         # Hybrid utility facade (Native + es-toolkit)
-│   ├── LoggerService.js        # Structured logging with levels and child loggers
-│   ├── PiiRedactor.js          # Utility to scrub sensitive data from strings/objects
-│   ├── RegexUtils.js           # Security-focused regex creation and validation
-│   ├── TypeGuards.js           # Runtime type checking and validation helpers
-│   ├── UtilsService.js         # Main facade for general utilities (Date, UUID, etc.)
-│   ├── ValidationUtils.js      # Low-level validation logic
+│   ├── BaseError.ts            # Standardized error class with context support
+│   ├── HashUtils.ts            # SHA-256 hashing for strings and objects
+│   ├── LodashFacade.ts         # Hybrid utility facade (Native + es-toolkit)
+│   ├── LoggerService.ts        # Structured logging with levels and child loggers
+│   ├── PiiRedactor.ts          # Utility to scrub sensitive data from strings/objects
+│   ├── RegexUtils.ts           # Security-focused regex creation and validation
+│   ├── TypeGuards.ts           # Runtime type checking and validation helpers
+│   ├── UtilsService.ts         # Main facade for general utilities (Date, UUID, etc.)
+│   ├── ValidationUtils.ts      # Low-level validation logic
 │   └── __tests__/              # Comprehensive Jest unit tests
 ```
 
@@ -71,7 +72,7 @@ These dependencies are bundled via Webpack and have minimal runtime overhead in 
 
 This library is part of the GasLibraryFactory monorepo. It is typically bundled via Webpack.
 
-```javascript
+```typescript
 import { LoggerService, UtilsService, HashUtils, RegexUtils } from '@CoreUtilsLib';
 ```
 
@@ -83,13 +84,13 @@ A standardized logging wrapper that supports log levels to control verbosity.
 
 **Configuration:**
 
-```javascript
+```typescript
 const logger = new LoggerService({ level: 'DEBUG' }); // Options: OFF, ERROR, WARN, INFO, DEBUG
 ```
 
 **Usage:**
 
-```javascript
+```typescript
 logger.info('Process started');
 logger.debug('Payload details', { id: 123, status: 'active' });
 logger.error('Operation failed', new Error('Connection timeout'));
@@ -109,7 +110,7 @@ A stateless collection of helper functions. Note that for time-based operations 
 
 **Initialization:**
 
-```javascript
+```typescript
 // In GAS environment, inject the native sleep function
 const utils = new UtilsService((ms) => Utilities.sleep(ms));
 ```
@@ -144,7 +145,7 @@ Provides consistent hashing mechanisms, crucial for caching strategies and data 
 
 **Usage:**
 
-```javascript
+```typescript
 import { HashUtils } from '@CoreUtilsLib';
 
 // Generate SHA-256 hash of a string
@@ -168,7 +169,7 @@ Utilities for handling Regular Expressions safely, specifically designed to prev
 
 **Usage:**
 
-```javascript
+```typescript
 import { RegexUtils } from '@CoreUtilsLib';
 
 // Escape special characters for literal matching

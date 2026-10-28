@@ -6,7 +6,8 @@ module.exports = {
         targets: { node: 'current' },
         modules: 'auto'
       }
-    ]
+    ],
+    ['@babel/preset-typescript', { onlyRemoveTypeImports: true, allowDeclareFields: true }]
   ],
   env: {
     test: {

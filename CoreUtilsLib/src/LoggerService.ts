@@ -1,0 +1,480 @@
+/**
+ * @file CoreUtilsLib/src/LoggerService.js
+ * @description Advanced logging service with configurable log levels.
+ * Provides structured logging with level-based filtering.
+ * @version 2.0 - Moved to CoreUtilsLib (foundation layer).
+ */
+
+/**
+ * Hierarchical logging service with structured output and lazy evaluation.
+ * @class LoggerService
+ */
+import { StructuredLogFormatter } from './internal/StructuredLogFormatter.js';
+import type { JobReport, TreePosition } from './internal/StructuredLogFormatter.js';
+
+export interface LoggerOptions {
+  level?: string;
+}
+
+export type ChildLogger = Pick<
+  LoggerService,
+  | 'debug'
+  | 'info'
+  | 'warn'
+  | 'error'
+  | 'log'
+  | 'logJobStart'
+  | 'logJobResume'
+  | 'logJobEnd'
+  | 'logJobSuspended'
+  | 'logBatchStart'
+  | 'logItemStart'
+  | 'logStep'
+  | 'logPipelineStart'
+  | 'logPipelineStep'
+  | 'logSummary'
+  | 'logJobReport'
+  | 'withPosition'
+>;
+
+export class LoggerService {
+  declare _level: string;
+  declare _logLevels: Record<string, number>;
+  declare _structured: StructuredLogFormatter;
+  declare _positionStack: TreePosition[];
+  /**
+   * Initialize LoggerService with configurable verbosity.
+   * @param {Object} [options={}] - Configuration payload.
+   * @param {string} [options.level='INFO'] - Filter threshold: OFF, ERROR, WARN, INFO, DEBUG.
+   */
+  constructor(options: LoggerOptions = {}) {
+    /**
+     * Current log level.
+     * @private
+     * @type {string}
+     */
+    this._level = options.level || 'INFO';
+
+    /**
+     * Log level hierarchy mapping.
+     * Lower numbers mean higher priority (less verbose).
+     * @private
+     * @type {Object.<string, number>}
+     */
+    this._logLevels = {
+      OFF: 0,
+      ERROR: 1,
+      WARN: 2,
+      INFO: 3,
+      DEBUG: 4
+    };
+
+    this._structured = new StructuredLogFormatter(this._safeStringify.bind(this));
+    this._positionStack = [];
+  }
+
+  /**
+   * Update the active logging threshold.
+   * @param {string} level - New filter threshold identifier.
+   * @returns {LoggerService} Fluent instance for chaining.
+   */
+  setLevel(level: string) {
+    if (this._logLevels[level] !== undefined) {
+      this._level = level;
+    }
+    return this;
+  }
+
+  /**
+   * Retrieve the current logging threshold.
+   * @returns {string} Threshold identifier.
+   */
+  getLevel() {
+    return this._level;
+  }
+
+  /**
+   * Validate if a specific threshold is eligible for logging.
+   * @private
+   * @param {string} level - Level to test.
+   * @returns {boolean} True if the level meets the active threshold.
+   */
+  _isLevelActive(level: string) {
+    return this._logLevels[level] <= this._logLevels[this._level];
+  }
+
+  /**
+   * Safely serialize an object with circular reference and depth protection.
+   * @private
+   * @param {*} obj - Payload to stringify.
+   * @param {number} [maxDepth=5] - Recursion limit.
+   * @param {number} [maxLength=5000] - Output character limit.
+   * @returns {string} JSON-formatted string with truncation markers.
+   */
+  _safeStringify(obj: unknown, maxDepth = 5, maxLength = 5000): string {
+    const seen = new WeakSet();
+
+    const replacer = (key: string | null, value: unknown, depth = 0): unknown => {
+      // Depth limit protection
+      if (depth > maxDepth) {
+        return '[Max depth reached]';
+      }
+
+      // Handle null and primitives
+      if (value === null || typeof value !== 'object') {
+        return value;
+      }
+
+      // Circular reference protection
+      if (seen.has(value)) {
+        return '[Circular reference]';
+      }
+      seen.add(value);
+
+      // Handle arrays
+      if (Array.isArray(value)) {
+        if (value.length > 100) {
+          return `[Array(${value.length}) - showing first 100]`;
+        }
+        return value.map((item) => replacer(null, item, depth + 1));
+      }
+
+      // Handle objects
+      const keys = Object.keys(value);
+      if (keys.length > 50) {
+        return `[Object with ${keys.length} keys - truncated]`;
+      }
+
+      const result: Record<string, unknown> = {};
+      for (const k of keys) {
+        try {
+          result[k] = replacer(k, (value as Record<string, unknown>)[k], depth + 1);
+        } catch (_e) {
+          result[k] = '[Error accessing property]';
+        }
+      }
+      return result;
+    };
+
+    try {
+      let result = JSON.stringify(replacer(null, obj, 0), null, 2);
+
+      // Truncate if too long
+      if (result.length > maxLength) {
+        result = result.substring(0, maxLength) + '... [truncated]';
+      }
+
+      return result;
+    } catch (e) {
+      return `[Error stringifying object: ${(e as Error).message}]`;
+    }
+  }
+
+  /**
+   * Resolve a message or execute a lazy-evaluation callback.
+   * @private
+   * @param {string|Object|Function} messageOrCallback - Static payload or generator.
+   * @returns {string|Object} Evaluated content.
+   */
+  _evaluateMessage(messageOrCallback: unknown): unknown {
+    if (typeof messageOrCallback === 'function') {
+      return messageOrCallback();
+    }
+    return messageOrCallback;
+  }
+
+  /**
+   * Compose a formatted log entry string.
+   * @private
+   * @param {string} level - Threshold identifier.
+   * @param {string|Object} message - Evaluated content.
+   * @param {Object} [context=null] - Optional diagnostic metadata.
+   * @returns {string} Standardized log line.
+   */
+  _formatMessage(level: string, message: unknown, context: unknown = null) {
+    const emoji = level === 'ERROR' ? '🔺 ' : level === 'WARN' ? '🔸 ' : '';
+    let formattedMessage = `${emoji}[${level}]`;
+
+    if (typeof message === 'object') {
+      formattedMessage += ' ' + this._safeStringify(message);
+    } else {
+      formattedMessage += ' ' + message;
+    }
+
+    // Append context if provided
+    if (context && typeof context === 'object') {
+      formattedMessage += ' ' + this._safeStringify(context);
+    }
+
+    return formattedMessage;
+  }
+
+  _currentPosition() {
+    return this._positionStack.length > 0
+      ? this._positionStack[this._positionStack.length - 1]
+      : undefined;
+  }
+
+  _resolvePosition(position?: TreePosition) {
+    return position === undefined ? this._currentPosition() : position;
+  }
+
+  _emit(level: string, message: unknown, context: unknown = null) {
+    if (!this._isLevelActive(level)) {
+      return this;
+    }
+    const evaluatedMessage = this._evaluateMessage(message);
+    const evaluatedContext = context !== null ? this._evaluateMessage(context) : null;
+    const formatted = this._formatMessage(level, evaluatedMessage, evaluatedContext);
+    const position = this._currentPosition();
+    if (position === undefined) {
+      Logger.log(formatted);
+      return this;
+    }
+    return this._writeStructured(level, this._structured.step(formatted, position));
+  }
+
+  withPosition<T>(position: TreePosition, callback: () => T): T {
+    this._positionStack.push(position);
+    try {
+      return callback();
+    } finally {
+      this._positionStack.pop();
+    }
+  }
+
+  /**
+   * Log a DEBUG message with optional context and lazy evaluation.
+   * @param {string|Object|Function} message - Content or callback.
+   * @param {Object|Function} [context=null] - Metadata or callback.
+   * @returns {LoggerService} Fluent instance for chaining.
+   */
+  debug(message: unknown, context: unknown = null) {
+    return this._emit('DEBUG', message, context);
+  }
+
+  /**
+   * Log an INFO message with optional context and lazy evaluation.
+   * @param {string|Object|Function} message - Content or callback.
+   * @param {Object|Function} [context=null] - Metadata or callback.
+   * @returns {LoggerService} Fluent instance for chaining.
+   */
+  info(message: unknown, context: unknown = null) {
+    return this._emit('INFO', message, context);
+  }
+
+  /**
+   * Log a WARN message with optional context and lazy evaluation.
+   * @param {string|Object|Function} message - Content or callback.
+   * @param {Object|Function} [context=null] - Metadata or callback.
+   * @returns {LoggerService} Fluent instance for chaining.
+   */
+  warn(message: unknown, context: unknown = null) {
+    return this._emit('WARN', message, context);
+  }
+
+  /**
+   * Log an ERROR message with optional context and lazy evaluation.
+   * @param {string|Object|Function} message - Content or callback.
+   * @param {Object|Function} [context=null] - Metadata or callback.
+   * @returns {LoggerService} Fluent instance for chaining.
+   */
+  error(message: unknown, context: unknown = null) {
+    return this._emit('ERROR', message, context);
+  }
+
+  /**
+   * Extract all buffered messages from the global GAS Logger.
+   * @returns {string[]} Ordered collection of log entries.
+   */
+  get() {
+    return Logger.getLog().split('\n');
+  }
+
+  /**
+   * Purge all buffered messages from the global GAS Logger.
+   * @returns {LoggerService} Fluent instance for chaining.
+   */
+  clear() {
+    Logger.clear();
+    return this;
+  }
+
+  /**
+   * Log a message at a dynamic threshold level.
+   * @param {string} level - Priority threshold for this entry.
+   * @param {string|Object|Function} message - Content or callback.
+   * @returns {LoggerService} Fluent instance for chaining.
+   */
+  log(level: string, message: unknown) {
+    const upperLevel = level.toUpperCase();
+    if (this._logLevels[upperLevel] === undefined || !this._isLevelActive(upperLevel)) {
+      return this;
+    }
+    return this._emit(upperLevel, message);
+  }
+
+  /** @private */
+  _writeStructured(level: string, lines: string[]) {
+    if (!this._isLevelActive(level)) {
+      return this;
+    }
+    for (const line of lines) {
+      Logger.log(line);
+    }
+    return this;
+  }
+
+  /** Start a job invocation. @returns {LoggerService} */
+  logJobStart(jobName: unknown, jobType: unknown) {
+    return this._writeStructured('INFO', this._structured.jobStart(jobName, jobType));
+  }
+
+  /** Resume a persisted job invocation. @returns {LoggerService} */
+  logJobResume(jobName: unknown, jobType: unknown, details?: unknown) {
+    return this._writeStructured('INFO', this._structured.jobResume(jobName, jobType, details));
+  }
+
+  /** Finish a job invocation. @returns {LoggerService} */
+  logJobEnd(jobName: unknown, isSuccess: boolean, details?: unknown) {
+    return this._writeStructured(
+      isSuccess ? 'INFO' : 'ERROR',
+      this._structured.jobEnd(jobName, isSuccess, details)
+    );
+  }
+
+  /** Suspend a resumable job invocation. @returns {LoggerService} */
+  logJobSuspended(jobName: unknown, details?: unknown) {
+    return this._writeStructured('WARN', this._structured.jobSuspended(jobName, details));
+  }
+
+  /** Start a batch. @returns {LoggerService} */
+  logBatchStart(totalItems: unknown, label?: unknown) {
+    return this._writeStructured('INFO', this._structured.batchStart(totalItems, label));
+  }
+
+  /** Start a batch item. @returns {LoggerService} */
+  logItemStart(
+    itemIndex: unknown,
+    totalItems: unknown,
+    itemLabel: unknown,
+    identifier: unknown,
+    kind?: string
+  ) {
+    return this._writeStructured(
+      'INFO',
+      this._structured.itemStart(itemIndex, totalItems, itemLabel, identifier, kind)
+    );
+  }
+
+  /** Emit a generic tree step. @returns {LoggerService} */
+  logStep(message: unknown, position?: TreePosition) {
+    return this._writeStructured(
+      'INFO',
+      this._structured.step(message, this._resolvePosition(position))
+    );
+  }
+
+  /** Start a pipeline trace. @returns {LoggerService} */
+  logPipelineStart(pipelineName: unknown, totalSteps: unknown, position?: TreePosition) {
+    return this._writeStructured(
+      'INFO',
+      this._structured.pipelineStart(pipelineName, totalSteps, this._resolvePosition(position))
+    );
+  }
+
+  /** Emit a pipeline step result. @returns {LoggerService} */
+  logPipelineStep(stepName: unknown, status: string, details?: unknown, position?: TreePosition) {
+    const level = status === 'ERROR' ? 'ERROR' : status === 'SKIPPED' ? 'WARN' : 'INFO';
+    return this._writeStructured(
+      level,
+      this._structured.pipelineStep(stepName, status, details, this._resolvePosition(position))
+    );
+  }
+
+  /** Emit a duration summary. @returns {LoggerService} */
+  logSummary(label: unknown, durationMs: unknown, itemDetails?: unknown, position?: TreePosition) {
+    return this._writeStructured(
+      'INFO',
+      this._structured.summary(label, durationMs, itemDetails, this._resolvePosition(position))
+    );
+  }
+
+  /**
+   * Emit a multi-line end-of-job report (job type, run count, cumulative real
+   * duration across every timeout-resume, task totals, skip and failure detail).
+   * `saltati` (skipped tasks) is excluded from "Eseguiti con successo"; its line
+   * is printed only when the caller passes it.
+   * @param {{jobType: string, runCount?: number, totalDurationMs?: number, totale?: number, falliti?: number, dettagliFalliti?: string[], saltati?: number, dettagliSaltati?: string[]}} details
+   * @returns {LoggerService} Fluent instance for chaining.
+   */
+  logJobReport(details: JobReport) {
+    const failed = Number.isFinite(details?.falliti) ? details.falliti! : 0;
+    return this._writeStructured(
+      failed > 0 ? 'ERROR' : 'INFO',
+      this._structured.jobReport(details)
+    );
+  }
+
+  /**
+   * Spawn a namespaced logger with a message prefix.
+   * @param {string} prefix - Namespace identifier.
+   * @returns {Object} Proxy object with level-specific logging methods.
+   */
+  child(prefix: string): ChildLogger {
+    const parentLogger = this;
+    const prefixed = (label: unknown) => `[${prefix}] ${label}`;
+    return {
+      debug: (msg) => {
+        if (typeof msg === 'function') {
+          return parentLogger.debug(() => `[${prefix}] ${msg()}`);
+        }
+        return parentLogger.debug(`[${prefix}] ${msg}`);
+      },
+      info: (msg) => {
+        if (typeof msg === 'function') {
+          return parentLogger.info(() => `[${prefix}] ${msg()}`);
+        }
+        return parentLogger.info(`[${prefix}] ${msg}`);
+      },
+      warn: (msg) => {
+        if (typeof msg === 'function') {
+          return parentLogger.warn(() => `[${prefix}] ${msg()}`);
+        }
+        return parentLogger.warn(`[${prefix}] ${msg}`);
+      },
+      error: (msg) => {
+        if (typeof msg === 'function') {
+          return parentLogger.error(() => `[${prefix}] ${msg()}`);
+        }
+        return parentLogger.error(`[${prefix}] ${msg}`);
+      },
+      log: (level, msg) => {
+        if (typeof msg === 'function') {
+          return parentLogger.log(level, () => `[${prefix}] ${msg()}`);
+        }
+        return parentLogger.log(level, `[${prefix}] ${msg}`);
+      },
+      logJobStart: (jobName, jobType) => parentLogger.logJobStart(prefixed(jobName), jobType),
+      logJobResume: (jobName, jobType, details) =>
+        parentLogger.logJobResume(prefixed(jobName), jobType, details),
+      logJobEnd: (jobName, isSuccess, details) =>
+        parentLogger.logJobEnd(prefixed(jobName), isSuccess, details),
+      logJobSuspended: (jobName, details) =>
+        parentLogger.logJobSuspended(prefixed(jobName), details),
+      logBatchStart: (totalItems, label) =>
+        parentLogger.logBatchStart(totalItems, label === undefined ? undefined : prefixed(label)),
+      logItemStart: (itemIndex, totalItems, itemLabel, identifier, kind) =>
+        parentLogger.logItemStart(itemIndex, totalItems, prefixed(itemLabel), identifier, kind),
+      logStep: (message, position) => parentLogger.logStep(message, position),
+      logPipelineStart: (pipelineName, totalSteps, position) =>
+        parentLogger.logPipelineStart(prefixed(pipelineName), totalSteps, position),
+      logPipelineStep: (stepName, status, details, position) =>
+        parentLogger.logPipelineStep(prefixed(stepName), status, details, position),
+      logSummary: (label, durationMs, itemDetails, position) =>
+        parentLogger.logSummary(prefixed(label), durationMs, itemDetails, position),
+      logJobReport: (details) => parentLogger.logJobReport(details),
+      withPosition: (position, callback) => parentLogger.withPosition(position, callback)
+    };
+  }
+}

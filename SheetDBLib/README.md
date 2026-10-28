@@ -2,6 +2,7 @@
 
 **Version:** 1.0.0  
 **Layer:** Data Persistence (Layer 1)  
+**Language:** TypeScript (strict, ES modules; Babel emits GAS V8 JavaScript)
 **Dependencies:** CoreUtilsLib, GoogleApiWrapper
 
 ## 🗄️ Overview
@@ -15,10 +16,10 @@ The library is organized into core services and specialized extensions for compl
 ```text
 SheetDBLib/
 ├── src/
-│   ├── DatabaseService.js      # Main entry point: manages tables and transactions
-│   ├── TableService.js         # Logic for individual sheet manipulation (CRUD)
+│   ├── DatabaseService.ts      # Main entry point: manages tables and transactions
+│   ├── TableService.ts         # Logic for individual sheet manipulation (CRUD)
 │   ├── query/                  # SQL-like query engine
-│   │   └── AdvancedQueryBuilder.js # Fluent API for complex selects and joins
+│   │   └── AdvancedQueryBuilder.ts # Fluent API for complex selects and joins
 │   └── __tests__/              # Unit and integration tests (with GAS mocks)
 ```
 
@@ -55,7 +56,7 @@ DatabaseService supports dry-run mode for testing workflows without actually per
 
 **Constructor-Level:**
 
-```javascript
+```typescript
 // Initialize database in dry-run mode
 const db = new DatabaseService('SPREADSHEET_ID', logger, utils, cache, exceptionService, {
   dryRun: true
@@ -68,7 +69,7 @@ db.save(); // No actual changes are persisted
 
 **Per-Operation Override:**
 
-```javascript
+```typescript
 // Standard database instance
 const db = new DatabaseService('SPREADSHEET_ID', logger, utils, cache);
 
@@ -85,7 +86,7 @@ db.save(); // Actually persists changes
 
 ### Dry-Run Response
 
-```javascript
+```typescript
 const result = db.save({ dryRun: true });
 // {
 //   success: true,
@@ -98,14 +99,14 @@ const result = db.save({ dryRun: true });
 
 ## 📦 Installation
 
-```javascript
+```typescript
 import { DatabaseService } from '@SheetDBLib';
 import { LoggerService, UtilsService, CacheService } from '@GoogleApiWrapper';
 ```
 
 ## 🚀 Quick Start
 
-```javascript
+```typescript
 // 1. Initialize dependencies
 const logger = new LoggerService();
 const utils = new UtilsService(logger);
@@ -147,7 +148,7 @@ The main entry point. Manages tables and transactions.
 
 **Transaction Example:**
 
-```javascript
+```typescript
 try {
   db.beginTransaction();
   db.tables['Accounts'].updateRowById('ACC_1', { balance: 90 });
@@ -173,7 +174,7 @@ Manages a specific table (sheet).
 
 **Schema Example:**
 
-```javascript
+```typescript
 db.tables['Users'].setSchema({
   fields: {
     name: { type: 'string', required: true },
@@ -199,7 +200,7 @@ Constructs complex queries. Created via `db.select()`.
 
 **Complex Query Example:**
 
-```javascript
+```typescript
 const report = db
   .select(['Users.name', 'Orders.total'])
   .from('Users')
@@ -212,7 +213,7 @@ const report = db
 
 **Opt-in Fuzzy Query Example:**
 
-```javascript
+```typescript
 const matchingUsers = db
   .select()
   .from('Users')

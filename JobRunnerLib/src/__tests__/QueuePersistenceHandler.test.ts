@@ -1,0 +1,436 @@
+import { jest } from '@jest/globals';
+// ===================================================================
+// FILE: JobRunnerLib/src/__tests__/QueuePersistenceHandler.test.js
+// ===================================================================
+// Direct unit tests for QueuePersistenceHandler: resume-state
+// serialization/deserialization, the small-state-in-ScriptProperties vs
+// large-state-on-Drive tiering (JobRunnerLib/src/internal/QueuePersistenceHandler.js
+// @ LARGE_STATE_THRESHOLD), configuration/type persistence, and reset/cleanup.
+// This is the exact checkpoint/resume mechanism ALDO's long-running jobs rely
+// on to survive GAS's 6/30 min execution caps, so corruption or mishandling
+// here is silent data loss for resumed jobs.
+// ===================================================================
+
+import { QueuePersistenceHandler } from '../internal/QueuePersistenceHandler';
+import { QueueStateManager } from '../QueueStateManager';
+import { MockFactory } from '../../../test/fakes/MockFactory';
+
+/** Minimal in-memory fake Drive, independent of GoogleApiWrapper's ServiceFactory wiring. */
+function createFakeDriveApp() {
+  type FakeFile = {
+    id: string;
+    content: string;
+    getId(): string;
+    setContent: ReturnType<typeof jest.fn<(this: FakeFile, content: string) => void>>;
+    getBlob(): { getDataAsString(): string };
+    setTrashed: ReturnType<typeof jest.fn>;
+  };
+  const files = new Map<string, FakeFile>();
+  let nextId = 1;
+  const folders = new Map<string, ReturnType<typeof makeFolder>>();
+
+  const makeFile = (id: string, content: string): FakeFile => ({
+    id,
+    content,
+    getId: () => id,
+    setContent: jest.fn(function (this: FakeFile, c: string) {
+      this.content = c;
+      files.set(id, this);
+    }),
+    getBlob: () => ({
+      getDataAsString: () => files.get(id)!.content
+    }),
+    setTrashed: jest.fn()
+  });
+
+  const makeFolder = (name: string) => ({
+    name,
+    createFile: jest.fn((fileName: string, content: string) => {
+      const id = `file-${nextId++}`;
+      const file = makeFile(id, content);
+      files.set(id, file);
+      return file;
+    })
+  });
+
+  return {
+    _files: files,
+    getFileById: jest.fn((id: string) => {
+      const f = files.get(id);
+      if (!f) {
+        throw new Error(`No such file: ${id}`);
+      }
+      return f;
+    }),
+    getFoldersByName: jest.fn((name: string) => {
+      const existing = folders.get(name);
+      const list = existing ? [existing] : [];
+      let idx = 0;
+      return {
+        hasNext: () => idx < list.length,
+        next: () => list[idx++]
+      };
+    }),
+    createFolder: jest.fn((name: string) => {
+      const folder = makeFolder(name);
+      folders.set(name, folder);
+      return folder;
+    })
+  };
+}
+
+function createFakeDriveService(driveApp: ReturnType<typeof createFakeDriveApp>) {
+  return { getStandardApp: jest.fn(() => driveApp) };
+}
+
+describe('QueuePersistenceHandler', () => {
+  let propertiesService: ReturnType<typeof MockFactory.createAllJest>['propertiesService'];
+  let utils: ReturnType<typeof MockFactory.createAllJest>['utils'];
+  let lockService: ReturnType<typeof MockFactory.createAllJest>['lockService'];
+  let stateManager: QueueStateManager;
+  let driveApp: ReturnType<typeof createFakeDriveApp>;
+  let driveService: ReturnType<typeof createFakeDriveService>;
+  let handler: QueuePersistenceHandler;
+
+  beforeEach(() => {
+    const mocks = MockFactory.createAllJest();
+    propertiesService = mocks.propertiesService;
+    utils = mocks.utils;
+    lockService = mocks.lockService;
+    stateManager = new QueueStateManager('job-a', propertiesService, utils, lockService);
+    driveApp = createFakeDriveApp();
+    driveService = createFakeDriveService(driveApp);
+    handler = new QueuePersistenceHandler('job-a', propertiesService, stateManager, driveService);
+  });
+
+  describe('constructor validation', () => {
+    it('throws when jobName missing', () => {
+      expect(() => new QueuePersistenceHandler('', propertiesService, stateManager)).toThrow(
+        'jobName is required'
+      );
+    });
+
+    it('throws when propertiesService missing', () => {
+      // @ts-expect-error Exercise the existing runtime validation of invalid input.
+      expect(() => new QueuePersistenceHandler('job-a', null, stateManager)).toThrow(
+        'propertiesService is required'
+      );
+    });
+  });
+
+  describe('resume state: small-state round-trip (ScriptProperties tier)', () => {
+    it('returns null when nothing was ever saved', () => {
+      expect(handler.loadResumeState()).toBeNull();
+    });
+
+    it('saves and loads a small object as-is via ScriptProperties JSON', () => {
+      const state = { position: 42, items: ['a', 'b'] };
+      handler.saveResumeState(state);
+      expect(handler.loadResumeState()).toEqual(state);
+      // Confirms tier: stored inline, not routed to Drive.
+      expect(propertiesService.getProperty('state_size_job-a')).toBeNull();
+    });
+
+    it('preserves falsy checkpoint fields and the existing JSON representation', () => {
+      const state = {
+        empty: '',
+        count: 0,
+        enabled: false,
+        createdAt: new Date('2026-10-25T12:00:00.000Z'),
+        nullable: null,
+        absent: undefined
+      };
+      handler.saveResumeState(state);
+      expect(propertiesService.getProperty('state_job-a')).toBe(
+        '{"empty":"","count":0,"enabled":false,"createdAt":"2026-10-25T12:00:00.000Z","nullable":null}'
+      );
+      expect(handler.loadResumeState()).toEqual({
+        empty: '',
+        count: 0,
+        enabled: false,
+        createdAt: '2026-10-25T12:00:00.000Z',
+        nullable: null
+      });
+      expect(Object.prototype.hasOwnProperty.call(handler.loadResumeState(), 'absent')).toBe(false);
+    });
+
+    it('overwrites a previous small state on subsequent checkpoints (resume from latest)', () => {
+      handler.saveResumeState({ position: 1 });
+      handler.saveResumeState({ position: 2 });
+      expect(handler.loadResumeState()).toEqual({ position: 2 });
+    });
+
+    it('keeps distinct jobs isolated in ScriptProperties', () => {
+      const other = new QueuePersistenceHandler(
+        'job-b',
+        propertiesService,
+        stateManager,
+        driveService
+      );
+      handler.saveResumeState({ position: 1 });
+      other.saveResumeState({ position: 999 });
+      expect(handler.loadResumeState()).toEqual({ position: 1 });
+      expect(other.loadResumeState()).toEqual({ position: 999 });
+    });
+  });
+
+  describe('resume state: large-state tiering to Drive', () => {
+    it('routes state above LARGE_STATE_THRESHOLD to Drive and stores a pointer', () => {
+      const bigArray = new Array(QueuePersistenceHandler.LARGE_STATE_THRESHOLD).fill('x');
+      const bigState = { blob: bigArray.join('') };
+
+      handler.saveResumeState(bigState);
+
+      const pointer = propertiesService.getProperty('state_job-a');
+      expect(pointer).toMatch(/^__DRIVE__:/);
+      expect(propertiesService.getProperty('state_size_job-a')).not.toBeNull();
+      expect(driveApp.createFolder).toHaveBeenCalledWith('JobRunnerStates');
+    });
+
+    it('loads large state back from Drive transparently through loadResumeState', () => {
+      const bigState = { blob: 'y'.repeat(QueuePersistenceHandler.LARGE_STATE_THRESHOLD) };
+      handler.saveResumeState(bigState);
+
+      const loaded = handler.loadResumeState();
+      expect(loaded).toEqual(bigState);
+    });
+
+    it('reuses (overwrites) the same Drive file on repeated large-state checkpoints', () => {
+      const bigState1 = { blob: 'y'.repeat(QueuePersistenceHandler.LARGE_STATE_THRESHOLD) };
+      const bigState2 = { blob: 'z'.repeat(QueuePersistenceHandler.LARGE_STATE_THRESHOLD) };
+
+      handler.saveResumeState(bigState1);
+      const fileIdAfterFirst = propertiesService.getProperty('state_file_id_job-a');
+
+      handler.saveResumeState(bigState2);
+      const fileIdAfterSecond = propertiesService.getProperty('state_file_id_job-a');
+
+      expect(fileIdAfterSecond).toBe(fileIdAfterFirst);
+      expect(handler.loadResumeState()).toEqual(bigState2);
+      // Exactly one createFile call across two large checkpoints -> in-place update, not duplication.
+      expect(driveApp.getFoldersByName('JobRunnerStates').next().createFile).toHaveBeenCalledTimes(
+        1
+      );
+    });
+
+    it('transitioning from a large checkpoint back to a small one switches tiers cleanly', () => {
+      const bigState = { blob: 'y'.repeat(QueuePersistenceHandler.LARGE_STATE_THRESHOLD) };
+      handler.saveResumeState(bigState);
+      expect(propertiesService.getProperty('state_job-a')).toMatch(/^__DRIVE__:/);
+
+      handler.saveResumeState({ position: 1 });
+      expect(propertiesService.getProperty('state_job-a')).not.toMatch(/^__DRIVE__:/);
+      expect(propertiesService.getProperty('state_size_job-a')).toBeNull();
+      expect(handler.loadResumeState()).toEqual({ position: 1 });
+    });
+
+    it('throws a clear error when Drive is unavailable and a large state must be saved', () => {
+      const handlerNoDrive = new QueuePersistenceHandler('job-a', propertiesService, stateManager, {
+        getStandardApp: () => undefined
+      });
+      const bigState = { blob: 'y'.repeat(QueuePersistenceHandler.LARGE_STATE_THRESHOLD) };
+      expect(() => handlerNoDrive.saveResumeState(bigState)).toThrow(
+        'DriveApp not available - cannot save large state'
+      );
+    });
+
+    it('throws a clear error when the pointed-to Drive file cannot be loaded (corrupted/missing pointer)', () => {
+      propertiesService.setProperty('state_job-a', '__DRIVE__:does-not-exist');
+      expect(() => handler.loadResumeState()).toThrow(/Failed to load state from Drive file/);
+    });
+  });
+
+  describe('resume state: malformed / missing stored state', () => {
+    it('propagates a parse error for corrupted JSON in the small-state slot (caller must handle)', () => {
+      propertiesService.setProperty('state_job-a', '{not-valid-json');
+      expect(() => handler.loadResumeState()).toThrow();
+    });
+
+    it('treats an empty-string stored value the same as missing state', () => {
+      propertiesService.setProperty('state_job-a', '');
+      expect(handler.loadResumeState()).toBeNull();
+    });
+  });
+
+  describe('batchSave', () => {
+    it('writes only the provided keys, leaving others untouched', () => {
+      handler.batchSave({ progress: { pct: 10 } });
+      expect(propertiesService.getProperty('progress_job-a')).toBe(JSON.stringify({ pct: 10 }));
+      expect(propertiesService.getProperty('state_job-a')).toBeNull();
+      expect(propertiesService.getProperty('type_job-a')).toBeNull();
+    });
+
+    it('is a no-op (does not call setProperties) for an empty updates object', () => {
+      handler.batchSave({});
+      expect(propertiesService.setProperties).not.toHaveBeenCalled();
+    });
+
+    it('bumps the version key based on the injected stateManager when state is included', () => {
+      stateManager.setState('running'); // version -> 1
+      handler.batchSave({ state: 'completed' });
+      expect(propertiesService.getProperty('job_job-a')).toBe('completed');
+      expect(propertiesService.getProperty('version_job-a')).toBe('2');
+    });
+
+    it('defaults to version 0 basis when constructed without a stateManager', () => {
+      const bare = new QueuePersistenceHandler('job-c', propertiesService);
+      bare.batchSave({ state: 'running' });
+      expect(propertiesService.getProperty('version_job-c')).toBe('1');
+    });
+
+    it('can persist resumeState, progress, config, type, and state together in one call', () => {
+      handler.batchSave({
+        resumeState: { position: 5 },
+        progress: { pct: 50 },
+        config: { maxRetries: 2 },
+        type: 'importJob',
+        state: 'running'
+      });
+
+      expect(handler.loadResumeState()).toEqual({ position: 5 });
+      expect(propertiesService.getProperty('progress_job-a')).toBe(JSON.stringify({ pct: 50 }));
+      expect(handler.loadConfiguration()).toEqual({ maxRetries: 2 });
+      expect(handler.loadType()).toBe('importJob');
+      expect(propertiesService.getProperty('job_job-a')).toBe('running');
+    });
+
+    // Regression coverage: batchSave (the timeout/suspension persistence
+    // path) used to bypass saveResumeState's size-check-then-Drive-offload
+    // protection entirely — a plain JSON.stringify + setProperties with no
+    // threshold check — so a large yielded checkpoint on the suspend path
+    // would silently write oversized state inline instead of tiering to
+    // Drive like saveResumeState always has.
+    it('routes an oversized resumeState above LARGE_STATE_THRESHOLD to Drive, same as saveResumeState', () => {
+      const bigState = { blob: 'x'.repeat(QueuePersistenceHandler.LARGE_STATE_THRESHOLD) };
+
+      handler.batchSave({ resumeState: bigState });
+
+      const pointer = propertiesService.getProperty('state_job-a');
+      expect(pointer).toMatch(/^__DRIVE__:/);
+      expect(propertiesService.getProperty('state_size_job-a')).not.toBeNull();
+      expect(driveApp.createFolder).toHaveBeenCalledWith('JobRunnerStates');
+    });
+
+    it('round-trips an oversized resumeState written via batchSave back through loadResumeState', () => {
+      const bigState = { blob: 'y'.repeat(QueuePersistenceHandler.LARGE_STATE_THRESHOLD) };
+
+      handler.batchSave({ resumeState: bigState, progress: { pct: 75 } });
+
+      // Pin this test to the new Drive-routing behavior itself, not just to
+      // its sibling test: without this, the assertions below would also
+      // pass under the old plain-JSON batchSave (the mock PropertiesService
+      // has no 9KB cap), making this test a false regression guard on its own.
+      expect(propertiesService.getProperty('state_job-a')).toMatch(/^__DRIVE__:/);
+
+      // Genuine round-trip proof: read back through the paired read method,
+      // not just an assertion on what was written.
+      expect(handler.loadResumeState()).toEqual(bigState);
+      expect(propertiesService.getProperty('progress_job-a')).toBe(JSON.stringify({ pct: 75 }));
+    });
+
+    // Regression coverage for the review finding on commit f4c1bb0: the
+    // Drive-offload path introduced by the tiering fix above sat BEFORE
+    // batchSave's single setProperties call, making the whole suspend
+    // persist all-or-nothing. If Drive throws (unavailable/quota) while
+    // offloading an oversized resumeState, batchSave must still persist the
+    // rest of the update (state/progress/version) instead of losing the
+    // suspend state entirely and stranding the job with no resume trigger.
+    it('falls back to inline JSON for resumeState and still persists state/progress/version when Drive offload fails', () => {
+      const bigState = { blob: 'x'.repeat(QueuePersistenceHandler.LARGE_STATE_THRESHOLD) };
+      driveApp.createFolder.mockImplementationOnce(() => {
+        throw new Error('Drive quota exceeded');
+      });
+      stateManager.setState('running'); // version -> 1
+
+      // Real effect proven by the assertions below (suspend-critical fields
+      // still persisted, resumeState falls back to inline JSON); bare call
+      // is enough here, the graceful-fallback contract is the point of the
+      // test, not merely "doesn't throw".
+      handler.batchSave({
+        state: 'to_resume',
+        resumeState: bigState,
+        progress: { completed: false, percentage: 42 }
+      });
+
+      // The suspend-critical fields must all still be persisted...
+      expect(propertiesService.getProperty('job_job-a')).toBe('to_resume');
+      expect(propertiesService.getProperty('version_job-a')).toBe('2');
+      expect(propertiesService.getProperty('progress_job-a')).toBe(
+        JSON.stringify({ completed: false, percentage: 42 })
+      );
+      // ...and resumeState itself falls back to the old inline-JSON write
+      // (not a __DRIVE__ pointer, since the offload failed) rather than
+      // being dropped.
+      const stateValue = propertiesService.getProperty('state_job-a');
+      expect(stateValue).not.toMatch(/^__DRIVE__:/);
+      expect(JSON.parse(stateValue!)).toEqual(bigState);
+      expect(handler.loadResumeState()).toEqual(bigState);
+    });
+  });
+
+  describe('configuration and type persistence', () => {
+    it('round-trips configuration objects', () => {
+      handler.saveConfiguration({ maxRetries: 3, batchSize: 100 });
+      expect(handler.loadConfiguration()).toEqual({ maxRetries: 3, batchSize: 100 });
+    });
+
+    it('returns an empty object when no configuration was ever saved', () => {
+      expect(handler.loadConfiguration()).toEqual({});
+    });
+
+    it('round-trips job type', () => {
+      handler.saveType('importJob');
+      expect(handler.loadType()).toBe('importJob');
+    });
+
+    it('returns null/undefined type when none saved', () => {
+      expect(handler.loadType()).toBeFalsy();
+    });
+  });
+
+  describe('reset', () => {
+    it('clears state, type, config, and tiering metadata keys', () => {
+      handler.saveResumeState({ position: 1 });
+      handler.saveType('importJob');
+      handler.saveConfiguration({ maxRetries: 1 });
+
+      handler.reset();
+
+      expect(handler.loadResumeState()).toBeNull();
+      expect(handler.loadType()).toBeFalsy();
+      expect(handler.loadConfiguration()).toEqual({});
+    });
+
+    it('trashes the backing Drive file when the state was tiered to Drive', () => {
+      const bigState = { blob: 'y'.repeat(QueuePersistenceHandler.LARGE_STATE_THRESHOLD) };
+      handler.saveResumeState(bigState);
+      const fileId = propertiesService.getProperty('state_file_id_job-a');
+
+      handler.reset();
+
+      const trashedFile = driveApp.getFileById(fileId!);
+      expect(trashedFile.setTrashed).toHaveBeenCalledWith(true);
+    });
+
+    it('does not throw when reset is called with no prior state at all', () => {
+      // reset() takes no args, so there is no invalid-input path to
+      // negative-test; the real contract is idempotent no-op behavior,
+      // pinned via its actual (undefined) return and unchanged empty state.
+      expect(handler.reset()).toBeUndefined();
+      expect(handler.loadResumeState()).toBeNull();
+    });
+
+    it('does not throw even if the Drive cleanup itself fails (best-effort)', () => {
+      const bigState = { blob: 'y'.repeat(QueuePersistenceHandler.LARGE_STATE_THRESHOLD) };
+      handler.saveResumeState(bigState);
+      driveApp.getFileById.mockImplementationOnce(() => {
+        throw new Error('drive down');
+      });
+      // Real effect: despite the Drive throw, reset() still clears the
+      // PropertiesService-backed state (best-effort Drive cleanup only).
+      expect(handler.reset()).toBeUndefined();
+      expect(handler.loadResumeState()).toBeNull();
+      expect(propertiesService.getProperty('state_file_id_job-a')).toBeNull();
+    });
+  });
+});

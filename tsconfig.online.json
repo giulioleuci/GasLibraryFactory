@@ -1,0 +1,9 @@
+{
+  "extends": "./tsconfig.base.json",
+  "include": [
+    "__testOnline__/**/*.ts",
+    "GoogleApiWrapper/__testOnline__/**/*.ts",
+    "types/**/*.d.ts"
+  ],
+  "exclude": ["node_modules", "dist", ".cache"]
+}

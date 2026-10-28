@@ -2,6 +2,7 @@
 
 **Version:** 2.0.0  
 **Layer:** Infrastructure (Layer 0)  
+**Language:** TypeScript (strict, ES modules; Babel emits GAS V8 JavaScript)
 **Dependencies:** CoreUtilsLib
 
 ## 🛡️ Overview
@@ -17,16 +18,16 @@ The library separates core resilience logic from custom exception types:
 ```text
 GasResilienceLib/
 ├── src/
-│   ├── ExceptionService.js     # Main facade for exception handling and retry logic
-│   ├── Configuration.js        # Global configuration for retry policies and thresholds
+│   ├── ExceptionService.ts     # Main facade for exception handling and retry logic
+│   ├── Configuration.ts        # Global configuration for retry policies and thresholds
 │   ├── exceptions/             # Domain-specific exception classes
-│   │   ├── RateLimitExceededException.js # Thrown when Google quotas are hit
-│   │   └── TimeoutException.js           # Thrown when operations exceed time limits
+│   │   ├── RateLimitExceededException.ts # Thrown when Google quotas are hit
+│   │   └── TimeoutException.ts           # Thrown when operations exceed time limits
 │   ├── handlers/               # The "engine" room of resilience
-│   │   ├── CircuitBreaker.js   # Implements stateful fail-fast logic
-│   │   ├── ErrorClassifier.js  # Matches error messages to categories (QUOTA, SERVICE, etc.)
-│   │   ├── ErrorReporter.js    # Sanitizes and logs failures (PII redaction)
-│   │   └── RecoveryManager.js  # Orchestrates retry strategies based on classification
+│   │   ├── CircuitBreaker.ts   # Implements stateful fail-fast logic
+│   │   ├── ErrorClassifier.ts  # Matches error messages to categories (QUOTA, SERVICE, etc.)
+│   │   ├── ErrorReporter.ts    # Sanitizes and logs failures (PII redaction)
+│   │   └── RecoveryManager.ts  # Orchestrates retry strategies based on classification
 │   └── __tests__/              # Unit tests for the resilience engine
 ```
 
@@ -52,7 +53,7 @@ GasResilienceLib/
 
 ## 📦 Installation
 
-```javascript
+```typescript
 import {
   ExceptionService,
   ResilienceConfiguration,
@@ -83,7 +84,7 @@ import { LoggerService, UtilsService } from '@CoreUtilsLib';
 
 ## 🚀 Quick Start
 
-```javascript
+```typescript
 // 1. Initialize dependencies
 const logger = new LoggerService();
 const utils = new UtilsService((ms) => Utilities.sleep(ms));
@@ -123,7 +124,7 @@ The most powerful mode. Returns a result object containing success status, resul
 
 - **Use case**: Complex flows needing branching logic based on error type.
 
-```javascript
+```typescript
 const result = exceptionService.executeWithAdvancedHandling(
   (params) => DriveApp.getFileById(params.id),
   { id: '12345' },
@@ -154,7 +155,7 @@ Centralizes configuration for error patterns and recovery strategies. You can in
 
 **Custom Configuration Example:**
 
-```javascript
+```typescript
 const config = new ResilienceConfiguration({
   recoveryStrategies: {
     QUOTA: { action: 'RETRY_BACKOFF_LONG', maxAttempts: 10, interval: 120000 }
@@ -175,7 +176,7 @@ Implements the Circuit Breaker pattern to protect external systems and save exec
 
 **Manual Control:**
 
-```javascript
+```typescript
 // Check state
 const stats = exceptionService.getCircuitBreakerStatistics();
 
@@ -198,7 +199,7 @@ The `ErrorReporter` (internal) automatically sanitizes logs before writing them.
 
 **Statistics:**
 
-```javascript
+```typescript
 const stats = exceptionService.getStatistics();
 console.log(`Recovery Rate: ${stats.recoveryRate}%`);
 ```

@@ -1,0 +1,413 @@
+import type {
+  DocumentContentFacade,
+  ContentElement,
+  ScannedDocument
+} from './DocumentContracts.js';
+/**
+ * @file GoogleApiWrapper/src/services/managers/DocumentContentExtractor.js
+ * @description Specialized manager for extracting and parsing Google Documents content.
+ * Converts complex document structures into POJOs for decoupling from GAS APIs.
+ */
+
+export class DocumentContentExtractor {
+  declare facade: DocumentContentFacade;
+  declare _logger: DocumentContentFacade['_logger'];
+  declare _cache: unknown;
+  declare _utils: unknown;
+  declare _exceptionService: unknown;
+
+  /**
+   * Creates a new DocumentContentExtractor instance.
+   * @param {DocumentService} facade - The DocumentService facade
+   */
+  constructor(facade: DocumentContentFacade) {
+    this.facade = facade;
+    this._logger = facade._logger;
+    this._cache = facade._cache;
+    this._utils = facade._utils;
+    this._exceptionService = facade._exceptionService;
+  }
+
+  /**
+   * @description Retrieves the full document hierarchy as a Plain Old JavaScript Object (POJO). Bypasses internal GAS types.
+   * @param {string} documentId Target document identifier.
+   * @returns {Object} POJO representation including body content collection.
+   */
+  getRawDocumentStructure(documentId: string) {
+    return this.facade._executeWithRetry(() => {
+      // Use Advanced Docs API to get document structure
+      const doc = Docs!.Documents!.get(documentId);
+
+      if (!doc || !doc.body || !doc.body.content) {
+        throw new Error(`Invalid document structure for ${documentId}`);
+      }
+
+      // Convert document structure to POJOs
+      const structure = {
+        documentId: doc.documentId,
+        title: doc.title,
+        body: {
+          content: this._convertContentToPOJO(doc.body.content)
+        }
+      };
+
+      this._logger.debug(
+        `Extracted document structure for ${documentId}: ${structure.body.content.length} elements`
+      );
+      return structure;
+    });
+  }
+
+  /**
+   * @private
+   * @description Recursively maps native Docs API content elements to POJOs.
+   * @param {Object[]} content Collection of native Docs API elements.
+   * @returns {Object[]} Collection of mapped POJOs.
+   */
+  _convertContentToPOJO(
+    content: GoogleAppsScript.Docs.Schema.StructuralElement[] | null | undefined
+  ): ContentElement[] {
+    if (!Array.isArray(content)) {
+      return [];
+    }
+
+    return content.map((element, index) => {
+      const pojo: ContentElement = {
+        index: index,
+        startIndex: element.startIndex,
+        endIndex: element.endIndex
+      } as ContentElement;
+
+      // Determine element type and extract relevant data
+      if (element.paragraph) {
+        pojo.type = 'PARAGRAPH';
+        pojo.text = this._extractParagraphText(element.paragraph);
+        pojo.runs = this._extractParagraphRuns(element.paragraph);
+        pojo.style = element.paragraph.paragraphStyle || {};
+      } else if (element.table) {
+        pojo.type = 'TABLE';
+        pojo.rows = element.table.rows || 0;
+        pojo.columns = element.table.columns || 0;
+        pojo.tableRows = this._extractTableData(element.table);
+      } else if (element.sectionBreak) {
+        pojo.type = 'SECTION_BREAK';
+      } else {
+        pojo.type = 'UNKNOWN';
+      }
+
+      return pojo;
+    });
+  }
+
+  /**
+   * @private
+   * @description Aggregates all text runs within a paragraph element.
+   * @param {Object} paragraph Native Docs API paragraph object.
+   * @returns {string} Concatenated plain text.
+   */
+  _extractParagraphText(paragraph: GoogleAppsScript.Docs.Schema.Paragraph | null | undefined) {
+    if (!paragraph || !paragraph.elements) {
+      return '';
+    }
+
+    return paragraph.elements
+      .map((elem) => {
+        if (elem.textRun && elem.textRun.content) {
+          return elem.textRun.content;
+        }
+        return '';
+      })
+      .join('');
+  }
+
+  /**
+   * @private
+   * @description Extracts per-run text + style spans from a paragraph, with
+   * offsets relative to the paragraph's own flattened text (i.e. directly
+   * usable as offsets into `_extractParagraphText(paragraph)`'s output).
+   * @param {Object} paragraph Native Docs API paragraph object.
+   * @returns {Array<{text: string, start: number, end: number, style: Object}>}
+   */
+  _extractParagraphRuns(paragraph: GoogleAppsScript.Docs.Schema.Paragraph | null | undefined) {
+    if (!paragraph || !paragraph.elements) {
+      return [];
+    }
+    const runs = [];
+    let offset = 0;
+    for (const elem of paragraph.elements) {
+      if (elem.textRun && elem.textRun.content) {
+        const text = elem.textRun.content;
+        runs.push({
+          text,
+          start: offset,
+          end: offset + text.length,
+          style: elem.textRun.textStyle || {}
+        });
+        offset += text.length;
+      }
+    }
+    return runs;
+  }
+
+  /**
+   * @private
+   * @description Maps native Docs API table rows and cells to a POJO collection.
+   * @param {Object} table Native Docs API table object.
+   * @returns {Object[]} Collection of row and cell POJOs.
+   */
+  _extractTableData(table: GoogleAppsScript.Docs.Schema.Table | null | undefined) {
+    if (!table || !table.tableRows) {
+      return [];
+    }
+
+    return table.tableRows.map((row, rowIndex) => {
+      const cells = (row.tableCells || []).map((cell, cellIndex) => {
+        return {
+          rowIndex: rowIndex,
+          columnIndex: cellIndex,
+          text: this._extractCellText(cell),
+          runs: this._extractCellRuns(cell),
+          content: cell.content ? this._convertContentToPOJO(cell.content) : []
+        };
+      });
+
+      return {
+        rowIndex: rowIndex,
+        cells: cells
+      };
+    });
+  }
+
+  /**
+   * @private
+   * @description Resolves text content from a table cell by aggregating paragraph segments.
+   * @param {Object} cell Native Docs API table cell object.
+   * @returns {string} Concatenated plain text.
+   */
+  _extractCellText(cell: GoogleAppsScript.Docs.Schema.TableCell | null | undefined) {
+    if (!cell || !cell.content) {
+      return '';
+    }
+
+    return cell.content
+      .map((element) => {
+        if (element.paragraph) {
+          return this._extractParagraphText(element.paragraph);
+        }
+        return '';
+      })
+      .join('');
+  }
+
+  /**
+   * @private
+   * @description Extracts per-run text + style spans from a table cell,
+   * concatenating across the cell's paragraphs with cell-relative offsets
+   * (matching `_extractCellText`'s concatenation order exactly).
+   * @param {Object} cell Native Docs API table cell object.
+   * @returns {Array<{text: string, start: number, end: number, style: Object}>}
+   */
+  _extractCellRuns(cell: GoogleAppsScript.Docs.Schema.TableCell | null | undefined) {
+    if (!cell || !cell.content) {
+      return [];
+    }
+    const runs = [];
+    let offset = 0;
+    for (const element of cell.content) {
+      if (element.paragraph) {
+        const paraRuns = this._extractParagraphRuns(element.paragraph);
+        for (const r of paraRuns) {
+          runs.push({ text: r.text, start: offset + r.start, end: offset + r.end, style: r.style });
+        }
+        offset += this._extractParagraphText(element.paragraph).length;
+      }
+    }
+    return runs;
+  }
+
+  /**
+   * @description Retrieves the document body metadata with index boundaries.
+   * @param {string} documentId Target document identifier.
+   * @returns {Object} Body structure {startIndex, endIndex, content}.
+   * @throws {Error} If body is missing.
+   */
+  getDocumentBody(documentId: string) {
+    try {
+      const doc = this.facade._executeWithRetry(
+        () => Docs!.Documents!.get(documentId),
+        { documentId },
+        3
+      );
+
+      if (!doc.body) {
+        throw new Error('Document body not found');
+      }
+
+      return {
+        startIndex: 1,
+        endIndex: doc.body.content![doc.body.content!.length - 1].endIndex! - 1,
+        content: doc.body.content
+      };
+    } catch (error) {
+      this._logger.error(`Failed to get document body: ${(error as Error).message}`);
+      throw error;
+    }
+  }
+
+  /**
+   * @description Probes document structure for tables and specific text patterns. Optimized for POJO-based scanning.
+   * @param {string} documentId Target document identifier.
+   * @param {string[]} [textPatterns=['{{']] Collection of search strings.
+   * @returns {Object} Scan results {tables: Object[], textMatches: Object[]}.
+   */
+  scanDocumentStructure(documentId: string, textPatterns: string[] = ['{{']) {
+    try {
+      // Use Advanced Docs API via the method in this class
+      const structure = this.facade.getRawDocumentStructure(documentId);
+
+      const result: ScannedDocument = {
+        tables: [],
+        textMatches: []
+      };
+
+      const seenTextIndices = new Set();
+
+      // PHASE 1: Extract tables from POJO structure.
+      //
+      // Ordinals are assigned via a depth-first walk that also descends into
+      // each cell's content, so a table nested inside another table's cell
+      // (e.g. a "signature box" built from two nested tables, as seen in the
+      // PDP-DSA template) gets its own ordinal at the position it actually
+      // occupies in document order — matching how DocumentApp.getBody()
+      // .getTables() flattens nested tables into its own list. `table.index`
+      // here is copied verbatim into `op.tableIndex` by
+      // DocumentProcessorTagScanner and later used as a raw array index into
+      // that same DocumentApp table list (DocumentTableManager); a
+      // top-level-only count would silently misalign the two once any nested
+      // table exists before the target table, routing operations at the
+      // wrong physical table ("Column index N out of bounds").
+      const tableOrdinalByStartIndex = new Map();
+      let phase1IterationCount = 0;
+      const PHASE1_MAX_ITERATIONS = 10000;
+      let phase1LimitReached = false;
+      const collectTables = (elements: ContentElement[]) => {
+        for (const element of elements) {
+          if (phase1LimitReached) {
+            return;
+          }
+          if (++phase1IterationCount > PHASE1_MAX_ITERATIONS) {
+            this._logger.warn(
+              `Reached maximum iteration limit (${PHASE1_MAX_ITERATIONS}) while extracting tables`
+            );
+            phase1LimitReached = true;
+            return;
+          }
+          if (element.type !== 'TABLE') {
+            continue;
+          }
+
+          const tableData: ScannedDocument['tables'][number] = {
+            index: result.tables.length,
+            startIndex: element.startIndex,
+            rows: []
+          };
+          tableOrdinalByStartIndex.set(element.startIndex, tableData.index);
+
+          for (const tableRow of element.tableRows!) {
+            const rowData: ScannedDocument['tables'][number]['rows'][number] = {
+              index: tableRow.rowIndex,
+              cells: []
+            };
+
+            for (const cell of tableRow.cells) {
+              rowData.cells.push({
+                index: cell.rowIndex * 1000 + cell.columnIndex,
+                text: cell.text,
+                runs: cell.runs || []
+              });
+            }
+
+            tableData.rows.push(rowData);
+          }
+
+          result.tables.push(tableData);
+
+          for (const tableRow of element.tableRows!) {
+            for (const cell of tableRow.cells) {
+              if (cell.content && cell.content.length > 0) {
+                collectTables(cell.content);
+              }
+            }
+          }
+        }
+      };
+      collectTables(structure.body.content);
+
+      // PHASE 2: Scan text content for pattern matches
+      for (const pattern of textPatterns) {
+        let iterationCount = 0;
+        const MAX_ITERATIONS = 10000;
+        for (const element of structure.body.content) {
+          if (++iterationCount > MAX_ITERATIONS) {
+            this._logger.warn(
+              `Reached maximum iteration limit (${MAX_ITERATIONS}) for pattern: ${pattern}`
+            );
+            break;
+          }
+
+          let textContent = '';
+          let elementIndex = element.startIndex;
+
+          if (element.type === 'PARAGRAPH') {
+            textContent = element.text || '';
+            if (textContent.includes(pattern) && !seenTextIndices.has(elementIndex)) {
+              result.textMatches.push({
+                elementIndex: elementIndex,
+                text: textContent,
+                type: 'TEXT',
+                runs: element.runs || []
+              });
+              seenTextIndices.add(elementIndex);
+            }
+          } else if (element.type === 'TABLE') {
+            // Looked up from Phase 1's map (built via the same depth-first,
+            // nested-table-aware walk) rather than a local top-level-only
+            // counter, so a TABLE_TEXT match's `tableIndex` always agrees
+            // with `result.tables[].index` / `op.tableIndex` — see Phase 1.
+            const tableOrdinal = tableOrdinalByStartIndex.get(element.startIndex);
+            for (const tableRow of element.tableRows || []) {
+              for (const cell of tableRow.cells) {
+                if (cell.text && cell.text.includes(pattern)) {
+                  textContent = cell.text;
+                  elementIndex =
+                    cell.content && cell.content.length > 0 && cell.content[0].startIndex != null
+                      ? cell.content[0].startIndex
+                      : element.startIndex! + tableRow.rowIndex * 1000 + cell.columnIndex;
+
+                  if (!seenTextIndices.has(elementIndex)) {
+                    result.textMatches.push({
+                      elementIndex: elementIndex,
+                      text: textContent,
+                      type: 'TABLE_TEXT',
+                      tableIndex: tableOrdinal,
+                      runs: cell.runs || []
+                    });
+                    seenTextIndices.add(elementIndex);
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+
+      this._logger.debug(
+        `Scanned document ${documentId}: ${result.tables.length} tables, ${result.textMatches.length} text matches`
+      );
+      return result;
+    } catch (error) {
+      this._logger.error(`Failed to scan document structure: ${(error as Error).message}`);
+      throw error;
+    }
+  }
+}

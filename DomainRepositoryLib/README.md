@@ -2,6 +2,7 @@
 
 **Version:** 1.0.0  
 **Layer:** Application Orchestration (Layer 3)  
+**Language:** TypeScript (strict, ES modules; Babel emits GAS V8 JavaScript)
 **Dependencies:** SheetDBLib, CoreUtilsLib, GasExpressionEngineLib
 
 ## 🏛️ Overview
@@ -15,17 +16,17 @@ A DDD-aligned structure focused on domain logic and mapping:
 ```text
 DomainRepositoryLib/
 ├── src/
-│   ├── Entity.js               # Base class for domain objects with identity
-│   ├── ValueObject.js          # Objects with structural equality logic
-│   ├── Repository.js           # Generic base for persistence and hydration
+│   ├── Entity.ts               # Base class for domain objects with identity
+│   ├── ValueObject.ts          # Objects with structural equality logic
+│   ├── Repository.ts           # Generic base for persistence and hydration
 │   ├── mapping/                # Logic for data/entity conversion
-│   │   ├── EntityMapper.js     # Orchestrates mapping configurations
-│   │   ├── HydrationService.js # Logic for deep entity reconstruction
-│   │   └── DynamicFieldMapping.js # Maps map-like entity properties
+│   │   ├── EntityMapper.ts     # Orchestrates mapping configurations
+│   │   ├── HydrationService.ts # Logic for deep entity reconstruction
+│   │   └── DynamicFieldMapping.ts # Maps map-like entity properties
 │   ├── specifications/         # Encapsulated business rules and query logic
-│   │   └── Specification.js    # Base interface for rules
+│   │   └── Specification.ts    # Base interface for rules
 │   ├── query/                  # Domain-to-DB query translation
-│   │   └── QueryTranslator.js  # Translates Specifications into SheetDB queries
+│   │   └── QueryTranslator.ts  # Translates Specifications into SheetDB queries
 │   ├── validation/             # Schema validation bridge (Zod)
 │   └── errors/                 # Domain-specific exceptions
 ```
@@ -50,7 +51,7 @@ It decouples your business logic from the underlying storage mechanism (Google S
 
 ## 📦 Installation
 
-```javascript
+```typescript
 import { Entity, Repository, Specification, ZodValidator } from '@DomainRepositoryLib';
 ```
 
@@ -58,7 +59,7 @@ import { Entity, Repository, Specification, ZodValidator } from '@DomainReposito
 
 ### 1. Define an Entity
 
-```javascript
+```typescript
 import { z } from '@DomainRepositoryLib';
 
 class User extends Entity {
@@ -91,7 +92,7 @@ class User extends Entity {
 
 ### 2. Define a Repository
 
-```javascript
+```typescript
 class UserRepository extends Repository {
   constructor(db) {
     super(db, 'Users', User); // Table Name, Entity Class
@@ -106,7 +107,7 @@ class UserRepository extends Repository {
 
 ### 3. Use in Application
 
-```javascript
+```typescript
 const userRepo = new UserRepository(db);
 
 // Create
@@ -125,7 +126,7 @@ userRepo.save(existingUser); // Only updates 'status' field
 
 Specifications allow you to define business rules that can be used for both validation and querying.
 
-```javascript
+```typescript
 class ActiveUserSpecification extends Specification {
   isSatisfiedBy(user) {
     return user.status === 'active';

@@ -1,35 +1,23 @@
 # API Reference: CoreUtilsLib
 
 ## CLASS: ValidationUtils
-**File Path:** `CoreUtilsLib/src/ValidationUtils.js`
+**File Path:** `CoreUtilsLib/src/ValidationUtils.ts`
 **Constructor Usage:** `const instance = new ValidationUtils();`
-**Description:** Centralized validation utilities for dependency and parameter validation.
-Eliminates duplicate validation code across all GasLibraryFactory libraries.
-/
-
-/**
-Centralized utilities for static dependency and parameter validation across libraries.
-@class
+**Description:** Centralized utilities for static dependency and parameter validation across libraries.
 
 ### Raw JSDoc Context:
 ```javascript
-/**
- * @file CoreUtilsLib/src/ValidationUtils.js
- * @description Centralized validation utilities for dependency and parameter validation.
- * Eliminates duplicate validation code across all GasLibraryFactory libraries.
- */
-
 /**
  * Centralized utilities for static dependency and parameter validation across libraries.
  * @class
  */
 ```
 
-### Methods of ValidationUtils
+### Methods and properties of ValidationUtils
 
-#### METHOD: ValidationUtils.validateLogger
+#### PROPERTY: ValidationUtils.LOGGER_METHODS
 - **Scope:** static
-- **LLM Call Syntax:** `const result = ValidationUtils.validateLogger(logger, context);`
+- **LLM Call Syntax:** `const result = ValidationUtils.LOGGER_METHODS;`
 - **Pure JSDoc:**
 ```javascript
 /**
@@ -37,11 +25,14 @@ Centralized utilities for static dependency and parameter validation across libr
    * @static
    * @type {string[]}
    */
-  static get LOGGER_METHODS() {
-    return ['debug', 'info', 'warn', 'error'];
-  }
-
-  /**
+```
+---
+#### METHOD: ValidationUtils.validateLogger
+- **Scope:** static
+- **LLM Call Syntax:** `const result = ValidationUtils.validateLogger(logger, context);`
+- **Pure JSDoc:**
+```javascript
+/**
    * Validates that a logger object has all required logging methods.
    *
    * A valid logger must be a non-null object with debug, info, warn, and error
@@ -67,30 +58,6 @@ Centralized utilities for static dependency and parameter validation across libr
    * ValidationUtils.validateLogger({ debug: 'not a function' }, 'MyService');
    * // Error: 'MyService: logger.debug must be a function'
    */
-```
----
-#### METHOD: ValidationUtils.if
-- **Scope:** instance
-- **LLM Call Syntax:** `validationUtils.if(!logger || typeof logger !);`
-- **Pure JSDoc:**
-```javascript
-/** Method if */
-```
----
-#### METHOD: ValidationUtils.for
-- **Scope:** instance
-- **LLM Call Syntax:** `validationUtils.for(const method of ValidationUtils.LOGGER_METHODS);`
-- **Pure JSDoc:**
-```javascript
-/** Method for */
-```
----
-#### METHOD: ValidationUtils.if
-- **Scope:** instance
-- **LLM Call Syntax:** `validationUtils.if(typeof logger[method] !);`
-- **Pure JSDoc:**
-```javascript
-/** Method if */
 ```
 ---
 #### METHOD: ValidationUtils.validateDependency
@@ -126,72 +93,34 @@ Centralized utilities for static dependency and parameter validation across libr
    */
 ```
 ---
-#### METHOD: ValidationUtils.if
-- **Scope:** instance
-- **LLM Call Syntax:** `validationUtils.if(!dependency || typeof dependency !);`
-- **Pure JSDoc:**
-```javascript
-/** Method if */
-```
----
-#### METHOD: ValidationUtils.for
-- **Scope:** instance
-- **LLM Call Syntax:** `validationUtils.for(const method of requiredMethods);`
-- **Pure JSDoc:**
-```javascript
-/** Method for */
-```
----
-#### METHOD: ValidationUtils.if
-- **Scope:** instance
-- **LLM Call Syntax:** `validationUtils.if(typeof dependency[method] !);`
-- **Pure JSDoc:**
-```javascript
-/** Method if */
-```
----
 <br>
 
 ## CLASS: MyUtilsService
-**File Path:** `CoreUtilsLib/src/UtilsService.js`
+**File Path:** `CoreUtilsLib/src/UtilsService.ts`
 **Constructor Usage:** `const instance = new MyUtilsService();`
 **Description:** N/A
 
 ### Raw JSDoc Context:
 ```javascript
-/** Class definition */
+/** No comment available */
 ```
 
 <br>
 
 ## CLASS: TypeGuards
-**File Path:** `CoreUtilsLib/src/TypeGuards.js`
+**File Path:** `CoreUtilsLib/src/TypeGuards.ts`
 **Constructor Usage:** `const instance = new TypeGuards();`
-**Description:** Type guard utilities for consistent type checking across all libraries.
-Provides both functional and object-based type checking patterns.
-
-/
-
-/**
-Static type guard utilities for consistent runtime value validation.
-@class
+**Description:** Static type guard utilities for consistent runtime value validation.
 
 ### Raw JSDoc Context:
 ```javascript
-/**
- * @file CoreUtilsLib/src/TypeGuards.js
- * @description Type guard utilities for consistent type checking across all libraries.
- * Provides both functional and object-based type checking patterns.
- * @version 1.0.0
- */
-
 /**
  * Static type guard utilities for consistent runtime value validation.
  * @class
  */
 ```
 
-### Methods of TypeGuards
+### Methods and properties of TypeGuards
 
 #### METHOD: TypeGuards.isString
 - **Scope:** static
@@ -358,14 +287,6 @@ Static type guard utilities for consistent runtime value validation.
    * TypeGuards.isPlainObject([]);           // false
    * TypeGuards.isPlainObject(new Date());   // false
    */
-```
----
-#### METHOD: TypeGuards.if
-- **Scope:** instance
-- **LLM Call Syntax:** `typeGuards.if(value);`
-- **Pure JSDoc:**
-```javascript
-/** Method if */
 ```
 ---
 #### METHOD: TypeGuards.isObject
@@ -631,66 +552,17 @@ Static type guard utilities for consistent runtime value validation.
    */
 ```
 ---
-#### METHOD: TypeGuards.if
-- **Scope:** instance
-- **LLM Call Syntax:** `typeGuards.if(value);`
-- **Pure JSDoc:**
-```javascript
-/** Method if */
-```
----
-#### METHOD: TypeGuards.if
-- **Scope:** instance
-- **LLM Call Syntax:** `typeGuards.if(typeof value);`
-- **Pure JSDoc:**
-```javascript
-/** Method if */
-```
----
-#### METHOD: TypeGuards.if
-- **Scope:** instance
-- **LLM Call Syntax:** `typeGuards.if(typeof value);`
-- **Pure JSDoc:**
-```javascript
-/** Method if */
-```
----
 <br>
 
 ## CLASS: Result
-**File Path:** `CoreUtilsLib/src/Result.js`
+**File Path:** `CoreUtilsLib/src/Result.ts`
 **Constructor Usage:** `const instance = new Result();`
-**Description:** Shared immutable-friendly outcome wrapper base class.
-
-Provides the common success/error value-object shape reused by domain result
-types across libraries (e.g. ComposableContentLib BlockResult, PipelineFramework
-PostProcessorResult), eliminating the duplicated `error`/predicate/serialization
-boilerplate (F-1.4). Subclasses keep their own domain fields and factory names
-and decide whether to `Object.freeze(this)` after construction.
-
-/
-
-/**
-Base outcome wrapper. An outcome is considered successful when it carries no
+**Description:** Base outcome wrapper. An outcome is considered successful when it carries no
 error. Subclasses may layer additional semantics (explicit success flags,
 frozen immutability, richer payloads) on top of this contract.
 
-@class Result
-
 ### Raw JSDoc Context:
 ```javascript
-/**
- * @file CoreUtilsLib/src/Result.js
- * @description Shared immutable-friendly outcome wrapper base class.
- *
- * Provides the common success/error value-object shape reused by domain result
- * types across libraries (e.g. ComposableContentLib BlockResult, PipelineFramework
- * PostProcessorResult), eliminating the duplicated `error`/predicate/serialization
- * boilerplate (F-1.4). Subclasses keep their own domain fields and factory names
- * and decide whether to `Object.freeze(this)` after construction.
- * @version 1.0.0
- */
-
 /**
  * Base outcome wrapper. An outcome is considered successful when it carries no
  * error. Subclasses may layer additional semantics (explicit success flags,
@@ -700,7 +572,7 @@ frozen immutability, richer payloads) on top of this contract.
  */
 ```
 
-### Methods of Result
+### Methods and properties of Result
 
 #### METHOD: Result.isSuccess
 - **Scope:** instance
@@ -708,19 +580,6 @@ frozen immutability, richer payloads) on top of this contract.
 - **Pure JSDoc:**
 ```javascript
 /**
-     * Generic success payload.
-     * @type {*}
-     */
-    this.value = value;
-
-    /**
-     * Failure cause, or null on success.
-     * @type {Error|null}
-     */
-    this.error = error;
-  }
-
-  /**
    * @returns {boolean} True when no error is attached.
    */
 ```
@@ -793,16 +652,19 @@ frozen immutability, richer payloads) on top of this contract.
 <br>
 
 ## CLASS: LoggerService
-**File Path:** `CoreUtilsLib/src/LoggerService.js`
+**File Path:** `CoreUtilsLib/src/LoggerService.ts`
 **Constructor Usage:** `const instance = new LoggerService();`
-**Description:** N/A
+**Description:** Hierarchical logging service with structured output and lazy evaluation.
 
 ### Raw JSDoc Context:
 ```javascript
-/** Class definition */
+/**
+ * Hierarchical logging service with structured output and lazy evaluation.
+ * @class LoggerService
+ */
 ```
 
-### Methods of LoggerService
+### Methods and properties of LoggerService
 
 #### METHOD: LoggerService.setLevel
 - **Scope:** instance
@@ -810,43 +672,10 @@ frozen immutability, richer payloads) on top of this contract.
 - **Pure JSDoc:**
 ```javascript
 /**
-     * Current log level.
-     * @private
-     * @type {string}
-     */
-    this._level = options.level || 'INFO';
-
-    /**
-     * Log level hierarchy mapping.
-     * Lower numbers mean higher priority (less verbose).
-     * @private
-     * @type {Object.<string, number>}
-     */
-    this._logLevels = {
-      OFF: 0,
-      ERROR: 1,
-      WARN: 2,
-      INFO: 3,
-      DEBUG: 4
-    };
-
-    this._structured = new StructuredLogFormatter(this._safeStringify.bind(this));
-    this._positionStack = [];
-  }
-
-  /**
    * Update the active logging threshold.
    * @param {string} level - New filter threshold identifier.
    * @returns {LoggerService} Fluent instance for chaining.
    */
-```
----
-#### METHOD: LoggerService.if
-- **Scope:** instance
-- **LLM Call Syntax:** `loggerService.if(this._logLevels[level] !);`
-- **Pure JSDoc:**
-```javascript
-/** Method if */
 ```
 ---
 #### METHOD: LoggerService.getLevel
@@ -860,108 +689,92 @@ frozen immutability, richer payloads) on top of this contract.
    */
 ```
 ---
-#### METHOD: LoggerService.if
+#### METHOD: LoggerService._isLevelActive
 - **Scope:** instance
-- **LLM Call Syntax:** `loggerService.if(depth > maxDepth);`
+- **LLM Call Syntax:** `const result = loggerService._isLevelActive(level);`
 - **Pure JSDoc:**
 ```javascript
-/** Method if */
+/**
+   * Validate if a specific threshold is eligible for logging.
+   * @private
+   * @param {string} level - Level to test.
+   * @returns {boolean} True if the level meets the active threshold.
+   */
 ```
 ---
-#### METHOD: LoggerService.if
+#### METHOD: LoggerService._safeStringify
 - **Scope:** instance
-- **LLM Call Syntax:** `loggerService.if(value);`
+- **LLM Call Syntax:** `const result = loggerService._safeStringify(obj, maxDepth, maxLength);`
 - **Pure JSDoc:**
 ```javascript
-/** Method if */
+/**
+   * Safely serialize an object with circular reference and depth protection.
+   * @private
+   * @param {*} obj - Payload to stringify.
+   * @param {number} [maxDepth=5] - Recursion limit.
+   * @param {number} [maxLength=5000] - Output character limit.
+   * @returns {string} JSON-formatted string with truncation markers.
+   */
 ```
 ---
-#### METHOD: LoggerService.if
+#### METHOD: LoggerService._evaluateMessage
 - **Scope:** instance
-- **LLM Call Syntax:** `loggerService.if(value.length > 100);`
+- **LLM Call Syntax:** `const result = loggerService._evaluateMessage(messageOrCallback);`
 - **Pure JSDoc:**
 ```javascript
-/** Method if */
+/**
+   * Resolve a message or execute a lazy-evaluation callback.
+   * @private
+   * @param {string|Object|Function} messageOrCallback - Static payload or generator.
+   * @returns {string|Object} Evaluated content.
+   */
 ```
 ---
-#### METHOD: LoggerService.if
+#### METHOD: LoggerService._formatMessage
 - **Scope:** instance
-- **LLM Call Syntax:** `loggerService.if(keys.length > 50);`
+- **LLM Call Syntax:** `const result = loggerService._formatMessage(level, message, context);`
 - **Pure JSDoc:**
 ```javascript
-/** Method if */
+/**
+   * Compose a formatted log entry string.
+   * @private
+   * @param {string} level - Threshold identifier.
+   * @param {string|Object} message - Evaluated content.
+   * @param {Object} [context=null] - Optional diagnostic metadata.
+   * @returns {string} Standardized log line.
+   */
 ```
 ---
-#### METHOD: LoggerService.for
+#### METHOD: LoggerService._currentPosition
 - **Scope:** instance
-- **LLM Call Syntax:** `loggerService.for(const k of keys);`
+- **LLM Call Syntax:** `loggerService._currentPosition();`
 - **Pure JSDoc:**
 ```javascript
-/** Method for */
+/** No comment available */
 ```
 ---
-#### METHOD: LoggerService.catch
+#### METHOD: LoggerService._resolvePosition
 - **Scope:** instance
-- **LLM Call Syntax:** `loggerService.catch(_e);`
+- **LLM Call Syntax:** `loggerService._resolvePosition();`
 - **Pure JSDoc:**
 ```javascript
-/** Method catch */
+/** No comment available */
 ```
 ---
-#### METHOD: LoggerService.if
+#### METHOD: LoggerService._emit
 - **Scope:** instance
-- **LLM Call Syntax:** `loggerService.if(result.length > maxLength);`
+- **LLM Call Syntax:** `loggerService._emit();`
 - **Pure JSDoc:**
 ```javascript
-/** Method if */
-```
----
-#### METHOD: LoggerService.catch
-- **Scope:** instance
-- **LLM Call Syntax:** `loggerService.catch(e);`
-- **Pure JSDoc:**
-```javascript
-/** Method catch */
-```
----
-#### METHOD: LoggerService.if
-- **Scope:** instance
-- **LLM Call Syntax:** `loggerService.if(typeof messageOrCallback);`
-- **Pure JSDoc:**
-```javascript
-/** Method if */
-```
----
-#### METHOD: LoggerService.if
-- **Scope:** instance
-- **LLM Call Syntax:** `loggerService.if(typeof message);`
-- **Pure JSDoc:**
-```javascript
-/** Method if */
-```
----
-#### METHOD: LoggerService.if
-- **Scope:** instance
-- **LLM Call Syntax:** `loggerService.if(context && typeof context);`
-- **Pure JSDoc:**
-```javascript
-/** Method if */
-```
----
-#### METHOD: LoggerService.if
-- **Scope:** instance
-- **LLM Call Syntax:** `loggerService.if(position);`
-- **Pure JSDoc:**
-```javascript
-/** Method if */
+/** No comment available */
 ```
 ---
 #### METHOD: LoggerService.withPosition
 - **Scope:** instance
-- **LLM Call Syntax:** `loggerService.withPosition(position, callback);`
+- **LLM Call Syntax:** `loggerService.withPosition();`
 - **Pure JSDoc:**
 ```javascript
-/** Method withPosition */
+/** No comment available */
 ```
 ---
 #### METHOD: LoggerService.debug
@@ -1016,408 +829,14 @@ frozen immutability, richer payloads) on top of this contract.
    */
 ```
 ---
-#### METHOD: LoggerService.clear
+#### METHOD: LoggerService.get
 - **Scope:** instance
-- **LLM Call Syntax:** `const result = loggerService.clear();`
+- **LLM Call Syntax:** `const result = loggerService.get();`
 - **Pure JSDoc:**
 ```javascript
 /**
-   * Purge all buffered messages from the global GAS Logger.
-   * @returns {LoggerService} Fluent instance for chaining.
-   */
-```
----
-#### METHOD: LoggerService.log
-- **Scope:** instance
-- **LLM Call Syntax:** `const result = loggerService.log(level, message);`
-- **Pure JSDoc:**
-```javascript
-/**
-   * Log a message at a dynamic threshold level.
-   * @param {string} level - Priority threshold for this entry.
-   * @param {string|Object|Function} message - Content or callback.
-   * @returns {LoggerService} Fluent instance for chaining.
-   */
-```
----
-#### METHOD: LoggerService.for
-- **Scope:** instance
-- **LLM Call Syntax:** `loggerService.for(const line of lines);`
-- **Pure JSDoc:**
-```javascript
-/** Method for */
-```
----
-#### METHOD: LoggerService.logJobStart
-- **Scope:** instance
-- **LLM Call Syntax:** `const result = loggerService.logJobStart(jobName, jobType);`
-- **Pure JSDoc:**
-```javascript
-/** Start a job invocation. @returns {LoggerService} */
-```
----
-#### METHOD: LoggerService.logJobResume
-- **Scope:** instance
-- **LLM Call Syntax:** `const result = loggerService.logJobResume(jobName, jobType, details);`
-- **Pure JSDoc:**
-```javascript
-/** Resume a persisted job invocation. @returns {LoggerService} */
-```
----
-#### METHOD: LoggerService.logJobEnd
-- **Scope:** instance
-- **LLM Call Syntax:** `const result = loggerService.logJobEnd(jobName, isSuccess, details);`
-- **Pure JSDoc:**
-```javascript
-/** Finish a job invocation. @returns {LoggerService} */
-```
----
-#### METHOD: LoggerService.logJobSuspended
-- **Scope:** instance
-- **LLM Call Syntax:** `const result = loggerService.logJobSuspended(jobName, details);`
-- **Pure JSDoc:**
-```javascript
-/** Suspend a resumable job invocation. @returns {LoggerService} */
-```
----
-#### METHOD: LoggerService.logBatchStart
-- **Scope:** instance
-- **LLM Call Syntax:** `const result = loggerService.logBatchStart(totalItems, label);`
-- **Pure JSDoc:**
-```javascript
-/** Start a batch. @returns {LoggerService} */
-```
----
-#### METHOD: LoggerService.logItemStart
-- **Scope:** instance
-- **LLM Call Syntax:** `const result = loggerService.logItemStart(itemIndex, totalItems, itemLabel, identifier, kind);`
-- **Pure JSDoc:**
-```javascript
-/** Start a batch item. @returns {LoggerService} */
-```
----
-#### METHOD: LoggerService.logStep
-- **Scope:** instance
-- **LLM Call Syntax:** `const result = loggerService.logStep(message, position);`
-- **Pure JSDoc:**
-```javascript
-/** Emit a generic tree step. @returns {LoggerService} */
-```
----
-#### METHOD: LoggerService.logPipelineStart
-- **Scope:** instance
-- **LLM Call Syntax:** `const result = loggerService.logPipelineStart(pipelineName, totalSteps, position);`
-- **Pure JSDoc:**
-```javascript
-/** Start a pipeline trace. @returns {LoggerService} */
-```
----
-#### METHOD: LoggerService.logPipelineStep
-- **Scope:** instance
-- **LLM Call Syntax:** `const result = loggerService.logPipelineStep(stepName, status, details, position);`
-- **Pure JSDoc:**
-```javascript
-/** Emit a pipeline step result. @returns {LoggerService} */
-```
----
-#### METHOD: LoggerService.logSummary
-- **Scope:** instance
-- **LLM Call Syntax:** `const result = loggerService.logSummary(label, durationMs, itemDetails, position);`
-- **Pure JSDoc:**
-```javascript
-/** Emit a duration summary. @returns {LoggerService} */
-```
----
-#### METHOD: LoggerService.logJobReport
-- **Scope:** instance
-- **LLM Call Syntax:** `const result = loggerService.logJobReport({{jobType:);`
-- **Pure JSDoc:**
-```javascript
-/**
-   * Emit a multi-line end-of-job report (job type, run count, cumulative real
-   * duration across every timeout-resume, task totals, skip and failure detail).
-   * `saltati` (skipped tasks) is excluded from "Eseguiti con successo"; its line
-   * is printed only when the caller passes it.
-   * @param {{jobType: string, runCount?: number, totalDurationMs?: number, totale?: number, falliti?: number, dettagliFalliti?: string[], saltati?: number, dettagliSaltati?: string[]}} details
-   * @returns {LoggerService} Fluent instance for chaining.
-   */
-```
----
-#### METHOD: LoggerService.child
-- **Scope:** instance
-- **LLM Call Syntax:** `const result = loggerService.child(prefix);`
-- **Pure JSDoc:**
-```javascript
-/**
-   * Spawn a namespaced logger with a message prefix.
-   * @param {string} prefix - Namespace identifier.
-   * @returns {Object} Proxy object with level-specific logging methods.
-   */
-```
----
-#### METHOD: LoggerService.if
-- **Scope:** instance
-- **LLM Call Syntax:** `loggerService.if(typeof msg);`
-- **Pure JSDoc:**
-```javascript
-/** Method if */
-```
----
-#### METHOD: LoggerService.if
-- **Scope:** instance
-- **LLM Call Syntax:** `loggerService.if(typeof msg);`
-- **Pure JSDoc:**
-```javascript
-/** Method if */
-```
----
-#### METHOD: LoggerService.if
-- **Scope:** instance
-- **LLM Call Syntax:** `loggerService.if(typeof msg);`
-- **Pure JSDoc:**
-```javascript
-/** Method if */
-```
----
-#### METHOD: LoggerService.if
-- **Scope:** instance
-- **LLM Call Syntax:** `loggerService.if(typeof msg);`
-- **Pure JSDoc:**
-```javascript
-/** Method if */
-```
----
-#### METHOD: LoggerService.if
-- **Scope:** instance
-- **LLM Call Syntax:** `loggerService.if(typeof msg);`
-- **Pure JSDoc:**
-```javascript
-/** Method if */
-```
----
-<br>
-
-## CLASS: LoggerService
-**File Path:** `CoreUtilsLib/src/LoggerService.js`
-**Constructor Usage:** `const instance = new LoggerService();`
-**Description:** N/A
-
-### Raw JSDoc Context:
-```javascript
-/** Class definition */
-```
-
-### Methods of LoggerService
-
-#### METHOD: LoggerService.setLevel
-- **Scope:** instance
-- **LLM Call Syntax:** `const result = loggerService.setLevel(level);`
-- **Pure JSDoc:**
-```javascript
-/**
-     * Current log level.
-     * @private
-     * @type {string}
-     */
-    this._level = options.level || 'INFO';
-
-    /**
-     * Log level hierarchy mapping.
-     * Lower numbers mean higher priority (less verbose).
-     * @private
-     * @type {Object.<string, number>}
-     */
-    this._logLevels = {
-      OFF: 0,
-      ERROR: 1,
-      WARN: 2,
-      INFO: 3,
-      DEBUG: 4
-    };
-
-    this._structured = new StructuredLogFormatter(this._safeStringify.bind(this));
-    this._positionStack = [];
-  }
-
-  /**
-   * Update the active logging threshold.
-   * @param {string} level - New filter threshold identifier.
-   * @returns {LoggerService} Fluent instance for chaining.
-   */
-```
----
-#### METHOD: LoggerService.if
-- **Scope:** instance
-- **LLM Call Syntax:** `loggerService.if(this._logLevels[level] !);`
-- **Pure JSDoc:**
-```javascript
-/** Method if */
-```
----
-#### METHOD: LoggerService.getLevel
-- **Scope:** instance
-- **LLM Call Syntax:** `const result = loggerService.getLevel();`
-- **Pure JSDoc:**
-```javascript
-/**
-   * Retrieve the current logging threshold.
-   * @returns {string} Threshold identifier.
-   */
-```
----
-#### METHOD: LoggerService.if
-- **Scope:** instance
-- **LLM Call Syntax:** `loggerService.if(depth > maxDepth);`
-- **Pure JSDoc:**
-```javascript
-/** Method if */
-```
----
-#### METHOD: LoggerService.if
-- **Scope:** instance
-- **LLM Call Syntax:** `loggerService.if(value);`
-- **Pure JSDoc:**
-```javascript
-/** Method if */
-```
----
-#### METHOD: LoggerService.if
-- **Scope:** instance
-- **LLM Call Syntax:** `loggerService.if(value.length > 100);`
-- **Pure JSDoc:**
-```javascript
-/** Method if */
-```
----
-#### METHOD: LoggerService.if
-- **Scope:** instance
-- **LLM Call Syntax:** `loggerService.if(keys.length > 50);`
-- **Pure JSDoc:**
-```javascript
-/** Method if */
-```
----
-#### METHOD: LoggerService.for
-- **Scope:** instance
-- **LLM Call Syntax:** `loggerService.for(const k of keys);`
-- **Pure JSDoc:**
-```javascript
-/** Method for */
-```
----
-#### METHOD: LoggerService.catch
-- **Scope:** instance
-- **LLM Call Syntax:** `loggerService.catch(_e);`
-- **Pure JSDoc:**
-```javascript
-/** Method catch */
-```
----
-#### METHOD: LoggerService.if
-- **Scope:** instance
-- **LLM Call Syntax:** `loggerService.if(result.length > maxLength);`
-- **Pure JSDoc:**
-```javascript
-/** Method if */
-```
----
-#### METHOD: LoggerService.catch
-- **Scope:** instance
-- **LLM Call Syntax:** `loggerService.catch(e);`
-- **Pure JSDoc:**
-```javascript
-/** Method catch */
-```
----
-#### METHOD: LoggerService.if
-- **Scope:** instance
-- **LLM Call Syntax:** `loggerService.if(typeof messageOrCallback);`
-- **Pure JSDoc:**
-```javascript
-/** Method if */
-```
----
-#### METHOD: LoggerService.if
-- **Scope:** instance
-- **LLM Call Syntax:** `loggerService.if(typeof message);`
-- **Pure JSDoc:**
-```javascript
-/** Method if */
-```
----
-#### METHOD: LoggerService.if
-- **Scope:** instance
-- **LLM Call Syntax:** `loggerService.if(context && typeof context);`
-- **Pure JSDoc:**
-```javascript
-/** Method if */
-```
----
-#### METHOD: LoggerService.if
-- **Scope:** instance
-- **LLM Call Syntax:** `loggerService.if(position);`
-- **Pure JSDoc:**
-```javascript
-/** Method if */
-```
----
-#### METHOD: LoggerService.withPosition
-- **Scope:** instance
-- **LLM Call Syntax:** `loggerService.withPosition(position, callback);`
-- **Pure JSDoc:**
-```javascript
-/** Method withPosition */
-```
----
-#### METHOD: LoggerService.debug
-- **Scope:** instance
-- **LLM Call Syntax:** `const result = loggerService.debug(message, context);`
-- **Pure JSDoc:**
-```javascript
-/**
-   * Log a DEBUG message with optional context and lazy evaluation.
-   * @param {string|Object|Function} message - Content or callback.
-   * @param {Object|Function} [context=null] - Metadata or callback.
-   * @returns {LoggerService} Fluent instance for chaining.
-   */
-```
----
-#### METHOD: LoggerService.info
-- **Scope:** instance
-- **LLM Call Syntax:** `const result = loggerService.info(message, context);`
-- **Pure JSDoc:**
-```javascript
-/**
-   * Log an INFO message with optional context and lazy evaluation.
-   * @param {string|Object|Function} message - Content or callback.
-   * @param {Object|Function} [context=null] - Metadata or callback.
-   * @returns {LoggerService} Fluent instance for chaining.
-   */
-```
----
-#### METHOD: LoggerService.warn
-- **Scope:** instance
-- **LLM Call Syntax:** `const result = loggerService.warn(message, context);`
-- **Pure JSDoc:**
-```javascript
-/**
-   * Log a WARN message with optional context and lazy evaluation.
-   * @param {string|Object|Function} message - Content or callback.
-   * @param {Object|Function} [context=null] - Metadata or callback.
-   * @returns {LoggerService} Fluent instance for chaining.
-   */
-```
----
-#### METHOD: LoggerService.error
-- **Scope:** instance
-- **LLM Call Syntax:** `const result = loggerService.error(message, context);`
-- **Pure JSDoc:**
-```javascript
-/**
-   * Log an ERROR message with optional context and lazy evaluation.
-   * @param {string|Object|Function} message - Content or callback.
-   * @param {Object|Function} [context=null] - Metadata or callback.
-   * @returns {LoggerService} Fluent instance for chaining.
+   * Extract all buffered messages from the global GAS Logger.
+   * @returns {string[]} Ordered collection of log entries.
    */
 ```
 ---
@@ -1445,17 +864,17 @@ frozen immutability, richer payloads) on top of this contract.
    */
 ```
 ---
-#### METHOD: LoggerService.for
+#### METHOD: LoggerService._writeStructured
 - **Scope:** instance
-- **LLM Call Syntax:** `loggerService.for(const line of lines);`
+- **LLM Call Syntax:** `loggerService._writeStructured();`
 - **Pure JSDoc:**
 ```javascript
-/** Method for */
+/** @private */
 ```
 ---
 #### METHOD: LoggerService.logJobStart
 - **Scope:** instance
-- **LLM Call Syntax:** `const result = loggerService.logJobStart(jobName, jobType);`
+- **LLM Call Syntax:** `loggerService.logJobStart();`
 - **Pure JSDoc:**
 ```javascript
 /** Start a job invocation. @returns {LoggerService} */
@@ -1463,7 +882,7 @@ frozen immutability, richer payloads) on top of this contract.
 ---
 #### METHOD: LoggerService.logJobResume
 - **Scope:** instance
-- **LLM Call Syntax:** `const result = loggerService.logJobResume(jobName, jobType, details);`
+- **LLM Call Syntax:** `loggerService.logJobResume();`
 - **Pure JSDoc:**
 ```javascript
 /** Resume a persisted job invocation. @returns {LoggerService} */
@@ -1471,7 +890,7 @@ frozen immutability, richer payloads) on top of this contract.
 ---
 #### METHOD: LoggerService.logJobEnd
 - **Scope:** instance
-- **LLM Call Syntax:** `const result = loggerService.logJobEnd(jobName, isSuccess, details);`
+- **LLM Call Syntax:** `loggerService.logJobEnd();`
 - **Pure JSDoc:**
 ```javascript
 /** Finish a job invocation. @returns {LoggerService} */
@@ -1479,7 +898,7 @@ frozen immutability, richer payloads) on top of this contract.
 ---
 #### METHOD: LoggerService.logJobSuspended
 - **Scope:** instance
-- **LLM Call Syntax:** `const result = loggerService.logJobSuspended(jobName, details);`
+- **LLM Call Syntax:** `loggerService.logJobSuspended();`
 - **Pure JSDoc:**
 ```javascript
 /** Suspend a resumable job invocation. @returns {LoggerService} */
@@ -1487,7 +906,7 @@ frozen immutability, richer payloads) on top of this contract.
 ---
 #### METHOD: LoggerService.logBatchStart
 - **Scope:** instance
-- **LLM Call Syntax:** `const result = loggerService.logBatchStart(totalItems, label);`
+- **LLM Call Syntax:** `loggerService.logBatchStart();`
 - **Pure JSDoc:**
 ```javascript
 /** Start a batch. @returns {LoggerService} */
@@ -1495,7 +914,7 @@ frozen immutability, richer payloads) on top of this contract.
 ---
 #### METHOD: LoggerService.logItemStart
 - **Scope:** instance
-- **LLM Call Syntax:** `const result = loggerService.logItemStart(itemIndex, totalItems, itemLabel, identifier, kind);`
+- **LLM Call Syntax:** `loggerService.logItemStart();`
 - **Pure JSDoc:**
 ```javascript
 /** Start a batch item. @returns {LoggerService} */
@@ -1503,7 +922,7 @@ frozen immutability, richer payloads) on top of this contract.
 ---
 #### METHOD: LoggerService.logStep
 - **Scope:** instance
-- **LLM Call Syntax:** `const result = loggerService.logStep(message, position);`
+- **LLM Call Syntax:** `loggerService.logStep();`
 - **Pure JSDoc:**
 ```javascript
 /** Emit a generic tree step. @returns {LoggerService} */
@@ -1511,7 +930,7 @@ frozen immutability, richer payloads) on top of this contract.
 ---
 #### METHOD: LoggerService.logPipelineStart
 - **Scope:** instance
-- **LLM Call Syntax:** `const result = loggerService.logPipelineStart(pipelineName, totalSteps, position);`
+- **LLM Call Syntax:** `loggerService.logPipelineStart();`
 - **Pure JSDoc:**
 ```javascript
 /** Start a pipeline trace. @returns {LoggerService} */
@@ -1519,7 +938,7 @@ frozen immutability, richer payloads) on top of this contract.
 ---
 #### METHOD: LoggerService.logPipelineStep
 - **Scope:** instance
-- **LLM Call Syntax:** `const result = loggerService.logPipelineStep(stepName, status, details, position);`
+- **LLM Call Syntax:** `loggerService.logPipelineStep();`
 - **Pure JSDoc:**
 ```javascript
 /** Emit a pipeline step result. @returns {LoggerService} */
@@ -1527,7 +946,7 @@ frozen immutability, richer payloads) on top of this contract.
 ---
 #### METHOD: LoggerService.logSummary
 - **Scope:** instance
-- **LLM Call Syntax:** `const result = loggerService.logSummary(label, durationMs, itemDetails, position);`
+- **LLM Call Syntax:** `loggerService.logSummary();`
 - **Pure JSDoc:**
 ```javascript
 /** Emit a duration summary. @returns {LoggerService} */
@@ -1535,7 +954,7 @@ frozen immutability, richer payloads) on top of this contract.
 ---
 #### METHOD: LoggerService.logJobReport
 - **Scope:** instance
-- **LLM Call Syntax:** `const result = loggerService.logJobReport({{jobType:);`
+- **LLM Call Syntax:** `const result = loggerService.logJobReport(details);`
 - **Pure JSDoc:**
 ```javascript
 /**
@@ -1558,61 +977,21 @@ frozen immutability, richer payloads) on top of this contract.
    * @param {string} prefix - Namespace identifier.
    * @returns {Object} Proxy object with level-specific logging methods.
    */
-```
----
-#### METHOD: LoggerService.if
-- **Scope:** instance
-- **LLM Call Syntax:** `loggerService.if(typeof msg);`
-- **Pure JSDoc:**
-```javascript
-/** Method if */
-```
----
-#### METHOD: LoggerService.if
-- **Scope:** instance
-- **LLM Call Syntax:** `loggerService.if(typeof msg);`
-- **Pure JSDoc:**
-```javascript
-/** Method if */
-```
----
-#### METHOD: LoggerService.if
-- **Scope:** instance
-- **LLM Call Syntax:** `loggerService.if(typeof msg);`
-- **Pure JSDoc:**
-```javascript
-/** Method if */
-```
----
-#### METHOD: LoggerService.if
-- **Scope:** instance
-- **LLM Call Syntax:** `loggerService.if(typeof msg);`
-- **Pure JSDoc:**
-```javascript
-/** Method if */
-```
----
-#### METHOD: LoggerService.if
-- **Scope:** instance
-- **LLM Call Syntax:** `loggerService.if(typeof msg);`
-- **Pure JSDoc:**
-```javascript
-/** Method if */
 ```
 ---
 <br>
 
 ## CLASS: SystemScriptSettings
-**File Path:** `CoreUtilsLib/src/utils/SystemScriptSettings.js`
+**File Path:** `CoreUtilsLib/src/utils/SystemScriptSettings.ts`
 **Constructor Usage:** `const instance = new SystemScriptSettings();`
 **Description:** N/A
 
 ### Raw JSDoc Context:
 ```javascript
-/** Class definition */
+/** No comment available */
 ```
 
-### Methods of SystemScriptSettings
+### Methods and properties of SystemScriptSettings
 
 #### METHOD: SystemScriptSettings.deepClone
 - **Scope:** instance
@@ -1679,14 +1058,6 @@ frozen immutability, richer payloads) on top of this contract.
    */
 ```
 ---
-#### METHOD: SystemScriptSettings.if
-- **Scope:** instance
-- **LLM Call Syntax:** `systemScriptSettings.if(!obj || typeof obj !);`
-- **Pure JSDoc:**
-```javascript
-/** Method if */
-```
----
 #### METHOD: SystemScriptSettings.pick
 - **Scope:** instance
 - **LLM Call Syntax:** `const result = systemScriptSettings.pick(obj, paths);`
@@ -1698,14 +1069,6 @@ frozen immutability, richer payloads) on top of this contract.
    * @param {...(string|string[])} paths Property paths to include.
    * @returns {Object} New object with selected properties.
    */
-```
----
-#### METHOD: SystemScriptSettings.if
-- **Scope:** instance
-- **LLM Call Syntax:** `systemScriptSettings.if(!obj || typeof obj !);`
-- **Pure JSDoc:**
-```javascript
-/** Method if */
 ```
 ---
 #### METHOD: SystemScriptSettings.omit
@@ -1721,14 +1084,6 @@ frozen immutability, richer payloads) on top of this contract.
    */
 ```
 ---
-#### METHOD: SystemScriptSettings.if
-- **Scope:** instance
-- **LLM Call Syntax:** `systemScriptSettings.if(!obj || typeof obj !);`
-- **Pure JSDoc:**
-```javascript
-/** Method if */
-```
----
 #### METHOD: SystemScriptSettings.mapKeys
 - **Scope:** instance
 - **LLM Call Syntax:** `const result = systemScriptSettings.mapKeys(obj, iteratee);`
@@ -1740,14 +1095,6 @@ frozen immutability, richer payloads) on top of this contract.
    * @param {Function} iteratee Key transformation logic.
    * @returns {Object} Object with mapped keys.
    */
-```
----
-#### METHOD: SystemScriptSettings.if
-- **Scope:** instance
-- **LLM Call Syntax:** `systemScriptSettings.if(!obj || typeof obj !);`
-- **Pure JSDoc:**
-```javascript
-/** Method if */
 ```
 ---
 #### METHOD: SystemScriptSettings.mapValues
@@ -1763,27 +1110,19 @@ frozen immutability, richer payloads) on top of this contract.
    */
 ```
 ---
-#### METHOD: SystemScriptSettings.if
-- **Scope:** instance
-- **LLM Call Syntax:** `systemScriptSettings.if(!obj || typeof obj !);`
-- **Pure JSDoc:**
-```javascript
-/** Method if */
-```
----
 <br>
 
 ## CLASS: SystemEnvironmentUtils
-**File Path:** `CoreUtilsLib/src/utils/SystemEnvironmentUtils.js`
+**File Path:** `CoreUtilsLib/src/utils/SystemEnvironmentUtils.ts`
 **Constructor Usage:** `const instance = new SystemEnvironmentUtils();`
 **Description:** N/A
 
 ### Raw JSDoc Context:
 ```javascript
-/** Class definition */
+/** No comment available */
 ```
 
-### Methods of SystemEnvironmentUtils
+### Methods and properties of SystemEnvironmentUtils
 
 #### METHOD: SystemEnvironmentUtils.sleep
 - **Scope:** instance
@@ -1795,14 +1134,6 @@ frozen immutability, richer payloads) on top of this contract.
    * @param {number} milliseconds Duration to pause.
    * @throws {Error} If sleep function is not provided to constructor.
    */
-```
----
-#### METHOD: SystemEnvironmentUtils.if
-- **Scope:** instance
-- **LLM Call Syntax:** `systemEnvironmentUtils.if(!this._sleepFn);`
-- **Pure JSDoc:**
-```javascript
-/** Method if */
 ```
 ---
 #### METHOD: SystemEnvironmentUtils.delay
@@ -1830,14 +1161,6 @@ frozen immutability, richer payloads) on top of this contract.
    */
 ```
 ---
-#### METHOD: SystemEnvironmentUtils.if
-- **Scope:** instance
-- **LLM Call Syntax:** `systemEnvironmentUtils.if(!email || typeof email !);`
-- **Pure JSDoc:**
-```javascript
-/** Method if */
-```
----
 #### METHOD: SystemEnvironmentUtils.isValidUrl
 - **Scope:** instance
 - **LLM Call Syntax:** `const result = systemEnvironmentUtils.isValidUrl(url);`
@@ -1848,14 +1171,6 @@ frozen immutability, richer payloads) on top of this contract.
    * @param {string} url String to validate.
    * @returns {boolean} True if format is valid.
    */
-```
----
-#### METHOD: SystemEnvironmentUtils.if
-- **Scope:** instance
-- **LLM Call Syntax:** `systemEnvironmentUtils.if(!url || typeof url !);`
-- **Pure JSDoc:**
-```javascript
-/** Method if */
 ```
 ---
 #### METHOD: SystemEnvironmentUtils.isEqual
@@ -1958,16 +1273,16 @@ frozen immutability, richer payloads) on top of this contract.
 <br>
 
 ## CLASS: StringUtils
-**File Path:** `CoreUtilsLib/src/utils/StringUtils.js`
+**File Path:** `CoreUtilsLib/src/utils/StringUtils.ts`
 **Constructor Usage:** `const instance = new StringUtils();`
 **Description:** N/A
 
 ### Raw JSDoc Context:
 ```javascript
-/** Class definition */
+/** No comment available */
 ```
 
-### Methods of StringUtils
+### Methods and properties of StringUtils
 
 #### METHOD: StringUtils.truncate
 - **Scope:** instance
@@ -1983,14 +1298,6 @@ frozen immutability, richer payloads) on top of this contract.
    */
 ```
 ---
-#### METHOD: StringUtils.if
-- **Scope:** instance
-- **LLM Call Syntax:** `stringUtils.if(!str || str.length <);`
-- **Pure JSDoc:**
-```javascript
-/** Method if */
-```
----
 #### METHOD: StringUtils.capitalize
 - **Scope:** instance
 - **LLM Call Syntax:** `const result = stringUtils.capitalize(str);`
@@ -2001,14 +1308,6 @@ frozen immutability, richer payloads) on top of this contract.
    * @param {string} str Input string.
    * @returns {string} String with capitalized first character.
    */
-```
----
-#### METHOD: StringUtils.if
-- **Scope:** instance
-- **LLM Call Syntax:** `stringUtils.if(!str);`
-- **Pure JSDoc:**
-```javascript
-/** Method if */
 ```
 ---
 #### METHOD: StringUtils.toCamelCase
@@ -2023,14 +1322,6 @@ frozen immutability, richer payloads) on top of this contract.
    */
 ```
 ---
-#### METHOD: StringUtils.if
-- **Scope:** instance
-- **LLM Call Syntax:** `stringUtils.if(!str);`
-- **Pure JSDoc:**
-```javascript
-/** Method if */
-```
----
 #### METHOD: StringUtils.toSnakeCase
 - **Scope:** instance
 - **LLM Call Syntax:** `const result = stringUtils.toSnakeCase(str);`
@@ -2041,14 +1332,6 @@ frozen immutability, richer payloads) on top of this contract.
    * @param {string} str Input string.
    * @returns {string} Underscored lowercase string.
    */
-```
----
-#### METHOD: StringUtils.if
-- **Scope:** instance
-- **LLM Call Syntax:** `stringUtils.if(!str);`
-- **Pure JSDoc:**
-```javascript
-/** Method if */
 ```
 ---
 #### METHOD: StringUtils.camelCase
@@ -2063,14 +1346,6 @@ frozen immutability, richer payloads) on top of this contract.
    */
 ```
 ---
-#### METHOD: StringUtils.if
-- **Scope:** instance
-- **LLM Call Syntax:** `stringUtils.if(!str || typeof str !);`
-- **Pure JSDoc:**
-```javascript
-/** Method if */
-```
----
 #### METHOD: StringUtils.kebabCase
 - **Scope:** instance
 - **LLM Call Syntax:** `const result = stringUtils.kebabCase(str);`
@@ -2081,14 +1356,6 @@ frozen immutability, richer payloads) on top of this contract.
    * @param {string} str Input string.
    * @returns {string} kebab-case string.
    */
-```
----
-#### METHOD: StringUtils.if
-- **Scope:** instance
-- **LLM Call Syntax:** `stringUtils.if(!str || typeof str !);`
-- **Pure JSDoc:**
-```javascript
-/** Method if */
 ```
 ---
 #### METHOD: StringUtils.snakeCase
@@ -2103,14 +1370,6 @@ frozen immutability, richer payloads) on top of this contract.
    */
 ```
 ---
-#### METHOD: StringUtils.if
-- **Scope:** instance
-- **LLM Call Syntax:** `stringUtils.if(!str || typeof str !);`
-- **Pure JSDoc:**
-```javascript
-/** Method if */
-```
----
 #### METHOD: StringUtils.startCase
 - **Scope:** instance
 - **LLM Call Syntax:** `const result = stringUtils.startCase(str);`
@@ -2121,14 +1380,6 @@ frozen immutability, richer payloads) on top of this contract.
    * @param {string} str Input string.
    * @returns {string} Start Case string.
    */
-```
----
-#### METHOD: StringUtils.if
-- **Scope:** instance
-- **LLM Call Syntax:** `stringUtils.if(!str || typeof str !);`
-- **Pure JSDoc:**
-```javascript
-/** Method if */
 ```
 ---
 #### METHOD: StringUtils.pascalCase
@@ -2143,14 +1394,6 @@ frozen immutability, richer payloads) on top of this contract.
    */
 ```
 ---
-#### METHOD: StringUtils.if
-- **Scope:** instance
-- **LLM Call Syntax:** `stringUtils.if(!str || typeof str !);`
-- **Pure JSDoc:**
-```javascript
-/** Method if */
-```
----
 #### METHOD: StringUtils.constantCase
 - **Scope:** instance
 - **LLM Call Syntax:** `const result = stringUtils.constantCase(str);`
@@ -2161,14 +1404,6 @@ frozen immutability, richer payloads) on top of this contract.
    * @param {string} str Input string.
    * @returns {string} CONSTANT_CASE string.
    */
-```
----
-#### METHOD: StringUtils.if
-- **Scope:** instance
-- **LLM Call Syntax:** `stringUtils.if(!str || typeof str !);`
-- **Pure JSDoc:**
-```javascript
-/** Method if */
 ```
 ---
 #### METHOD: StringUtils.dotCase
@@ -2183,14 +1418,6 @@ frozen immutability, richer payloads) on top of this contract.
    */
 ```
 ---
-#### METHOD: StringUtils.if
-- **Scope:** instance
-- **LLM Call Syntax:** `stringUtils.if(!str || typeof str !);`
-- **Pure JSDoc:**
-```javascript
-/** Method if */
-```
----
 #### METHOD: StringUtils.pathCase
 - **Scope:** instance
 - **LLM Call Syntax:** `const result = stringUtils.pathCase(str);`
@@ -2203,14 +1430,6 @@ frozen immutability, richer payloads) on top of this contract.
    */
 ```
 ---
-#### METHOD: StringUtils.if
-- **Scope:** instance
-- **LLM Call Syntax:** `stringUtils.if(!str || typeof str !);`
-- **Pure JSDoc:**
-```javascript
-/** Method if */
-```
----
 #### METHOD: StringUtils.stringToArray
 - **Scope:** instance
 - **LLM Call Syntax:** `const result = stringUtils.stringToArray(str);`
@@ -2221,14 +1440,6 @@ frozen immutability, richer payloads) on top of this contract.
    * @param {string} str Input string to decompose.
    * @returns {string[]} Ordered array of lowercase word components.
    */
-```
----
-#### METHOD: StringUtils.if
-- **Scope:** instance
-- **LLM Call Syntax:** `stringUtils.if(!str || typeof str !);`
-- **Pure JSDoc:**
-```javascript
-/** Method if */
 ```
 ---
 #### METHOD: StringUtils.humanisePath
@@ -2244,52 +1455,30 @@ frozen immutability, richer payloads) on top of this contract.
    */
 ```
 ---
-#### METHOD: StringUtils.if
-- **Scope:** instance
-- **LLM Call Syntax:** `stringUtils.if(!path || typeof path !);`
-- **Pure JSDoc:**
-```javascript
-/** Method if */
-```
----
 <br>
 
 ## CLASS: LazyRef
-**File Path:** `CoreUtilsLib/src/utils/LazyRef.js`
-**Constructor Usage:** `const instance = new LazyRef();`
-**Description:** @fileoverview Generic single-value lazy loader — defers an expensive
-computation until first access, then caches it for the lifetime of the instance.
-@author GasLibraryFactory
-/
-
-/**
-@class LazyRef
-@template T
-Wraps a zero-argument loader function, invoking it at most once.
+**File Path:** `CoreUtilsLib/src/utils/LazyRef.ts`
+**Constructor Usage:** `const instance = new LazyRef(loader);`
+**Description:** N/A
 
 ### Raw JSDoc Context:
 ```javascript
 /**
- * @fileoverview Generic single-value lazy loader — defers an expensive
- * computation until first access, then caches it for the lifetime of the instance.
- * @author GasLibraryFactory
- */
-
-/**
- * @class LazyRef
- * @template T
- * @description Wraps a zero-argument loader function, invoking it at most once.
- */
+   * @param {() => T} loader Zero-argument factory invoked at most once, on first get().
+   */
 ```
 
-### Methods of LazyRef
+### Methods and properties of LazyRef
 
-#### METHOD: LazyRef.if
+#### METHOD: LazyRef.get
 - **Scope:** instance
-- **LLM Call Syntax:** `lazyRef.if(!this._resolved);`
+- **LLM Call Syntax:** `const result = lazyRef.get();`
 - **Pure JSDoc:**
 ```javascript
-/** Method if */
+/**
+   * @returns {T} The loader's result, computed on first call and cached thereafter.
+   */
 ```
 ---
 #### METHOD: LazyRef.isResolved
@@ -2305,20 +1494,16 @@ Wraps a zero-argument loader function, invoking it at most once.
 <br>
 
 ## CLASS: IdGenerator
-**File Path:** `CoreUtilsLib/src/utils/IdGenerator.js`
+**File Path:** `CoreUtilsLib/src/utils/IdGenerator.ts`
 **Constructor Usage:** `const instance = new IdGenerator();`
-**Description:** Secure IdGenerator utility module with environment-aware entropy sources.
+**Description:** N/A
 
 ### Raw JSDoc Context:
 ```javascript
-/**
- * @file CoreUtilsLib/src/utils/IdGenerator.js
- * @description Secure IdGenerator utility module with environment-aware entropy sources.
- * @version 3.1 - Implemented cryptographically secure randomness and rejection sampling.
- */
+/** No comment available */
 ```
 
-### Methods of IdGenerator
+### Methods and properties of IdGenerator
 
 #### METHOD: IdGenerator.generateUuid
 - **Scope:** instance
@@ -2330,22 +1515,6 @@ Wraps a zero-argument loader function, invoking it at most once.
    * Uses native GAS Utilities if available for security.
    * @returns {string} UUID v4 (xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx).
    */
-```
----
-#### METHOD: IdGenerator.if
-- **Scope:** instance
-- **LLM Call Syntax:** `idGenerator.if(typeof Utilities !);`
-- **Pure JSDoc:**
-```javascript
-/** Method if */
-```
----
-#### METHOD: IdGenerator.if
-- **Scope:** instance
-- **LLM Call Syntax:** `idGenerator.if(typeof crypto !);`
-- **Pure JSDoc:**
-```javascript
-/** Method if */
 ```
 ---
 #### METHOD: IdGenerator.getRandomValues
@@ -2413,111 +1582,31 @@ Wraps a zero-argument loader function, invoking it at most once.
    */
 ```
 ---
-#### METHOD: IdGenerator.while
-- **Scope:** instance
-- **LLM Call Syntax:** `idGenerator.while(true);`
+#### METHOD: IdGenerator._getSecureRandomBytes
+- **Scope:** static
+- **LLM Call Syntax:** `const result = IdGenerator._getSecureRandomBytes(size);`
 - **Pure JSDoc:**
 ```javascript
-/** Method while */
-```
----
-#### METHOD: IdGenerator.for
-- **Scope:** instance
-- **LLM Call Syntax:** `idGenerator.for(let i);`
-- **Pure JSDoc:**
-```javascript
-/** Method for */
-```
----
-#### METHOD: IdGenerator.if
-- **Scope:** instance
-- **LLM Call Syntax:** `idGenerator.if(alphabet[byte]);`
-- **Pure JSDoc:**
-```javascript
-/** Method if */
-```
----
-#### METHOD: IdGenerator.if
-- **Scope:** instance
-- **LLM Call Syntax:** `idGenerator.if(id.length);`
-- **Pure JSDoc:**
-```javascript
-/** Method if */
-```
----
-#### METHOD: IdGenerator.if
-- **Scope:** instance
-- **LLM Call Syntax:** `idGenerator.if(typeof Utilities !);`
-- **Pure JSDoc:**
-```javascript
-/** Method if */
-```
----
-#### METHOD: IdGenerator.while
-- **Scope:** instance
-- **LLM Call Syntax:** `idGenerator.while(bytes.length < size);`
-- **Pure JSDoc:**
-```javascript
-/** Method while */
-```
----
-#### METHOD: IdGenerator.for
-- **Scope:** instance
-- **LLM Call Syntax:** `idGenerator.for(let i);`
-- **Pure JSDoc:**
-```javascript
-/** Method for */
-```
----
-#### METHOD: IdGenerator.if
-- **Scope:** instance
-- **LLM Call Syntax:** `idGenerator.if(typeof crypto !);`
-- **Pure JSDoc:**
-```javascript
-/** Method if */
-```
----
-#### METHOD: IdGenerator.if
-- **Scope:** instance
-- **LLM Call Syntax:** `idGenerator.if(typeof console !);`
-- **Pure JSDoc:**
-```javascript
-/** Method if */
-```
----
-#### METHOD: IdGenerator.for
-- **Scope:** instance
-- **LLM Call Syntax:** `idGenerator.for(let i);`
-- **Pure JSDoc:**
-```javascript
-/** Method for */
+/**
+   * Internal secure random byte generator with environment fallbacks.
+   * In GAS, it leverages Utilities.getUuid() + SHA-256 for high-entropy seed.
+   * @param {number} size Number of bytes to generate.
+   * @returns {number[]|Uint8Array} Byte array.
+   * @private
+   */
 ```
 ---
 <br>
 
 ## CLASS: HtmlSanitizer
-**File Path:** `CoreUtilsLib/src/utils/HtmlSanitizer.js`
+**File Path:** `CoreUtilsLib/src/utils/HtmlSanitizer.ts`
 **Constructor Usage:** `const instance = new HtmlSanitizer();`
-**Description:** Centralized HTML-context escaping utilities (XSS prevention) for
-rendering sheet-sourced free text/colours/URLs into generated HTML (e.g. ALDO
-email boxes). Ported 1:1 from ALDO's `src/application/email/boxes.ts`.
-/
-
-/**
-Static utilities for escaping/validating sheet-sourced values before HTML
+**Description:** Static utilities for escaping/validating sheet-sourced values before HTML
 interpolation. Stateless, so all methods are static (matches the
 `ValidationUtils` convention used elsewhere in this library).
-@class
 
 ### Raw JSDoc Context:
 ```javascript
-/**
- * @file CoreUtilsLib/src/utils/HtmlSanitizer.js
- * @description Centralized HTML-context escaping utilities (XSS prevention) for
- * rendering sheet-sourced free text/colours/URLs into generated HTML (e.g. ALDO
- * email boxes). Ported 1:1 from ALDO's `src/application/email/boxes.ts`.
- */
-
 /**
  * Static utilities for escaping/validating sheet-sourced values before HTML
  * interpolation. Stateless, so all methods are static (matches the
@@ -2526,7 +1615,7 @@ interpolation. Stateless, so all methods are static (matches the
  */
 ```
 
-### Methods of HtmlSanitizer
+### Methods and properties of HtmlSanitizer
 
 #### METHOD: HtmlSanitizer.escapeHtml
 - **Scope:** static
@@ -2599,33 +1688,9 @@ interpolation. Stateless, so all methods are static (matches the
    */
 ```
 ---
-#### METHOD: HtmlSanitizer.if
-- **Scope:** instance
-- **LLM Call Syntax:** `htmlSanitizer.if(typeof value);`
-- **Pure JSDoc:**
-```javascript
-/** Method if */
-```
----
-#### METHOD: HtmlSanitizer.if
-- **Scope:** instance
-- **LLM Call Syntax:** `htmlSanitizer.if(value !);`
-- **Pure JSDoc:**
-```javascript
-/** Method if */
-```
----
-#### METHOD: HtmlSanitizer.if
-- **Scope:** instance
-- **LLM Call Syntax:** `htmlSanitizer.if(!isPlainObject);`
-- **Pure JSDoc:**
-```javascript
-/** Method if */
-```
----
 #### METHOD: HtmlSanitizer.stripToPlainText
 - **Scope:** static
-- **LLM Call Syntax:** `const result = HtmlSanitizer.stripToPlainText(value, {{maxLength?:);`
+- **LLM Call Syntax:** `const result = HtmlSanitizer.stripToPlainText(value, options);`
 - **Pure JSDoc:**
 ```javascript
 /**
@@ -2644,62 +1709,16 @@ interpolation. Stateless, so all methods are static (matches the
    */
 ```
 ---
-#### METHOD: HtmlSanitizer.if
-- **Scope:** instance
-- **LLM Call Syntax:** `htmlSanitizer.if(truncationMode);`
-- **Pure JSDoc:**
-```javascript
-/** Method if */
-```
----
-#### METHOD: HtmlSanitizer.if
-- **Scope:** instance
-- **LLM Call Syntax:** `htmlSanitizer.if(truncationMode);`
-- **Pure JSDoc:**
-```javascript
-/** Method if */
-```
----
-<br>
-
-## CLASS: instances
-**File Path:** `CoreUtilsLib/src/utils/HtmlSanitizer.js`
-**Constructor Usage:** `const instance = new instances();`
-**Description:** N/A
-
-### Raw JSDoc Context:
-```javascript
-/** Class definition */
-```
-
 <br>
 
 ## CLASS: Delegation
-**File Path:** `CoreUtilsLib/src/utils/Delegation.js`
+**File Path:** `CoreUtilsLib/src/utils/Delegation.ts`
 **Constructor Usage:** `const instance = new Delegation();`
-**Description:** Generic dynamic-delegation helper for Facade/Delegation-pattern classes.
-Centralizes the "bind manager methods onto a facade instance" logic that was
-previously copy-pasted as a private `_delegate` method across multiple libraries
-(Code Reuse Initiative).
-
-/
-
-/**
-Static utility for wiring facade methods onto a target instance by delegating
+**Description:** Static utility for wiring facade methods onto a target instance by delegating
 to internal collaborator (manager) objects.
-@class Delegation
 
 ### Raw JSDoc Context:
 ```javascript
-/**
- * @file CoreUtilsLib/src/utils/Delegation.js
- * @description Generic dynamic-delegation helper for Facade/Delegation-pattern classes.
- * Centralizes the "bind manager methods onto a facade instance" logic that was
- * previously copy-pasted as a private `_delegate` method across multiple libraries
- * (Code Reuse Initiative).
- * @version 1.0.0
- */
-
 /**
  * Static utility for wiring facade methods onto a target instance by delegating
  * to internal collaborator (manager) objects.
@@ -2707,11 +1726,11 @@ to internal collaborator (manager) objects.
  */
 ```
 
-### Methods of Delegation
+### Methods and properties of Delegation
 
 #### METHOD: Delegation.delegateMethods
 - **Scope:** static
-- **LLM Call Syntax:** `const result = Delegation.delegateMethods(target, {Array<{manager:, {{warn:);`
+- **LLM Call Syntax:** `const result = Delegation.delegateMethods(target, delegations, logger);`
 - **Pure JSDoc:**
 ```javascript
 /**
@@ -2738,51 +1757,23 @@ to internal collaborator (manager) objects.
    */
 ```
 ---
-#### METHOD: Delegation.if
-- **Scope:** instance
-- **LLM Call Syntax:** `delegation.if(typeof manager[method]);`
-- **Pure JSDoc:**
-```javascript
-/** Method if */
-```
----
-#### METHOD: Delegation.if
-- **Scope:** instance
-- **LLM Call Syntax:** `delegation.if(logger);`
-- **Pure JSDoc:**
-```javascript
-/** Method if */
-```
----
-<br>
-
-## CLASS: SpreadsheetService
-**File Path:** `CoreUtilsLib/src/utils/Delegation.js`
-**Constructor Usage:** `const instance = new SpreadsheetService();`
-**Description:** N/A
-
-### Raw JSDoc Context:
-```javascript
-/** Class definition */
-```
-
 <br>
 
 ## CLASS: DateUtils
-**File Path:** `CoreUtilsLib/src/utils/DateUtils.js`
+**File Path:** `CoreUtilsLib/src/utils/DateUtils.ts`
 **Constructor Usage:** `const instance = new DateUtils();`
 **Description:** N/A
 
 ### Raw JSDoc Context:
 ```javascript
-/** Class definition */
+/** No comment available */
 ```
 
-### Methods of DateUtils
+### Methods and properties of DateUtils
 
-#### METHOD: DateUtils.parseDate
-- **Scope:** instance
-- **LLM Call Syntax:** `const result = dateUtils.parseDate(input);`
+#### PROPERTY: DateUtils.MILLIS_PER_DAY
+- **Scope:** static
+- **LLM Call Syntax:** `const result = DateUtils.MILLIS_PER_DAY;`
 - **Pure JSDoc:**
 ```javascript
 /**
@@ -2791,41 +1782,53 @@ to internal collaborator (manager) objects.
    * @example
    * const daysInMs = DateUtils.MILLIS_PER_DAY * 7; // 1 week in milliseconds
    */
-  static get MILLIS_PER_DAY() {
-    return 24 * 60 * 60 * 1000;
-  }
-
-  /**
+```
+---
+#### PROPERTY: DateUtils.MILLIS_PER_HOUR
+- **Scope:** static
+- **LLM Call Syntax:** `const result = DateUtils.MILLIS_PER_HOUR;`
+- **Pure JSDoc:**
+```javascript
+/**
    * Milliseconds in one hour (3,600,000).
    * @returns {number} 3600000
    * @example
    * const timeout = DateUtils.MILLIS_PER_HOUR * 2; // 2 hours
    */
-  static get MILLIS_PER_HOUR() {
-    return 60 * 60 * 1000;
-  }
-
-  /**
+```
+---
+#### PROPERTY: DateUtils.MILLIS_PER_MINUTE
+- **Scope:** static
+- **LLM Call Syntax:** `const result = DateUtils.MILLIS_PER_MINUTE;`
+- **Pure JSDoc:**
+```javascript
+/**
    * Milliseconds in one minute (60,000).
    * @returns {number} 60000
    * @example
    * const delay = DateUtils.MILLIS_PER_MINUTE * 5; // 5 minutes
    */
-  static get MILLIS_PER_MINUTE() {
-    return 60 * 1000;
-  }
-
-  /**
+```
+---
+#### PROPERTY: DateUtils.MILLIS_PER_SECOND
+- **Scope:** static
+- **LLM Call Syntax:** `const result = DateUtils.MILLIS_PER_SECOND;`
+- **Pure JSDoc:**
+```javascript
+/**
    * Milliseconds in one second (1,000).
    * @returns {number} 1000
    * @example
    * const timeout = DateUtils.MILLIS_PER_SECOND * 30; // 30 seconds
    */
-  static get MILLIS_PER_SECOND() {
-    return 1000;
-  }
-
-  /**
+```
+---
+#### METHOD: DateUtils.parseDate
+- **Scope:** instance
+- **LLM Call Syntax:** `const result = dateUtils.parseDate(input);`
+- **Pure JSDoc:**
+```javascript
+/**
    * Universal date parser for Date objects, ISO strings, Unix timestamps (>=100k), and Sheets serials (<100k).
    * @param {Date|string|number|null|undefined} input Multi-format date input.
    * @returns {Date|null} Parsed Date object or null for invalid inputs.
@@ -2856,14 +1859,6 @@ to internal collaborator (manager) objects.
    */
 ```
 ---
-#### METHOD: DateUtils.if
-- **Scope:** instance
-- **LLM Call Syntax:** `dateUtils.if(typeof isoString !);`
-- **Pure JSDoc:**
-```javascript
-/** Method if */
-```
----
 #### METHOD: DateUtils.parseDateWithFormat
 - **Scope:** instance
 - **LLM Call Syntax:** `const result = dateUtils.parseDateWithFormat(dateString, format);`
@@ -2875,62 +1870,6 @@ to internal collaborator (manager) objects.
    * @param {string} format Expected format pattern.
    * @returns {Date|null} Parsed Date object or null if unparseable.
    */
-```
----
-#### METHOD: DateUtils.if
-- **Scope:** instance
-- **LLM Call Syntax:** `dateUtils.if(!dateString || !format);`
-- **Pure JSDoc:**
-```javascript
-/** Method if */
-```
----
-#### METHOD: DateUtils.if
-- **Scope:** instance
-- **LLM Call Syntax:** `dateUtils.if(formatUpper);`
-- **Pure JSDoc:**
-```javascript
-/** Method if */
-```
----
-#### METHOD: DateUtils.if
-- **Scope:** instance
-- **LLM Call Syntax:** `dateUtils.if(parts.length !);`
-- **Pure JSDoc:**
-```javascript
-/** Method if */
-```
----
-#### METHOD: DateUtils.if
-- **Scope:** instance
-- **LLM Call Syntax:** `dateUtils.if(formatUpper);`
-- **Pure JSDoc:**
-```javascript
-/** Method if */
-```
----
-#### METHOD: DateUtils.if
-- **Scope:** instance
-- **LLM Call Syntax:** `dateUtils.if(parts.length !);`
-- **Pure JSDoc:**
-```javascript
-/** Method if */
-```
----
-#### METHOD: DateUtils.if
-- **Scope:** instance
-- **LLM Call Syntax:** `dateUtils.if(formatUpper);`
-- **Pure JSDoc:**
-```javascript
-/** Method if */
-```
----
-#### METHOD: DateUtils.if
-- **Scope:** instance
-- **LLM Call Syntax:** `dateUtils.if(parts.length !);`
-- **Pure JSDoc:**
-```javascript
-/** Method if */
 ```
 ---
 #### METHOD: DateUtils.formatISODate
@@ -2974,12 +1913,30 @@ to internal collaborator (manager) objects.
    */
 ```
 ---
-#### METHOD: DateUtils.addDays
+#### METHOD: DateUtils._cloneDate
 - **Scope:** instance
-- **LLM Call Syntax:** `dateUtils.addDays(date, days);`
+- **LLM Call Syntax:** `dateUtils._cloneDate();`
 - **Pure JSDoc:**
 ```javascript
-/** Method addDays */
+/** @private Clones a Date instance. @param {Date} date Valid date object. @returns {Date} New instance. */
+```
+---
+#### METHOD: DateUtils._diffMs
+- **Scope:** instance
+- **LLM Call Syntax:** `dateUtils._diffMs();`
+- **Pure JSDoc:**
+```javascript
+/**
+   * @private Calculates millisecond difference (d2 - d1). @param {Date} date1 Start date. @param {Date} date2 End date. @returns {number|null} Diff or null if invalid.
+   */
+```
+---
+#### METHOD: DateUtils.addDays
+- **Scope:** instance
+- **LLM Call Syntax:** `dateUtils.addDays();`
+- **Pure JSDoc:**
+```javascript
+/** No comment available */
 ```
 ---
 #### METHOD: DateUtils.addHours
@@ -3150,7 +2107,7 @@ to internal collaborator (manager) objects.
 ---
 #### METHOD: DateUtils.formatDuration
 - **Scope:** instance
-- **LLM Call Syntax:** `const result = dateUtils.formatDuration(ms, {{short?:boolean,);`
+- **LLM Call Syntax:** `const result = dateUtils.formatDuration(ms, options);`
 - **Pure JSDoc:**
 ```javascript
 /**
@@ -3161,107 +2118,19 @@ to internal collaborator (manager) objects.
    */
 ```
 ---
-#### METHOD: DateUtils.if
-- **Scope:** instance
-- **LLM Call Syntax:** `dateUtils.if(ms);`
-- **Pure JSDoc:**
-```javascript
-/** Method if */
-```
----
-#### METHOD: DateUtils.if
-- **Scope:** instance
-- **LLM Call Syntax:** `dateUtils.if(ms < 1000);`
-- **Pure JSDoc:**
-```javascript
-/** Method if */
-```
----
-#### METHOD: DateUtils.if
-- **Scope:** instance
-- **LLM Call Syntax:** `dateUtils.if(days > 0);`
-- **Pure JSDoc:**
-```javascript
-/** Method if */
-```
----
-#### METHOD: DateUtils.if
-- **Scope:** instance
-- **LLM Call Syntax:** `dateUtils.if(hours > 0 || days > 0);`
-- **Pure JSDoc:**
-```javascript
-/** Method if */
-```
----
-#### METHOD: DateUtils.if
-- **Scope:** instance
-- **LLM Call Syntax:** `dateUtils.if(hours > 0 || !short);`
-- **Pure JSDoc:**
-```javascript
-/** Method if */
-```
----
-#### METHOD: DateUtils.if
-- **Scope:** instance
-- **LLM Call Syntax:** `dateUtils.if(minutes > 0 || hours > 0 || days > 0);`
-- **Pure JSDoc:**
-```javascript
-/** Method if */
-```
----
-#### METHOD: DateUtils.if
-- **Scope:** instance
-- **LLM Call Syntax:** `dateUtils.if(minutes > 0 || !short);`
-- **Pure JSDoc:**
-```javascript
-/** Method if */
-```
----
-#### METHOD: DateUtils.if
-- **Scope:** instance
-- **LLM Call Syntax:** `dateUtils.if(seconds > 0 || parts.length);`
-- **Pure JSDoc:**
-```javascript
-/** Method if */
-```
----
-#### METHOD: DateUtils.if
-- **Scope:** instance
-- **LLM Call Syntax:** `dateUtils.if(short);`
-- **Pure JSDoc:**
-```javascript
-/** Method if */
-```
----
-#### METHOD: DateUtils.if
-- **Scope:** instance
-- **LLM Call Syntax:** `dateUtils.if(showMs);`
-- **Pure JSDoc:**
-```javascript
-/** Method if */
-```
----
-#### METHOD: DateUtils.if
-- **Scope:** instance
-- **LLM Call Syntax:** `dateUtils.if(milliseconds > 0);`
-- **Pure JSDoc:**
-```javascript
-/** Method if */
-```
----
 <br>
 
 ## CLASS: DateRange
-**File Path:** `CoreUtilsLib/src/utils/DateRange.js`
+**File Path:** `CoreUtilsLib/src/utils/DateRange.ts`
 **Constructor Usage:** `const instance = new DateRange();`
 **Description:** N/A
 
 ### Raw JSDoc Context:
 ```javascript
-/** Class definition */
+/** No comment available */
 ```
 
-### Methods of DateRange
+### Methods and properties of DateRange
 
 #### METHOD: DateRange.isOpenEnded
 - **Scope:** instance
@@ -3273,7 +2142,7 @@ to internal collaborator (manager) objects.
 ---
 #### METHOD: DateRange.contains
 - **Scope:** instance
-- **LLM Call Syntax:** `dateRange.contains(date);`
+- **LLM Call Syntax:** `dateRange.contains();`
 - **Pure JSDoc:**
 ```javascript
 /** True if `date` falls within `[start, end]` inclusive. */
@@ -3289,7 +2158,7 @@ to internal collaborator (manager) objects.
 ---
 #### METHOD: DateRange.overlaps
 - **Scope:** instance
-- **LLM Call Syntax:** `dateRange.overlaps(other);`
+- **LLM Call Syntax:** `dateRange.overlaps();`
 - **Pure JSDoc:**
 ```javascript
 /** True if this range and `other` share at least one instant. */
@@ -3298,30 +2167,14 @@ to internal collaborator (manager) objects.
 <br>
 
 ## CLASS: CellValueCoercion
-**File Path:** `CoreUtilsLib/src/utils/CellValueCoercion.js`
+**File Path:** `CoreUtilsLib/src/utils/CellValueCoercion.ts`
 **Constructor Usage:** `const instance = new CellValueCoercion();`
-**Description:** Centralized Sheets-cell-value coercion (string -> number/boolean)
-shared by libraries that read raw Sheets API values and need consistent
-primitive normalization (e.g. SheetDBLib's TableService, GasDataImporter's
-SourceStrategy). Ported 1:1 from the duplicated `_coerceValue` implementations.
-/
-
-/**
-Static utilities for normalizing raw Sheets API cell values into JS
+**Description:** Static utilities for normalizing raw Sheets API cell values into JS
 primitives. Stateless, so all methods are static (matches the
 `HtmlSanitizer`/`ValidationUtils` convention used elsewhere in this library).
-@class
 
 ### Raw JSDoc Context:
 ```javascript
-/**
- * @file CoreUtilsLib/src/utils/CellValueCoercion.js
- * @description Centralized Sheets-cell-value coercion (string -> number/boolean)
- * shared by libraries that read raw Sheets API values and need consistent
- * primitive normalization (e.g. SheetDBLib's TableService, GasDataImporter's
- * SourceStrategy). Ported 1:1 from the duplicated `_coerceValue` implementations.
- */
-
 /**
  * Static utilities for normalizing raw Sheets API cell values into JS
  * primitives. Stateless, so all methods are static (matches the
@@ -3330,7 +2183,7 @@ primitives. Stateless, so all methods are static (matches the
  */
 ```
 
-### Methods of CellValueCoercion
+### Methods and properties of CellValueCoercion
 
 #### METHOD: CellValueCoercion.coerceValue
 - **Scope:** static
@@ -3345,96 +2198,23 @@ primitives. Stateless, so all methods are static (matches the
    */
 ```
 ---
-#### METHOD: CellValueCoercion.if
-- **Scope:** instance
-- **LLM Call Syntax:** `cellValueCoercion.if(value);`
-- **Pure JSDoc:**
-```javascript
-/** Method if */
-```
----
-#### METHOD: CellValueCoercion.if
-- **Scope:** instance
-- **LLM Call Syntax:** `cellValueCoercion.if(typeof value !);`
-- **Pure JSDoc:**
-```javascript
-/** Method if */
-```
----
-#### METHOD: CellValueCoercion.if
-- **Scope:** instance
-- **LLM Call Syntax:** `cellValueCoercion.if(lower);`
-- **Pure JSDoc:**
-```javascript
-/** Method if */
-```
----
-#### METHOD: CellValueCoercion.if
-- **Scope:** instance
-- **LLM Call Syntax:** `cellValueCoercion.if(lower);`
-- **Pure JSDoc:**
-```javascript
-/** Method if */
-```
----
 <br>
 
 ## CLASS: LoggerServiceMock
-**File Path:** `CoreUtilsLib/src/testing/mocks.js`
+**File Path:** `CoreUtilsLib/src/testing/mocks.ts`
 **Constructor Usage:** `const instance = new LoggerServiceMock();`
-**Description:** Centralized high-fidelity mocks for CoreUtilsLib services.
-
-/
-
-/**
-High-fidelity mock for LoggerService with jest.fn() instrumentation and method chaining.
-@class
+**Description:** High-fidelity mock for LoggerService with jest.fn() instrumentation and method chaining.
 
 ### Raw JSDoc Context:
 ```javascript
-/**
- * @file CoreUtilsLib/src/testing/mocks.js
- * @description Centralized high-fidelity mocks for CoreUtilsLib services.
- * @version 1.0.0
- */
-
 /**
  * High-fidelity mock for LoggerService with jest.fn() instrumentation and method chaining.
  * @class
  */
 ```
 
-### Methods of LoggerServiceMock
+### Methods and properties of LoggerServiceMock
 
-#### METHOD: LoggerServiceMock.hasLog
-- **Scope:** instance
-- **LLM Call Syntax:** `const result = loggerServiceMock.hasLog(level, pattern);`
-- **Pure JSDoc:**
-```javascript
-/**
-   * Checks for log messages matching level and pattern in jest.fn() calls.
-   * @param {string} level Log level.
-   * @param {string|RegExp} pattern Pattern to match.
-   * @returns {boolean} True if match exists.
-   */
-```
----
-#### METHOD: LoggerServiceMock.if
-- **Scope:** instance
-- **LLM Call Syntax:** `loggerServiceMock.if(!mock || !mock.mock);`
-- **Pure JSDoc:**
-```javascript
-/** Method if */
-```
----
-#### METHOD: LoggerServiceMock.if
-- **Scope:** instance
-- **LLM Call Syntax:** `loggerServiceMock.if(pattern instanceof RegExp);`
-- **Pure JSDoc:**
-```javascript
-/** Method if */
-```
----
 #### METHOD: LoggerServiceMock.getLogs
 - **Scope:** instance
 - **LLM Call Syntax:** `const result = loggerServiceMock.getLogs();`
@@ -3444,14 +2224,6 @@ High-fidelity mock for LoggerService with jest.fn() instrumentation and method c
    * Reconstructs all recorded log entries from individual level mock calls.
    * @returns {Array<Object>} Recorded log entries.
    */
-```
----
-#### METHOD: LoggerServiceMock.if
-- **Scope:** instance
-- **LLM Call Syntax:** `loggerServiceMock.if(mock && mock.mock);`
-- **Pure JSDoc:**
-```javascript
-/** Method if */
 ```
 ---
 #### METHOD: LoggerServiceMock.getLogsByLevel
@@ -3515,145 +2287,22 @@ High-fidelity mock for LoggerService with jest.fn() instrumentation and method c
 <br>
 
 ## CLASS: UtilsServiceMock
-**File Path:** `CoreUtilsLib/src/testing/mocks.js`
+**File Path:** `CoreUtilsLib/src/testing/mocks.ts`
 **Constructor Usage:** `const instance = new UtilsServiceMock();`
-**Description:** Checks for log messages matching level and pattern in jest.fn() calls.
+**Description:** Mock for UtilsService providing common utility behaviors with jest.fn() instrumentation.
 
 ### Raw JSDoc Context:
 ```javascript
-/**
-   * Checks for log messages matching level and pattern in jest.fn() calls.
-   * @param {string} level Log level.
-   * @param {string|RegExp} pattern Pattern to match.
-   * @returns {boolean} True if match exists.
-   */
-  hasLog(level, pattern) {
-    const methodName = level.toLowerCase();
-    const mock = this[methodName];
-    if (!mock || !mock.mock) {
-      return false;
-    }
-
-    return mock.mock.calls.some((call) => {
-      const msg = typeof call[0] === 'function' ? call[0]() : call[0];
-      if (pattern instanceof RegExp) {
-        return pattern.test(msg);
-      }
-      return String(msg).includes(pattern);
-    });
-  }
-
-  /**
-   * Reconstructs all recorded log entries from individual level mock calls.
-   * @returns {Array<Object>} Recorded log entries.
-   */
-  getLogs() {
-    const logs = [];
-    ['debug', 'info', 'warn', 'error', 'fatal', 'log'].forEach((level) => {
-      const mock = this[level];
-      if (mock && mock.mock) {
-        mock.mock.calls.forEach((call) => {
-          logs.push({
-            level: level.toUpperCase(),
-            message: typeof call[0] === 'function' ? call[0]() : call[0],
-            context: call[1] || null
-          });
-        });
-      }
-    });
-    return logs;
-  }
-
-  /**
-   * Filters captured logs by case-insensitive level identifier.
-   * @param {string} level Log level (DEBUG|INFO|WARN|ERROR|FATAL|LOG).
-   * @returns {Array<{level:string, message:string, context:Object|null}>}
-   */
-  getLogsByLevel(level) {
-    return this.getLogs().filter((log) => log.level === level.toUpperCase());
-  }
-
-  /**
-   * Filters captured logs by message content using string or regular expression.
-   * @param {string|RegExp} pattern Search pattern for log message matching.
-   * @returns {Array<{level:string, message:string, context:Object|null}>}
-   */
-  getLogsMatching(pattern) {
-    const regex = typeof pattern === 'string' ? new RegExp(pattern, 'i') : pattern;
-    return this.getLogs().filter((log) => regex.test(log.message));
-  }
-
-  /**
-   * Checks if any captured log entry matches specified level and message pattern.
-   * @param {string} level Case-insensitive log level identifier.
-   * @param {string|RegExp} pattern Message content or pattern to match.
-   * @returns {boolean} True if matching log entry is found.
-   */
-  hasLog(level, pattern) {
-    const logs = this.getLogsByLevel(level);
-    const regex = typeof pattern === 'string' ? new RegExp(pattern, 'i') : pattern;
-    return logs.some((log) => regex.test(log.message));
-  }
-
-  /**
-   * Outputs all recorded log entries to the system console.
-   */
-  printLogs() {
-    this.getLogs().forEach((log) => {
-      console.log(`[${log.level}] ${log.message}`, log.context || '');
-    });
-  }
-
-  /**
-   * Resets all internal Jest mock functions and call history.
-   * @returns {this} Chainable mock instance for fluent API usage.
-   */
-  reset() {
-    this.debug.mockClear();
-    this.info.mockClear();
-    this.warn.mockClear();
-    this.error.mockClear();
-    this.fatal.mockClear();
-    this.log.mockClear();
-    this.logJobStart.mockClear();
-    this.logJobResume.mockClear();
-    this.logJobEnd.mockClear();
-    this.logJobSuspended.mockClear();
-    this.logBatchStart.mockClear();
-    this.logItemStart.mockClear();
-    this.logStep.mockClear();
-    this.logPipelineStart.mockClear();
-    this.logPipelineStep.mockClear();
-    this.logSummary.mockClear();
-    this.withPosition.mockClear();
-    this.setLevel.mockClear();
-    this.getLevel.mockClear();
-    this.child.mockClear();
-    this.clear.mockClear();
-    return this;
-  }
-}
-
 /**
  * Mock for UtilsService providing common utility behaviors with jest.fn() instrumentation.
  * @class
  */
 ```
 
-### Methods of UtilsServiceMock
-
-#### METHOD: UtilsServiceMock.for
-- **Scope:** instance
-- **LLM Call Syntax:** `utilsServiceMock.for(let i);`
-- **Pure JSDoc:**
-```javascript
-/** Method for */
-```
----
 <br>
 
 ## CLASS: CacheInterfaceMock
-**File Path:** `CoreUtilsLib/src/testing/mocks.js`
+**File Path:** `CoreUtilsLib/src/testing/mocks.ts`
 **Constructor Usage:** `const instance = new CacheInterfaceMock();`
 **Description:** Mock for CacheInterface implementing a simple in-memory store for testing.
 
@@ -3665,84 +2314,19 @@ High-fidelity mock for LoggerService with jest.fn() instrumentation and method c
  */
 ```
 
-### Methods of CacheInterfaceMock
-
-#### METHOD: CacheInterfaceMock.for
-- **Scope:** instance
-- **LLM Call Syntax:** `cacheInterfaceMock.for(const [cacheKey] of this._store);`
-- **Pure JSDoc:**
-```javascript
-/** Method for */
-```
----
 <br>
 
 ## CLASS: StructuredLogFormatter
-**File Path:** `CoreUtilsLib/src/internal/StructuredLogFormatter.js`
+**File Path:** `CoreUtilsLib/src/internal/StructuredLogFormatter.ts`
 **Constructor Usage:** `const instance = new StructuredLogFormatter();`
-**Description:** @typedef {Object} TreePosition
-@property {number} depth
-@property {boolean} isLast
-@property {boolean[]} [ancestorHasNext]
-/
-
-/**
-@typedef {string|string[]|Object<string, string|number|boolean|null|undefined|Array<string|number|boolean|null>>} LogDetails
-/
-
-const MAJOR_BORDER = '='.repeat(70);
-const SECTION_BORDER = '-'.repeat(70);
-
-const ITEM_ICONS = {
-  DOCUMENT: '📄',
-  EMAIL: '✉️',
-  IMPORT: '📥',
-  RETRY: '🔁',
-  GENERIC: '📦'
-};
-
-const STEP_ICONS = {
-  EXECUTED: '▪️',
-  SKIPPED: '▫️',
-  ERROR: '🔺'
-};
-
-/** Pure formatter for deterministic hierarchical console lines.
+**Description:** Pure formatter for deterministic hierarchical console lines.
 
 ### Raw JSDoc Context:
 ```javascript
-/**
- * @typedef {Object} TreePosition
- * @property {number} depth
- * @property {boolean} isLast
- * @property {boolean[]} [ancestorHasNext]
- */
-
-/**
- * @typedef {string|string[]|Object<string, string|number|boolean|null|undefined|Array<string|number|boolean|null>>} LogDetails
- */
-
-const MAJOR_BORDER = '='.repeat(70);
-const SECTION_BORDER = '-'.repeat(70);
-
-const ITEM_ICONS = {
-  DOCUMENT: '📄',
-  EMAIL: '✉️',
-  IMPORT: '📥',
-  RETRY: '🔁',
-  GENERIC: '📦'
-};
-
-const STEP_ICONS = {
-  EXECUTED: '▪️',
-  SKIPPED: '▫️',
-  ERROR: '🔺'
-};
-
 /** Pure formatter for deterministic hierarchical console lines. */
 ```
 
-### Methods of StructuredLogFormatter
+### Methods and properties of StructuredLogFormatter
 
 #### METHOD: StructuredLogFormatter.treePrefix
 - **Scope:** instance
@@ -3755,25 +2339,9 @@ const STEP_ICONS = {
    */
 ```
 ---
-#### METHOD: StructuredLogFormatter.if
-- **Scope:** instance
-- **LLM Call Syntax:** `structuredLogFormatter.if(depth);`
-- **Pure JSDoc:**
-```javascript
-/** Method if */
-```
----
-#### METHOD: StructuredLogFormatter.for
-- **Scope:** instance
-- **LLM Call Syntax:** `structuredLogFormatter.for(let index);`
-- **Pure JSDoc:**
-```javascript
-/** Method for */
-```
----
 #### METHOD: StructuredLogFormatter.jobStart
 - **Scope:** instance
-- **LLM Call Syntax:** `const result = structuredLogFormatter.jobStart(jobName, jobType);`
+- **LLM Call Syntax:** `const result = structuredLogFormatter.jobStart();`
 - **Pure JSDoc:**
 ```javascript
 /** @returns {string[]} */
@@ -3781,103 +2349,31 @@ const STEP_ICONS = {
 ---
 #### METHOD: StructuredLogFormatter.jobResume
 - **Scope:** instance
-- **LLM Call Syntax:** `const result = structuredLogFormatter.jobResume(jobName, jobType, details);`
+- **LLM Call Syntax:** `const result = structuredLogFormatter.jobResume();`
 - **Pure JSDoc:**
 ```javascript
 /** @returns {string[]} */
-```
----
-#### METHOD: StructuredLogFormatter.if
-- **Scope:** instance
-- **LLM Call Syntax:** `structuredLogFormatter.if(detailText);`
-- **Pure JSDoc:**
-```javascript
-/** Method if */
 ```
 ---
 #### METHOD: StructuredLogFormatter.jobEnd
 - **Scope:** instance
-- **LLM Call Syntax:** `const result = structuredLogFormatter.jobEnd(jobName, isSuccess, details);`
+- **LLM Call Syntax:** `const result = structuredLogFormatter.jobEnd();`
 - **Pure JSDoc:**
 ```javascript
 /** @returns {string[]} */
-```
----
-#### METHOD: StructuredLogFormatter.if
-- **Scope:** instance
-- **LLM Call Syntax:** `structuredLogFormatter.if(content);`
-- **Pure JSDoc:**
-```javascript
-/** Method if */
-```
----
-#### METHOD: StructuredLogFormatter.if
-- **Scope:** instance
-- **LLM Call Syntax:** `structuredLogFormatter.if(duration !);`
-- **Pure JSDoc:**
-```javascript
-/** Method if */
-```
----
-#### METHOD: StructuredLogFormatter.if
-- **Scope:** instance
-- **LLM Call Syntax:** `structuredLogFormatter.if(content);`
-- **Pure JSDoc:**
-```javascript
-/** Method if */
-```
----
-#### METHOD: StructuredLogFormatter.if
-- **Scope:** instance
-- **LLM Call Syntax:** `structuredLogFormatter.if(detailText);`
-- **Pure JSDoc:**
-```javascript
-/** Method if */
 ```
 ---
 #### METHOD: StructuredLogFormatter.jobSuspended
 - **Scope:** instance
-- **LLM Call Syntax:** `const result = structuredLogFormatter.jobSuspended(jobName, details);`
+- **LLM Call Syntax:** `const result = structuredLogFormatter.jobSuspended();`
 - **Pure JSDoc:**
 ```javascript
 /** @returns {string[]} */
 ```
 ---
-#### METHOD: StructuredLogFormatter.if
-- **Scope:** instance
-- **LLM Call Syntax:** `structuredLogFormatter.if(content);`
-- **Pure JSDoc:**
-```javascript
-/** Method if */
-```
----
-#### METHOD: StructuredLogFormatter.if
-- **Scope:** instance
-- **LLM Call Syntax:** `structuredLogFormatter.if(duration !);`
-- **Pure JSDoc:**
-```javascript
-/** Method if */
-```
----
-#### METHOD: StructuredLogFormatter.if
-- **Scope:** instance
-- **LLM Call Syntax:** `structuredLogFormatter.if(content);`
-- **Pure JSDoc:**
-```javascript
-/** Method if */
-```
----
-#### METHOD: StructuredLogFormatter.if
-- **Scope:** instance
-- **LLM Call Syntax:** `structuredLogFormatter.if(detailText);`
-- **Pure JSDoc:**
-```javascript
-/** Method if */
-```
----
 #### METHOD: StructuredLogFormatter.batchStart
 - **Scope:** instance
-- **LLM Call Syntax:** `const result = structuredLogFormatter.batchStart(totalItems, label);`
+- **LLM Call Syntax:** `const result = structuredLogFormatter.batchStart();`
 - **Pure JSDoc:**
 ```javascript
 /** @returns {string[]} */
@@ -3885,7 +2381,7 @@ const STEP_ICONS = {
 ---
 #### METHOD: StructuredLogFormatter.itemStart
 - **Scope:** instance
-- **LLM Call Syntax:** `const result = structuredLogFormatter.itemStart(itemIndex, totalItems, itemLabel, identifier, kind);`
+- **LLM Call Syntax:** `const result = structuredLogFormatter.itemStart();`
 - **Pure JSDoc:**
 ```javascript
 /** @returns {string[]} */
@@ -3893,7 +2389,7 @@ const STEP_ICONS = {
 ---
 #### METHOD: StructuredLogFormatter.step
 - **Scope:** instance
-- **LLM Call Syntax:** `const result = structuredLogFormatter.step(message, position);`
+- **LLM Call Syntax:** `const result = structuredLogFormatter.step();`
 - **Pure JSDoc:**
 ```javascript
 /** @returns {string[]} */
@@ -3901,7 +2397,7 @@ const STEP_ICONS = {
 ---
 #### METHOD: StructuredLogFormatter.pipelineStart
 - **Scope:** instance
-- **LLM Call Syntax:** `const result = structuredLogFormatter.pipelineStart(pipelineName, totalSteps, position);`
+- **LLM Call Syntax:** `const result = structuredLogFormatter.pipelineStart();`
 - **Pure JSDoc:**
 ```javascript
 /** @returns {string[]} */
@@ -3909,199 +2405,109 @@ const STEP_ICONS = {
 ---
 #### METHOD: StructuredLogFormatter.pipelineStep
 - **Scope:** instance
-- **LLM Call Syntax:** `const result = structuredLogFormatter.pipelineStep(stepName, status, details, position);`
+- **LLM Call Syntax:** `const result = structuredLogFormatter.pipelineStep();`
 - **Pure JSDoc:**
 ```javascript
 /** @returns {string[]} */
-```
----
-#### METHOD: StructuredLogFormatter.if
-- **Scope:** instance
-- **LLM Call Syntax:** `structuredLogFormatter.if(detailText);`
-- **Pure JSDoc:**
-```javascript
-/** Method if */
 ```
 ---
 #### METHOD: StructuredLogFormatter.summary
 - **Scope:** instance
-- **LLM Call Syntax:** `const result = structuredLogFormatter.summary(label, durationMs, itemDetails, position);`
+- **LLM Call Syntax:** `const result = structuredLogFormatter.summary();`
 - **Pure JSDoc:**
 ```javascript
 /** @returns {string[]} */
 ```
 ---
-#### METHOD: StructuredLogFormatter.if
-- **Scope:** instance
-- **LLM Call Syntax:** `structuredLogFormatter.if(details);`
-- **Pure JSDoc:**
-```javascript
-/** Method if */
-```
----
 #### METHOD: StructuredLogFormatter.jobReport
 - **Scope:** instance
-- **LLM Call Syntax:** `const result = structuredLogFormatter.jobReport(details);`
+- **LLM Call Syntax:** `const result = structuredLogFormatter.jobReport();`
 - **Pure JSDoc:**
 ```javascript
 /** @returns {string[]} Multi-line end-of-job report (job type, run count, cumulative real duration, task totals, skip and failure detail). */
 ```
 ---
-#### METHOD: StructuredLogFormatter.if
+#### METHOD: StructuredLogFormatter._isDetailEnvelope
 - **Scope:** instance
-- **LLM Call Syntax:** `structuredLogFormatter.if(d.saltati !);`
+- **LLM Call Syntax:** `structuredLogFormatter._isDetailEnvelope();`
 - **Pure JSDoc:**
 ```javascript
-/** Method if */
+/** No comment available */
 ```
 ---
-#### METHOD: StructuredLogFormatter.for
+#### METHOD: StructuredLogFormatter._duration
 - **Scope:** instance
-- **LLM Call Syntax:** `structuredLogFormatter.for(const item of d.dettagliSaltati);`
+- **LLM Call Syntax:** `structuredLogFormatter._duration();`
 - **Pure JSDoc:**
 ```javascript
-/** Method for */
+/** No comment available */
 ```
 ---
-#### METHOD: StructuredLogFormatter.for
+#### METHOD: StructuredLogFormatter._resumeDetails
 - **Scope:** instance
-- **LLM Call Syntax:** `structuredLogFormatter.for(const item of d.dettagliFalliti);`
+- **LLM Call Syntax:** `structuredLogFormatter._resumeDetails();`
 - **Pure JSDoc:**
 ```javascript
-/** Method for */
+/** No comment available */
 ```
 ---
-#### METHOD: StructuredLogFormatter.if
+#### METHOD: StructuredLogFormatter._contentText
 - **Scope:** instance
-- **LLM Call Syntax:** `structuredLogFormatter.if(details.checkpoint !);`
+- **LLM Call Syntax:** `structuredLogFormatter._contentText();`
 - **Pure JSDoc:**
 ```javascript
-/** Method if */
+/** No comment available */
 ```
 ---
-#### METHOD: StructuredLogFormatter.if
+#### METHOD: StructuredLogFormatter._detailsText
 - **Scope:** instance
-- **LLM Call Syntax:** `structuredLogFormatter.if(details.percentage !);`
+- **LLM Call Syntax:** `structuredLogFormatter._detailsText();`
 - **Pure JSDoc:**
 ```javascript
-/** Method if */
+/** No comment available */
 ```
 ---
-#### METHOD: StructuredLogFormatter.catch
+#### METHOD: StructuredLogFormatter._text
 - **Scope:** instance
-- **LLM Call Syntax:** `structuredLogFormatter.catch(_error);`
+- **LLM Call Syntax:** `structuredLogFormatter._text();`
 - **Pure JSDoc:**
 ```javascript
-/** Method catch */
+/** No comment available */
 ```
 ---
-#### METHOD: StructuredLogFormatter.if
+#### METHOD: StructuredLogFormatter._count
 - **Scope:** instance
-- **LLM Call Syntax:** `structuredLogFormatter.if(details);`
+- **LLM Call Syntax:** `structuredLogFormatter._count();`
 - **Pure JSDoc:**
 ```javascript
-/** Method if */
+/** No comment available */
 ```
 ---
-#### METHOD: StructuredLogFormatter.if
+#### METHOD: StructuredLogFormatter._splitPlain
 - **Scope:** instance
-- **LLM Call Syntax:** `structuredLogFormatter.if(details.length);`
+- **LLM Call Syntax:** `structuredLogFormatter._splitPlain();`
 - **Pure JSDoc:**
 ```javascript
-/** Method if */
+/** No comment available */
 ```
 ---
-#### METHOD: StructuredLogFormatter.if
+#### METHOD: StructuredLogFormatter._treeLines
 - **Scope:** instance
-- **LLM Call Syntax:** `structuredLogFormatter.if(typeof details);`
+- **LLM Call Syntax:** `structuredLogFormatter._treeLines();`
 - **Pure JSDoc:**
 ```javascript
-/** Method if */
-```
----
-#### METHOD: StructuredLogFormatter.catch
-- **Scope:** instance
-- **LLM Call Syntax:** `structuredLogFormatter.catch(_error);`
-- **Pure JSDoc:**
-```javascript
-/** Method catch */
-```
----
-#### METHOD: StructuredLogFormatter.if
-- **Scope:** instance
-- **LLM Call Syntax:** `structuredLogFormatter.if(value);`
-- **Pure JSDoc:**
-```javascript
-/** Method if */
-```
----
-#### METHOD: StructuredLogFormatter.if
-- **Scope:** instance
-- **LLM Call Syntax:** `structuredLogFormatter.if(value);`
-- **Pure JSDoc:**
-```javascript
-/** Method if */
-```
----
-#### METHOD: StructuredLogFormatter.if
-- **Scope:** instance
-- **LLM Call Syntax:** `structuredLogFormatter.if(typeof value);`
-- **Pure JSDoc:**
-```javascript
-/** Method if */
-```
----
-#### METHOD: StructuredLogFormatter.catch
-- **Scope:** instance
-- **LLM Call Syntax:** `structuredLogFormatter.catch(_error);`
-- **Pure JSDoc:**
-```javascript
-/** Method catch */
-```
----
-#### METHOD: StructuredLogFormatter.if
-- **Scope:** instance
-- **LLM Call Syntax:** `structuredLogFormatter.if(!firstPrefix);`
-- **Pure JSDoc:**
-```javascript
-/** Method if */
+/** No comment available */
 ```
 ---
 <br>
 
 ## CLASS: Registry
-**File Path:** `CoreUtilsLib/src/internal/Registry.js`
+**File Path:** `CoreUtilsLib/src/internal/Registry.ts`
 **Constructor Usage:** `const instance = new Registry();`
-**Description:** Generic Map-backed registry primitive shared across libraries.
-
-Centralizes the `register/get/has/unregister/clear/keys/size` storage plumbing
-that was previously re-implemented in every per-library registry (F-1.5).
-Libraries with bespoke validation, error types, or dual-store (singleton +
-factory) semantics compose an instance of this class for storage while keeping
-their own public API, messages, and behavior.
-
-/
-
-/**
-Generic key/value registry backed by a Map.
-
-@class Registry
-@template T
+**Description:** Generic key/value registry backed by a Map.
 
 ### Raw JSDoc Context:
 ```javascript
-/**
- * @file CoreUtilsLib/src/internal/Registry.js
- * @description Generic Map-backed registry primitive shared across libraries.
- *
- * Centralizes the `register/get/has/unregister/clear/keys/size` storage plumbing
- * that was previously re-implemented in every per-library registry (F-1.5).
- * Libraries with bespoke validation, error types, or dual-store (singleton +
- * factory) semantics compose an instance of this class for storage while keeping
- * their own public API, messages, and behavior.
- * @version 1.0.0
- */
-
 /**
  * Generic key/value registry backed by a Map.
  *
@@ -4110,7 +2516,7 @@ Generic key/value registry backed by a Map.
  */
 ```
 
-### Methods of Registry
+### Methods and properties of Registry
 
 #### METHOD: Registry.register
 - **Scope:** instance
@@ -4129,30 +2535,6 @@ Generic key/value registry backed by a Map.
    */
 ```
 ---
-#### METHOD: Registry.if
-- **Scope:** instance
-- **LLM Call Syntax:** `registry.if(this._validateValue);`
-- **Pure JSDoc:**
-```javascript
-/** Method if */
-```
----
-#### METHOD: Registry.if
-- **Scope:** instance
-- **LLM Call Syntax:** `registry.if(existed && !overwrite);`
-- **Pure JSDoc:**
-```javascript
-/** Method if */
-```
----
-#### METHOD: Registry.if
-- **Scope:** instance
-- **LLM Call Syntax:** `registry.if(this._logger && typeof this._logger.debug);`
-- **Pure JSDoc:**
-```javascript
-/** Method if */
-```
----
 #### METHOD: Registry.set
 - **Scope:** instance
 - **LLM Call Syntax:** `const result = registry.set(key, value);`
@@ -4163,6 +2545,17 @@ Generic key/value registry backed by a Map.
    * @param {string} key Key.
    * @param {T} value Value.
    * @returns {boolean} True if an existing entry was overwritten.
+   */
+```
+---
+#### METHOD: Registry.get
+- **Scope:** instance
+- **LLM Call Syntax:** `const result = registry.get(key);`
+- **Pure JSDoc:**
+```javascript
+/**
+   * @param {string} key Key.
+   * @returns {T|undefined} Stored value, or undefined if absent.
    */
 ```
 ---
@@ -4230,77 +2623,93 @@ Generic key/value registry backed by a Map.
    */
 ```
 ---
-#### METHOD: Registry.size
+#### PROPERTY: Registry.size
 - **Scope:** instance
-- **LLM Call Syntax:** `registry.size();`
+- **LLM Call Syntax:** `const result = registry.size;`
 - **Pure JSDoc:**
 ```javascript
-/** Method size */
+/**
+   * @returns {number} Number of registered entries.
+   */
 ```
 ---
 <br>
 
 ## CLASS: RegexUtils
-**File Path:** `CoreUtilsLib/src/internal/RegexUtils.js`
+**File Path:** `CoreUtilsLib/src/internal/RegexUtils.ts`
 **Constructor Usage:** `const instance = new RegexUtils();`
-**Description:** Regular expression utilities for safe regex handling and escaping.
-Provides ReDoS (Regular Expression Denial of Service) protection and regex escaping.
-
-/
-
-/**
-Static security utility for safe regular expression handling and ReDoS prevention.
-@class RegexUtils
+**Description:** Static security utility for safe regular expression handling and ReDoS prevention.
 
 ### Raw JSDoc Context:
 ```javascript
-/**
- * @file CoreUtilsLib/src/RegexUtils.js
- * @description Regular expression utilities for safe regex handling and escaping.
- * Provides ReDoS (Regular Expression Denial of Service) protection and regex escaping.
- * @version 1.0
- */
-
 /**
  * Static security utility for safe regular expression handling and ReDoS prevention.
  * @class RegexUtils
  */
 ```
 
+### Methods and properties of RegexUtils
+
+#### METHOD: RegexUtils.escape
+- **Scope:** static
+- **LLM Call Syntax:** `const result = RegexUtils.escape(str);`
+- **Pure JSDoc:**
+```javascript
+/**
+   * Escape special characters in a string for literal matching within a regular expression.
+   * @param {string} str - Text to escape.
+   * @returns {string} Sanitized string safe for literal RegExp inclusion.
+   */
+```
+---
+#### METHOD: RegexUtils.validateSafety
+- **Scope:** static
+- **LLM Call Syntax:** `RegexUtils.validateSafety(pattern, logger);`
+- **Pure JSDoc:**
+```javascript
+/**
+   * Validate a regex pattern for potential catastrophic backtracking or ReDoS vulnerabilities.
+   * @param {string} pattern - Regex structure to test.
+   * @param {Object} [logger=null] - Optional diagnostic reporter.
+   * @throws {Error} If the pattern violates complexity or safety constraints.
+   */
+```
+---
+#### METHOD: RegexUtils.createSafeRegex
+- **Scope:** static
+- **LLM Call Syntax:** `const result = RegexUtils.createSafeRegex(pattern, flags, logger);`
+- **Pure JSDoc:**
+```javascript
+/**
+   * Initialize a validated RegExp instance, enforcing ReDoS protection.
+   * @param {string} pattern - Regex structure to test and instantiate.
+   * @param {string} [flags=''] - Standard RegExp control flags.
+   * @param {Object} [logger=null] - Optional diagnostic reporter.
+   * @returns {RegExp} Validated regular expression object.
+   * @throws {Error} If the pattern is unsafe or syntactically invalid.
+   */
+```
+---
 <br>
 
 ## CLASS: PiiRedactor
-**File Path:** `CoreUtilsLib/src/internal/PiiRedactor.js`
+**File Path:** `CoreUtilsLib/src/internal/PiiRedactor.ts`
 **Constructor Usage:** `const instance = new PiiRedactor();`
-**Description:** Utility for redacting Personally Identifiable Information (PII) from strings.
-Provides comprehensive redaction for common PII patterns in error messages and logs.
-
-/
-
-/**
-Static utility for detecting and masking Personally Identifiable Information (PII) using regex patterns.
-@class PiiRedactor
+**Description:** Static utility for detecting and masking Personally Identifiable Information (PII) using regex patterns.
 
 ### Raw JSDoc Context:
 ```javascript
-/**
- * @file CoreUtilsLib/src/PiiRedactor.js
- * @description Utility for redacting Personally Identifiable Information (PII) from strings.
- * Provides comprehensive redaction for common PII patterns in error messages and logs.
- * @version 1.0.0
- */
-
 /**
  * Static utility for detecting and masking Personally Identifiable Information (PII) using regex patterns.
  * @class PiiRedactor
  */
 ```
 
-### Methods of PiiRedactor
+### Methods and properties of PiiRedactor
 
-#### METHOD: PiiRedactor.redact
+#### PROPERTY: PiiRedactor.REDACTION_LABELS
 - **Scope:** static
-- **LLM Call Syntax:** `const result = PiiRedactor.redact(message);`
+- **LLM Call Syntax:** `const result = PiiRedactor.REDACTION_LABELS;`
 - **Pure JSDoc:**
 ```javascript
 /**
@@ -4308,95 +2717,43 @@ Static utility for detecting and masking Personally Identifiable Information (PI
    * @static
    * @type {Object<string, string>}
    */
-  static get REDACTION_LABELS() {
-    return {
-      EMAIL: '[EMAIL_REDACTED]',
-      TOKEN: '[TOKEN_REDACTED]',
-      API_KEY: '[KEY_REDACTED]',
-      URL_PARAMS: '[PARAMS_REDACTED]',
-      JWT: '[JWT_REDACTED]',
-      CREDIT_CARD: '[CC_REDACTED]',
-      PHONE: '[PHONE_REDACTED]',
-      SESSION_ID: '[ID_REDACTED]'
-    };
-  }
-
-  /**
+```
+---
+#### PROPERTY: PiiRedactor.PATTERNS
+- **Scope:** static
+- **LLM Call Syntax:** `const result = PiiRedactor.PATTERNS;`
+- **Pure JSDoc:**
+```javascript
+/**
    * Collection of regular expressions for PII detection.
    * @static
    * @type {Object<string, RegExp>}
    */
-  static get PATTERNS() {
-    return {
-      EMAIL: /\b[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Z|a-z]{2,}\b/g,
-      TOKEN: /\b(bearer|token|oauth)\s+[\w\-._~+/]+=*/gi,
-      API_KEY: /\b(api[_-]?key|apikey|key)[=:]\s*['"]?[\w-]{20,}['"]?/gi,
-      URL_PARAMS: /(https?:\/\/[^\s?]+)\?[^\s]*/gi,
-      JWT: /\beyJ[A-Za-z0-9_-]+\.eyJ[A-Za-z0-9_-]+\.[A-Za-z0-9_-]+/g,
-      CREDIT_CARD: /\b\d{4}[\s-]?\d{4}[\s-]?\d{4}[\s-]?\d{4}\b/g,
-      PHONE: /\b(\+?1[-.\s]?)?\(?\d{3}\)?[-.\s]?\d{3}[-.\s]?\d{4}\b/g,
-      SESSION_ID: /\b[A-Fa-f0-9]{32,}\b/g
-    };
-  }
-
-  /**
+```
+---
+#### METHOD: PiiRedactor.redact
+- **Scope:** static
+- **LLM Call Syntax:** `const result = PiiRedactor.redact(message);`
+- **Pure JSDoc:**
+```javascript
+/**
    * Mask all recognized PII patterns within a text string.
    * @param {string} message - Input text to sanitize.
    * @returns {string} Sanitized string with masked placeholders.
    */
 ```
 ---
-#### METHOD: PiiRedactor.if
-- **Scope:** instance
-- **LLM Call Syntax:** `piiRedactor.if(typeof message !);`
-- **Pure JSDoc:**
-```javascript
-/** Method if */
-```
----
 <br>
 
 ## CLASS: LazyServiceContainer
-**File Path:** `CoreUtilsLib/src/internal/LazyServiceContainer.js`
+**File Path:** `CoreUtilsLib/src/internal/LazyServiceContainer.ts`
 **Constructor Usage:** `const instance = new LazyServiceContainer();`
-**Description:** Generic lazy-singleton dependency-injection container.
-
-Extracted from the register/lazy-resolve/reset idiom `GoogleApiWrapper`'s
-`ServiceFactory` establishes for native-Google-service singletons, but
-generalized for any consumer app's own domain/application-service wiring
-(ref REPORT_GLF.md B8) — `ServiceFactory` itself stays scoped to
-Drive/Sheets/Docs/Gmail/Logger/Utilities/Cache/Exception; this is the
-shared, app-agnostic machinery underneath that idiom.
-
-/
-
-import { Registry } from './Registry.js';
-
-/**
-Lazy-singleton service container: register a factory under a name, resolve
+**Description:** Lazy-singleton service container: register a factory under a name, resolve
 it (and cache the result) on first `get()`, share the cached instance on
 every subsequent `get()` until `reset()`.
 
-@class LazyServiceContainer
-@template T
-
 ### Raw JSDoc Context:
 ```javascript
-/**
- * @file CoreUtilsLib/src/internal/LazyServiceContainer.js
- * @description Generic lazy-singleton dependency-injection container.
- *
- * Extracted from the register/lazy-resolve/reset idiom `GoogleApiWrapper`'s
- * `ServiceFactory` establishes for native-Google-service singletons, but
- * generalized for any consumer app's own domain/application-service wiring
- * (ref REPORT_GLF.md B8) — `ServiceFactory` itself stays scoped to
- * Drive/Sheets/Docs/Gmail/Logger/Utilities/Cache/Exception; this is the
- * shared, app-agnostic machinery underneath that idiom.
- * @version 1.0.0
- */
-
-import { Registry } from './Registry.js';
-
 /**
  * Lazy-singleton service container: register a factory under a name, resolve
  * it (and cache the result) on first `get()`, share the cached instance on
@@ -4407,7 +2764,7 @@ import { Registry } from './Registry.js';
  */
 ```
 
-### Methods of LazyServiceContainer
+### Methods and properties of LazyServiceContainer
 
 #### METHOD: LazyServiceContainer.register
 - **Scope:** instance
@@ -4433,12 +2790,19 @@ import { Registry } from './Registry.js';
    */
 ```
 ---
-#### METHOD: LazyServiceContainer.if
+#### METHOD: LazyServiceContainer.get
 - **Scope:** instance
-- **LLM Call Syntax:** `lazyServiceContainer.if(!factory);`
+- **LLM Call Syntax:** `const result = lazyServiceContainer.get(name);`
 - **Pure JSDoc:**
 ```javascript
-/** Method if */
+/**
+   * Resolves the service registered under `name`: returns the cached
+   * singleton if one exists, otherwise invokes the registered factory once
+   * and caches the result.
+   * @param {string} name Service identifier.
+   * @returns {T} The resolved (and now cached) service instance.
+   * @throws {Error} If no factory is registered under `name`.
+   */
 ```
 ---
 #### METHOD: LazyServiceContainer.reset
@@ -4465,33 +2829,19 @@ import { Registry } from './Registry.js';
 <br>
 
 ## CLASS: HashUtils
-**File Path:** `CoreUtilsLib/src/internal/HashUtils.js`
+**File Path:** `CoreUtilsLib/src/internal/HashUtils.ts`
 **Constructor Usage:** `const instance = new HashUtils();`
-**Description:** Hash utility functions for generating consistent string hashes.
-Provides cryptographic SHA-256 hashing using Google Apps Script's native Utilities.
-
-/
-
-/**
-Cryptographic utility for deterministic SHA-256 hashing of strings and objects.
-@class HashUtils
+**Description:** Cryptographic utility for deterministic SHA-256 hashing of strings and objects.
 
 ### Raw JSDoc Context:
 ```javascript
-/**
- * @file CoreUtilsLib/src/HashUtils.js
- * @description Hash utility functions for generating consistent string hashes.
- * Provides cryptographic SHA-256 hashing using Google Apps Script's native Utilities.
- * @version 3.0 - Upgraded to SHA-256 for better security and collision resistance
- */
-
 /**
  * Cryptographic utility for deterministic SHA-256 hashing of strings and objects.
  * @class HashUtils
  */
 ```
 
-### Methods of HashUtils
+### Methods and properties of HashUtils
 
 #### METHOD: HashUtils.generateHash
 - **Scope:** static
@@ -4530,101 +2880,55 @@ Cryptographic utility for deterministic SHA-256 hashing of strings and objects.
    */
 ```
 ---
-#### METHOD: HashUtils.if
-- **Scope:** instance
-- **LLM Call Syntax:** `hashUtils.if(typeof str !);`
-- **Pure JSDoc:**
-```javascript
-/** Method if */
-```
----
 <br>
 
 ## CLASS: BaseError
-**File Path:** `CoreUtilsLib/src/errors/BaseError.js`
-**Constructor Usage:** `const instance = new BaseError();`
-**Description:** Base error class providing standardized error handling across all libraries.
-Eliminates duplicate stack trace capture and serialization code.
-
-/
-
-/**
-Base standardized error class for all GasLibraryFactory custom exceptions.
-@class BaseError
-@extends Error
+**File Path:** `CoreUtilsLib/src/errors/BaseError.ts`
+**Constructor Usage:** `const instance = new BaseError(message, context, originalError);`
+**Description:** Initialize BaseError with message, metadata context, and optional cause chaining.
 
 ### Raw JSDoc Context:
 ```javascript
 /**
- * @file CoreUtilsLib/src/BaseError.js
- * @description Base error class providing standardized error handling across all libraries.
- * Eliminates duplicate stack trace capture and serialization code.
- * @version 1.0.0
- */
-
-/**
- * Base standardized error class for all GasLibraryFactory custom exceptions.
- * @class BaseError
- * @extends Error
- */
+   * Initialize BaseError with message, metadata context, and optional cause chaining.
+   * @param {string} message - Error description.
+   * @param {Object} [context={}] - Metadata for diagnostic tracking.
+   * @param {Error} [originalError=null] - Upstream exception being wrapped.
+   */
 ```
 
-### Methods of BaseError
+### Methods and properties of BaseError
 
+#### PROPERTY: BaseError.originalMessage
+- **Scope:** instance
+- **LLM Call Syntax:** `const result = baseError.originalMessage;`
+- **Pure JSDoc:**
+```javascript
+/**
+   * Gets the original error message if one exists.
+   *
+   * @returns {string|null} The original error message or null
+   */
+```
+---
+#### PROPERTY: BaseError.hasOriginalError
+- **Scope:** instance
+- **LLM Call Syntax:** `const result = baseError.hasOriginalError;`
+- **Pure JSDoc:**
+```javascript
+/**
+   * Checks if this error wraps another error.
+   *
+   * @returns {boolean} True if an original error exists
+   */
+```
+---
 #### METHOD: BaseError.toJSON
 - **Scope:** instance
 - **LLM Call Syntax:** `const result = baseError.toJSON();`
 - **Pure JSDoc:**
 ```javascript
 /**
-     * The name of the error class.
-     * @type {string}
-     */
-    this.name = this.constructor.name;
-
-    /**
-     * Additional context/metadata for the error.
-     * @type {Object}
-     */
-    this.context = context;
-
-    /**
-     * ISO timestamp when the error occurred.
-     * @type {string}
-     */
-    this.timestamp = new Date().toISOString();
-
-    /**
-     * The original error that was caught (for error chaining).
-     * @type {Error|null}
-     */
-    this.originalError = originalError;
-
-    // Capture stack trace, excluding the constructor from the trace
-    if (Error.captureStackTrace) {
-      Error.captureStackTrace(this, this.constructor);
-    }
-  }
-
-  /**
-   * Gets the original error message if one exists.
-   *
-   * @returns {string|null} The original error message or null
-   */
-  get originalMessage() {
-    return this.originalError ? this.originalError.message : null;
-  }
-
-  /**
-   * Checks if this error wraps another error.
-   *
-   * @returns {boolean} True if an original error exists
-   */
-  get hasOriginalError() {
-    return this.originalError !== null;
-  }
-
-  /**
    * Serialize error state to a plain object for logging or transport.
    * @returns {Object} JSON-compatible representation including name, message, context, and stack.
    */
@@ -4639,14 +2943,6 @@ Base standardized error class for all GasLibraryFactory custom exceptions.
    * Generate a formatted string including error type, message, and serialized context.
    * @returns {string} Human-readable error summary.
    */
-```
----
-#### METHOD: BaseError.if
-- **Scope:** instance
-- **LLM Call Syntax:** `baseError.if(this.originalError);`
-- **Pure JSDoc:**
-```javascript
-/** Method if */
 ```
 ---
 #### METHOD: BaseError.withContext
@@ -4686,163 +2982,15 @@ Base standardized error class for all GasLibraryFactory custom exceptions.
    */
 ```
 ---
-#### METHOD: BaseError.if
-- **Scope:** instance
-- **LLM Call Syntax:** `baseError.if(error instanceof BaseError);`
-- **Pure JSDoc:**
-```javascript
-/** Method if */
-```
----
 <br>
 
 ## CLASS: ValidationError
-**File Path:** `CoreUtilsLib/src/errors/BaseError.js`
+**File Path:** `CoreUtilsLib/src/errors/BaseError.ts`
 **Constructor Usage:** `const instance = new ValidationError();`
-**Description:** Initialize BaseError with message, metadata context, and optional cause chaining.
+**Description:** Exception for parameter or schema validation failures.
 
 ### Raw JSDoc Context:
 ```javascript
-/**
-   * Initialize BaseError with message, metadata context, and optional cause chaining.
-   * @param {string} message - Error description.
-   * @param {Object} [context={}] - Metadata for diagnostic tracking.
-   * @param {Error} [originalError=null] - Upstream exception being wrapped.
-   */
-  constructor(message, context = {}, originalError = null) {
-    super(message);
-
-    /**
-     * The name of the error class.
-     * @type {string}
-     */
-    this.name = this.constructor.name;
-
-    /**
-     * Additional context/metadata for the error.
-     * @type {Object}
-     */
-    this.context = context;
-
-    /**
-     * ISO timestamp when the error occurred.
-     * @type {string}
-     */
-    this.timestamp = new Date().toISOString();
-
-    /**
-     * The original error that was caught (for error chaining).
-     * @type {Error|null}
-     */
-    this.originalError = originalError;
-
-    // Capture stack trace, excluding the constructor from the trace
-    if (Error.captureStackTrace) {
-      Error.captureStackTrace(this, this.constructor);
-    }
-  }
-
-  /**
-   * Gets the original error message if one exists.
-   *
-   * @returns {string|null} The original error message or null
-   */
-  get originalMessage() {
-    return this.originalError ? this.originalError.message : null;
-  }
-
-  /**
-   * Checks if this error wraps another error.
-   *
-   * @returns {boolean} True if an original error exists
-   */
-  get hasOriginalError() {
-    return this.originalError !== null;
-  }
-
-  /**
-   * Serialize error state to a plain object for logging or transport.
-   * @returns {Object} JSON-compatible representation including name, message, context, and stack.
-   */
-  toJSON() {
-    return {
-      name: this.name,
-      message: this.message,
-      context: this.context,
-      timestamp: this.timestamp,
-      originalError: this.originalError
-        ? {
-            name: this.originalError.name,
-            message: this.originalError.message,
-            stack: this.originalError.stack
-          }
-        : null,
-      stack: this.stack
-    };
-  }
-
-  /**
-   * Generate a formatted string including error type, message, and serialized context.
-   * @returns {string} Human-readable error summary.
-   */
-  toString() {
-    let result = `${this.name}: ${this.message}`;
-
-    if (this.context && Object.keys(this.context).length > 0) {
-      result += '\nContext: ' + JSON.stringify(this.context, null, 2);
-    }
-
-    if (this.originalError) {
-      result += `\nCaused by: ${this.originalError.name}: ${this.originalError.message}`;
-    }
-
-    return result;
-  }
-
-  /**
-   * Create a shallow clone of the error with additional merged metadata.
-   * @param {Object} additionalContext - New metadata to append to existing context.
-   * @returns {BaseError} New instance with updated context and preserved stack trace.
-   */
-  withContext(additionalContext) {
-    const mergedContext = { ...this.context, ...additionalContext };
-    const newError = new this.constructor(this.message, mergedContext, this.originalError);
-    newError.stack = this.stack; // Preserve original stack
-    return newError;
-  }
-
-  /**
-   * Static factory method to wrap any error as a BaseError.
-   *
-   * If the error is already a BaseError, returns it unchanged.
-   * Otherwise, wraps it in a new BaseError with the original as the cause.
-   *
-   * @param {Error|*} error - The error to wrap
-   * @param {Object} [context={}] - Additional context to add
-   * @returns {BaseError} A BaseError instance
-   *
-   * @example
-   * try {
-   *   riskyOperation();
-   * } catch (error) {
-   *   const wrapped = BaseError.wrap(error, { operation: 'riskyOperation' });
-   *   logger.error(wrapped.toJSON());
-   * }
-   */
-  static wrap(error, context = {}) {
-    if (error instanceof BaseError) {
-      return Object.keys(context).length > 0 ? error.withContext(context) : error;
-    }
-
-    // Handle non-Error throws
-    if (!(error instanceof Error)) {
-      return new BaseError(String(error), context);
-    }
-
-    return new BaseError(error.message, context, error);
-  }
-}
-
 /**
  * Exception for parameter or schema validation failures.
  * @class ValidationError
@@ -4853,26 +3001,12 @@ Base standardized error class for all GasLibraryFactory custom exceptions.
 <br>
 
 ## CLASS: ConfigurationError
-**File Path:** `CoreUtilsLib/src/errors/BaseError.js`
+**File Path:** `CoreUtilsLib/src/errors/BaseError.ts`
 **Constructor Usage:** `const instance = new ConfigurationError();`
-**Description:** Initialize ValidationError with specific field and value identifiers.
+**Description:** Exception for missing or malformed library/service configuration.
 
 ### Raw JSDoc Context:
 ```javascript
-/**
-   * Initialize ValidationError with specific field and value identifiers.
-   * @param {string} message - Validation failure reason.
-   * @param {string} [field=null] - Identifier of the invalid property.
-   * @param {*} [value=undefined] - The value that failed validation.
-   * @param {Object} [context={}] - Additional diagnostic metadata.
-   */
-  constructor(message, field = null, value = undefined, context = {}) {
-    super(message, { ...context, field, value });
-    this.field = field;
-    this.value = value;
-  }
-}
-
 /**
  * Exception for missing or malformed library/service configuration.
  * @class ConfigurationError
@@ -4883,24 +3017,12 @@ Base standardized error class for all GasLibraryFactory custom exceptions.
 <br>
 
 ## CLASS: OperationError
-**File Path:** `CoreUtilsLib/src/errors/BaseError.js`
+**File Path:** `CoreUtilsLib/src/errors/BaseError.ts`
 **Constructor Usage:** `const instance = new OperationError();`
-**Description:** Initialize ConfigurationError with the problematic configuration key.
+**Description:** Exception for failed functional operations with recovery indicators.
 
 ### Raw JSDoc Context:
 ```javascript
-/**
-   * Initialize ConfigurationError with the problematic configuration key.
-   * @param {string} message - Configuration failure reason.
-   * @param {string} [configKey=null] - Identifier of the missing/invalid setting.
-   * @param {Object} [context={}] - Additional diagnostic metadata.
-   */
-  constructor(message, configKey = null, context = {}) {
-    super(message, { ...context, configKey });
-    this.configKey = configKey;
-  }
-}
-
 /**
  * Exception for failed functional operations with recovery indicators.
  * @class OperationError
@@ -4910,3 +3032,46 @@ Base standardized error class for all GasLibraryFactory custom exceptions.
 
 <br>
 
+## GLOBAL FUNCTIONS
+
+### FUNCTION: parseDate
+- **Source:** `CoreUtilsLib/src/utils/DateUtils.ts`
+- **LLM Call Syntax:** `const result = parseDate(input);`
+- **Pure JSDoc:**
+```javascript
+/**
+ * Universal date parser shared by CoreUtilsLib consumers.
+ * Day-first strings (GG/MM/AA, GG/MM/AAAA) parse as UTC midnight.
+ * @param {Date|string|number|null|undefined} input Multi-format date input.
+ * @returns {Date|null} Parsed Date object or null for invalid inputs.
+ */
+```
+
+---
+### FUNCTION: escapeHtmlText
+- **Source:** `CoreUtilsLib/src/internal/HtmlEntityCodec.ts`
+- **LLM Call Syntax:** `const result = escapeHtmlText(value);`
+- **Pure JSDoc:**
+```javascript
+/**
+ * Escapes text for an HTML text node while preserving the legacy five-character
+ * output used by HtmlSanitizer.
+ * @param {*} value Raw value; nullish values become an empty string.
+ * @returns {string} HTML-escaped text.
+ */
+```
+
+---
+### FUNCTION: decodeHtmlEntities
+- **Source:** `CoreUtilsLib/src/internal/HtmlEntityCodec.ts`
+- **LLM Call Syntax:** `const result = decodeHtmlEntities(value);`
+- **Pure JSDoc:**
+```javascript
+/**
+ * Decodes HTML entities in a null-safe input value.
+ * @param {*} value Entity-encoded text; nullish values become an empty string.
+ * @returns {string} Decoded text.
+ */
+```
+
+---

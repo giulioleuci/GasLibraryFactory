@@ -3,6 +3,7 @@
 A lightweight, Google Apps Script-native testing framework for running online tests against real Google Workspace APIs (no mocks). Used by every library's `__testOnline__/*.gs` suite in this monorepo.
 
 **Layer:** Infrastructure (Layer 0)
+**Language:** TypeScript (strict, ES modules; Babel emits GAS V8 JavaScript)
 **Dependencies:** None (Google Apps Script runtime)
 
 ## File and Folder Structure
@@ -10,16 +11,16 @@ A lightweight, Google Apps Script-native testing framework for running online te
 ```text
 GasOnlineTestFramework/
 ├── src/
-│   ├── EnhancedTestRunner.js       # Test registry + run() orchestration
-│   ├── SmartAssert.js              # Static assertion library
-│   ├── TestContext.js              # Reusable persistent Drive/Sheets/Docs test artifacts
-│   └── SampleSpreadsheetBuilder.js # Fluent sheet/row builder for sample data
+│   ├── EnhancedTestRunner.ts       # Test registry + run() orchestration
+│   ├── SmartAssert.ts              # Static assertion library
+│   ├── TestContext.ts              # Reusable persistent Drive/Sheets/Docs test artifacts
+│   └── SampleSpreadsheetBuilder.ts # Fluent sheet/row builder for sample data
 └── __tests__/                      # Offline Jest tests for the framework itself
 ```
 
 ## Quick Start
 
-```javascript
+```typescript
 import { runner, testContext, SmartAssert } from '@GasOnlineTestFramework';
 
 function initMyLibraryOnlineTests() {

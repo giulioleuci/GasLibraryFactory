@@ -2,6 +2,7 @@
 
 **Version:** 1.0.0  
 **Layer:** Application Orchestration (Layer 3)  
+**Language:** TypeScript (strict, ES modules; Babel emits GAS V8 JavaScript)
 **Dependencies:** CoreUtilsLib, GasResilienceLib (Optional)
 
 ## 🏗️ File and Folder Structure
@@ -11,9 +12,9 @@ Organized into core framework components and specialized step patterns:
 ```text
 PipelineFramework/
 ├── src/
-│   ├── Pipeline.js             # The main orchestrator (Engine)
-│   ├── PipelineContext.js      # Shared state container with metadata and history
-│   ├── Step.js                 # Base class for all pipeline tasks
+│   ├── Pipeline.ts             # The main orchestrator (Engine)
+│   ├── PipelineContext.ts      # Shared state container with metadata and history
+│   ├── Step.ts                 # Base class for all pipeline tasks
 │   ├── errors/                 # Framework exceptions (Validation, Execution)
 │   └── __tests__/              # Pipeline unit and integration tests
 ```
@@ -42,7 +43,7 @@ Unlike a simple function chain, this framework provides a robust runtime environ
 
 ## 📦 Installation
 
-```javascript
+```typescript
 import { Pipeline, Step, PipelineContext } from '@PipelineFramework';
 import { LoggerService } from '@CoreUtilsLib';
 ```
@@ -53,7 +54,7 @@ import { LoggerService } from '@CoreUtilsLib';
 
 Extend the `Step` class and implement `_executeLogic`.
 
-```javascript
+```typescript
 class FetchDataStep extends Step {
   constructor(logger) {
     super('FetchData', logger, {
@@ -76,7 +77,7 @@ class FetchDataStep extends Step {
 
 ### 2. Build and Run Pipeline
 
-```javascript
+```typescript
 const logger = new LoggerService();
 const pipeline = new Pipeline(logger);
 

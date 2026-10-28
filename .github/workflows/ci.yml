@@ -25,8 +25,5 @@ jobs:
       - name: Install dependencies
         run: npm ci
 
-      - name: Build bundles
-        run: npm run build:testoffline
-
-      - name: Run offline tests
-        run: npm run test
+      - name: Verify TypeScript migration
+        run: npm run verify:typescript

@@ -100,7 +100,6 @@ const database = MockFactory.createJestDatabase({
 | `createJestExceptionService()`   | ExceptionServiceMock      | GasResilienceLib        |
 | `createJestDatabase()`           | DatabaseServiceMock       | SheetDBLib              |
 | `createJestStep(name)`           | StepMock                  | PipelineFramework       |
-| `createJestMonitor()`            | ProcessMonitorServiceMock | GasProcessMonitorLib    |
 | `createJestSpreadsheetService()` | SpreadsheetServiceMock    | GoogleApiWrapper        |
 | `createPropertiesService()`      | PropertiesServiceMock     | GoogleApiWrapper        |
 | `createTriggerService()`         | TriggerServiceMock        | GoogleApiWrapper        |

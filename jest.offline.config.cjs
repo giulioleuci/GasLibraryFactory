@@ -19,15 +19,19 @@ module.exports = {
 
   // 1. Set up GAS global mocks (Utilities, CacheService, etc.)
   // 2. Load the compiled bundle into global scope
-  setupFilesAfterEnv: ['<rootDir>/test/setup.js', '<rootDir>/test/offline-setup.js'],
+  setupFilesAfterEnv: ['<rootDir>/test/setup.ts', '<rootDir>/test/offline-setup.ts'],
 
-  testMatch: ['<rootDir>/test/offline/**/*.test.js'],
+  moduleFileExtensions: ['ts', 'cts', 'js', 'cjs', 'json'],
+
+  moduleNameMapper: require('./jest.config.cjs').moduleNameMapper,
+
+  testMatch: ['<rootDir>/test/offline/**/*.test.ts'],
 
   testTimeout: 30000,
 
   // Transform test files (ESM -> CJS for Jest)
   transform: {
-    '^.+\\.js$': 'babel-jest'
+    '^.+\\.[cm]?[jt]s$': 'babel-jest'
   },
 
   // Allow transforming specific ESM dependencies used in test files

@@ -1,0 +1,278 @@
+import { SampleSpreadsheetBuilder } from './SampleSpreadsheetBuilder.js';
+
+interface FolderLookup<Folder> {
+  getFoldersByName(name: string): { hasNext(): boolean; next(): Folder };
+  createFolder(name: string): Folder;
+}
+interface FolderFiles {
+  getFilesByName(name: string): {
+    hasNext(): boolean;
+    next(): Pick<GoogleAppsScript.Drive.File, 'getId'> | null;
+  };
+}
+interface Removable {
+  remove(): unknown;
+}
+interface ResetSheet {
+  setName(name: string): unknown;
+  getProtections(type: GoogleAppsScript.Spreadsheet.ProtectionType): Removable[];
+  clear(): ResetSheet;
+  clearContents(): ResetSheet;
+  clearFormats(): ResetSheet;
+  clearNotes(): ResetSheet;
+}
+interface ResetSpreadsheet {
+  getProtections(type: GoogleAppsScript.Spreadsheet.ProtectionType): Removable[];
+  getNamedRanges(): Removable[];
+  getSheets(): ResetSheet[];
+  insertSheet?(name: string): unknown;
+  deleteSheet(sheet: ResetSheet): unknown;
+}
+
+/**
+ * Resource manager for online test execution, maintaining persistent Google Drive artifacts to optimize quota usage and execution speed.
+ * @class
+ */
+export class TestContext {
+  declare TEST_ROOT_NAME: string;
+  declare TEST_SS_NAME: string;
+  declare TEST_DOC_NAME: string;
+  declare _rootFolder: GoogleAppsScript.Drive.Folder | null;
+  declare _spreadsheet: GoogleAppsScript.Spreadsheet.Spreadsheet | null;
+  declare _document: GoogleAppsScript.Document.Document | null;
+  constructor() {
+    this.TEST_ROOT_NAME = 'GAS_TEST_ROOT_PERSISTENT';
+    this.TEST_SS_NAME = 'GAS_TEST_SS_PERSISTENT';
+    this.TEST_DOC_NAME = 'GAS_TEST_DOC_PERSISTENT';
+
+    this._rootFolder = null;
+    this._spreadsheet = null;
+    this._document = null;
+  }
+
+  /**
+   * Resolves or creates the dedicated Drive folder for test artifact storage.
+   * @returns {GoogleAppsScript.Drive.Folder} Persistent test root.
+   */
+  getRootFolder() {
+    if (this._rootFolder) {
+      return this._rootFolder;
+    }
+    this._rootFolder = this.getOrCreateNamedFolder(this.TEST_ROOT_NAME);
+    return this._rootFolder;
+  }
+
+  /**
+   * Resolves or creates a Drive folder by name, so repeated online-test runs reuse the same
+   * artifact instead of minting a new one every run (ref ALDO_GLF_AUDIT_RESULTS.md K-1).
+   * @param {string} name Folder name to look up or create.
+   * @param {GoogleAppsScript.Drive.Folder|null} [parentFolder=null] Scope the lookup/creation to
+   *   this folder; defaults to Drive root when omitted.
+   * @returns {GoogleAppsScript.Drive.Folder} The existing or newly-created folder.
+   */
+  getOrCreateNamedFolder<Folder>(name: string, parentFolder: FolderLookup<Folder>): Folder;
+  getOrCreateNamedFolder(name: string, parentFolder?: null): GoogleAppsScript.Drive.Folder;
+  getOrCreateNamedFolder(name: string, parentFolder: FolderLookup<unknown> | null = null) {
+    const folders = parentFolder
+      ? parentFolder.getFoldersByName(name)
+      : DriveApp.getFoldersByName(name);
+    if (folders.hasNext()) {
+      return folders.next();
+    }
+    return parentFolder ? parentFolder.createFolder(name) : DriveApp.createFolder(name);
+  }
+
+  /**
+   * Resolves or creates the primary Spreadsheet artifact for persistence testing.
+   * @returns {GoogleAppsScript.Spreadsheet.Spreadsheet} Persistent test spreadsheet.
+   */
+  getSpreadsheet() {
+    if (this._spreadsheet) {
+      return this._spreadsheet;
+    }
+    this._spreadsheet = this.getOrCreateNamedSpreadsheet(this.TEST_SS_NAME, this.getRootFolder());
+    return this._spreadsheet;
+  }
+
+  /**
+   * Resolves or creates a Spreadsheet by name, so repeated online-test runs reuse the same
+   * artifact instead of minting (and never cleaning up) a new one every run — the capability
+   * `SpreadsheetApp.create` alone doesn't provide (ref ALDO_GLF_AUDIT_RESULTS.md K-1).
+   * @param {string} name Spreadsheet file name to look up or create.
+   * @param {GoogleAppsScript.Drive.Folder|null} [parentFolder=null] Scope the lookup to this
+   *   folder, and move a newly-created spreadsheet into it; when omitted the lookup scans all of
+   *   Drive by name and a new spreadsheet is left wherever `SpreadsheetApp.create` places it.
+   * @returns {GoogleAppsScript.Spreadsheet.Spreadsheet} The existing or newly-created spreadsheet.
+   */
+  getOrCreateNamedSpreadsheet(name: string, parentFolder: FolderFiles | null = null) {
+    const files = parentFolder ? parentFolder.getFilesByName(name) : DriveApp.getFilesByName(name);
+    if (files.hasNext()) {
+      return SpreadsheetApp.openById(files.next()!.getId());
+    }
+    const spreadsheet = SpreadsheetApp.create(name);
+    if (parentFolder) {
+      const file = DriveApp.getFileById(spreadsheet.getId());
+      file.moveTo(parentFolder as GoogleAppsScript.Drive.Folder);
+    }
+    return spreadsheet;
+  }
+
+  /**
+   * Resolves or creates the primary Google Doc artifact for template testing.
+   * @returns {GoogleAppsScript.Document.Document} Persistent test document.
+   */
+  getDocument() {
+    if (this._document) {
+      try {
+        this._document.getBody();
+        return this._document;
+      } catch (_e) {
+        // Document might be closed
+        this._document = DocumentApp.openById(this._document.getId());
+        return this._document;
+      }
+    }
+
+    const files = DriveApp.getFilesByName(this.TEST_DOC_NAME);
+    if (files.hasNext()) {
+      const file = files.next();
+      this._document = DocumentApp.openById(file.getId());
+    } else {
+      this._document = DocumentApp.create(this.TEST_DOC_NAME);
+      const file = DriveApp.getFileById(this._document.getId());
+      file.moveTo(this.getRootFolder());
+    }
+    return this._document;
+  }
+
+  /**
+   * Restores a spreadsheet to a baseline state by purging protections, named ranges, and additional tabs.
+   * @param {GoogleAppsScript.Spreadsheet.Spreadsheet} [ss] target spreadsheet (defaults to persistent instance).
+   */
+  resetSpreadsheet(ss?: ResetSpreadsheet) {
+    const targetSs = ss || this.getSpreadsheet();
+
+    // 1. Clear protected ranges
+    const protections = targetSs.getProtections(SpreadsheetApp.ProtectionType.RANGE);
+    protections.forEach((p) => {
+      p.remove();
+    });
+
+    // Also clear sheet-specific protections
+    targetSs.getSheets().forEach((sheet) => {
+      sheet.getProtections(SpreadsheetApp.ProtectionType.SHEET).forEach((p) => {
+        p.remove();
+      });
+    });
+
+    // 2. Clear named ranges
+    const namedRanges = targetSs.getNamedRanges();
+    namedRanges.forEach((nr) => {
+      nr.remove();
+    });
+
+    const sheets = targetSs.getSheets();
+
+    // Create a fresh sheet if none exist (shouldn't happen) or to ensure we can delete others
+    if (sheets.length === 0) {
+      targetSs.insertSheet!('Sheet1');
+    } else {
+      const firstSheet = sheets[0];
+      firstSheet.setName('TEMP_RESET_' + new Date().getTime());
+      firstSheet.clear().clearContents().clearFormats().clearNotes();
+
+      // Delete all other sheets
+      for (let i = 1; i < sheets.length; i++) {
+        targetSs.deleteSheet(sheets[i]);
+      }
+      firstSheet.setName('Sheet1');
+    }
+  }
+
+  /**
+   * @description Gets-or-creates a named spreadsheet, resets it to a clean single-sheet
+   * baseline, and wraps it in a {@link SampleSpreadsheetBuilder} for add-sheet/append-row
+   * sample-data construction (ref ALDO_GLF_AUDIT_RESULTS.md K-1 reuse-by-name pattern).
+   * @param {string} name Spreadsheet file name to look up or create.
+   * @param {GoogleAppsScript.Drive.Folder|null} [parentFolder=null] Scope as in {@link getOrCreateNamedSpreadsheet}.
+   * @returns {SampleSpreadsheetBuilder}
+   */
+  buildSampleSpreadsheet(name: string, parentFolder: FolderFiles | null = null) {
+    const spreadsheet = this.getOrCreateNamedSpreadsheet(name, parentFolder);
+    this.resetSpreadsheet(spreadsheet);
+    return new SampleSpreadsheetBuilder(spreadsheet);
+  }
+
+  /**
+   * Opens an existing spreadsheet by ID, resets it to a clean single-sheet baseline,
+   * and wraps it in a {@link SampleSpreadsheetBuilder} for sample-data construction.
+   * @param {string} spreadsheetId Existing spreadsheet ID.
+   * @returns {SampleSpreadsheetBuilder}
+   */
+  buildSampleSpreadsheetById(spreadsheetId: string) {
+    const spreadsheet = SpreadsheetApp.openById(spreadsheetId);
+    this.resetSpreadsheet(spreadsheet);
+    return new SampleSpreadsheetBuilder(spreadsheet);
+  }
+
+  /**
+   * Restores the test document to a baseline state by clearing all body content.
+   */
+  resetDocument() {
+    const doc = this.getDocument();
+    try {
+      this._clearBodySafely(doc.getBody());
+    } catch (_e) {
+      // If still fails (e.g. Document is closed), reopen and try again
+      this._document = DocumentApp.openById(doc.getId());
+      this._clearBodySafely(this._document.getBody());
+    }
+  }
+
+  /**
+   * @description Body.clear() can throw "Can't remove the last paragraph in a
+   * document section" when the body's last child isn't a plain Paragraph -
+   * e.g. a ListItem left behind by a prior test's native list-loop expansion
+   * (Paragraph.copy()/insertListItem() on this persistent, reused test doc).
+   * Append a fresh empty paragraph first so clear() always has a real
+   * Paragraph to collapse the body down to, then retry.
+   * @param {GoogleAppsScript.Document.Body} body
+   * @private
+   */
+  _clearBodySafely(body: GoogleAppsScript.Document.Body) {
+    try {
+      body.clear();
+    } catch (e) {
+      if (!/last paragraph/.test((e as Error).message)) {
+        throw e;
+      }
+      body.appendParagraph('');
+      body.clear();
+    }
+  }
+
+  /**
+   * Orchestrates a full state reset across all persistent test artifacts.
+   */
+  resetAll() {
+    this.resetSpreadsheet();
+    this.resetDocument();
+    this._log('TestContext reset completed.');
+  }
+
+  /**
+   * Routes diagnostic messages to the environment-appropriate output.
+   * @private
+   * @param {string} message Diagnostic content.
+   */
+  _log(message: string) {
+    if (typeof Logger !== 'undefined') {
+      Logger.log(message);
+    } else {
+      console.log(message);
+    }
+  }
+}
+
+// Singleton instance
+export const testContext = new TestContext();
