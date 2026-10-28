@@ -119,6 +119,8 @@ The main entry point for controlling jobs.
 - **`getStatus(jobName)`**: Returns `{ state: 'running'|'completed', percentage: 50 }`.
 - **`cancelJob(jobName)`**: Flags a job for cancellation. It will stop at the next `yield`.
 
+`registryCallback` receives the `JobQueue`: call `queue.setPurgeOnComplete(true)` there to delete every ScriptProperties key of the job when it completes successfully (default keeps the `completed` tombstone; afterwards `getStatus` reports `not_started`). Persisted in the job config, so it also applies to trigger resumes.
+
 ### 2. JobDefinitionRegistry
 
 Allows decoupling of job definitions from execution logic.
