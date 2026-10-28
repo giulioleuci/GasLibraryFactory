@@ -25,10 +25,7 @@ declare const global: typeof globalThis &
   Pick<typeof import('@GasOnlineTestFramework'), 'EnhancedTestRunner' | 'SmartAssert'> &
   Pick<typeof import('@GasExpressionEngineLib'), 'ExpressionEngineService'> &
   Pick<typeof import('@RoleResolutionLib'), 'ScopeType' | 'ActorType'> &
-  Pick<typeof import('@ComposableContentLib'), 'OutputFormat'> & {
-    ProcessState?: unknown;
-    StepState?: unknown;
-  };
+  Pick<typeof import('@ComposableContentLib'), 'OutputFormat'>;
 export {};
 /**
  * Smoke Tests
@@ -303,14 +300,6 @@ describe('Smoke Tests', () => {
   // ─── Enums and constants ────────────────────────────────────────────
 
   describe('Enums and constants', () => {
-    it('ProcessState should have expected values', () => {
-      expect(global.ProcessState).toBeDefined();
-    });
-
-    it('StepState should have expected values', () => {
-      expect(global.StepState).toBeDefined();
-    });
-
     it('ScopeType should have expected values', () => {
       expect(global.ScopeType).toBeDefined();
     });

@@ -5,7 +5,6 @@
   },
   "include": [
     "ComposableContentLib/**/*",
-    "GasProcessMonitorLib/**/*",
     "ContextEngine/**/*",
     "CoreUtilsLib/**/*",
     "DomainRepositoryLib/**/*",

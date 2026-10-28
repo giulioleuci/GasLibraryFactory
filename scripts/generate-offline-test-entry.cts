@@ -80,7 +80,6 @@ const LIBRARIES = [
   'DomainRepositoryLib',
   'RoleResolutionLib',
   'ComposableContentLib',
-  'GasProcessMonitorLib',
   'GasOnlineTestFramework',
   'GasSchemaValidatorLib'
 ];

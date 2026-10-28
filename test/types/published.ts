@@ -15,7 +15,6 @@ import {
 // Resolve every public entry through the emitted declaration aliases.
 type PublishedLibraries = [
   typeof import('@CoreUtilsLib'),
-  typeof import('@GasProcessMonitorLib'),
   typeof import('@GasResilienceLib'),
   typeof import('@GasSchemaValidatorLib'),
   typeof import('@GoogleApiWrapper'),

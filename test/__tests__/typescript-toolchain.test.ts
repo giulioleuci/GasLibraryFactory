@@ -37,7 +37,6 @@ const libraries = [
   'GasDataImporter',
   'GasExpressionEngineLib',
   'GasOnlineTestFramework',
-  'GasProcessMonitorLib',
   'GasResilienceLib',
   'GasSchemaValidatorLib',
   'GoogleApiWrapper',
@@ -128,9 +127,9 @@ test('handwritten JavaScript remains limited to the native configuration entry p
   ).toEqual([]);
 });
 
-test('all sixteen public barrels have generated declaration roots', () => {
+test('all fifteen public barrels have generated declaration roots', () => {
   const project = compilerProject('tsconfig.declarations.json');
-  expect(libraries).toHaveLength(16);
+  expect(libraries).toHaveLength(15);
   expect(project.options.declaration).toBe(true);
   expect(project.options.emitDeclarationOnly).toBe(true);
   for (const library of libraries) {
@@ -172,9 +171,9 @@ test('Jest retains the normalized original suite discovery', () => {
     .sort();
   // Pin the saved pre-migration discovery, excluding this new tooling suite.
   // New/deleted/renamed suites require an explicitly reviewed fixture update.
-  expect(original).toHaveLength(214);
+  expect(original).toHaveLength(212);
   expect(createHash('sha256').update(original.join('\n')).digest('hex')).toBe(
-    '5109bc260cd41a84f1af2e5d357408f0d368cd8ebfa672f173906e9af709d599'
+    '84cd4e3fee1498112b2a82dce18efd32a2fdbe5a7a76acb371396c5072a5246a'
   );
 });
 

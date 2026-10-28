@@ -63,9 +63,6 @@ module.exports = {
     '^@RoleResolutionLib$': '<rootDir>/RoleResolutionLib/index',
     '^@RoleResolutionLib/(.*?)(?:\\.js)?$': '<rootDir>/RoleResolutionLib/$1',
 
-    '^@GasProcessMonitorLib$': '<rootDir>/GasProcessMonitorLib/index',
-    '^@GasProcessMonitorLib/(.*?)(?:\\.js)?$': '<rootDir>/GasProcessMonitorLib/$1',
-
     '^@ComposableContentLib$': '<rootDir>/ComposableContentLib/index',
     '^@ComposableContentLib/(.*?)(?:\\.js)?$': '<rootDir>/ComposableContentLib/$1',
 
@@ -97,7 +94,6 @@ module.exports = {
     'DomainRepositoryLib/src/**/*.ts',
     'RoleResolutionLib/src/**/*.ts',
     'ComposableContentLib/src/**/*.ts',
-    'GasProcessMonitorLib/src/**/*.ts',
     'CoreUtilsLib/index.ts',
     'GasResilienceLib/index.ts',
     'GoogleApiWrapper/index.ts',
@@ -111,7 +107,6 @@ module.exports = {
     'DomainRepositoryLib/index.ts',
     'RoleResolutionLib/index.ts',
     'ComposableContentLib/index.ts',
-    'GasProcessMonitorLib/index.ts',
 
     // Exclude test files
     '!**/__tests__/**',

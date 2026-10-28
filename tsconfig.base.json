@@ -43,9 +43,7 @@
       "@SheetDBLib/*": ["SheetDBLib/*"],
       "@WorkspaceTemplateEngine": ["WorkspaceTemplateEngine/index"],
       "@WorkspaceTemplateEngine/*": ["WorkspaceTemplateEngine/*"],
-      "jsep": ["types/vendor/jsep.d.cts"],
-      "@GasProcessMonitorLib": ["GasProcessMonitorLib/index"],
-      "@GasProcessMonitorLib/*": ["GasProcessMonitorLib/*"]
+      "jsep": ["types/vendor/jsep.d.cts"]
     }
   }
 }

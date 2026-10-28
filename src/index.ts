@@ -27,7 +27,6 @@ import * as GasSchemaValidatorLib from '@GasSchemaValidatorLib';
 import * as GasOnlineTestFramework from '@GasOnlineTestFramework';
 import * as RoleResolutionLib from '@RoleResolutionLib';
 import * as ComposableContentLib from '@ComposableContentLib';
-import * as GasProcessMonitorLib from '@GasProcessMonitorLib';
 
 // Save native GAS service references before Object.assign overwrites them.
 // The wrapper classes (CacheService, PropertiesService, LockService) exported by GoogleApiWrapper
@@ -51,7 +50,6 @@ Object.assign(global, GasSchemaValidatorLib);
 Object.assign(global, GasOnlineTestFramework);
 Object.assign(global, RoleResolutionLib);
 Object.assign(global, ComposableContentLib);
-Object.assign(global, GasProcessMonitorLib);
 
 function initializeServices() {
   // Unified DI: delegate to GoogleApiWrapper's ServiceFactory (lazy singletons)
@@ -87,6 +85,5 @@ export {
   GasOnlineTestFramework,
   RoleResolutionLib,
   ComposableContentLib,
-  GasProcessMonitorLib,
   initializeServices
 };

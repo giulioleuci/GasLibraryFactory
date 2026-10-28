@@ -33,9 +33,7 @@
       "@SheetDBLib/*": [".cache/types/SheetDBLib/*"],
       "@WorkspaceTemplateEngine": [".cache/types/WorkspaceTemplateEngine/index.d.ts"],
       "@WorkspaceTemplateEngine/*": [".cache/types/WorkspaceTemplateEngine/*"],
-      "jsep": [".cache/types/types/vendor/jsep.d.cts"],
-      "@GasProcessMonitorLib": [".cache/types/GasProcessMonitorLib/index.d.ts"],
-      "@GasProcessMonitorLib/*": [".cache/types/GasProcessMonitorLib/*"]
+      "jsep": [".cache/types/types/vendor/jsep.d.cts"]
     }
   },
   "include": ["test/types/published.ts"]

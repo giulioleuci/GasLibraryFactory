@@ -33,7 +33,6 @@ const LIBRARIES = [
   'WorkspaceTemplateEngine',
   'RoleResolutionLib',
   'ComposableContentLib',
-  'GasProcessMonitorLib',
   'GasSchemaValidatorLib'
 ];
 

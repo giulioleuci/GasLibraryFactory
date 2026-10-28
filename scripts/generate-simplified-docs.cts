@@ -102,7 +102,6 @@ const LIBRARIES = [
   'SheetDBLib',
   'RoleResolutionLib',
   'ComposableContentLib',
-  'GasProcessMonitorLib',
   'JobRunnerLib',
   'PipelineFramework',
   'ContextEngine',

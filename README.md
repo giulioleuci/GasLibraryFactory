@@ -4,7 +4,7 @@
 [![License: GPL v3](https://img.shields.io/badge/License-GPLv3-blue.svg)](https://www.gnu.org/licenses/gpl-3.0)
 [![Build: Webpack 5](https://img.shields.io/badge/Build-Webpack%205-blue.svg)](https://webpack.js.org/)
 
-A high-performance, enterprise-grade monorepo for **Google Apps Script (GAS)** development. This project implements a modern development lifecycle for 16 interconnected libraries, utilizing **ES Modules**, **Webpack bundling**, and advanced **GAS V8 compatibility transformations**.
+A high-performance, enterprise-grade monorepo for **Google Apps Script (GAS)** development. This project implements a modern development lifecycle for 15 interconnected libraries, utilizing **ES Modules**, **Webpack bundling**, and advanced **GAS V8 compatibility transformations**.
 
 ---
 
@@ -22,7 +22,7 @@ The project follows a **Clean Architecture** approach with a strictly layered de
 
 ---
 
-## 📚 The 16 Libraries
+## 📚 The 15 Libraries
 
 ### Layer 0-1: Core & Infrastructure
 
@@ -46,10 +46,6 @@ The project follows a **Clean Architecture** approach with a strictly layered de
 - **RoleResolutionLib**: Logic for resolving complex permission and role-based access control (RBAC) in Workspace apps.
 - **ComposableContentLib**: A framework for building modular, reusable UI components and dynamic content.
 - **GasDataImporter**: Specialized logic for handling large-scale data ingestion and validation.
-
-### Monitoring
-
-- **GasProcessMonitorLib**: Cache-backed job progress and step tracking, durable lifecycle state, and polling dashboard sidebars. Ported to TypeScript with its original lifecycle and UI tests.
 
 ### Testing
 
@@ -108,10 +104,6 @@ clasp login
 - **Testing**: `npm run build:testing` (Readable code, includes online test files).
 - **Offline Verification**: `npm run build:testoffline` (Runs full Jest suite against source + bundle).
 
-### Monitoring
-
-- **GasProcessMonitorLib**: Cache-backed job progress and step tracking, durable lifecycle state, and polling dashboard sidebars. Ported to TypeScript with its original lifecycle and UI tests.
-
 ### Testing
 
 - **Local**: `npm test` (Unit and integration tests using mocks and fakes).
@@ -142,7 +134,7 @@ Created with ❤️ by **GasLibraryFactory**
 
 ## TypeScript checks and documentation
 
-The sixteen library barrels, implementations, test SDKs, Jest suites, and maintained online tests are TypeScript. Relative `.js` import specifiers resolve to their `.ts` sources and remain valid in emitted declarations. GAS code is checked with ES2020 and Google Apps Script types; Node tooling has its own compiler project.
+The fifteen library barrels, implementations, test SDKs, Jest suites, and maintained online tests are TypeScript. Relative `.js` import specifiers resolve to their `.ts` sources and remain valid in emitted declarations. GAS code is checked with ES2020 and Google Apps Script types; Node tooling has its own compiler project.
 
 ```bash
 npm run typecheck          # Libraries and Jest sources

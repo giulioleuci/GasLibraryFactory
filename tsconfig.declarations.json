@@ -9,7 +9,6 @@
   },
   "include": [
     "ComposableContentLib/index.ts",
-    "GasProcessMonitorLib/index.ts",
     "ContextEngine/index.ts",
     "CoreUtilsLib/index.ts",
     "DomainRepositoryLib/index.ts",

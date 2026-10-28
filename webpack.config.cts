@@ -58,7 +58,6 @@ export = (env: { readable?: boolean } = {}, _argv: object = {}): Configuration =
         '@GasOnlineTestFramework': path.resolve(rootDir, 'GasOnlineTestFramework'),
         '@RoleResolutionLib': path.resolve(rootDir, 'RoleResolutionLib'),
         '@ComposableContentLib': path.resolve(rootDir, 'ComposableContentLib'),
-        '@GasProcessMonitorLib': path.resolve(rootDir, 'GasProcessMonitorLib'),
         '@GasSchemaValidatorLib': path.resolve(rootDir, 'GasSchemaValidatorLib')
       }
     },
