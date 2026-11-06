@@ -938,6 +938,53 @@ describe('TableService - Comprehensive Test Suite', () => {
     });
   });
 
+  describe('Virtual primary key (composite key) flush', () => {
+    const raw = [
+      ['STUDENTE', 'TIPO', 'NOTE'],
+      ['a@x.it', 'PDP', 'n1'],
+      ['a@x.it', 'PEI', 'n2'],
+      ['b@x.it', 'PDP', 'n3']
+    ];
+
+    beforeEach(() => {
+      // The virtual PK has no sheet column: any single-column read of it comes back empty.
+      mocks.spreadsheetService.getRanges.mockImplementation(
+        (_id: string, range: string | string[]) =>
+          /!A:[A-Z]+$/.test(String(range)) ? raw : raw.map(() => [''])
+      );
+      table = new TableService(
+        'PIANI',
+        'SPREADSHEET_ID_123',
+        mocks.spreadsheetService,
+        mocks.logger,
+        mocks.utils,
+        raw
+      );
+      table.defineVirtualColumn('__PK', (r) => `${r!.STUDENTE}::${r!.TIPO}`);
+      table.setPrimaryKey('__PK');
+    });
+
+    it('updates the exact sheet row identified by the computed key', () => {
+      table.updateRowById('a@x.it::PEI', { NOTE: 'nuova' });
+      table.flush();
+
+      expect(mocks.spreadsheetService.updateRanges).toHaveBeenCalledWith('SPREADSHEET_ID_123', [
+        { range: 'PIANI!A3:C3', values: [['a@x.it', 'PEI', 'nuova']] }
+      ]);
+    });
+
+    it('deletes the exact sheet row identified by the computed key', () => {
+      table.deleteRowById('b@x.it::PDP');
+      table.flush();
+
+      expect(mocks.spreadsheetService.deleteRows).toHaveBeenCalledWith(
+        'SPREADSHEET_ID_123',
+        'PIANI',
+        [4]
+      );
+    });
+  });
+
   describe('Virtual Columns', () => {
     beforeEach(() => {
       table = new TableService(

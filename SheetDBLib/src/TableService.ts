@@ -793,12 +793,9 @@ export class TableService<Row extends object = RowRecord> {
       // We must query the spreadsheet directly or keep track of mapping.
       // To simplify, if we just use a column search? No, deleteRows requires indices.
       // Instead of manual indices, we can fetch all IDs from the sheet right before flush.
-      const pkColLetter = this._getPkColumnLetter();
-      const pkRange = `'${this.sheetName}'!${pkColLetter}:${pkColLetter}`;
-      const pkColumnArray = this.spreadsheetService.getRanges(this.spreadsheetId, pkRange) || [];
+      const pkValues = this._readSheetPkValues();
 
       const realRowIndicesToDelete = [];
-      const pkValues = pkColumnArray.map((r) => r[0]);
 
       for (const id of deleteIds) {
         // find index in pkValues. It's 0-indexed, but sheets are 1-indexed. row 1 is header, so values start at index 1 -> row 2.
@@ -825,10 +822,7 @@ export class TableService<Row extends object = RowRecord> {
       const physicalColumns = this.columns.filter((col) => !this._virtualColumns[col]);
 
       // Need current row indices from remote to safely update
-      const pkColLetter = this._getPkColumnLetter();
-      const pkRange = `'${this.sheetName}'!${pkColLetter}:${pkColLetter}`;
-      const pkColumnArray = this.spreadsheetService.getRanges(this.spreadsheetId, pkRange) || [];
-      const pkValues = pkColumnArray.map((r) => (r ? r[0] : null));
+      const pkValues = this._readSheetPkValues();
 
       for (const [id, rowToUpdate] of this._updateQueue.entries()) {
         const idx = pkValues.findIndex((val) => val == id);
@@ -1211,6 +1205,40 @@ export class TableService<Row extends object = RowRecord> {
       tempIndex = Math.floor((tempIndex - modulo) / TableService.ALPHABET_SIZE);
     }
     return column;
+  }
+
+  /**
+   * @function _readSheetPkValues
+   * @description PK value of every sheet row as it is NOW on the sheet (index 0 = header row).
+   * A virtual PK has no sheet column, so it is recomputed from the physical columns.
+   * @returns {Array}
+   * @private
+   */
+  _readSheetPkValues(): unknown[] {
+    const virtualPk = this._virtualColumns[this._keyField];
+    if (virtualPk === undefined) {
+      const pkColLetter = this._getPkColumnLetter();
+      const pkRange = `'${this.sheetName}'!${pkColLetter}:${pkColLetter}`;
+      const pkColumnArray = this.spreadsheetService.getRanges(this.spreadsheetId, pkRange) || [];
+      return pkColumnArray.map((r) => (r ? r[0] : null));
+    }
+    const physical = this.columns.filter((col) => !this._virtualColumns[col]);
+    const lastLetter = this._convertIndexToColumn(physical.length);
+    const data =
+      this.spreadsheetService.getRanges(
+        this.spreadsheetId,
+        `'${this.sheetName}'!A:${lastLetter}`
+      ) || [];
+    return data.map((r, i) => {
+      if (i === 0 || !r) {
+        return null; // header / hole
+      }
+      const row: RowRecord = {};
+      physical.forEach((col, j) => {
+        row[col] = r[j] ?? '';
+      });
+      return virtualPk(row);
+    });
   }
 
   /**
