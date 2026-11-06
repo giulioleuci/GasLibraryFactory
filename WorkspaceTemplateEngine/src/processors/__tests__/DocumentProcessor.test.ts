@@ -758,6 +758,28 @@ describe('DocumentProcessor - Core Functionality Tests (Reverse-Order Strategy)'
         fields: 'bold'
       });
     });
+
+    it('replaces only the placeholder span when the paragraph holds a non-text element (U+FFFC), keeping it in place', () => {
+      // 'PFP[1]: {{{x}}}\n' — the footnote reference is U+FFFC at offset 3.
+      const originalText = 'PFP￼: {{{x}}}\n';
+      const op = {
+        type: 'textSubstitution' as const,
+        index: 100,
+        originalText,
+        newText: 'PFP￼: Gold\n',
+        segments: [
+          { type: 'text' as const, raw: 'PFP￼: ', rendered: 'PFP￼: ', rawStart: 0, rawEnd: 6 },
+          { type: 'value' as const, raw: '{{{x}}}', rendered: 'Gold', rawStart: 6, rawEnd: 13 },
+          { type: 'text' as const, raw: '\n', rendered: '\n', rawStart: 13, rawEnd: 14 }
+        ],
+        sourceRuns: []
+      };
+
+      expect(processor._createTextSubstitutionRequests(op)).toEqual([
+        { deleteContentRange: { range: { startIndex: 106, endIndex: 113 } } },
+        { insertText: { location: { index: 106 }, text: 'Gold' } }
+      ]);
+    });
   });
 
   // ===================================================================

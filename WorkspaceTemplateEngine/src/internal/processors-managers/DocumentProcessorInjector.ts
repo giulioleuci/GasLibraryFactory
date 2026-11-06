@@ -21,6 +21,9 @@ import type {
 
 import { TextStyleMapper } from '@GoogleApiWrapper';
 
+/** Placeholder GoogleApiWrapper's DocumentContentExtractor emits for each index of a non-text element. */
+const OBJECT_CHAR = '￼';
+
 export class DocumentProcessorInjector {
   declare facade: Pick<
     DocumentProcessor,
@@ -60,7 +63,8 @@ export class DocumentProcessorInjector {
     }
     const segments = this.facade.mustache.renderSegments!(template, data as object | null);
     return segments.map((seg) => ({
-      rendered: seg.rendered != null ? String(seg.rendered) : '',
+      // U+FFFC stands for a non-text element (see DocumentContentExtractor); never insert it as text.
+      rendered: seg.rendered != null ? String(seg.rendered).split(OBJECT_CHAR).join('') : '',
       style: this._styleAt(seg.rawStart, sourceRuns)
     }));
   }
@@ -316,6 +320,9 @@ export class DocumentProcessorInjector {
   }
 
   _createTextSubstitutionRequests(op: TextSubstitution): DocumentRequest[] {
+    if (op.segments && op.segments.length > 0 && op.originalText.includes(OBJECT_CHAR)) {
+      return this._createSpanSubstitutionRequests(op);
+    }
     let originalText = op.originalText,
       newText = op.newText;
     if (originalText.endsWith('\n')) {
@@ -376,6 +383,56 @@ export class DocumentProcessorInjector {
         }
         cursor += rendered.length;
         consumed += rendered.length;
+      }
+    }
+    return requests;
+  }
+
+  /**
+   * @description Text substitution for a paragraph/cell that contains non-text
+   * elements (U+FFFC: footnote references, inline images, chips). Rewriting the
+   * whole paragraph would delete those elements, so only each changed `value`
+   * segment's own span is replaced, last to first so earlier indices stay valid.
+   * ponytail: a section/partial whose raw span itself contains an element still
+   * deletes it (its rendered copy is stripped of U+FFFC); split such paragraphs.
+   * @param {TextSubstitution} op Operation carrying scanner segments.
+   * @returns {Array<Object>} deleteContentRange/insertText/updateTextStyle requests.
+   * @private
+   */
+  _createSpanSubstitutionRequests(op: TextSubstitution): DocumentRequest[] {
+    // Never delete the paragraph-terminating \n.
+    const limit = op.originalText.endsWith('\n')
+      ? op.originalText.length - 1
+      : op.originalText.length;
+    const requests: DocumentRequest[] = [];
+    for (const seg of [...op.segments!].reverse()) {
+      if (seg.type !== 'value') {
+        continue;
+      }
+      const startIndex = op.index + seg.rawStart;
+      const endIndex = op.index + Math.min(seg.rawEnd, limit);
+      let text = String(seg.rendered ?? '')
+        .split(OBJECT_CHAR)
+        .join('');
+      if (seg.rawEnd > limit) {
+        text = text.replace(/\n$/, '');
+      }
+      if (endIndex > startIndex) {
+        requests.push({ deleteContentRange: { range: { startIndex, endIndex } } });
+      }
+      if (text) {
+        requests.push({ insertText: { location: { index: startIndex }, text } });
+        const style = this._styleAt(seg.rawStart, op.sourceRuns || []);
+        const fields = Object.keys(style);
+        if (fields.length > 0) {
+          requests.push({
+            updateTextStyle: {
+              range: { startIndex, endIndex: startIndex + text.length },
+              textStyle: style,
+              fields: fields.join(',')
+            }
+          });
+        }
       }
     }
     return requests;

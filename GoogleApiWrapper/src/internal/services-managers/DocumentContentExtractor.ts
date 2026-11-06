@@ -101,7 +101,10 @@ export class DocumentContentExtractor {
 
   /**
    * @private
-   * @description Aggregates all text runs within a paragraph element.
+   * @description Aggregates all text runs within a paragraph element. Non-text
+   * elements (footnote references, inline images, chips, auto text, breaks)
+   * occupy document indices too, so each is rendered as U+FFFC repeated over
+   * its index span: string offsets then equal document-index offsets.
    * @param {Object} paragraph Native Docs API paragraph object.
    * @returns {string} Concatenated plain text.
    */
@@ -110,14 +113,16 @@ export class DocumentContentExtractor {
       return '';
     }
 
-    return paragraph.elements
-      .map((elem) => {
-        if (elem.textRun && elem.textRun.content) {
-          return elem.textRun.content;
-        }
-        return '';
-      })
-      .join('');
+    return paragraph.elements.map((elem) => this._elementText(elem)).join('');
+  }
+
+  /** @private Text of one paragraph element; U+FFFC placeholder(s) for non-text elements. */
+  _elementText(elem: GoogleAppsScript.Docs.Schema.ParagraphElement) {
+    if (elem.textRun) {
+      return elem.textRun.content || '';
+    }
+    const span = (elem.endIndex ?? 0) - (elem.startIndex ?? 0);
+    return '￼'.repeat(span > 0 ? span : 1);
   }
 
   /**
@@ -144,6 +149,8 @@ export class DocumentContentExtractor {
           style: elem.textRun.textStyle || {}
         });
         offset += text.length;
+      } else {
+        offset += this._elementText(elem).length;
       }
     }
     return runs;

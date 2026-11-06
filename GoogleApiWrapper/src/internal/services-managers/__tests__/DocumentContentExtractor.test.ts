@@ -217,6 +217,21 @@ describe('DocumentContentExtractor', () => {
       ]);
     });
 
+    it('counts non-text elements (footnote refs, inline images) as U+FFFC so offsets match document indices', () => {
+      const paragraph = {
+        elements: [
+          { startIndex: 10, endIndex: 13, textRun: { content: 'PFP', textStyle: {} } },
+          { startIndex: 13, endIndex: 14, footnoteReference: { footnoteId: 'f1' } },
+          { startIndex: 14, endIndex: 23, textRun: { content: ': {{x}}}\n', textStyle: {} } }
+        ]
+      };
+      expect(extractor._extractParagraphText(paragraph)).toBe('PFP￼: {{x}}}\n');
+      expect(extractor._extractParagraphRuns(paragraph)).toEqual([
+        { text: 'PFP', start: 0, end: 3, style: {} },
+        { text: ': {{x}}}\n', start: 4, end: 13, style: {} }
+      ]);
+    });
+
     it('returns an empty array for a paragraph with no elements', () => {
       expect(extractor._extractParagraphRuns({})).toEqual([]);
       expect(extractor._extractParagraphRuns(null)).toEqual([]);
