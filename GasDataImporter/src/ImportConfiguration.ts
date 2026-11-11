@@ -228,12 +228,19 @@ class ImportConfiguration {
       );
     }
 
+    const key = (load as LoadConfig).conflictKey;
+    if (key !== undefined) {
+      const columns = Array.isArray(key) ? key : [key];
+      if (
+        !columns.length ||
+        columns.some((column) => typeof column !== 'string' || !column.trim())
+      ) {
+        throw new ConfigurationError('Invalid conflict key', 'INVALID_CONFLICT_KEY');
+      }
+    }
     // Validate conflict key for strategies that need it
     if (['UPDATE_ONLY', 'UPSERT', 'OVERWRITE'].includes((load as LoadConfig).conflictResolution)) {
-      if (
-        !(load as LoadConfig).conflictKey ||
-        typeof (load as LoadConfig).conflictKey !== 'string'
-      ) {
+      if (!(load as LoadConfig).conflictKey) {
         throw new ConfigurationError(
           `Conflict resolution strategy "${(load as LoadConfig).conflictResolution}" requires a conflictKey`,
           'MISSING_CONFLICT_KEY',

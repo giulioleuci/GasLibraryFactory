@@ -633,7 +633,7 @@ windows and resumed with `ImportEngine.runImportChunk`.
    * @param {Object} loadConfig persistence parameters.
    * @param {string} loadConfig.targetTable Destination table identifier.
    * @param {string} loadConfig.conflictResolution resolution strategy (INSERT_ONLY|UPDATE_ONLY|UPSERT|OVERWRITE).
-   * @param {string} [loadConfig.conflictKey] Attribute used for collision detection.
+   * @param {string|string[]} [loadConfig.conflictKey] Attribute or complete tuple used for collision detection. Composite values must be nonblank; string components are compared trimmed. INSERT_ONLY preserves existing rows and deduplicates incoming tuples.
    * @param {Object} [loadConfig.updateIfNewer] Optional timestamp comparison rules.
    * @returns {Object} Operational statistics.
    * @throws {LoadError} If database is inaccessible or strategy execution fails.
@@ -680,7 +680,7 @@ windows and resumed with `ImportEngine.runImportChunk`.
    * @param {Object} table Target persistence table.
    * @param {Array<Object>} data Records to process (may be empty).
    * @param {string} strategy Resolution strategy (INSERT_ONLY|UPDATE_ONLY|UPSERT|OVERWRITE).
-   * @param {string} conflictKey Attribute used for collision detection.
+   * @param {string|string[]} conflictKey Attribute used for collision detection.
    * @param {Object} updateIfNewer Optional timestamp comparison rules.
    * @param {Function} overwriteHandler OVERWRITE implementation: `_overwrite`
    *   for a single-shot load or the first chunk of a chunked run, `_appendAll`
@@ -700,7 +700,7 @@ windows and resumed with `ImportEngine.runImportChunk`.
    * @private
    * @param {Object} table target persistence table.
    * @param {Array<Object>} data Records to evaluate.
-   * @param {string} conflictKey Attribute for collision detection.
+   * @param {string|string[]} conflictKey Attribute for collision detection.
    * @returns {Object} statistics.
    */
 ```
@@ -715,7 +715,7 @@ windows and resumed with `ImportEngine.runImportChunk`.
    * @private
    * @param {Object} table target persistence table.
    * @param {Array<Object>} data Records to evaluate.
-   * @param {string} conflictKey Attribute for record matching.
+   * @param {string|string[]} conflictKey Attribute for record matching.
    * @param {Object} updateIfNewer Timestamp comparison configuration.
    * @returns {Object} statistics.
    */
@@ -731,7 +731,7 @@ windows and resumed with `ImportEngine.runImportChunk`.
    * @private
    * @param {Object} table target persistence table.
    * @param {Array<Object>} data Records to evaluate.
-   * @param {string} conflictKey Attribute for matching and detection.
+   * @param {string|string[]} conflictKey Attribute for matching and detection.
    * @param {Object} updateIfNewer Timestamp comparison configuration.
    * @returns {Object} statistics.
    */
@@ -747,7 +747,7 @@ windows and resumed with `ImportEngine.runImportChunk`.
    * @private
    * @param {Object} table target persistence table.
    * @param {Array<Object>} data Records to insert.
-   * @param {string} conflictKey Attribute for row identification.
+   * @param {string|string[]} conflictKey Attribute for row identification.
    * @returns {Object} statistics.
    */
 ```
@@ -790,6 +790,14 @@ windows and resumed with `ImportEngine.runImportChunk`.
    * @param {string} timestampColumn Name of the attribute containing temporal metadata.
    * @returns {boolean} True if the update should proceed.
    */
+```
+---
+#### METHOD: Loader._conflictValue
+- **Scope:** instance
+- **LLM Call Syntax:** `loader._conflictValue();`
+- **Pure JSDoc:**
+```javascript
+/** No comment available */
 ```
 ---
 #### METHOD: Loader._validateLoadConfig

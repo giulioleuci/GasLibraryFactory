@@ -1027,3 +1027,30 @@ describe('ImportConfiguration - Comprehensive Test Suite', () => {
     });
   });
 });
+
+test.each([[[]], [['']], [['STUDENTE', ' ']]])(
+  'rejects invalid composite key %j',
+  (conflictKey) => {
+    expect(
+      () =>
+        new ImportConfiguration({
+          name: 'campaign',
+          source: { type: 'SheetById', config: { sheetId: 'source' } },
+          load: { targetTable: 'CARENZE', conflictResolution: 'INSERT_ONLY', conflictKey }
+        })
+    ).toThrow();
+  }
+);
+test('accepts a complete composite key', () => {
+  expect(
+    new ImportConfiguration({
+      name: 'campaign',
+      source: { type: 'SheetById', config: { sheetId: 'source' } },
+      load: {
+        targetTable: 'CARENZE',
+        conflictResolution: 'INSERT_ONLY',
+        conflictKey: ['STUDENTE', 'ID_RILEVAZIONE']
+      }
+    }).getLoad().conflictKey
+  ).toEqual(['STUDENTE', 'ID_RILEVAZIONE']);
+});

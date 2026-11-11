@@ -925,3 +925,61 @@ describe('Loader - Comprehensive Test Suite', () => {
     });
   });
 });
+
+describe('composite campaign INSERT_ONLY', () => {
+  const logger = { info: jest.fn(), debug: jest.fn(), warn: jest.fn(), error: jest.fn() };
+  test('preserves notified rows on replay and adds later campaigns once', () => {
+    const rows: ImportRow[] = [];
+    const table = {
+      getAllRows: () => rows,
+      insertRows: (batch: ImportRow[]) => rows.push(...batch),
+      updateRowById: jest.fn(),
+      deleteRowById: jest.fn()
+    };
+    const loader = new Loader<ImportRow>(logger, { tables: { CARENZE: table }, save: jest.fn() });
+    const config = {
+      targetTable: 'CARENZE',
+      conflictResolution: 'INSERT_ONLY' as const,
+      conflictKey: ['STUDENTE', 'ID_RILEVAZIONE']
+    };
+    const november = [
+      { STUDENTE: 'a', ID_RILEVAZIONE: 'NOV', PROGRESSIVO: 1, DATA: '16/11' },
+      { STUDENTE: 'b', ID_RILEVAZIONE: 'NOV', PROGRESSIVO: 1, DATA: '19/11' }
+    ];
+    loader.load([...november, november[0]!], config);
+    rows[0]!.NOTIFICATO = '2026-11-20';
+    loader.load(
+      november.map((row) => ({ ...row, ID_RILEVAZIONE: ' NOV ' })),
+      config
+    );
+    loader.loadChunk(november, config, { isFirstChunk: false });
+    loader.load([{ STUDENTE: 'a', ID_RILEVAZIONE: 'FEB', PROGRESSIVO: 2 }], config);
+    expect(rows).toHaveLength(3);
+    expect(rows[0]).toMatchObject({ PROGRESSIVO: 1, NOTIFICATO: '2026-11-20' });
+  });
+  test.each([undefined, '', '   '])(
+    'rejects missing composite component %s before writes',
+    (campaign) => {
+      const insertRows = jest.fn();
+      const loader = new Loader<ImportRow>(logger, {
+        tables: {
+          CARENZE: {
+            getAllRows: () => [],
+            insertRows,
+            updateRowById: jest.fn(),
+            deleteRowById: jest.fn()
+          }
+        },
+        save: jest.fn()
+      });
+      expect(() =>
+        loader.load([{ STUDENTE: 'a', ID_RILEVAZIONE: campaign }], {
+          targetTable: 'CARENZE',
+          conflictResolution: 'INSERT_ONLY',
+          conflictKey: ['STUDENTE', 'ID_RILEVAZIONE']
+        })
+      ).toThrow();
+      expect(insertRows).not.toHaveBeenCalled();
+    }
+  );
+});

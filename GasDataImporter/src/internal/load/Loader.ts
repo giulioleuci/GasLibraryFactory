@@ -46,7 +46,7 @@ class Loader<Row extends object = ImportRow> {
    * @param {Object} loadConfig persistence parameters.
    * @param {string} loadConfig.targetTable Destination table identifier.
    * @param {string} loadConfig.conflictResolution resolution strategy (INSERT_ONLY|UPDATE_ONLY|UPSERT|OVERWRITE).
-   * @param {string} [loadConfig.conflictKey] Attribute used for collision detection.
+   * @param {string|string[]} [loadConfig.conflictKey] Attribute or complete tuple used for collision detection. Composite values must be nonblank; string components are compared trimmed. INSERT_ONLY preserves existing rows and deduplicates incoming tuples.
    * @param {Object} [loadConfig.updateIfNewer] Optional timestamp comparison rules.
    * @returns {Object} Operational statistics.
    * @throws {LoadError} If database is inaccessible or strategy execution fails.
@@ -208,7 +208,7 @@ class Loader<Row extends object = ImportRow> {
    * @param {Object} table Target persistence table.
    * @param {Array<Object>} data Records to process (may be empty).
    * @param {string} strategy Resolution strategy (INSERT_ONLY|UPDATE_ONLY|UPSERT|OVERWRITE).
-   * @param {string} conflictKey Attribute used for collision detection.
+   * @param {string|string[]} conflictKey Attribute used for collision detection.
    * @param {Object} updateIfNewer Optional timestamp comparison rules.
    * @param {Function} overwriteHandler OVERWRITE implementation: `_overwrite`
    *   for a single-shot load or the first chunk of a chunked run, `_appendAll`
@@ -220,12 +220,22 @@ class Loader<Row extends object = ImportRow> {
     table: ImportTable<Row>,
     data: Row[],
     strategy: string,
-    conflictKey: string | undefined,
+    conflictKey: string | string[] | undefined,
     updateIfNewer: UpdateIfNewer<Row>,
-    overwriteHandler: (table: ImportTable<Row>, data: Row[], conflictKey?: string) => LoadResult
+    overwriteHandler: (
+      table: ImportTable<Row>,
+      data: Row[],
+      conflictKey?: string | string[]
+    ) => LoadResult
   ) {
     if (data.length === 0) {
       return { success: true, inserted: 0, updated: 0, skipped: 0, deleted: 0, total: 0 };
+    }
+
+    if (Array.isArray(conflictKey)) {
+      for (const row of data) {
+        this._conflictValue(row, conflictKey);
+      }
     }
 
     switch (strategy) {
@@ -255,15 +265,26 @@ class Loader<Row extends object = ImportRow> {
    * @private
    * @param {Object} table target persistence table.
    * @param {Array<Object>} data Records to evaluate.
-   * @param {string} conflictKey Attribute for collision detection.
+   * @param {string|string[]} conflictKey Attribute for collision detection.
    * @returns {Object} statistics.
    */
-  _insertOnly(table: ImportTable<Row>, data: Row[], conflictKey: string | undefined) {
+  _insertOnly(table: ImportTable<Row>, data: Row[], conflictKey: string | string[] | undefined) {
     try {
       // OPTIMIZATION: Read existing keys once
       const existingRows = table.getAllRows();
       const existingKeys = new Set(
-        existingRows.map((row) => String((row as ImportRow)[conflictKey as string]))
+        existingRows
+          .filter(
+            (row) =>
+              !Array.isArray(conflictKey) ||
+              conflictKey.every(
+                (column) =>
+                  (row as ImportRow)[column] !== undefined &&
+                  (row as ImportRow)[column] !== null &&
+                  String((row as ImportRow)[column]).trim() !== ''
+              )
+          )
+          .map((row) => this._conflictValue(row, conflictKey))
       );
 
       // OPTIMIZATION: Separate data into insert vs skip buckets
@@ -271,12 +292,15 @@ class Loader<Row extends object = ImportRow> {
       let skipped = 0;
 
       for (const row of data) {
-        const keyValue = String((row as ImportRow)[conflictKey as string]);
+        const keyValue = this._conflictValue(row, conflictKey);
         if (existingKeys.has(keyValue)) {
           skipped++;
           this.logger.debug(`[Loader] Skipping existing record: ${conflictKey}=${keyValue}`);
         } else {
           rowsToInsert.push(row);
+          if (conflictKey !== undefined) {
+            existingKeys.add(keyValue);
+          }
         }
       }
 
@@ -309,14 +333,14 @@ class Loader<Row extends object = ImportRow> {
    * @private
    * @param {Object} table target persistence table.
    * @param {Array<Object>} data Records to evaluate.
-   * @param {string} conflictKey Attribute for record matching.
+   * @param {string|string[]} conflictKey Attribute for record matching.
    * @param {Object} updateIfNewer Timestamp comparison configuration.
    * @returns {Object} statistics.
    */
   _updateOnly(
     table: ImportTable<Row>,
     data: Row[],
-    conflictKey: string | undefined,
+    conflictKey: string | string[] | undefined,
     updateIfNewer: UpdateIfNewer<Row>
   ) {
     try {
@@ -324,7 +348,7 @@ class Loader<Row extends object = ImportRow> {
       const existingRows = table.getAllRows();
       const existingMap = new Map();
       for (const row of existingRows) {
-        existingMap.set(String((row as ImportRow)[conflictKey as string]), row);
+        existingMap.set(this._conflictValue(row, conflictKey), row);
       }
 
       let updated = 0;
@@ -332,7 +356,7 @@ class Loader<Row extends object = ImportRow> {
 
       // OPTIMIZATION: Process updates in batch
       for (const row of data) {
-        const keyValue = String((row as ImportRow)[conflictKey as string]);
+        const keyValue = this._conflictValue(row, conflictKey);
         const existing = existingMap.get(keyValue);
 
         if (!existing) {
@@ -377,14 +401,14 @@ class Loader<Row extends object = ImportRow> {
    * @private
    * @param {Object} table target persistence table.
    * @param {Array<Object>} data Records to evaluate.
-   * @param {string} conflictKey Attribute for matching and detection.
+   * @param {string|string[]} conflictKey Attribute for matching and detection.
    * @param {Object} updateIfNewer Timestamp comparison configuration.
    * @returns {Object} statistics.
    */
   _upsert(
     table: ImportTable<Row>,
     data: Row[],
-    conflictKey: string | undefined,
+    conflictKey: string | string[] | undefined,
     updateIfNewer: UpdateIfNewer<Row>
   ) {
     try {
@@ -392,7 +416,7 @@ class Loader<Row extends object = ImportRow> {
       const existingRows = table.getAllRows();
       const existingMap = new Map();
       for (const row of existingRows) {
-        existingMap.set(String((row as ImportRow)[conflictKey as string]), row);
+        existingMap.set(this._conflictValue(row, conflictKey), row);
       }
 
       // OPTIMIZATION: Separate data into insert vs update buckets
@@ -401,7 +425,7 @@ class Loader<Row extends object = ImportRow> {
       let skipped = 0;
 
       for (const row of data) {
-        const keyValue = String((row as ImportRow)[conflictKey as string]);
+        const keyValue = this._conflictValue(row, conflictKey);
         const existing = existingMap.get(keyValue);
 
         if (!existing) {
@@ -460,10 +484,10 @@ class Loader<Row extends object = ImportRow> {
    * @private
    * @param {Object} table target persistence table.
    * @param {Array<Object>} data Records to insert.
-   * @param {string} conflictKey Attribute for row identification.
+   * @param {string|string[]} conflictKey Attribute for row identification.
    * @returns {Object} statistics.
    */
-  _overwrite(table: ImportTable<Row>, data: Row[], conflictKey: string | undefined) {
+  _overwrite(table: ImportTable<Row>, data: Row[], conflictKey: string | string[] | undefined) {
     try {
       // Read all existing rows and delete them ALL (OVERWRITE = full replacement)
       const existingRows = table.getAllRows();
@@ -594,6 +618,24 @@ class Loader<Row extends object = ImportRow> {
     }
   }
 
+  _conflictValue(row: Row, conflictKey: string | string[] | undefined): string {
+    if (!Array.isArray(conflictKey)) {
+      return String((row as ImportRow)[conflictKey as string]);
+    }
+    const values = conflictKey.map((column) => (row as ImportRow)[column]);
+    if (
+      values.some((value) => value === null || value === undefined || String(value).trim() === '')
+    ) {
+      throw new LoadError(
+        'Composite conflict key components must not be blank',
+        'INVALID_CONFLICT_KEY'
+      );
+    }
+    return JSON.stringify(
+      values.map((value) => (typeof value === 'string' ? value.trim() : value))
+    );
+  }
+
   /**
    * Enforces structural requirements for the load configuration block.
    * @private
@@ -601,6 +643,15 @@ class Loader<Row extends object = ImportRow> {
    * @throws {LoadError} If mandatory fields (table, strategy, conflict key) are missing.
    */
   _validateLoadConfig(config: LoadConfig<Row>) {
+    if (config && config.conflictKey !== undefined) {
+      const columns = Array.isArray(config.conflictKey) ? config.conflictKey : [config.conflictKey];
+      if (
+        !columns.length ||
+        columns.some((column) => typeof column !== 'string' || !column.trim())
+      ) {
+        throw new LoadError('Invalid conflict key', 'INVALID_CONFLICT_KEY');
+      }
+    }
     if (!config || typeof config !== 'object') {
       throw new LoadError('Load configuration must be an object', 'INVALID_CONFIG');
     }
@@ -622,7 +673,7 @@ class Loader<Row extends object = ImportRow> {
 
     // Validate conflict key for strategies that require it
     if (['UPDATE_ONLY', 'UPSERT', 'OVERWRITE'].includes(config.conflictResolution)) {
-      if (!config.conflictKey || typeof config.conflictKey !== 'string') {
+      if (!config.conflictKey) {
         throw new LoadError(
           `Conflict resolution strategy "${config.conflictResolution}" requires a conflictKey`,
           'MISSING_CONFLICT_KEY',

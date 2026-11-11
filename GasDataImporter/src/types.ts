@@ -17,8 +17,14 @@ export type LoadConfig<Row extends object = ImportRow> = {
   targetTable: string;
   updateIfNewer?: UpdateIfNewer<Row>;
 } & (
-  | { conflictResolution: 'INSERT_ONLY'; conflictKey?: keyof Row & string }
-  | { conflictResolution: 'UPDATE_ONLY' | 'UPSERT' | 'OVERWRITE'; conflictKey: keyof Row & string }
+  | {
+      conflictResolution: 'INSERT_ONLY';
+      conflictKey?: (keyof Row & string) | (keyof Row & string)[];
+    }
+  | {
+      conflictResolution: 'UPDATE_ONLY' | 'UPSERT' | 'OVERWRITE';
+      conflictKey: (keyof Row & string) | (keyof Row & string)[];
+    }
 );
 export interface SourceOptions extends ImportRow {
   sheetId?: string;
