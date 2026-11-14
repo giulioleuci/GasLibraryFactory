@@ -5,6 +5,9 @@ import type { ScannedTable, TextMatch, RenderSegment } from '../../types.js';
  */
 
 import { DocumentProcessor } from '../DocumentProcessor.js';
+import { DocumentProcessorTagScanner } from '../../internal/processors-managers/DocumentProcessorTagScanner.js';
+import { DocumentProcessorInjector } from '../../internal/processors-managers/DocumentProcessorInjector.js';
+import { Mustache } from '../../facades/Mustache.js';
 
 // Mock _MustacheContext class used internally by DocumentProcessor
 class _MustacheContext {
@@ -652,5 +655,278 @@ describe('DocumentProcessor - Advanced Coverage Tests (Reverse-Order Strategy)',
       // Should not execute batch update since no substitutions were made
       expect(mockLogger.debug).toHaveBeenCalledWith('No batch operations to execute');
     });
+  });
+});
+
+// bullet_list/number_list sharing a paragraph with other text, and nested lists
+const LIST = '{{#bullet_list:docs}}{{nome}}{{/bullet_list}}';
+const PARAGRAPH = `{{#has}}Il Consiglio redige:${LIST}{{/has}}{{^has}}Nessun documento.{{/has}}`;
+
+describe('list block sharing a paragraph with other text', () => {
+  const mustache = new Mustache();
+  const scanner = new DocumentProcessorTagScanner({
+    logger: { debug: jest.fn(), info: jest.fn(), warn: jest.fn(), error: jest.fn() },
+    mustache,
+    MAX_ITERATIONS: 1000,
+    MAX_TEMPLATE_MATCH_SIZE: 100000,
+    _parseExpression: (expr: string) => ({ path: expr, filters: [] }),
+    _applyFilters: (v: unknown) => v
+  } as unknown as DocumentProcessorTagScanner['facade']);
+  const match = (text: string): TextMatch[] => [
+    { elementIndex: 5, text, type: 'TEXT', runs: [] } as unknown as TextMatch
+  ];
+
+  it('keeps the intro text before the list when the enclosing section is true', () => {
+    const [op] = scanner._analyzeListLoops(match(PARAGRAPH), {
+      has: true,
+      docs: [{ nome: 'A' }]
+    });
+    expect(op.surround?.hasList).toBe(true);
+    expect(op.surround?.before.map((s) => s.rendered).join('')).toBe('Il Consiglio redige:');
+    expect(op.surround?.after.map((s) => s.rendered).join('')).toBe('');
+  });
+
+  it('falls back to the inverted-section text when the list is discarded', () => {
+    const [op] = scanner._analyzeListLoops(match(PARAGRAPH), { has: false, docs: [] });
+    expect(op.surround?.hasList).toBe(false);
+    expect(op.surround?.before.map((s) => s.rendered).join('')).toBe('Nessun documento.');
+  });
+
+  it('keeps text after the list', () => {
+    const [op] = scanner._analyzeListLoops(match(`Elenco: ${LIST} Fine.`), {
+      docs: [{ nome: 'A' }]
+    });
+    expect(op.surround?.before.map((s) => s.rendered).join('')).toBe('Elenco: ');
+    expect(op.surround?.after.map((s) => s.rendered).join('')).toBe(' Fine.');
+  });
+
+  it('leaves surround undefined for a paragraph that is only the list block', () => {
+    const [op] = scanner._analyzeListLoops(match(LIST), { docs: [{ nome: 'A' }] });
+    expect(op.surround).toBeUndefined();
+  });
+});
+
+describe('_executeListLoopOperation() with surrounding text', () => {
+  const seg = (rendered: string) => ({ rendered, style: {} });
+  let body: Record<string, jest.Mock>;
+  let template: Record<string, jest.Mock>;
+  let injector: DocumentProcessorInjector;
+  const inserted: Record<string, jest.Mock>[] = [];
+
+  beforeEach(() => {
+    Object.assign(global, {
+      DocumentApp: { Attribute: {}, GlyphType: { BULLET: 'BULLET', NUMBER: 'NUMBER' } }
+    });
+    inserted.length = 0;
+    const text = { appendText: jest.fn(), setAttributes: jest.fn() };
+    const newItem = () => {
+      const item = {
+        clear: jest.fn(),
+        editAsText: jest.fn(() => text),
+        setNestingLevel: jest.fn(),
+        setGlyphType: jest.fn()
+      };
+      inserted.push(item);
+      return item;
+    };
+    template = {
+      copy: jest.fn(() => ({})),
+      getParent: jest.fn(() => body),
+      getType: jest.fn(() => 'LIST_ITEM'),
+      getNestingLevel: jest.fn(() => 0),
+      clear: jest.fn(),
+      editAsText: jest.fn(() => text)
+    };
+    body = {
+      findText: jest.fn(() => ({ getElement: () => template })),
+      getChildIndex: jest.fn(() => 3),
+      insertListItem: jest.fn(),
+      insertParagraph: jest.fn(),
+      getChild: jest.fn(() => newItem()),
+      removeChild: jest.fn(),
+      getType: jest.fn(() => 'BODY_SECTION')
+    };
+    injector = new DocumentProcessorInjector({
+      logger: { debug: jest.fn(), info: jest.fn(), warn: jest.fn(), error: jest.fn() },
+      documentService: { openStandard: () => ({ getBody: () => body }) },
+      mustache: new Mustache()
+    } as unknown as DocumentProcessorInjector['facade']);
+  });
+
+  const op = (surround: object) =>
+    ({
+      paragraphIndex: 1,
+      listType: 'bullet',
+      dataArray: [{ nome: 'A' }, { nome: 'B' }],
+      itemTemplate: '{{nome}}',
+      fullMatch: LIST,
+      sourceRuns: [],
+      surround
+    }) as never;
+
+  it('keeps the intro paragraph and nests the bullet items under it', () => {
+    injector._executeListLoopOperation(
+      'doc',
+      op({ before: [seg('Il Consiglio redige:')], after: [], hasList: true })
+    );
+
+    expect(body.removeChild).not.toHaveBeenCalled();
+    expect(template.clear).toHaveBeenCalled(); // retexted with the intro
+    expect(inserted).toHaveLength(2);
+    for (const item of inserted) {
+      expect(item.setNestingLevel).toHaveBeenCalledWith(1);
+      expect(item.setGlyphType).toHaveBeenCalledWith('BULLET');
+    }
+  });
+
+  it('only retexts the paragraph when the list was discarded by an enclosing section', () => {
+    injector._executeListLoopOperation(
+      'doc',
+      op({ before: [seg('Nessun documento.')], after: [], hasList: false })
+    );
+
+    expect(template.copy).not.toHaveBeenCalled();
+    expect(body.removeChild).not.toHaveBeenCalled();
+    expect(template.clear).toHaveBeenCalled();
+  });
+
+  it('inserts trailing text after the items and removes the template when there is no intro', () => {
+    injector._executeListLoopOperation(
+      'doc',
+      op({ before: [seg('')], after: [seg(' Fine.')], hasList: true })
+    );
+
+    expect(inserted).toHaveLength(3); // 1 suffix + 2 items
+    expect(body.removeChild).toHaveBeenCalledWith(template);
+    expect(inserted[1].setNestingLevel).not.toHaveBeenCalled();
+  });
+});
+
+describe('nested lists (a list inside each item of another list)', () => {
+  const mustache = new Mustache();
+  const scanner = new DocumentProcessorTagScanner({
+    logger: { debug: jest.fn(), info: jest.fn(), warn: jest.fn(), error: jest.fn() },
+    mustache,
+    MAX_ITERATIONS: 1000,
+    MAX_TEMPLATE_MATCH_SIZE: 100000,
+    _parseExpression: (expr: string) => ({ path: expr, filters: [] }),
+    _applyFilters: (v: unknown) => v
+  } as unknown as DocumentProcessorTagScanner['facade']);
+  const analyze = (text: string, ctx: object) =>
+    scanner._analyzeListLoops(
+      [{ elementIndex: 1, text, type: 'TEXT', runs: [] } as unknown as TextMatch],
+      ctx
+    )[0];
+  const ctx = {
+    studenti: [
+      { nome: 'Rossi', materie: [{ m: 'Latino' }, { m: 'Greco' }] },
+      { nome: 'Bianchi', materie: [] },
+      { nome: 'Verdi' }
+    ]
+  };
+
+  it('resolves the inner list per item and strips it from the item template', () => {
+    const op = analyze(
+      '{{#number_list:studenti}}{{nome}}{{#bullet_list:materie}}{{m}}{{/bullet_list}}{{/number_list}}',
+      ctx
+    );
+    expect(op.itemTemplate).toBe('{{nome}}');
+    expect(op.children?.[0]).toEqual([
+      expect.objectContaining({ listType: 'bullet', itemTemplate: '{{m}}' })
+    ]);
+    expect(op.children?.[0][0].dataArray).toHaveLength(2);
+    expect(op.children?.[1][0].dataArray).toEqual([]); // empty: no sub-items
+    expect(op.children?.[2]).toEqual([]); // missing: no sub-list at all
+  });
+
+  it('matches closing tags by depth when both lists have the same type', () => {
+    const op = analyze(
+      '{{#bullet_list:studenti}}{{nome}}{{#bullet_list:materie}}{{m}}{{/bullet_list}}{{/bullet_list}}',
+      ctx
+    );
+    expect(op.itemTemplate).toBe('{{nome}}');
+    expect(op.fullMatch.endsWith('{{/bullet_list}}{{/bullet_list}}')).toBe(true);
+    expect(op.children?.[0][0].dataArray).toHaveLength(2);
+  });
+
+  it('supports three levels', () => {
+    const deep = { a: [{ n: 'x', b: [{ n: 'y', c: [{ n: 'z' }] }] }] };
+    const op = analyze(
+      '{{#bullet_list:a}}{{n}}{{#bullet_list:b}}{{n}}{{#bullet_list:c}}{{n}}{{/bullet_list}}{{/bullet_list}}{{/bullet_list}}',
+      deep
+    );
+    expect(op.children?.[0][0].children?.[0][0].dataArray).toEqual([{ n: 'z' }]);
+  });
+
+  it('leaves a non-nested block untouched (no children key)', () => {
+    const op = analyze('{{#bullet_list:studenti}}{{nome}}{{/bullet_list}}', ctx);
+    expect(op.children).toBeUndefined();
+  });
+});
+
+describe('_executeListLoopOperation() with nested lists', () => {
+  it('inserts item, then its sub-items one level deeper, in document order', () => {
+    Object.assign(global, {
+      DocumentApp: { Attribute: {}, GlyphType: { BULLET: 'BULLET', NUMBER: 'NUMBER' } }
+    });
+    const order: string[] = [];
+    const text = { appendText: jest.fn((t: string) => order.push(t)), setAttributes: jest.fn() };
+    const items: Array<Record<string, jest.Mock>> = [];
+    const template = {
+      copy: jest.fn(() => ({})),
+      getParent: jest.fn(() => body),
+      getType: jest.fn(() => 'LIST_ITEM'),
+      getNestingLevel: jest.fn(() => 0)
+    };
+    const body: Record<string, jest.Mock> = {
+      findText: jest.fn(() => ({ getElement: () => template })),
+      getChildIndex: jest.fn(() => 3),
+      insertListItem: jest.fn(),
+      getChild: jest.fn(() => {
+        const item = {
+          clear: jest.fn(),
+          editAsText: jest.fn(() => text),
+          setNestingLevel: jest.fn(),
+          setGlyphType: jest.fn()
+        };
+        items.push(item);
+        return item;
+      }),
+      removeChild: jest.fn(),
+      getType: jest.fn(() => 'BODY_SECTION')
+    };
+    const injector = new DocumentProcessorInjector({
+      logger: { debug: jest.fn(), info: jest.fn(), warn: jest.fn(), error: jest.fn() },
+      documentService: { openStandard: () => ({ getBody: () => body }) },
+      mustache: new Mustache()
+    } as unknown as DocumentProcessorInjector['facade']);
+
+    injector._executeListLoopOperation('doc', {
+      paragraphIndex: 1,
+      listType: 'number',
+      fullMatch: 'x',
+      itemTemplate: '{{nome}}',
+      sourceRuns: [],
+      dataArray: [{ nome: 'Rossi' }, { nome: 'Bianchi' }],
+      children: [
+        [
+          {
+            listType: 'bullet',
+            itemTemplate: '{{m}}',
+            sourceRuns: [],
+            dataArray: [{ m: 'Latino' }, { m: 'Greco' }]
+          }
+        ],
+        []
+      ]
+    } as never);
+
+    // Insertion is reversed at one fixed index, so the LAST inserted is first in the document.
+    expect(order.reverse()).toEqual(['Rossi', 'Latino', 'Greco', 'Bianchi']);
+    const subItems = items.filter((i) => i.setNestingLevel.mock.calls.length > 0);
+    expect(subItems).toHaveLength(2);
+    expect(subItems[0].setNestingLevel).toHaveBeenCalledWith(1);
+    expect(subItems[0].setGlyphType).toHaveBeenCalledWith('BULLET');
+    expect(body.removeChild).toHaveBeenCalledWith(template);
   });
 });

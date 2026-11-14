@@ -6,6 +6,10 @@ import type {
   RowLoop,
   DeleteRow,
   ListLoop,
+  ListLoopChild,
+  ListLoopSurround,
+  StyledSegment,
+  TextRun,
   ConditionalDelete,
   TextSubstitution,
   TableInsert,
@@ -19,6 +23,17 @@ import type {
  */
 
 import { MustacheContext as _MustacheContext } from '../../facades/Mustache.js';
+
+interface ListBlockNode {
+  tagName: string;
+  listType: string;
+  expr: string;
+  start: number;
+  bodyStart: number;
+  bodyEnd: number;
+  end: number;
+  children: ListBlockNode[];
+}
 
 const ROW_LOOP_MARKER = /^{{#(tablerow_loop):([^}]+)}}/;
 
@@ -163,7 +178,6 @@ export class DocumentProcessorTagScanner {
 
   _analyzeListLoops(textMatches: TextMatch[], context: object | null): ListLoop[] {
     const operations: ListLoop[] = [];
-    const regexParser = /{{#((?:bullet|number)_list):([^}]+)}}([^]*?){{\/\1}}/gs;
     const searchPattern = /{{#(?:bullet|number)_list:/;
     const seenIndices = new Set();
 
@@ -183,58 +197,230 @@ export class DocumentProcessorTagScanner {
         );
       }
 
-      regexParser.lastIndex = 0;
-      const match = regexParser.exec(fullText);
-      if (match) {
-        const [fullMatch, command, dataSource, itemTemplate] = match;
-        const listType = command.startsWith('bullet') ? 'bullet' : 'number';
-        const fullExpression = dataSource.trim();
-        const { path, filters } = this.facade._parseExpression(fullExpression);
-        const dummyToken: [string, string] = ['name', path];
-        let dataArray = this.facade.mustache._lookupValue!(
-          dummyToken,
-          new _MustacheContext(context)
-        );
-        if (Array.isArray(dataArray)) {
-          dataArray = this.facade._applyFilters(dataArray as unknown[], filters);
-          if ((dataArray as unknown[]).length > this.facade.MAX_ITERATIONS) {
-            throw new Error(
-              `List expansion count (${(dataArray as unknown[]).length}) exceeds maximum allowed (${this.facade.MAX_ITERATIONS})`
-            );
-          }
-          // textMatch.runs is captured relative to the RAW paragraph text
-          // (the whole `{{#bullet_list:...}}...{{/bullet_list}}` block,
-          // including the marker/closer), but only the item template's own
-          // sub-range is ever rendered per data item — rebase the runs onto
-          // itemTemplate's own offsets (not the whole fullMatch, not the
-          // whole paragraph) before storing, so downstream consumers
-          // (_buildStyledSegments/_styleAt in DocumentProcessorInjector)
-          // compare like-for-like.
-          const itemTemplateOffsetInMatch = fullMatch.indexOf(itemTemplate.trim());
-          const itemTemplateStart = match.index + itemTemplateOffsetInMatch;
-          const itemTemplateEnd = itemTemplateStart + itemTemplate.trim().length;
-          const sourceRuns = (textMatch.runs || [])
-            .filter((r) => r.end > itemTemplateStart && r.start < itemTemplateEnd)
-            .map((r) => ({
-              text: r.text,
-              start: Math.max(r.start, itemTemplateStart) - itemTemplateStart,
-              end: Math.min(r.end, itemTemplateEnd) - itemTemplateStart,
-              style: r.style
-            }));
-          operations.push({
-            type: 'listLoop',
-            index: textMatch.elementIndex!,
-            paragraphIndex: textMatch.elementIndex!,
-            listType: listType,
-            dataArray: dataArray as unknown[],
-            itemTemplate: itemTemplate.trim(),
-            fullMatch: fullMatch,
-            sourceRuns: sourceRuns
-          });
+      const node = this._parseListBlock(fullText, fullText.search(searchPattern));
+      if (!node) {
+        continue;
+      }
+      const rootContext = new _MustacheContext(context);
+      const dataArray = this._resolveListData(node.expr, rootContext);
+      if (!dataArray) {
+        continue;
+      }
+      const runs = textMatch.runs || [];
+      const { itemTemplate, sourceRuns } = this._listItemTemplate(fullText, node, runs);
+      const fullMatch = fullText.slice(node.start, node.end);
+      const hasSurroundingText =
+        fullText.slice(0, node.start).trim() !== '' || fullText.slice(node.end).trim() !== '';
+      operations.push({
+        type: 'listLoop',
+        index: textMatch.elementIndex!,
+        paragraphIndex: textMatch.elementIndex!,
+        listType: node.listType,
+        dataArray,
+        itemTemplate,
+        fullMatch,
+        sourceRuns,
+        ...(node.children.length > 0 && {
+          children: this._buildListChildren(node, dataArray, fullText, runs, rootContext)
+        }),
+        ...(hasSurroundingText && {
+          surround: this._renderListSurround(fullText, node.start, fullMatch.length, context, runs)
+        })
+      });
+    }
+    return operations;
+  }
+
+  /**
+   * @description Parses the `{{#bullet_list:expr}}...{{/bullet_list}}` /
+   * `{{#number_list:expr}}...{{/number_list}}` block opening at `start`,
+   * matching each closing tag to its own opener (depth-aware, so a list of the
+   * same type can nest).
+   * @param {string} text Raw paragraph text.
+   * @param {number} start Offset of the outermost opening tag.
+   * @returns {Object|null} Block tree, or null when the block is never closed.
+   * @private
+   */
+  _parseListBlock(text: string, start: number): ListBlockNode | null {
+    const tag = /{{#((?:bullet|number)_list):([^}]+)}}|{{\/((?:bullet|number)_list)}}/g;
+    tag.lastIndex = start;
+    const stack: ListBlockNode[] = [];
+    for (let m = tag.exec(text); m; m = tag.exec(text)) {
+      if (m[1]) {
+        const node: ListBlockNode = {
+          tagName: m[1],
+          listType: m[1].startsWith('bullet') ? 'bullet' : 'number',
+          expr: m[2].trim(),
+          start: m.index,
+          bodyStart: m.index + m[0].length,
+          bodyEnd: 0,
+          end: 0,
+          children: []
+        };
+        stack[stack.length - 1]?.children.push(node);
+        stack.push(node);
+      } else if (stack.length > 0 && stack[stack.length - 1].tagName === m[3]) {
+        const node = stack.pop()!;
+        node.bodyEnd = m.index;
+        node.end = m.index + m[0].length;
+        if (stack.length === 0) {
+          return node;
         }
       }
     }
-    return operations;
+    return null;
+  }
+
+  /**
+   * @description Resolves a list data source against `context` (applying pipe
+   * filters) and enforces MAX_ITERATIONS.
+   * @returns {Array|null} The array, or null when the path is not an array.
+   * @private
+   */
+  _resolveListData(expr: string, context: _MustacheContext): unknown[] | null {
+    const { path, filters } = this.facade._parseExpression(expr);
+    const value = this.facade.mustache._lookupValue!(['name', path], context);
+    if (!Array.isArray(value)) {
+      return null;
+    }
+    const filtered = this.facade._applyFilters(value as unknown[], filters) as unknown[];
+    if (filtered.length > this.facade.MAX_ITERATIONS) {
+      throw new Error(
+        `List expansion count (${filtered.length}) exceeds maximum allowed (${this.facade.MAX_ITERATIONS})`
+      );
+    }
+    return filtered;
+  }
+
+  /**
+   * @description Item template of one list block: its body with any nested list
+   * blocks cut out, trimmed. `runs` (captured relative to the RAW paragraph text)
+   * are rebased onto the template's own offsets so downstream style lookups
+   * (_buildStyledSegments/_styleAt) compare like-for-like.
+   * @private
+   */
+  _listItemTemplate(text: string, node: ListBlockNode, runs: TextRun[]) {
+    const pieces: Array<[number, number]> = [];
+    let pos = node.bodyStart;
+    for (const child of node.children) {
+      pieces.push([pos, child.start]);
+      pos = child.end;
+    }
+    pieces.push([pos, node.bodyEnd]);
+    const raw = pieces.map(([a, b]) => text.slice(a, b)).join('');
+    const lead = raw.length - raw.trimStart().length;
+    const itemTemplate = raw.trim();
+    const sourceRuns: TextRun[] = [];
+    let out = 0;
+    for (const [a, b] of pieces) {
+      for (const r of runs) {
+        if (r.end > a && r.start < b) {
+          const start = Math.max(Math.max(r.start, a) - a + out - lead, 0);
+          const end = Math.min(Math.min(r.end, b) - a + out - lead, itemTemplate.length);
+          if (end > start) {
+            sourceRuns.push({ text: r.text, start, end, style: r.style });
+          }
+        }
+      }
+      out += b - a;
+    }
+    return { itemTemplate, sourceRuns };
+  }
+
+  /**
+   * @description For every item of `dataArray`, resolves the lists nested inside
+   * `node` against that item (falling back to the outer contexts). A nested list
+   * whose data is missing or not an array yields no entry — that item simply
+   * has no sub-list.
+   * @returns {Array<Array<Object>>} One array of sub-lists per item, aligned with `dataArray`.
+   * @private
+   */
+  _buildListChildren(
+    node: ListBlockNode,
+    dataArray: unknown[],
+    text: string,
+    runs: TextRun[],
+    context: _MustacheContext
+  ): ListLoopChild[][] {
+    return dataArray.map((item) => {
+      const itemContext = new _MustacheContext(item, context);
+      const lists: ListLoopChild[] = [];
+      for (const child of node.children) {
+        const data = this._resolveListData(child.expr, itemContext);
+        if (!data) {
+          continue;
+        }
+        const { itemTemplate, sourceRuns } = this._listItemTemplate(text, child, runs);
+        lists.push({
+          listType: child.listType,
+          dataArray: data,
+          itemTemplate,
+          sourceRuns,
+          ...(child.children.length > 0 && {
+            children: this._buildListChildren(child, data, text, runs, itemContext)
+          })
+        });
+      }
+      return lists;
+    });
+  }
+
+  /**
+   * @description Renders a paragraph that holds text besides its
+   * `{{#bullet_list:...}}...{{/bullet_list}}` block. The block is swapped for a
+   * same-length run of U+E000 (so captured run offsets stay valid) and the whole
+   * paragraph is rendered once: that evaluates any enclosing inline
+   * `{{#x}}...{{/x}}` / `{{^x}}...{{/x}}` section, then the rendered text is
+   * split at the surviving run into the part before and after the list. If no
+   * run survives, an enclosing section discarded the list (`hasList: false`) and
+   * `before` is the whole rendered paragraph.
+   * @param {string} fullText Raw paragraph text.
+   * @param {number} start Offset of the list block in `fullText`.
+   * @param {number} length Length of the list block.
+   * @param {Object|null} context Data context.
+   * @param {Array<Object>} runs Captured paragraph runs (raw-text offsets).
+   * @returns {{before: Array<Object>, after: Array<Object>, hasList: boolean}}
+   * @private
+   */
+  _renderListSurround(
+    fullText: string,
+    start: number,
+    length: number,
+    context: object | null,
+    runs: TextRun[]
+  ): ListLoopSurround {
+    const MARK = '';
+    const template =
+      fullText.slice(0, start) + MARK.repeat(length) + fullText.slice(start + length);
+    const styleAt = (offset: number) =>
+      runs.find((r) => offset >= r.start && offset < r.end)?.style;
+    const clean = (s: string) => s.split('￼').join('');
+    const before: StyledSegment[] = [];
+    const after: StyledSegment[] = [];
+    let hasList = false;
+
+    for (const seg of this.facade.mustache.renderSegments!(template, context)) {
+      const rendered = clean(seg.rendered != null ? String(seg.rendered) : '');
+      const markAt = hasList ? -1 : rendered.indexOf(MARK);
+      if (markAt === -1) {
+        (hasList ? after : before).push({
+          rendered: rendered.split(MARK).join(''),
+          style: styleAt(seg.rawStart) || {}
+        });
+        continue;
+      }
+      hasList = true;
+      let markEnd = markAt;
+      while (rendered[markEnd] === MARK) {
+        markEnd++;
+      }
+      before.push({ rendered: rendered.slice(0, markAt), style: styleAt(seg.rawStart) || {} });
+      after.push({
+        rendered: rendered.slice(markEnd).split(MARK).join(''),
+        style: styleAt(seg.rawStart + markEnd) || {}
+      });
+    }
+    return { before, after, hasList };
   }
 
   /**

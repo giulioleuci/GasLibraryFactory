@@ -2,6 +2,7 @@ import type { DocumentProcessor } from '../../processors/DocumentProcessor.js';
 import type {
   TextRun,
   StyledSegment,
+  ListLoopChild,
   RowLoop,
   ColumnLoop,
   BatchOperation,
@@ -529,19 +530,62 @@ export class DocumentProcessorInjector {
         typeof templateParagraph.getType === 'function' &&
         templateParagraph.getType().toString() === 'LIST_ITEM';
 
-      for (let i = op.dataArray.length - 1; i >= 0; i--) {
-        const dataItem = op.dataArray[i];
+      const surround = op.surround;
+      if (surround && !surround.hasList) {
+        // An enclosing inline section discarded the list: keep the paragraph as plain rendered text.
+        this._retextParagraph(templateParagraph, surround.before);
+        return;
+      }
+      const hasText = (segs: StyledSegment[] = []) => segs.some((s) => s.rendered.trim() !== '');
+      const hasBefore = !!surround && hasText(surround.before);
+      const insertCopyAt = (segments: StyledSegment[]) => {
         const copiedParagraph = templateParagraph.copy!();
         if (isListItem) {
           body.insertListItem!(templateChildIndex + 1, copiedParagraph);
         } else {
           body.insertParagraph!(templateChildIndex + 1, copiedParagraph);
         }
-        const insertedParagraph = body.getChild!(templateChildIndex + 1);
-        const segments = this._buildStyledSegments(op.itemTemplate, dataItem, sourceRuns);
-        this._retextParagraph(insertedParagraph, segments);
+        const inserted = body.getChild!(templateChildIndex + 1);
+        this._retextParagraph(inserted, segments);
+        return inserted;
+      };
+
+      // Text after the list goes first so the items, inserted at the same index, land before it.
+      if (surround && hasText(surround.after)) {
+        insertCopyAt(surround.after);
       }
-      body.removeChild!(templateParagraph);
+      // Items hang under the kept intro paragraph (if any); sub-lists hang one level under their item.
+      const needsLevel = hasBefore || !!op.children?.some((lists) => lists.length > 0);
+      const baseLevel = isListItem && needsLevel ? templateParagraph.getNestingLevel!() : 0;
+      type ListSpec = Pick<
+        ListLoopChild,
+        'listType' | 'itemTemplate' | 'dataArray' | 'children'
+      > & {
+        sourceRuns?: TextRun[];
+      };
+      // Reverse order at one fixed index: an item's sub-lists go in first, then the item, so the
+      // final order is item, its sub-lists, next item.
+      const insertList = (list: ListSpec, level: number, styled: boolean) => {
+        for (let i = list.dataArray.length - 1; i >= 0; i--) {
+          const subLists = list.children?.[i] || [];
+          for (let k = subLists.length - 1; k >= 0; k--) {
+            insertList(subLists[k], level + 1, true);
+          }
+          const item = insertCopyAt(
+            this._buildStyledSegments(list.itemTemplate, list.dataArray[i], list.sourceRuns || [])
+          );
+          if (styled && isListItem) {
+            item.setNestingLevel!(Math.min(level, 8));
+            item.setGlyphType!(TextStyleMapper.toNativeGlyph(list.listType));
+          }
+        }
+      };
+      insertList(op, baseLevel + (hasBefore ? 1 : 0), hasBefore);
+      if (hasBefore) {
+        this._retextParagraph(templateParagraph, surround!.before);
+      } else {
+        body.removeChild!(templateParagraph);
+      }
       this.facade.logger.debug(`List loop completed: inserted ${op.dataArray.length} items`);
     } catch (error) {
       this.facade.logger.error(`Failed to execute list loop: ${(error as Error).message}`);

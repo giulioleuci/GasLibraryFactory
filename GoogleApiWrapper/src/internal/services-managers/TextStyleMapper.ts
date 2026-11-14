@@ -46,6 +46,14 @@ export class TextStyleMapper {
   }
 
   /**
+   * @param {string} listType 'number' for a numbered list, anything else for bullets.
+   * @returns {GoogleAppsScript.Document.GlyphType} Native glyph for ListItem.setGlyphType().
+   */
+  static toNativeGlyph(listType: string) {
+    return listType === 'number' ? DocumentApp.GlyphType.NUMBER : DocumentApp.GlyphType.BULLET;
+  }
+
+  /**
    * @param {Object} rgbColor {red?, green?, blue?} floats in [0,1]; missing channels default to 0.
    * @returns {string} '#rrggbb' hex color.
    * @private
