@@ -605,6 +605,9 @@ describe('DocumentProcessor - Core Functionality Tests (Reverse-Order Strategy)'
   // _createTextSubstitutionRequests() — run-style preservation Tests
   // ===================================================================
   describe('_createTextSubstitutionRequests() — run-style preservation', () => {
+    // Every span also clears the fields it does not set, so it cannot inherit the previous text's style.
+    const RESET_FIELDS =
+      'bold,italic,underline,strikethrough,smallCaps,backgroundColor,foregroundColor,baselineOffset,fontSize,weightedFontFamily,link';
     it('emits an updateTextStyle request for a segment whose source run had a style', () => {
       const op = {
         type: 'textSubstitution' as const,
@@ -621,16 +624,18 @@ describe('DocumentProcessor - Core Functionality Tests (Reverse-Order Strategy)'
 
       const requests = processor._createTextSubstitutionRequests(op);
 
-      const styleRequests = requests.filter((r) => r.updateTextStyle);
+      const styleRequests = requests.filter(
+        (r) => r.updateTextStyle && Object.keys(r.updateTextStyle.textStyle ?? {}).length > 0
+      );
       expect(styleRequests).toHaveLength(1);
       expect(styleRequests[0].updateTextStyle).toEqual({
         range: { startIndex: 105, endIndex: 110 },
         textStyle: { bold: true },
-        fields: 'bold'
+        fields: RESET_FIELDS
       });
     });
 
-    it('emits no updateTextStyle request when no segment overlaps a styled source run', () => {
+    it('resets inherited style on every span when no source run carries a style', () => {
       const op = {
         type: 'textSubstitution' as const,
         index: 100,
@@ -644,7 +649,11 @@ describe('DocumentProcessor - Core Functionality Tests (Reverse-Order Strategy)'
       };
 
       const requests = processor._createTextSubstitutionRequests(op);
-      expect(requests.some((r) => r.updateTextStyle)).toBe(false);
+      // Regression: text inserted right after a bold/italic/highlighted paragraph used to inherit it.
+      expect(requests.filter((r) => r.updateTextStyle).map((r) => r.updateTextStyle)).toEqual([
+        { range: { startIndex: 100, endIndex: 103 }, textStyle: {}, fields: RESET_FIELDS },
+        { range: { startIndex: 103, endIndex: 106 }, textStyle: {}, fields: RESET_FIELDS }
+      ]);
     });
 
     it('does not attempt style requests when the whole substitution collapsed to a zero-width space', () => {
@@ -709,21 +718,30 @@ describe('DocumentProcessor - Core Functionality Tests (Reverse-Order Strategy)'
         { insertText: { location: { index: 100 }, text: 'Dear Alice,' } },
         {
           updateTextStyle: {
+            range: { startIndex: 100, endIndex: 105 },
+            textStyle: {},
+            fields: RESET_FIELDS
+          }
+        },
+        {
+          updateTextStyle: {
             range: { startIndex: 105, endIndex: 110 },
             textStyle: { bold: true },
-            fields: 'bold'
+            fields: RESET_FIELDS
           }
         },
         {
           updateTextStyle: {
             range: { startIndex: 110, endIndex: 111 },
             textStyle: { bold: true },
-            fields: 'bold'
+            fields: RESET_FIELDS
           }
         }
       ]);
 
-      const styleRequests = requests.filter((r) => r.updateTextStyle);
+      const styleRequests = requests.filter(
+        (r) => r.updateTextStyle && Object.keys(r.updateTextStyle.textStyle ?? {}).length > 0
+      );
       const insertedEnd = 100 + 'Dear Alice,'.length; // 111 - the real content boundary
       for (const r of styleRequests) {
         expect(r.updateTextStyle!.range!.endIndex).toBeLessThanOrEqual(insertedEnd);
@@ -750,12 +768,14 @@ describe('DocumentProcessor - Core Functionality Tests (Reverse-Order Strategy)'
 
       const requests = processor._createTextSubstitutionRequests(op);
 
-      const styleRequests = requests.filter((r) => r.updateTextStyle);
+      const styleRequests = requests.filter(
+        (r) => r.updateTextStyle && Object.keys(r.updateTextStyle.textStyle ?? {}).length > 0
+      );
       expect(styleRequests).toHaveLength(1);
       expect(styleRequests[0].updateTextStyle).toEqual({
         range: { startIndex: 105, endIndex: 110 },
         textStyle: { bold: true },
-        fields: 'bold'
+        fields: RESET_FIELDS
       });
     });
 
@@ -777,7 +797,14 @@ describe('DocumentProcessor - Core Functionality Tests (Reverse-Order Strategy)'
 
       expect(processor._createTextSubstitutionRequests(op)).toEqual([
         { deleteContentRange: { range: { startIndex: 106, endIndex: 113 } } },
-        { insertText: { location: { index: 106 }, text: 'Gold' } }
+        { insertText: { location: { index: 106 }, text: 'Gold' } },
+        {
+          updateTextStyle: {
+            range: { startIndex: 106, endIndex: 110 },
+            textStyle: {},
+            fields: RESET_FIELDS
+          }
+        }
       ]);
     });
   });
@@ -1705,7 +1732,17 @@ describe('DocumentProcessor - Core Functionality Tests (Reverse-Order Strategy)'
       // the shared test/setup.js DocumentApp mock doesn't define Attribute (only
       // ElementType/GlyphType), so provide it locally — same precedent as
       // GoogleApiWrapper/.../DocumentTableManager.test.js's copyTableColumn() suite.
-      Object.assign(global, { DocumentApp: { Attribute: { BOLD: 'BOLD' } } });
+      Object.assign(global, {
+        DocumentApp: {
+          Attribute: {
+            BOLD: 'BOLD',
+            ITALIC: 'ITALIC',
+            UNDERLINE: 'UNDERLINE',
+            STRIKETHROUGH: 'STRIKETHROUGH',
+            BACKGROUND_COLOR: 'BACKGROUND_COLOR'
+          }
+        }
+      });
     });
 
     it('locates the template paragraph via findText and removes it after expansion', () => {
@@ -1799,7 +1836,13 @@ describe('DocumentProcessor - Core Functionality Tests (Reverse-Order Strategy)'
 
       expect(mockInsertedParagraph.clear).toHaveBeenCalled();
       expect(mockTextElement.appendText).toHaveBeenCalledWith('Alice');
-      expect(mockTextElement.setAttributes).toHaveBeenCalledWith(0, 4, { BOLD: true });
+      expect(mockTextElement.setAttributes).toHaveBeenCalledWith(0, 4, {
+        BOLD: true,
+        ITALIC: false,
+        UNDERLINE: false,
+        STRIKETHROUGH: false,
+        BACKGROUND_COLOR: null
+      });
     });
 
     it('keeps native text style ranges within the inclusive bounds of rendered list text', () => {
@@ -2140,7 +2183,17 @@ describe('DocumentProcessor - Core Functionality Tests (Reverse-Order Strategy)'
       // saveAndClose present -> _flushDocumentChanges returns true -> rescan.
       const mockDoc = { getBody: jest.fn(() => mockBody), saveAndClose: jest.fn() };
       mockDocumentService.openStandard.mockReturnValue(mockDoc);
-      Object.assign(global, { DocumentApp: { Attribute: { BOLD: 'BOLD' } } });
+      Object.assign(global, {
+        DocumentApp: {
+          Attribute: {
+            BOLD: 'BOLD',
+            ITALIC: 'ITALIC',
+            UNDERLINE: 'UNDERLINE',
+            STRIKETHROUGH: 'STRIKETHROUGH',
+            BACKGROUND_COLOR: 'BACKGROUND_COLOR'
+          }
+        }
+      });
 
       processor.process('doc123', { notAnArray: 'x', items: [{ nome: 'Alice' }] });
 
@@ -2236,7 +2289,17 @@ describe('DocumentProcessor - Core Functionality Tests (Reverse-Order Strategy)'
       };
       const mockDoc = { getBody: jest.fn(() => mockBody), saveAndClose: jest.fn() };
       mockDocumentService.openStandard.mockReturnValue(mockDoc);
-      Object.assign(global, { DocumentApp: { Attribute: { BOLD: 'BOLD' } } });
+      Object.assign(global, {
+        DocumentApp: {
+          Attribute: {
+            BOLD: 'BOLD',
+            ITALIC: 'ITALIC',
+            UNDERLINE: 'UNDERLINE',
+            STRIKETHROUGH: 'STRIKETHROUGH',
+            BACKGROUND_COLOR: 'BACKGROUND_COLOR'
+          }
+        }
+      });
 
       processor.process('doc123', { items: [{ nome: 'Alice' }] });
 

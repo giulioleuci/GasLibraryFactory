@@ -46,6 +46,21 @@ export class TextStyleMapper {
   }
 
   /**
+   * @returns {Object} Native attributes that clear bold/italic/underline/strikethrough/highlight,
+   * to apply under `toNativeAttributes()` so text never keeps formatting inherited from its neighbour.
+   */
+  static toNativeResetAttributes() {
+    const A = DocumentApp.Attribute;
+    return {
+      [A.BOLD]: false,
+      [A.ITALIC]: false,
+      [A.UNDERLINE]: false,
+      [A.STRIKETHROUGH]: false,
+      [A.BACKGROUND_COLOR]: null
+    };
+  }
+
+  /**
    * @param {string} listType 'number' for a numbered list, anything else for bullets.
    * @returns {GoogleAppsScript.Document.GlyphType} Native glyph for ListItem.setGlyphType().
    */

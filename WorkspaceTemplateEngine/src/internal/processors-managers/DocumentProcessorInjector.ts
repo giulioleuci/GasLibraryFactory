@@ -25,6 +25,25 @@ import { TextStyleMapper } from '@GoogleApiWrapper';
 /** Placeholder GoogleApiWrapper's DocumentContentExtractor emits for each index of a non-text element. */
 const OBJECT_CHAR = '￼';
 
+/**
+ * Text-style fields every substituted span resets before its own style applies. Docs gives inserted
+ * text the style of the character just before the insertion point (e.g. the end of the previous
+ * paragraph), so a field missing from the source run's style would otherwise leak in from there.
+ */
+const TEXT_STYLE_RESET_FIELDS = [
+  'bold',
+  'italic',
+  'underline',
+  'strikethrough',
+  'smallCaps',
+  'backgroundColor',
+  'foregroundColor',
+  'baselineOffset',
+  'fontSize',
+  'weightedFontFamily',
+  'link'
+];
+
 export class DocumentProcessorInjector {
   declare facade: Pick<
     DocumentProcessor,
@@ -81,6 +100,26 @@ export class DocumentProcessorInjector {
   _styleAt(offset: number, sourceRuns: TextRun[]) {
     const run = sourceRuns.find((r) => offset >= r.start && offset < r.end);
     return run ? run.style : {};
+  }
+
+  /**
+   * @description `updateTextStyle` request that applies `style` and clears every other reset field,
+   * so the span never keeps formatting inherited from the text before it (see TEXT_STYLE_RESET_FIELDS).
+   * @private
+   */
+  _textStyleRequest(
+    startIndex: number,
+    endIndex: number,
+    style: GoogleAppsScript.Docs.Schema.TextStyle
+  ) {
+    const fields = [...new Set([...TEXT_STYLE_RESET_FIELDS, ...Object.keys(style)])];
+    return {
+      updateTextStyle: {
+        range: { startIndex, endIndex },
+        textStyle: style,
+        fields: fields.join(',')
+      }
+    };
   }
 
   /**
@@ -370,17 +409,13 @@ export class DocumentProcessorInjector {
           rendered = rendered.slice(0, remaining);
         }
         if (rendered.length > 0) {
-          const style = this._styleAt(segment.rawStart, op.sourceRuns || []);
-          const fields = Object.keys(style);
-          if (fields.length > 0) {
-            requests.push({
-              updateTextStyle: {
-                range: { startIndex: cursor, endIndex: cursor + rendered.length },
-                textStyle: style,
-                fields: fields.join(',')
-              }
-            });
-          }
+          requests.push(
+            this._textStyleRequest(
+              cursor,
+              cursor + rendered.length,
+              this._styleAt(segment.rawStart, op.sourceRuns || [])
+            )
+          );
         }
         cursor += rendered.length;
         consumed += rendered.length;
@@ -423,17 +458,13 @@ export class DocumentProcessorInjector {
       }
       if (text) {
         requests.push({ insertText: { location: { index: startIndex }, text } });
-        const style = this._styleAt(seg.rawStart, op.sourceRuns || []);
-        const fields = Object.keys(style);
-        if (fields.length > 0) {
-          requests.push({
-            updateTextStyle: {
-              range: { startIndex, endIndex: startIndex + text.length },
-              textStyle: style,
-              fields: fields.join(',')
-            }
-          });
-        }
+        requests.push(
+          this._textStyleRequest(
+            startIndex,
+            startIndex + text.length,
+            this._styleAt(seg.rawStart, op.sourceRuns || [])
+          )
+        );
       }
     }
     return requests;
@@ -631,10 +662,12 @@ export class DocumentProcessorInjector {
         continue;
       }
       textElement.appendText(rendered);
-      const attrs = TextStyleMapper.toNativeAttributes(segment.style);
-      if (Object.keys(attrs).length > 0) {
-        textElement.setAttributes(offset, offset + rendered.length - 1, attrs);
-      }
+      // Appended text takes the style of the character before it (possibly the previous paragraph's
+      // formatting), so reset the inheritable attributes before applying the segment's own.
+      textElement.setAttributes(offset, offset + rendered.length - 1, {
+        ...TextStyleMapper.toNativeResetAttributes(),
+        ...TextStyleMapper.toNativeAttributes(segment.style)
+      });
       offset += rendered.length;
     }
   }

@@ -11,7 +11,8 @@ describe('TextStyleMapper', () => {
           STRIKETHROUGH: 'STRIKETHROUGH',
           FONT_SIZE: 'FONT_SIZE',
           FONT_FAMILY: 'FONT_FAMILY',
-          FOREGROUND_COLOR: 'FOREGROUND_COLOR'
+          FOREGROUND_COLOR: 'FOREGROUND_COLOR',
+          BACKGROUND_COLOR: 'BACKGROUND_COLOR'
         }
       }
     });
@@ -77,5 +78,15 @@ describe('TextStyleMapper', () => {
   it('omits fields absent from the source style', () => {
     const result = TextStyleMapper.toNativeAttributes({ bold: true });
     expect(Object.keys(result)).toEqual(['BOLD']);
+  });
+
+  it('toNativeResetAttributes clears the formatting a span could inherit from its neighbour', () => {
+    expect(TextStyleMapper.toNativeResetAttributes()).toEqual({
+      BOLD: false,
+      ITALIC: false,
+      UNDERLINE: false,
+      STRIKETHROUGH: false,
+      BACKGROUND_COLOR: null
+    });
   });
 });
