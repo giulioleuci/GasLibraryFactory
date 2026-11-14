@@ -814,6 +814,21 @@ describe('JobExecutor', () => {
       expect(stateManager.getState()).toBe('error');
     });
 
+    it('should keep the last yielded checkpoint when the job throws', () => {
+      function* errorJob() {
+        yield { percentage: 50, nextIndex: 7 };
+        throw new Error('Job failed');
+      }
+
+      try {
+        executor.execute(errorJob, {}, Date.now(), 10000);
+      } catch (e: unknown) {
+        // Expected
+      }
+
+      expect(stateManager.loadResumeState()).toEqual({ percentage: 50, nextIndex: 7 });
+    });
+
     it('should save error message in progress', () => {
       function* errorJob() {
         throw new Error('Something went wrong');

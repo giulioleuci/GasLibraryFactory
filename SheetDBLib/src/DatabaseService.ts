@@ -14,7 +14,6 @@ import type {
  * @version 2.0 - Refactored using Facade/Delegation pattern.
  */
 
-import { cloneDeep } from '@CoreUtilsLib';
 import { SpreadsheetService } from '@GoogleApiWrapper';
 import { TableService } from './TableService.js';
 import { AdvancedQueryBuilder } from './query/AdvancedQueryBuilder.js';
@@ -30,7 +29,6 @@ export class DatabaseService {
   declare _loaded: boolean;
   declare _transaction: {
     startTime: number;
-    savedStates: Record<string, object[] | null> | null;
     operations: unknown[];
   } | null;
   declare _inTransaction: boolean;
@@ -148,14 +146,8 @@ export class DatabaseService {
 
     this._transaction = {
       startTime: Date.now(),
-      savedStates: {},
       operations: []
     };
-
-    for (const tableName in this.tables) {
-      const table = this.tables[tableName];
-      this._transaction!.savedStates![tableName] = cloneDeep(table._rowsCache);
-    }
 
     this._inTransaction = true;
     this._logger.debug('Transaction started');
@@ -211,17 +203,17 @@ export class DatabaseService {
   }
 
   _performRollback() {
-    if (!this._transaction || !this._transaction!.savedStates) {
-      throw new Error('No saved state to rollback to');
+    if (!this._transaction) {
+      throw new Error('No transaction to rollback');
     }
 
-    for (const tableName in this._transaction!.savedStates) {
-      if (this.tables[tableName]) {
-        this.tables[tableName]._rowsCache = JSON.parse(
-          JSON.stringify(this._transaction!.savedStates![tableName])
-        );
-        this.tables[tableName]._invalidateInternalCache();
-      }
+    // Nothing reached the sheet yet: drop the queued writes and reload rows lazily from it.
+    for (const tableName in this.tables) {
+      const table = this.tables[tableName];
+      table._insertQueue = [];
+      table._updateQueue.clear();
+      table._deleteQueue.clear();
+      table._invalidateInternalCache();
     }
 
     if (this._spreadsheetService._batchUpdates) {

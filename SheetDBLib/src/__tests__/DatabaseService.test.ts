@@ -327,25 +327,13 @@ describe('DatabaseService - Comprehensive Test Suite', () => {
         expect(db.inTransaction()).toBe(true);
         const { startTime, ...transaction } = db._transaction!;
         expect(Number.isInteger(startTime)).toBe(true);
-        expect(transaction).toEqual({
-          savedStates: { Users: db.tables.Users._rowsCache, Orders: db.tables.Orders._rowsCache },
-          operations: []
-        });
+        expect(transaction).toEqual({ operations: [] });
       });
 
       it('should return this for method chaining', () => {
         const result = db.beginTransaction();
 
         expect(result).toBe(db);
-      });
-
-      it('should save current state of all tables', () => {
-        db.beginTransaction();
-
-        expect(db._transaction!.savedStates).toEqual({
-          Users: db.tables.Users._rowsCache,
-          Orders: db.tables.Orders._rowsCache
-        });
       });
 
       it('should throw error if transaction already in progress', () => {
@@ -604,7 +592,9 @@ describe('DatabaseService - Comprehensive Test Suite', () => {
         db.beginTransaction();
 
         // Corrupt transaction state to cause rollback failure
-        db._transaction!.savedStates = null;
+        jest.spyOn(db.tables['Users'], '_invalidateInternalCache').mockImplementation(() => {
+          throw new Error('boom');
+        });
 
         try {
           db.rollback();
@@ -626,6 +616,20 @@ describe('DatabaseService - Comprehensive Test Suite', () => {
         db.rollback();
 
         expect(invalidateCacheSpy).toHaveBeenCalled();
+      });
+
+      it('should drop queued writes on rollback so a later commit cannot flush them', () => {
+        const users = db.tables['Users'];
+        db.beginTransaction();
+        users._insertQueue.push({ id: 'ghost' });
+        users._updateQueue.set('1', { id: '1' });
+        users._deleteQueue.add('2');
+
+        db.rollback();
+
+        expect(users._insertQueue).toEqual([]);
+        expect(users._updateQueue.size).toBe(0);
+        expect(users._deleteQueue.size).toBe(0);
       });
 
       it('should clear pending batch operations on rollback', () => {
@@ -675,16 +679,20 @@ describe('DatabaseService - Comprehensive Test Suite', () => {
     describe('Transaction error scenarios', () => {
       it('should handle missing saved state on rollback', () => {
         db.beginTransaction();
-        db._transaction!.savedStates = null;
+        jest.spyOn(db.tables['Users'], '_invalidateInternalCache').mockImplementation(() => {
+          throw new Error('boom');
+        });
 
         expect(() => {
           db.rollback();
-        }).toThrow('No saved state to rollback to');
+        }).toThrow('Rollback failed: boom');
       });
 
       it('should log rollback errors', () => {
         db.beginTransaction();
-        db._transaction!.savedStates = null;
+        jest.spyOn(db.tables['Users'], '_invalidateInternalCache').mockImplementation(() => {
+          throw new Error('boom');
+        });
 
         try {
           db.rollback();

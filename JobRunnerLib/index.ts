@@ -10,6 +10,7 @@ export { JobDefinitionRegistry } from './src/JobDefinitionRegistry';
 export { JobQueue } from './src/JobQueue';
 export { JobRunnerService } from './src/JobRunnerService';
 export { CapturingLogger } from './src/internal/CapturingLogger';
+export { QueuePersistenceHandler } from './src/internal/QueuePersistenceHandler';
 export type {
   JobDefinition,
   IterationLevel,

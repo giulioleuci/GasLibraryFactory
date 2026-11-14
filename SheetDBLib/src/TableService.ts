@@ -279,7 +279,7 @@ export class TableService<Row extends object = RowRecord> {
     try {
       this._logger.debug(`Queuing update for row ${id} in '${this.sheetName}'`);
 
-      this._updateQueue.set(id, rowToUpdate);
+      this._queueUpdate(id, originalRow, rowToUpdate);
       this._logger.debug(`Row update queued successfully in '${this.sheetName}'`);
 
       // WRITE-THROUGH CACHE: Update row in cache instead of invalidating
@@ -370,7 +370,7 @@ export class TableService<Row extends object = RowRecord> {
       const updatedRow = { ...originalRow, ...validatedPartial };
       this._applyVirtualColumns(updatedRow);
 
-      this._updateQueue.set(id, updatedRow);
+      this._queueUpdate(id, originalRow, updatedRow);
 
       this._logger.debug(`Successfully queued patch row in '${this.sheetName}'`);
 
@@ -839,15 +839,31 @@ export class TableService<Row extends object = RowRecord> {
             continue; // skip
           }
 
-          const rowValues = physicalColumns.map((col) => newPhysicalData[col] ?? '');
-
-          const rangeA1 = `A${sheetRowIndex}:${this._convertIndexToColumn(physicalColumns.length)}${sheetRowIndex}`;
-          updates.push({
-            range: `${this.sheetName}!${rangeA1}`,
-            values: [rowValues]
-          });
+          // Write only the runs of changed cells: rewriting an untouched cell would
+          // replace a sheet formula with its computed value. No snapshot = whole row.
+          const changed = (i: number): boolean =>
+            !originalData ||
+            !isEqual(originalData[physicalColumns[i]!] ?? '', newPhysicalData[physicalColumns[i]!]);
+          for (let i = 0; i < physicalColumns.length; i++) {
+            if (!changed(i)) {
+              continue;
+            }
+            let j = i;
+            while (j + 1 < physicalColumns.length && changed(j + 1)) {
+              j++;
+            }
+            updates.push({
+              range: `${this.sheetName}!${this._convertIndexToColumn(i + 1)}${sheetRowIndex}:${this._convertIndexToColumn(j + 1)}${sheetRowIndex}`,
+              values: [physicalColumns.slice(i, j + 1).map((col) => newPhysicalData[col])]
+            });
+            i = j;
+          }
 
           this._originalRowData.set(id, newPhysicalData);
+        } else {
+          this._logger.warn(
+            `Update dropped: no row with ${this._keyField}=${id} on sheet '${this.sheetName}'`
+          );
         }
       }
 
@@ -897,6 +913,11 @@ export class TableService<Row extends object = RowRecord> {
   setPrimaryKey(columnName: string) {
     this._manualPrimaryKey = columnName;
     this._keyField = this._determinePrimaryKey();
+    // Re-key the dirty-check snapshot of rows loaded before the key changed.
+    this._originalRowData.clear();
+    for (const row of this._rowsCache ?? []) {
+      this._storeOriginalRowData(row);
+    }
     return this;
   }
 
@@ -981,6 +1002,21 @@ export class TableService<Row extends object = RowRecord> {
   }
 
   // --- PRIVATE METHODS ---
+
+  /**
+   * @function _queueUpdate
+   * @description A row still waiting in the insert queue is not on the sheet yet, so an
+   * update for it would find no row at flush: replace the queued insert instead.
+   * @private
+   */
+  _queueUpdate(id: unknown, previousRow: RowRecord, updatedRow: RowRecord) {
+    const queuedInsert = this._insertQueue.indexOf(previousRow);
+    if (queuedInsert === -1) {
+      this._updateQueue.set(id, updatedRow);
+    } else {
+      this._insertQueue[queuedInsert] = updatedRow;
+    }
+  }
 
   /**
    * @function _invalidateInternalCache
@@ -1087,7 +1123,10 @@ export class TableService<Row extends object = RowRecord> {
    * @private
    */
   _storeOriginalRowData(row: RowRecord) {
-    if (!this._keyField || !row[this._keyField]) {
+    // A virtual (computed) key is not on the raw row: compute it.
+    const virtualKey = this._virtualColumns[this._keyField];
+    const key = virtualKey ? virtualKey(row) : row[this._keyField];
+    if (!this._keyField || !key) {
       return; // Can't store without a valid ID
     }
 
@@ -1099,7 +1138,7 @@ export class TableService<Row extends object = RowRecord> {
       }
     }
 
-    this._originalRowData.set(row[this._keyField], physicalData);
+    this._originalRowData.set(key, physicalData);
   }
 
   /**

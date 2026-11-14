@@ -238,6 +238,8 @@ export class JobExecutor {
       this._stateManager.releaseLock();
       this._stateManager.batchSave({
         state: 'error',
+        // Keep the last yielded checkpoint so a relaunch does not redo work done since the last timeout.
+        ...(progress ? { resumeState: progress } : {}),
         progress: {
           completed: false,
           percentage: progress?.percentage || 0,

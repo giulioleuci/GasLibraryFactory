@@ -510,11 +510,28 @@ describe('TableService - Comprehensive Test Suite', () => {
       expect(result!.name).toBe('Alice Johnson'); // unchanged fields preserved
 
       expect(mocks.spreadsheetService.updateRanges).toHaveBeenCalledWith('SPREADSHEET_ID_123', [
-        {
-          range: 'Users!A2:E2',
-          values: [['USER_001', 'Alice Johnson', 'alice.new@example.com', 30, 'inactive']]
-        }
+        // Only changed cells are written: untouched cells (e.g. sheet formulas) survive.
+        { range: 'Users!C2:C2', values: [['alice.new@example.com']] },
+        { range: 'Users!E2:E2', values: [['inactive']] }
       ]);
+    });
+
+    it('should write the updated values when a row is inserted then updated before flush', () => {
+      table.insertRow({
+        ID: 'USER_NEW',
+        name: 'New',
+        email: 'old@example.com',
+        age: 1,
+        status: 'x'
+      });
+      table.updateRowById('USER_NEW', { email: 'new@example.com' });
+      table.flush();
+
+      expect(mocks.spreadsheetService.updateRanges).not.toHaveBeenCalled();
+      expect(mocks.spreadsheetService.appendRows).toHaveBeenCalledWith('SPREADSHEET_ID_123', {
+        range: "'Users'!A1",
+        values: [['USER_NEW', 'New', 'new@example.com', 1, 'x']]
+      });
     });
 
     it('should throw error if row not found', () => {
@@ -969,7 +986,7 @@ describe('TableService - Comprehensive Test Suite', () => {
       table.flush();
 
       expect(mocks.spreadsheetService.updateRanges).toHaveBeenCalledWith('SPREADSHEET_ID_123', [
-        { range: 'PIANI!A3:C3', values: [['a@x.it', 'PEI', 'nuova']] }
+        { range: 'PIANI!C3:C3', values: [['nuova']] }
       ]);
     });
 

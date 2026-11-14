@@ -18,8 +18,9 @@ export class QueuePersistenceHandler {
     Pick<import('../QueueStateManager.js').QueueStateManager, 'getStateVersion'> | null | undefined;
   declare _driveService: StateDriveService | null;
 
+  // Compared against string length (UTF-16 units); 3 bytes per unit worst case keeps it under the 9 KB cap.
   static get LARGE_STATE_THRESHOLD() {
-    return 8 * 1024;
+    return 3 * 1024;
   }
 
   constructor(
