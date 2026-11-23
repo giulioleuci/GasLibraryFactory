@@ -156,26 +156,44 @@ export class DocumentTableManager {
   getTableDataByLabel(documentId: string, label: string) {
     try {
       const body = this.facade.openStandard(documentId).getBody();
-      const wanted = label.trim().toLowerCase();
-      let lastText = '';
-      let tableIndex = 0;
-      for (let i = 0; i < body.getNumChildren(); i++) {
-        const child = body.getChild(i);
-        const type = child.getType().toString();
-        if (type === 'PARAGRAPH') {
-          const text = child.asParagraph().getText().trim();
-          if (text !== '') lastText = text.toLowerCase();
-        } else if (type === 'TABLE') {
-          if (lastText === wanted) return this._readTable(child.asTable(), tableIndex);
-          tableIndex++;
-          lastText = '';
-        }
-      }
-      throw new Error(`No table labelled "${label}" in document ${documentId}`);
+      const { table, tableIndex } = this._findTable(body, { label }, documentId);
+      return this._readTable(table, tableIndex);
     } catch (error) {
       this._logger.error(`Failed to get table data by label: ${(error as Error).message}`);
       throw error;
     }
+  }
+
+  /** @private Finds a top-level table by zero-based index or by label (see `getTableDataByLabel`). */
+  _findTable(
+    body: GoogleAppsScript.Document.Body,
+    source: { tableIndex?: number; label?: string },
+    documentId: string
+  ) {
+    if (source.label === undefined) {
+      const tables = body.getTables();
+      const index = source.tableIndex ?? 0;
+      if (index < 0 || index >= tables.length) {
+        throw new Error(`Table index ${index} out of bounds (found ${tables.length} tables)`);
+      }
+      return { table: tables[index], tableIndex: index };
+    }
+    const wanted = source.label.trim().toLowerCase();
+    let lastText = '';
+    let tableIndex = 0;
+    for (let i = 0; i < body.getNumChildren(); i++) {
+      const child = body.getChild(i);
+      const type = child.getType().toString();
+      if (type === 'PARAGRAPH') {
+        const text = child.asParagraph().getText().trim();
+        if (text !== '') lastText = text.toLowerCase();
+      } else if (type === 'TABLE') {
+        if (lastText === wanted) return { table: child.asTable(), tableIndex };
+        tableIndex++;
+        lastText = '';
+      }
+    }
+    throw new Error(`No table labelled "${source.label}" in document ${documentId}`);
   }
 
   /** @private Reads every cell's text of a native Table. */
@@ -1549,31 +1567,7 @@ export class DocumentTableManager {
       const doc = this.facade.openStandard(documentId);
       const body = doc.getBody();
 
-      const rangeElement = body.findText(markerText);
-      if (!rangeElement) {
-        throw new Error(`Marker text "${markerText}" not found in document ${documentId}`);
-      }
-
-      // Walk up from the matched text run to the top-level child of `body`
-      // (native DocumentApp elements expose getParent(); a nested Text run's
-      // ancestor chain typically resolves to its containing Paragraph/ListItem,
-      // which IS the direct child of body). Elements obtained via separate
-      // calls (e.g. this walked-up parent vs. the `body` captured above) are
-      // not guaranteed to be reference-equal even when they represent the
-      // same underlying Body, so `!== body` can fail to ever match, walking
-      // one hop too far onto the Body's own getParent() (which returns null)
-      // and crashing on the next iteration. Compare by type instead
-      // (stringified, avoiding a direct DocumentApp.ElementType reference).
-      let element = rangeElement.getElement();
-      while (typeof element.getParent === 'function') {
-        const parent = element.getParent();
-        if (!parent || parent.getType().toString() === 'BODY_SECTION') {
-          break;
-        }
-        element = parent;
-      }
-
-      const childIndex = body.getChildIndex(element);
+      const childIndex = this._markerChildIndex(body, markerText, documentId);
       const table = body.insertTable(childIndex + 1, data as string[][]);
 
       this._applyTableStyling(table, data, options);
@@ -1590,6 +1584,72 @@ export class DocumentTableManager {
       };
     } catch (error) {
       this._logger.error(`Failed to insert table at marker: ${(error as Error).message}`);
+      throw error;
+    }
+  }
+
+  /** @private Top-level body child index of the paragraph containing `markerText`. Throws if absent. */
+  _markerChildIndex(body: GoogleAppsScript.Document.Body, markerText: string, documentId: string) {
+    const rangeElement = body.findText(markerText);
+    if (!rangeElement) {
+      throw new Error(`Marker text "${markerText}" not found in document ${documentId}`);
+    }
+
+    // Walk up from the matched text run to the top-level child of `body`
+    // (native DocumentApp elements expose getParent(); a nested Text run's
+    // ancestor chain typically resolves to its containing Paragraph/ListItem,
+    // which IS the direct child of body). Elements obtained via separate
+    // calls (e.g. this walked-up parent vs. the `body` captured above) are
+    // not guaranteed to be reference-equal even when they represent the
+    // same underlying Body, so `!== body` can fail to ever match, walking
+    // one hop too far onto the Body's own getParent() (which returns null)
+    // and crashing on the next iteration. Compare by type instead
+    // (stringified, avoiding a direct DocumentApp.ElementType reference).
+    let element = rangeElement.getElement();
+    while (typeof element.getParent === 'function') {
+      const parent = element.getParent();
+      if (!parent || parent.getType().toString() === 'BODY_SECTION') {
+        break;
+      }
+      element = parent;
+    }
+    return body.getChildIndex(element);
+  }
+
+  /**
+   * @description Copies a table of another document, with its original formatting (styles,
+   * backgrounds, merged cells, widths), immediately after the paragraph containing `markerText`.
+   * Does NOT remove the marker text itself. The target document model stays open: flush it
+   * (`saveAndClose`) before any Docs-API write on the same file.
+   * @param {string} targetDocumentId Document receiving the table.
+   * @param {string} markerText Literal text locating the insertion point.
+   * @param {string} sourceDocumentId Document holding the table.
+   * @param {{tableIndex?: number, label?: string}} source Zero-based table index, or label (see `getTableDataByLabel`).
+   * @returns {Object} {success, rows, columns, foundElementIndex}.
+   */
+  copyTableToMarker(
+    targetDocumentId: string,
+    markerText: string,
+    sourceDocumentId: string,
+    source: { tableIndex?: number; label?: string }
+  ) {
+    try {
+      const { table } = this._findTable(
+        this.facade.openStandard(sourceDocumentId).getBody(),
+        source,
+        sourceDocumentId
+      );
+      const body = this.facade.openStandard(targetDocumentId).getBody();
+      const childIndex = this._markerChildIndex(body, markerText, targetDocumentId);
+      body.insertTable(childIndex + 1, table.copy());
+      return {
+        success: true,
+        rows: table.getNumRows(),
+        columns: table.getNumRows() > 0 ? table.getRow(0).getNumCells() : 0,
+        foundElementIndex: childIndex
+      };
+    } catch (error) {
+      this._logger.error(`Failed to copy table to marker: ${(error as Error).message}`);
       throw error;
     }
   }

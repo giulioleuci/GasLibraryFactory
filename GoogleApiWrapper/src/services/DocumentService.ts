@@ -67,6 +67,7 @@ export interface DocumentService
       | 'setRowBold'
       | '_createTableWithStandardAPI'
       | 'insertTableAtMarker'
+      | 'copyTableToMarker'
     >,
     Pick<
       DocumentContentExtractor,
@@ -155,7 +156,8 @@ export class DocumentService extends GoogleService {
             'setRowTextAlignment',
             'setRowBold',
             '_createTableWithStandardAPI',
-            'insertTableAtMarker'
+            'insertTableAtMarker',
+            'copyTableToMarker'
           ]
         },
         {

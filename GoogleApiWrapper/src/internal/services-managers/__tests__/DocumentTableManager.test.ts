@@ -154,6 +154,62 @@ describe('DocumentTableManager', () => {
     });
   });
 
+  describe('copyTableToMarker()', () => {
+    it('inserts a copy of the source table (original formatting) after the marker paragraph, by index and by label', () => {
+      const copy = { copied: true };
+      const srcTable = {
+        copy: jest.fn(() => copy),
+        getNumRows: () => 2,
+        getRow: () => ({ getNumCells: () => 3 })
+      };
+      const para = (text: string) => ({
+        getType: () => 'PARAGRAPH',
+        asParagraph: () => ({ getText: () => text })
+      });
+      const children = [
+        para('Intro'),
+        para('Programma'),
+        { getType: () => 'TABLE', asTable: () => srcTable }
+      ];
+      const source = {
+        getBody: () => ({
+          getTables: () => [srcTable],
+          getNumChildren: () => children.length,
+          getChild: (i: number) => children[i]
+        })
+      };
+      const paragraph = { getParent: jest.fn(), getType: () => 'PARAGRAPH' };
+      const targetBody = {
+        findText: jest.fn(() => ({ getElement: () => ({ getParent: () => paragraph }) })),
+        getChildIndex: jest.fn(() => 4),
+        insertTable: jest.fn()
+      };
+      paragraph.getParent.mockReturnValue({ getType: () => 'BODY_SECTION' });
+      facade.openStandard.mockImplementation((id: string) =>
+        id === 'src' ? source : { getBody: () => targetBody }
+      );
+
+      const byIndex = manager.copyTableToMarker('tgt', '{{M}}', 'src', { tableIndex: 0 });
+      manager.copyTableToMarker('tgt', '{{M}}', 'src', { label: ' programma ' });
+
+      expect(targetBody.insertTable).toHaveBeenNthCalledWith(1, 5, copy);
+      expect(targetBody.insertTable).toHaveBeenNthCalledWith(2, 5, copy);
+      expect(byIndex).toMatchObject({ success: true, rows: 2, columns: 3, foundElementIndex: 4 });
+    });
+
+    it('throws when the source table does not exist', () => {
+      facade.openStandard.mockReturnValue({
+        getBody: () => ({ getTables: () => [], getNumChildren: () => 0 })
+      });
+      expect(() => manager.copyTableToMarker('t', '{{M}}', 's', { tableIndex: 1 })).toThrow(
+        'out of bounds'
+      );
+      expect(() => manager.copyTableToMarker('t', '{{M}}', 's', { label: 'x' })).toThrow(
+        'No table labelled "x"'
+      );
+    });
+  });
+
   describe('insertTableAtMarker()', () => {
     it('inserts the table immediately after the marker (not at document end)', () => {
       const paragraphElement = { getParent: jest.fn(), getType: jest.fn(() => 'PARAGRAPH') };

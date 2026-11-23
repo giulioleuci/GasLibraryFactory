@@ -3235,6 +3235,14 @@ needs to touch `Session` directly.
    */
 ```
 ---
+#### METHOD: DocumentTableManager._findTable
+- **Scope:** instance
+- **LLM Call Syntax:** `documentTableManager._findTable();`
+- **Pure JSDoc:**
+```javascript
+/** @private Finds a top-level table by zero-based index or by label (see `getTableDataByLabel`). */
+```
+---
 #### METHOD: DocumentTableManager._readTable
 - **Scope:** instance
 - **LLM Call Syntax:** `documentTableManager._readTable();`
@@ -3566,6 +3574,32 @@ needs to touch `Session` directly.
    * @param {Object} [options={}] {headerRow, alternatingRows, columnWidths} - same as `_createTableWithStandardAPI`.
    * @returns {Object} Result summary {success, rows, columns, foundElementIndex}.
    * @throws {Error} If `markerText` is not found in the document (no silent fallback to append).
+   */
+```
+---
+#### METHOD: DocumentTableManager._markerChildIndex
+- **Scope:** instance
+- **LLM Call Syntax:** `documentTableManager._markerChildIndex();`
+- **Pure JSDoc:**
+```javascript
+/** @private Top-level body child index of the paragraph containing `markerText`. Throws if absent. */
+```
+---
+#### METHOD: DocumentTableManager.copyTableToMarker
+- **Scope:** instance
+- **LLM Call Syntax:** `const result = documentTableManager.copyTableToMarker(targetDocumentId, markerText, sourceDocumentId, source);`
+- **Pure JSDoc:**
+```javascript
+/**
+   * @description Copies a table of another document, with its original formatting (styles,
+   * backgrounds, merged cells, widths), immediately after the paragraph containing `markerText`.
+   * Does NOT remove the marker text itself. The target document model stays open: flush it
+   * (`saveAndClose`) before any Docs-API write on the same file.
+   * @param {string} targetDocumentId Document receiving the table.
+   * @param {string} markerText Literal text locating the insertion point.
+   * @param {string} sourceDocumentId Document holding the table.
+   * @param {{tableIndex?: number, label?: string}} source Zero-based table index, or label (see `getTableDataByLabel`).
+   * @returns {Object} {success, rows, columns, foundElementIndex}.
    */
 ```
 ---
