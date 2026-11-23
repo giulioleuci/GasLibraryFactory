@@ -106,6 +106,54 @@ describe('DocumentTableManager', () => {
     manager = new DocumentTableManager(facade);
   });
 
+  describe('getTableData / getTableDataByLabel', () => {
+    const tbl = (rows: string[][]) => ({
+      getNumRows: () => rows.length,
+      getRow: (r: number) => ({
+        getNumCells: () => rows[r].length,
+        getCell: (c: number) => ({ getText: () => rows[r][c] })
+      })
+    });
+    const para = (text: string) => ({
+      getType: () => 'PARAGRAPH',
+      asParagraph: () => ({ getText: () => text })
+    });
+    const table = (rows: string[][]) => ({ getType: () => 'TABLE', asTable: () => tbl(rows) });
+    const withChildren = (children: unknown[]) =>
+      facade.openStandard.mockReturnValue({
+        getBody: () => ({
+          getNumChildren: () => children.length,
+          getChild: (i: number) => children[i],
+          getTables: () =>
+            children
+              .filter((c) => (c as { getType: () => string }).getType() === 'TABLE')
+              .map((c) => (c as { asTable: () => unknown }).asTable())
+        })
+      });
+
+    it('selects by index', () => {
+      withChildren([para('A'), table([['a']]), para('B'), table([['b1', 'b2']])]);
+      expect(manager.getTableData('d', 1).data).toEqual([['b1', 'b2']]);
+    });
+
+    it('selects by label: trimmed, case-insensitive, skipping empty paragraphs', () => {
+      withChildren([
+        para('Intro'),
+        table([['x']]),
+        para('  Programma Svolto '),
+        para(''),
+        table([['y']])
+      ]);
+      const res = manager.getTableDataByLabel('d', 'programma svolto');
+      expect(res).toEqual({ tableIndex: 1, numRows: 1, numColumns: 1, data: [['y']] });
+    });
+
+    it('throws when no table has the label', () => {
+      withChildren([para('Intro'), table([['x']])]);
+      expect(() => manager.getTableDataByLabel('d', 'nope')).toThrow('No table labelled "nope"');
+    });
+  });
+
   describe('insertTableAtMarker()', () => {
     it('inserts the table immediately after the marker (not at document end)', () => {
       const paragraphElement = { getParent: jest.fn(), getType: jest.fn(() => 'PARAGRAPH') };

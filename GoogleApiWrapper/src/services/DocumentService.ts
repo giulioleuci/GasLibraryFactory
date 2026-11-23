@@ -34,6 +34,7 @@ export interface DocumentService
       | 'getDocumentTables'
       | 'getTableStructure'
       | 'getTableData'
+      | 'getTableDataByLabel'
       | 'getTableRow'
       | 'getTableColumn'
       | 'insertTableRow'
@@ -122,6 +123,7 @@ export class DocumentService extends GoogleService {
             'getDocumentTables',
             'getTableStructure',
             'getTableData',
+            'getTableDataByLabel',
             'getTableRow',
             'getTableColumn',
             'insertTableRow',

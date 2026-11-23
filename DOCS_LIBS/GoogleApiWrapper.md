@@ -2823,6 +2823,28 @@ needs to touch `Session` directly.
    */
 ```
 ---
+#### METHOD: TextStyleMapper.toNativeResetAttributes
+- **Scope:** static
+- **LLM Call Syntax:** `const result = TextStyleMapper.toNativeResetAttributes();`
+- **Pure JSDoc:**
+```javascript
+/**
+   * @returns {Object} Native attributes that clear bold/italic/underline/strikethrough/highlight,
+   * to apply under `toNativeAttributes()` so text never keeps formatting inherited from its neighbour.
+   */
+```
+---
+#### METHOD: TextStyleMapper.toNativeGlyph
+- **Scope:** static
+- **LLM Call Syntax:** `const result = TextStyleMapper.toNativeGlyph(listType);`
+- **Pure JSDoc:**
+```javascript
+/**
+   * @param {string} listType 'number' for a numbered list, anything else for bullets.
+   * @returns {GoogleAppsScript.Document.GlyphType} Native glyph for ListItem.setGlyphType().
+   */
+```
+---
 #### METHOD: TextStyleMapper._rgbColorToHex
 - **Scope:** static
 - **LLM Call Syntax:** `const result = TextStyleMapper._rgbColorToHex(rgbColor);`
@@ -3198,6 +3220,29 @@ needs to touch `Session` directly.
    */
 ```
 ---
+#### METHOD: DocumentTableManager.getTableDataByLabel
+- **Scope:** instance
+- **LLM Call Syntax:** `const result = documentTableManager.getTableDataByLabel(documentId, label);`
+- **Pure JSDoc:**
+```javascript
+/**
+   * @description Retrieves a table's cell text selected by its label: the text of the nearest
+   * non-empty paragraph preceding the table (trimmed, case-insensitive exact match). First match wins.
+   * @param {string} documentId Target document identifier.
+   * @param {string} label Text of the paragraph that introduces the table.
+   * @returns {Object} Table data {tableIndex, numRows, numColumns, data: unknown[][]}.
+   * @throws {Error} If no table is preceded by `label`.
+   */
+```
+---
+#### METHOD: DocumentTableManager._readTable
+- **Scope:** instance
+- **LLM Call Syntax:** `documentTableManager._readTable();`
+- **Pure JSDoc:**
+```javascript
+/** @private Reads every cell's text of a native Table. */
+```
+---
 #### METHOD: DocumentTableManager.getTableRow
 - **Scope:** instance
 - **LLM Call Syntax:** `documentTableManager.getTableRow();`
@@ -3570,10 +3615,21 @@ needs to touch `Session` directly.
 ```javascript
 /**
    * @private
-   * @description Aggregates all text runs within a paragraph element.
+   * @description Aggregates all text runs within a paragraph element. Non-text
+   * elements (footnote references, inline images, chips, auto text, breaks)
+   * occupy document indices too, so each is rendered as U+FFFC repeated over
+   * its index span: string offsets then equal document-index offsets.
    * @param {Object} paragraph Native Docs API paragraph object.
    * @returns {string} Concatenated plain text.
    */
+```
+---
+#### METHOD: DocumentContentExtractor._elementText
+- **Scope:** instance
+- **LLM Call Syntax:** `documentContentExtractor._elementText();`
+- **Pure JSDoc:**
+```javascript
+/** @private Text of one paragraph element; U+FFFC placeholder(s) for non-text elements. */
 ```
 ---
 #### METHOD: DocumentContentExtractor._extractParagraphRuns

@@ -138,33 +138,60 @@ export class DocumentTableManager {
         throw new Error(`Table index ${tableIndex} out of bounds (found ${tables.length} tables)`);
       }
 
-      const table = tables[tableIndex];
-      const numRows = table.getNumRows();
-      const data = [];
-
-      for (let rowIndex = 0; rowIndex < numRows; rowIndex++) {
-        const row = table.getRow(rowIndex);
-        const numCells = row.getNumCells();
-        const rowData = [];
-
-        for (let cellIndex = 0; cellIndex < numCells; cellIndex++) {
-          rowData.push(row.getCell(cellIndex).getText());
-        }
-        data.push(rowData);
-      }
-
-      this._logger.debug(`Retrieved table ${tableIndex} with ${numRows} rows`);
-
-      return {
-        tableIndex,
-        numRows,
-        numColumns: data[0] ? data[0].length : 0,
-        data
-      };
+      return this._readTable(tables[tableIndex], tableIndex);
     } catch (error) {
       this._logger.error(`Failed to get table data: ${(error as Error).message}`);
       throw error;
     }
+  }
+
+  /**
+   * @description Retrieves a table's cell text selected by its label: the text of the nearest
+   * non-empty paragraph preceding the table (trimmed, case-insensitive exact match). First match wins.
+   * @param {string} documentId Target document identifier.
+   * @param {string} label Text of the paragraph that introduces the table.
+   * @returns {Object} Table data {tableIndex, numRows, numColumns, data: unknown[][]}.
+   * @throws {Error} If no table is preceded by `label`.
+   */
+  getTableDataByLabel(documentId: string, label: string) {
+    try {
+      const body = this.facade.openStandard(documentId).getBody();
+      const wanted = label.trim().toLowerCase();
+      let lastText = '';
+      let tableIndex = 0;
+      for (let i = 0; i < body.getNumChildren(); i++) {
+        const child = body.getChild(i);
+        const type = child.getType().toString();
+        if (type === 'PARAGRAPH') {
+          const text = child.asParagraph().getText().trim();
+          if (text !== '') lastText = text.toLowerCase();
+        } else if (type === 'TABLE') {
+          if (lastText === wanted) return this._readTable(child.asTable(), tableIndex);
+          tableIndex++;
+          lastText = '';
+        }
+      }
+      throw new Error(`No table labelled "${label}" in document ${documentId}`);
+    } catch (error) {
+      this._logger.error(`Failed to get table data by label: ${(error as Error).message}`);
+      throw error;
+    }
+  }
+
+  /** @private Reads every cell's text of a native Table. */
+  _readTable(table: GoogleAppsScript.Document.Table, tableIndex: number) {
+    const numRows = table.getNumRows();
+    const data: string[][] = [];
+    for (let rowIndex = 0; rowIndex < numRows; rowIndex++) {
+      const row = table.getRow(rowIndex);
+      const rowData: string[] = [];
+      for (let cellIndex = 0; cellIndex < row.getNumCells(); cellIndex++) {
+        rowData.push(row.getCell(cellIndex).getText());
+      }
+      data.push(rowData);
+    }
+    this._logger.debug(`Retrieved table ${tableIndex} with ${numRows} rows`);
+    return { tableIndex, numRows, numColumns: data[0] ? data[0].length : 0, data };
   }
 
   getTableRow(documentId: string, tableIndex: number, rowIndex: number) {
